@@ -1,0 +1,57 @@
+{
+  "config": {
+    "platform": {
+      "php": "7.2"
+    }
+  },
+  "name": "ryunosuke/chmonos",
+  "type": "library",
+  "description": "Compatible php/js validator library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "ryunosuke",
+      "email": "ryunosuke.arima@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.2"
+  },
+  "require-dev": {
+    "ryunosuke/functions": "1.4.0",
+    "phpunit/phpunit": "7.*",
+    "facebook/webdriver": "1.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "ryunosuke\\chmonos\\": "src/chmonos"
+    },
+    "files": [
+      "src/functions.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "ryunosuke\\Test\\": "tests/Test"
+    },
+    "files": [
+      "tests/functions.php"
+    ]
+  },
+  "scripts": {
+    "build": [
+      "@export",
+      "@npm",
+      "@test"
+    ],
+    "export": "@php bin/export.php",
+    "npm": "@php bin/npm.php",
+    "test": "vendor/bin/phpunit --configuration=tests/phpunit.xml",
+    "post-install-cmd": [
+      "@export"
+    ],
+    "post-update-cmd": [
+      "@export"
+    ]
+  }
+}

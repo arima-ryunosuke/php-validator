@@ -1,0 +1,5 @@
+/npm
+/vendor
+/tests/coverage
+/tests/phpunit.xml
+/example/validator.js
