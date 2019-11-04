@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.github.com/sebastianbergmann/phpunit/master/phpunit.xsd" bootstrap="bootstrap.php">
+    <testsuites>
+        <testsuite name="tests">
+            <directory>./</directory>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <const name="TESTWEB_URL" value="http://localhost:3000"/>
+        <const name="SELENIUM_URL" value="http://localhost:4444/wd/hub"/>
+        <const name="BROWSERS" value="phantomjs"/>
+        <!-- for example <const name="BROWSERS" value="firefox,chrome,safari" /> -->
+    </php>
+
+    <filter>
+        <whitelist>
+            <directory suffix=".php">../src/chmonos</directory>
+        </whitelist>
+    </filter>
+</phpunit>

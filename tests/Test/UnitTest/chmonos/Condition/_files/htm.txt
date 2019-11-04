@@ -1,0 +1,10 @@
+<!DOCTYPE HTML PUBLIC "ISO/IEC 15445:2000//DTD HTML//EN">
+<html><head><title>...</title></head>
+  <body>
+    <p><![INCLUDE[ INCLUDE...マーク区間宣言がない場合と同じように解釈される ]]></P>
+    <p><![IGNORE[  IGNORE ...マーク区間の中身を無視される ]]></P>
+    <p><![RCDATA[  RCDATA ...マーク区間の中身がRCDATAとして処理される ]]></P>
+    <p><![CDATA[   CDATA  ...マーク区間の中身がCDATAとして処理される ]]></P>
+    <p><![TEMP[    TEMP   ...マーク区間の中身が一時的なものとして扱われる ]]></P>
+  </body>
+</html>
