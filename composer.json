@@ -2,7 +2,8 @@
   "config": {
     "platform": {
       "php": "7.2"
-    }
+    },
+    "process-timeout": 0
   },
   "name": "ryunosuke/chmonos",
   "type": "library",
@@ -46,6 +47,7 @@
     ],
     "export": "@php bin/export.php",
     "npm": "@php bin/npm.php",
+    "example": "@php -S 0.0.0.0:3000",
     "test": "vendor/bin/phpunit --configuration=tests/phpunit.xml",
     "post-install-cmd": [
       "@export"
