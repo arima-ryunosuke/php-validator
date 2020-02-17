@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.1
+
+- [all] composer update
+
 ## 1.0.0
 
 - 公開
