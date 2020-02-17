@@ -19,7 +19,7 @@
     "php": ">=7.2"
   },
   "require-dev": {
-    "ryunosuke/functions": "1.4.0",
+    "ryunosuke/functions": "1.4.5",
     "phpunit/phpunit": "7.*",
     "facebook/webdriver": "1.*"
   },
@@ -45,7 +45,10 @@
       "@npm",
       "@test"
     ],
-    "export": "@php bin/export.php",
+    "export": [
+      "export-function",
+      "exclude-internal"
+    ],
     "npm": "@php bin/npm.php",
     "example": "@php -S 0.0.0.0:3000",
     "test": "vendor/bin/phpunit --configuration=tests/phpunit.xml",
