@@ -11,23 +11,46 @@ if (!defined("ryunosuke\\chmonos\\IS_OWNSELF")) {
 }
 
 if (!defined("ryunosuke\\chmonos\\IS_PUBLIC")) {
-    /** public を表す定数 @see \ReflectionMethod::IS_PUBLIC */
+    /** public を表す定数 @see \ReflectionProperty::IS_PUBLIC */
     define("ryunosuke\\chmonos\\IS_PUBLIC", 256);
 }
 
 if (!defined("ryunosuke\\chmonos\\IS_PROTECTED")) {
-    /** protected を表す定数 @see \ReflectionMethod::IS_PROTECTED */
+    /** protected を表す定数 @see \ReflectionProperty::IS_PROTECTED */
     define("ryunosuke\\chmonos\\IS_PROTECTED", 512);
 }
 
 if (!defined("ryunosuke\\chmonos\\IS_PRIVATE")) {
-    /** private を表す定数 @see \ReflectionMethod::IS_PRIVATE */
+    /** private を表す定数 @see \ReflectionProperty::IS_PRIVATE */
     define("ryunosuke\\chmonos\\IS_PRIVATE", 1024);
 }
 
 if (!defined("ryunosuke\\chmonos\\TOKEN_NAME")) {
     /** parse_php 関数でトークン名変換をするか */
     define("ryunosuke\\chmonos\\TOKEN_NAME", 2);
+}
+
+if (!defined("ryunosuke\\chmonos\\SI_UNITS")) {
+    /** SI 接頭辞 */
+    define("ryunosuke\\chmonos\\SI_UNITS", [
+        -8 => ["y"],
+        -7 => ["z"],
+        -6 => ["a"],
+        -5 => ["f"],
+        -4 => ["p"],
+        -3 => ["n"],
+        -2 => ["u", "μ", "µ"],
+        -1 => ["m"],
+        0  => [],
+        1  => ["k", "K"],
+        2  => ["M"],
+        3  => ["G"],
+        4  => ["T"],
+        5  => ["P"],
+        6  => ["E"],
+        7  => ["Z"],
+        8  => ["Y"],
+    ]);
 }
 
 
@@ -42,10 +65,10 @@ if (!isset($excluded_functions["arrayize"]) && (!function_exists("ryunosuke\\chm
      *
      * Example:
      * ```php
-     * assertSame(arrayize(1, 2, 3), [1, 2, 3]);
-     * assertSame(arrayize([1], [2], [3]), [1, 2, 3]);
+     * that(arrayize(1, 2, 3))->isSame([1, 2, 3]);
+     * that(arrayize([1], [2], [3]))->isSame([1, 2, 3]);
      * $object = new \stdClass();
-     * assertSame(arrayize($object, false, [1, 2, 3]), [$object, false, 1, 2, 3]);
+     * that(arrayize($object, false, [1, 2, 3]))->isSame([$object, false, 1, 2, 3]);
      * ```
      *
      * @param mixed $variadic 生成する要素（可変引数）
@@ -78,11 +101,11 @@ if (!isset($excluded_functions["is_indexarray"]) && (!function_exists("ryunosuke
      *
      * Example:
      * ```php
-     * assertTrue(is_indexarray([]));
-     * assertTrue(is_indexarray([1, 2, 3]));
-     * assertFalse(is_indexarray(['x' => 'X']));
+     * that(is_indexarray([]))->isTrue();
+     * that(is_indexarray([1, 2, 3]))->isTrue();
+     * that(is_indexarray(['x' => 'X']))->isFalse();
      * // 抜け番があっても true になる（これは is_hasharray も true になる）
-     * assertTrue(is_indexarray([1 => 1, 2 => 2, 3 => 3]));
+     * that(is_indexarray([1 => 1, 2 => 2, 3 => 3]))->isTrue();
      * ```
      *
      * @param array $array 調べる配列
@@ -110,9 +133,9 @@ if (!isset($excluded_functions["is_hasharray"]) && (!function_exists("ryunosuke\
      *
      * Example:
      * ```php
-     * assertFalse(is_hasharray([]));
-     * assertFalse(is_hasharray([1, 2, 3]));
-     * assertTrue(is_hasharray(['x' => 'X']));
+     * that(is_hasharray([]))->isFalse();
+     * that(is_hasharray([1, 2, 3]))->isFalse();
+     * that(is_hasharray(['x' => 'X']))->isTrue();
      * ```
      *
      * @param array $array 調べる配列
@@ -141,8 +164,8 @@ if (!isset($excluded_functions["first_value"]) && (!function_exists("ryunosuke\\
      *
      * Example:
      * ```php
-     * assertSame(first_value(['a', 'b', 'c']), 'a');
-     * assertSame(first_value([], 999), 999);
+     * that(first_value(['a', 'b', 'c']))->isSame('a');
+     * that(first_value([], 999))->isSame(999);
      * ```
      *
      * @param iterable $array 対象配列
@@ -155,7 +178,7 @@ if (!isset($excluded_functions["first_value"]) && (!function_exists("ryunosuke\\
             return $default;
         }
         /** @noinspection PhpUnusedLocalVariableInspection */
-        list($k, $v) = first_keyvalue($array);
+        [$k, $v] = first_keyvalue($array);
         return $v;
     }
 }
@@ -171,8 +194,8 @@ if (!isset($excluded_functions["first_keyvalue"]) && (!function_exists("ryunosuk
      *
      * Example:
      * ```php
-     * assertSame(first_keyvalue(['a', 'b', 'c']), [0, 'a']);
-     * assertSame(first_keyvalue([], 999), 999);
+     * that(first_keyvalue(['a', 'b', 'c']))->isSame([0, 'a']);
+     * that(first_keyvalue([], 999))->isSame(999);
      * ```
      *
      * @param iterable $array 対象配列
@@ -199,8 +222,8 @@ if (!isset($excluded_functions["last_key"]) && (!function_exists("ryunosuke\\chm
      *
      * Example:
      * ```php
-     * assertSame(last_key(['a', 'b', 'c']), 2);
-     * assertSame(last_key([], 999), 999);
+     * that(last_key(['a', 'b', 'c']))->isSame(2);
+     * that(last_key([], 999))->isSame(999);
      * ```
      *
      * @param iterable $array 対象配列
@@ -213,7 +236,7 @@ if (!isset($excluded_functions["last_key"]) && (!function_exists("ryunosuke\\chm
             return $default;
         }
         /** @noinspection PhpUnusedLocalVariableInspection */
-        list($k, $v) = last_keyvalue($array);
+        [$k, $v] = last_keyvalue($array);
         return $k;
     }
 }
@@ -229,8 +252,8 @@ if (!isset($excluded_functions["last_keyvalue"]) && (!function_exists("ryunosuke
      *
      * Example:
      * ```php
-     * assertSame(last_keyvalue(['a', 'b', 'c']), [2, 'c']);
-     * assertSame(last_keyvalue([], 999), 999);
+     * that(last_keyvalue(['a', 'b', 'c']))->isSame([2, 'c']);
+     * that(last_keyvalue([], 999))->isSame(999);
      * ```
      *
      * @param iterable $array 対象配列
@@ -278,17 +301,17 @@ if (!isset($excluded_functions["array_sprintf"]) && (!function_exists("ryunosuke
      * ```php
      * $array = ['key1' => 'val1', 'key2' => 'val2'];
      * // key, value を利用した sprintf
-     * assertSame(array_sprintf($array, '%2$s=%1$s'), ['key1=val1', 'key2=val2']);
+     * that(array_sprintf($array, '%2$s=%1$s'))->isSame(['key1=val1', 'key2=val2']);
      * // 第3引数を与えるとさらに implode される
-     * assertSame(array_sprintf($array, '%2$s=%1$s', ' '), 'key1=val1 key2=val2');
+     * that(array_sprintf($array, '%2$s=%1$s', ' '))->isSame('key1=val1 key2=val2');
      * // クロージャを与えるとコールバック動作になる
      * $closure = function($v, $k){return "$k=" . strtoupper($v);};
-     * assertSame(array_sprintf($array, $closure, ' '), 'key1=VAL1 key2=VAL2');
+     * that(array_sprintf($array, $closure, ' '))->isSame('key1=VAL1 key2=VAL2');
      * // 省略すると vsprintf になる
-     * assertSame(array_sprintf([
+     * that(array_sprintf([
      *     'str:%s,int:%d' => ['sss', '3.14'],
      *     'single:%s'     => 'str',
-     * ], null, '|'), 'str:sss,int:3|single:str');
+     * ], null, '|'))->isSame('str:sss,int:3|single:str');
      * ```
      *
      * @param iterable $array 対象配列
@@ -341,19 +364,19 @@ if (!isset($excluded_functions["array_get"]) && (!function_exists("ryunosuke\\ch
      * Example:
      * ```php
      * // 単純取得
-     * assertSame(array_get(['a', 'b', 'c'], 1), 'b');
+     * that(array_get(['a', 'b', 'c'], 1))->isSame('b');
      * // 単純デフォルト
-     * assertSame(array_get(['a', 'b', 'c'], 9, 999), 999);
+     * that(array_get(['a', 'b', 'c'], 9, 999))->isSame(999);
      * // 配列取得
-     * assertSame(array_get(['a', 'b', 'c'], [0, 2]), [0 => 'a', 2 => 'c']);
+     * that(array_get(['a', 'b', 'c'], [0, 2]))->isSame([0 => 'a', 2 => 'c']);
      * // 配列部分取得
-     * assertSame(array_get(['a', 'b', 'c'], [0, 9]), [0 => 'a']);
+     * that(array_get(['a', 'b', 'c'], [0, 9]))->isSame([0 => 'a']);
      * // 配列デフォルト（null ではなく [] を返す）
-     * assertSame(array_get(['a', 'b', 'c'], [9]), []);
+     * that(array_get(['a', 'b', 'c'], [9]))->isSame([]);
      * // クロージャ指定＆単値（コールバックが true を返す最初の要素）
-     * assertSame(array_get(['a', 'b', 'c'], function($v){return in_array($v, ['b', 'c']);}), 'b');
+     * that(array_get(['a', 'b', 'c'], function($v){return in_array($v, ['b', 'c']);}))->isSame('b');
      * // クロージャ指定＆配列（コールバックが true を返すもの）
-     * assertSame(array_get(['a', 'b', 'c'], function($v){return in_array($v, ['b', 'c']);}, []), [1 => 'b', 2 => 'c']);
+     * that(array_get(['a', 'b', 'c'], function($v){return in_array($v, ['b', 'c']);}, []))->isSame([1 => 'b', 2 => 'c']);
      * ```
      *
      * @param array $array 配列
@@ -426,24 +449,24 @@ if (!isset($excluded_functions["array_unset"]) && (!function_exists("ryunosuke\\
      * ```php
      * $array = ['a' => 'A', 'b' => 'B'];
      * // ない場合は $default を返す
-     * assertSame(array_unset($array, 'x', 'X'), 'X');
+     * that(array_unset($array, 'x', 'X'))->isSame('X');
      * // 指定したキーを返す。そのキーは伏せられている
-     * assertSame(array_unset($array, 'a'), 'A');
-     * assertSame($array, ['b' => 'B']);
+     * that(array_unset($array, 'a'))->isSame('A');
+     * that($array)->isSame(['b' => 'B']);
      *
      * $array = ['a' => 'A', 'b' => 'B', 'c' => 'C'];
      * // 配列を与えるとそれらを返す。そのキーは全て伏せられている
-     * assertSame(array_unset($array, ['a', 'b', 'x']), ['A', 'B']);
-     * assertSame($array, ['c' => 'C']);
+     * that(array_unset($array, ['a', 'b', 'x']))->isSame(['A', 'B']);
+     * that($array)->isSame(['c' => 'C']);
      *
      * $array = ['a' => 'A', 'b' => 'B', 'c' => 'C'];
      * // 配列のキーは返されるキーを表す。順番も維持される
-     * assertSame(array_unset($array, ['x2' => 'b', 'x1' => 'a']), ['x2' => 'B', 'x1' => 'A']);
+     * that(array_unset($array, ['x2' => 'b', 'x1' => 'a']))->isSame(['x2' => 'B', 'x1' => 'A']);
      *
      * $array = ['hoge' => 'HOGE', 'fuga' => 'FUGA', 'piyo' => 'PIYO'];
      * // 値に "G" を含むものを返す。その要素は伏せられている
-     * assertSame(array_unset($array, function($v){return strpos($v, 'G') !== false;}), ['hoge' => 'HOGE', 'fuga' => 'FUGA']);
-     * assertSame($array, ['piyo' => 'PIYO']);
+     * that(array_unset($array, function($v){return strpos($v, 'G') !== false;}))->isSame(['hoge' => 'HOGE', 'fuga' => 'FUGA']);
+     * that($array)->isSame(['piyo' => 'PIYO']);
      * ```
      *
      * @param array $array 配列
@@ -512,10 +535,10 @@ if (!isset($excluded_functions["array_dive"]) && (!function_exists("ryunosuke\\c
      *         ]
      *     ]
      * ];
-     * assertSame(array_dive($array, 'a.b.c'), 'vvv');
-     * assertSame(array_dive($array, 'a.b.x', 9), 9);
+     * that(array_dive($array, 'a.b.c'))->isSame('vvv');
+     * that(array_dive($array, 'a.b.x', 9))->isSame(9);
      * // 配列を与えても良い。その場合 $delimiter 引数は意味をなさない
-     * assertSame(array_dive($array, ['a', 'b', 'c']), 'vvv');
+     * that(array_dive($array, ['a', 'b', 'c']))->isSame('vvv');
      * ```
      *
      * @param array $array 調べる配列
@@ -556,11 +579,11 @@ if (!isset($excluded_functions["array_keys_exist"]) && (!function_exists("ryunos
      * Example:
      * ```php
      * // すべて含むので true
-     * assertTrue(array_keys_exist(['a', 'b', 'c'], ['a' => 'A', 'b' => 'B', 'c' => 'C']));
+     * that(array_keys_exist(['a', 'b', 'c'], ['a' => 'A', 'b' => 'B', 'c' => 'C']))->isTrue();
      * // N は含まないので false
-     * assertFalse(array_keys_exist(['a', 'b', 'N'], ['a' => 'A', 'b' => 'B', 'c' => 'C']));
+     * that(array_keys_exist(['a', 'b', 'N'], ['a' => 'A', 'b' => 'B', 'c' => 'C']))->isFalse();
      * // 配列を与えると潜る（日本語で言えば「a というキーと、x というキーとその中に x1, x2 というキーがあるか？」）
-     * assertTrue(array_keys_exist(['a', 'x' => ['x1', 'x2']], ['a' => 'A', 'x' => ['x1' => 'X1', 'x2' => 'X2']]));
+     * that(array_keys_exist(['a', 'x' => ['x1', 'x2']], ['a' => 'A', 'x' => ['x1' => 'X1', 'x2' => 'X2']]))->isTrue();
      * ```
      *
      * @param array|string $keys 調べるキー
@@ -611,8 +634,8 @@ if (!isset($excluded_functions["array_map_key"]) && (!function_exists("ryunosuke
      *
      * Example:
      * ```php
-     * assertSame(array_map_key(['a' => 'A', 'b' => 'B'], 'strtoupper'), ['A' => 'A', 'B' => 'B']);
-     * assertSame(array_map_key(['a' => 'A', 'b' => 'B'], function(){}), []);
+     * that(array_map_key(['a' => 'A', 'b' => 'B'], 'strtoupper'))->isSame(['A' => 'A', 'B' => 'B']);
+     * that(array_map_key(['a' => 'A', 'b' => 'B'], function(){}))->isSame([]);
      * ```
      *
      * @param iterable $array 対象配列
@@ -650,11 +673,11 @@ if (!isset($excluded_functions["array_map_method"]) && (!function_exists("ryunos
      * $exb = new \Exception('b');
      * $std = new \stdClass();
      * // getMessage で map される
-     * assertSame(array_map_method([$exa, $exb], 'getMessage'), ['a', 'b']);
+     * that(array_map_method([$exa, $exb], 'getMessage'))->isSame(['a', 'b']);
      * // getMessage で map されるが、メソッドが存在しない場合は取り除かれる
-     * assertSame(array_map_method([$exa, $exb, $std, null], 'getMessage', [], true), ['a', 'b']);
+     * that(array_map_method([$exa, $exb, $std, null], 'getMessage', [], true))->isSame(['a', 'b']);
      * // getMessage で map されるが、メソッドが存在しない場合はそのまま返す
-     * assertSame(array_map_method([$exa, $exb, $std, null], 'getMessage', [], null), ['a', 'b', $std, null]);
+     * that(array_map_method([$exa, $exb, $std, null], 'getMessage', [], null))->isSame(['a', 'b', $std, null]);
      * ```
      *
      * @param iterable $array 対象配列
@@ -707,9 +730,9 @@ if (!isset($excluded_functions["array_each"]) && (!function_exists("ryunosuke\\c
      * Example:
      * ```php
      * // 全要素を文字列的に足し合わせる
-     * assertSame(array_each([1, 2, 3, 4, 5], function(&$carry, $v){$carry .= $v;}, ''), '12345');
+     * that(array_each([1, 2, 3, 4, 5], function(&$carry, $v){$carry .= $v;}, ''))->isSame('12345');
      * // 値をキーにして要素を2乗値にする
-     * assertSame(array_each([1, 2, 3, 4, 5], function(&$carry, $v){$carry[$v] = $v * $v;}, []), [
+     * that(array_each([1, 2, 3, 4, 5], function(&$carry, $v){$carry[$v] = $v * $v;}, []))->isSame([
      *     1 => 1,
      *     2 => 4,
      *     3 => 9,
@@ -717,21 +740,19 @@ if (!isset($excluded_functions["array_each"]) && (!function_exists("ryunosuke\\c
      *     5 => 25,
      * ]);
      * // 上記と同じ。ただし、3 で break する
-     * assertSame(array_each([1, 2, 3, 4, 5], function(&$carry, $v, $k){
+     * that(array_each([1, 2, 3, 4, 5], function(&$carry, $v, $k){
      *     if ($k === 3) return false;
      *     $carry[$v] = $v * $v;
-     * }, []), [
+     * }, []))->isSame([
      *     1 => 1,
      *     2 => 4,
      *     3 => 9,
      * ]);
      *
      * // 下記は完全に同じ（第3引数の代わりにデフォルト引数を使っている）
-     * assertSame(
-     *     array_each([1, 2, 3], function(&$carry = [], $v) {
+     * that(array_each([1, 2, 3], function(&$carry = [], $v) {
      *         $carry[$v] = $v * $v;
-     *     }),
-     *     array_each([1, 2, 3], function(&$carry, $v) {
+     *     }))->isSame(array_each([1, 2, 3], function(&$carry, $v) {
      *         $carry[$v] = $v * $v;
      *     }, [])
      *     // 個人的に↑のようなぶら下がり引数があまり好きではない（クロージャを最後の引数にしたい）
@@ -780,9 +801,9 @@ if (!isset($excluded_functions["array_depth"]) && (!function_exists("ryunosuke\\
      *
      * Example:
      * ```php
-     * assertSame(array_depth([]), 1);
-     * assertSame(array_depth(['hoge']), 1);
-     * assertSame(array_depth([['nest1' => ['nest2']]]), 3);
+     * that(array_depth([]))->isSame(1);
+     * that(array_depth(['hoge']))->isSame(1);
+     * that(array_depth([['nest1' => ['nest2']]]))->isSame(3);
      * ```
      *
      * @param array $array 調べる配列
@@ -826,12 +847,12 @@ if (!isset($excluded_functions["array_all"]) && (!function_exists("ryunosuke\\ch
      *
      * Example:
      * ```php
-     * assertTrue(array_all([true, true]));
-     * assertFalse(array_all([true, false]));
-     * assertFalse(array_all([false, false]));
+     * that(array_all([true, true]))->isTrue();
+     * that(array_all([true, false]))->isFalse();
+     * that(array_all([false, false]))->isFalse();
      * ```
      *
-     * @param iterable 対象配列
+     * @param iterable $array 対象配列
      * @param callable $callback 評価クロージャ。 null なら値そのもので評価
      * @param bool|mixed $default 空配列の場合のデフォルト値
      * @return bool 全要素が true なら true
@@ -870,10 +891,10 @@ if (!isset($excluded_functions["array_lookup"]) && (!function_exists("ryunosuke\
      *     13 => ['id' => 3, 'name' => 'name3'],
      * ];
      * // 第3引数を渡せば array_column と全く同じ
-     * assertSame(array_lookup($array, 'name', 'id'), array_column($array, 'name', 'id'));
-     * assertSame(array_lookup($array, 'name', null), array_column($array, 'name', null));
+     * that(array_lookup($array, 'name', 'id'))->isSame(array_column($array, 'name', 'id'));
+     * that(array_lookup($array, 'name', null))->isSame(array_column($array, 'name', null));
      * // 省略すればキーが保存される
-     * assertSame(array_lookup($array, 'name'), [
+     * that(array_lookup($array, 'name'))->isSame([
      *     11 => 'name1',
      *     12 => 'name2',
      *     13 => 'name3',
@@ -904,7 +925,7 @@ if (!isset($excluded_functions["class_shorten"]) && (!function_exists("ryunosuke
      *
      * Example:
      * ```php
-     * assertSame(class_shorten('vendor\\namespace\\ClassName'), 'ClassName');
+     * that(class_shorten('vendor\\namespace\\ClassName'))->isSame('ClassName');
      * ```
      *
      * @param string|object $class 対象クラス・オブジェクト
@@ -940,7 +961,7 @@ if (!isset($excluded_functions["get_class_constants"]) && (!function_exists("ryu
      *     public    const C_PUBLIC    = 'public';
      * };
      * // 普通に全定数を返す
-     * assertSame(get_class_constants($class), [
+     * that(get_class_constants($class))->isSame([
      *     'C_PRIVATE'      => 'private',
      *     'C_PROTECTED'    => 'protected',
      *     'C_PUBLIC'       => 'public',
@@ -948,13 +969,13 @@ if (!isset($excluded_functions["get_class_constants"]) && (!function_exists("ryu
      *     'ARRAY_AS_PROPS' => \ArrayObject::ARRAY_AS_PROPS,
      * ]);
      * // public のみを返す
-     * assertSame(get_class_constants($class, IS_PUBLIC), [
+     * that(get_class_constants($class, IS_PUBLIC))->isSame([
      *     'C_PUBLIC'       => 'public',
      *     'STD_PROP_LIST'  => \ArrayObject::STD_PROP_LIST,
      *     'ARRAY_AS_PROPS' => \ArrayObject::ARRAY_AS_PROPS,
      * ]);
      * // 自身定義でかつ public のみを返す
-     * assertSame(get_class_constants($class, IS_OWNSELF | IS_PUBLIC), [
+     * that(get_class_constants($class, IS_OWNSELF | IS_PUBLIC))->isSame([
      *     'C_PUBLIC'       => 'public',
      * ]);
      * ```
@@ -1003,11 +1024,11 @@ if (!isset($excluded_functions["get_object_properties"]) && (!function_exists("r
      * // var_dump((array) $object);
      *
      * // この関数を使えば不可視プロパティも取得できる
-     * assertArraySubset([
+     * that(get_object_properties($object))->arraySubset([
      *     'message' => 'something',
      *     'code'    => 42,
      *     'oreore'  => 'oreore',
-     * ], get_object_properties($object));
+     * ]);
      * ```
      *
      * @param object $object オブジェクト
@@ -1015,6 +1036,10 @@ if (!isset($excluded_functions["get_object_properties"]) && (!function_exists("r
      */
     function get_object_properties($object)
     {
+        if (function_exists('get_mangled_object_vars')) {
+            get_mangled_object_vars($object); // @codeCoverageIgnore
+        }
+
         static $refs = [];
         $class = get_class($object);
         if (!isset($refs[$class])) {
@@ -1060,10 +1085,10 @@ if (!isset($excluded_functions["dirmtime"]) && (!function_exists("ryunosuke\\chm
      * mkdir($dirname);
      *
      * // この時点では現在日時（単純に自身の更新日時）
-     * assertSame(dirmtime($dirname), time());
+     * that(dirmtime($dirname))->isBetween(time() - 2, time());
      * // ファイルを作って更新するとその時刻
      * touch("$dirname/tmp", time() + 10);
-     * assertSame(dirmtime($dirname), time() + 10);
+     * that(dirmtime($dirname))->isSame(time() + 10);
      * ```
      *
      * @param string $dirname ディレクトリ名
@@ -1152,7 +1177,8 @@ if (!isset($excluded_functions["delegate"]) && (!function_exists("ryunosuke\\chm
                 return function (...$_) use ($invoker, $callable) { return $invoker($callable, func_get_args()); };
             default:
                 $args = implode(',', array_map(function ($v) { return '$_' . $v; }, array_keys(array_fill(1, $arity, null))));
-                return eval('return function (' . $args . ') use ($invoker, $callable) { return $invoker($callable, func_get_args()); };');
+                $stmt = 'return function (' . $args . ') use ($invoker, $callable) { return $invoker($callable, func_get_args()); };';
+                return eval($stmt);
         }
     }
 }
@@ -1166,8 +1192,8 @@ if (!isset($excluded_functions["reflect_callable"]) && (!function_exists("ryunos
      *
      * Example:
      * ```php
-     * assertInstanceof(\ReflectionFunction::class, reflect_callable('sprintf'));
-     * assertInstanceof(\ReflectionMethod::class, reflect_callable('\Closure::bind'));
+     * that(reflect_callable('sprintf'))->isInstanceOf(\ReflectionFunction::class);
+     * that(reflect_callable('\Closure::bind'))->isInstanceOf(\ReflectionMethod::class);
      * ```
      *
      * @param callable $callable 対象 callable
@@ -1184,10 +1210,10 @@ if (!isset($excluded_functions["reflect_callable"]) && (!function_exists("ryunos
             return new \ReflectionFunction($callable);
         }
         else {
-            list($class, $method) = explode('::', $call_name, 2);
+            [$class, $method] = explode('::', $call_name, 2);
             // for タイプ 5: 相対指定による静的クラスメソッドのコール (PHP 5.3.0 以降)
             if (strpos($method, 'parent::') === 0) {
-                list(, $method) = explode('::', $method);
+                [, $method] = explode('::', $method);
                 return (new \ReflectionClass($class))->getParentClass()->getMethod($method);
             }
             return new \ReflectionMethod($class, $method);
@@ -1207,13 +1233,13 @@ if (!isset($excluded_functions["callable_code"]) && (!function_exists("ryunosuke
      * Example:
      * ```php
      * list($meta, $body) = callable_code(function(...$args){return true;});
-     * assertSame($meta, 'function(...$args)');
-     * assertSame($body, '{return true;}');
+     * that($meta)->isSame('function(...$args)');
+     * that($body)->isSame('{return true;}');
      *
      * // ReflectionFunctionAbstract を渡しても動作する
      * list($meta, $body) = callable_code(new \ReflectionFunction(function(...$args){return true;}));
-     * assertSame($meta, 'function(...$args)');
-     * assertSame($body, '{return true;}');
+     * that($meta)->isSame('function(...$args)');
+     * that($body)->isSame('{return true;}');
      * ```
      *
      * @param callable|\ReflectionFunctionAbstract $callable コードを取得する callable
@@ -1257,9 +1283,9 @@ if (!isset($excluded_functions["parameter_length"]) && (!function_exists("ryunos
      * Example:
      * ```php
      * // trim の引数は2つ
-     * assertSame(parameter_length('trim'), 2);
+     * that(parameter_length('trim'))->isSame(2);
      * // trim の必須引数は1つ
-     * assertSame(parameter_length('trim', true), 1);
+     * that(parameter_length('trim', true))->isSame(1);
      * ```
      *
      * @param callable $callable 対象 callable
@@ -1318,7 +1344,7 @@ if (!isset($excluded_functions["func_user_func_array"]) && (!function_exists("ry
      * ```php
      * // strlen に2つの引数を渡してもエラーにならない
      * $strlen = func_user_func_array('strlen');
-     * assertSame($strlen('abc', null), 3);
+     * that($strlen('abc', null))->isSame(3);
      * ```
      *
      * @param callable $callback 呼び出すクロージャ
@@ -1363,8 +1389,8 @@ if (!isset($excluded_functions["concat"]) && (!function_exists("ryunosuke\\chmon
      * 可変引数なので 端的に言えば mysql の CONCAT みたいな動作になる（あっちは NULL だが）。
      *
      * ```php
-     * assertSame(concat('prefix-', 'middle', '-suffix'), 'prefix-middle-suffix');
-     * assertSame(concat('prefix-', '', '-suffix'), '');
+     * that(concat('prefix-', 'middle', '-suffix'))->isSame('prefix-middle-suffix');
+     * that(concat('prefix-', '', '-suffix'))->isSame('');
      * ```
      *
      * @param mixed $variadic 結合する文字列（可変引数）
@@ -1397,7 +1423,7 @@ if (!isset($excluded_functions["quoteexplode"]) && (!function_exists("ryunosuke\
      * Example:
      * ```php
      * // シンプルな例
-     * assertSame(quoteexplode(',', 'a,b,c\\,d,"e,f"'), [
+     * that(quoteexplode(',', 'a,b,c\\,d,"e,f"'))->isSame([
      *     'a', // 普通に分割される
      *     'b', // 普通に分割される
      *     'c\\,d', // \\ でエスケープしているので区切り文字とみなされない
@@ -1405,14 +1431,14 @@ if (!isset($excluded_functions["quoteexplode"]) && (!function_exists("ryunosuke\
      * ]);
      *
      * // $enclosures で囲い文字の開始・終了文字を明示できる
-     * assertSame(quoteexplode(',', 'a,b,{e,f}', ['{' => '}']), [
+     * that(quoteexplode(',', 'a,b,{e,f}', ['{' => '}']))->isSame([
      *     'a', // 普通に分割される
      *     'b', // 普通に分割される
      *     '{e,f}', // { } で囲まれているので区切り文字とみなされない
      * ]);
      *
      * // このように第3引数に $limit 引数を差し込むことができる
-     * assertSame(quoteexplode(',', 'a,b,{e,f}', 2, ['{' => '}']), [
+     * that(quoteexplode(',', 'a,b,{e,f}', 2, ['{' => '}']))->isSame([
      *     'a',
      *     'b,{e,f}',
      * ]);
@@ -1441,41 +1467,23 @@ if (!isset($excluded_functions["quoteexplode"]) && (!function_exists("ryunosuke\
         }
         $limit = max(1, $limit);
 
-        if (is_string($enclosures)) {
-            $chars = str_split($enclosures);
-            $enclosures = array_combine($chars, $chars);
-        }
-
         $delimiters = arrayize($delimiter);
-        $starts = implode('', array_keys($enclosures));
-        $ends = implode('', $enclosures);
-        $enclosing = [];
         $current = 0;
         $result = [];
         for ($i = 0, $l = strlen($string); $i < $l; $i++) {
-            if ($i !== 0 && $string[$i - 1] === $escape) {
-                continue;
+            if (count($result) === $limit - 1) {
+                break;
             }
-            if (strpos($ends, $string[$i]) !== false) {
-                if ($enclosing && $enclosures[$enclosing[count($enclosing) - 1]] === $string[$i]) {
-                    array_pop($enclosing);
-                    continue;
-                }
+            $i = strpos_quoted($string, $delimiters, $i, $enclosures, $escape);
+            if ($i === false) {
+                break;
             }
-            if (strpos($starts, $string[$i]) !== false) {
-                $enclosing[] = $string[$i];
-                continue;
-            }
-            if (empty($enclosing)) {
-                foreach ($delimiters as $delimiter) {
-                    $delimiterlen = strlen($delimiter);
-                    if (substr_compare($string, $delimiter, $i, $delimiterlen) === 0) {
-                        $result[] = substr($string, $current, $i - $current);
-                        $current = $i + $delimiterlen;
-                        break;
-                    }
-                }
-                if (count($result) === $limit - 1) {
+            foreach ($delimiters as $delimiter) {
+                $delimiterlen = strlen($delimiter);
+                if (substr_compare($string, $delimiter, $i, $delimiterlen) === 0) {
+                    $result[] = substr($string, $current, $i - $current);
+                    $current = $i + $delimiterlen;
+                    $i += $delimiterlen - 1;
                     break;
                 }
             }
@@ -1488,16 +1496,89 @@ if (function_exists("ryunosuke\\chmonos\\quoteexplode") && !defined("ryunosuke\\
     define("ryunosuke\\chmonos\\quoteexplode", "ryunosuke\\chmonos\\quoteexplode");
 }
 
+if (!isset($excluded_functions["strpos_quoted"]) && (!function_exists("ryunosuke\\chmonos\\strpos_quoted") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\strpos_quoted"))->isInternal()))) {
+    /**
+     * クオートを考慮して strpos する
+     *
+     * Example:
+     * ```php
+     * // クオート中は除外される
+     * that(strpos_quoted('hello "this" is world', 'is'))->isSame(13);
+     * // 開始位置やクオート文字は指定できる（5文字目以降の \* に囲まれていない hoge の位置を返す）
+     * that(strpos_quoted('1:hoge, 2:*hoge*, 3:hoge', 'hoge', 5, '*'))->isSame(20);
+     * ```
+     *
+     * @param string $haystack 対象文字列
+     * @param string|iterable $needle 位置を取得したい文字列
+     * @param int $offset 開始位置
+     * @param string|array $enclosure 囲い文字。この文字中にいる $from, $to 文字は走査外になる
+     * @param string $escape エスケープ文字。この文字が前にある $from, $to 文字は走査外になる
+     * @return false|int $needle の位置
+     */
+    function strpos_quoted($haystack, $needle, $offset = 0, $enclosure = "'\"", $escape = '\\')
+    {
+        if (is_string($enclosure) || is_null($enclosure)) {
+            if (strlen($enclosure)) {
+                $chars = str_split($enclosure);
+                $enclosure = array_combine($chars, $chars);
+            }
+            else {
+                $enclosure = [];
+            }
+        }
+        $needles = arrayval($needle);
+
+        $strlen = strlen($haystack);
+
+        if ($offset < 0) {
+            $offset += $strlen;
+        }
+
+        $enclosing = [];
+        for ($i = $offset; $i < $strlen; $i++) {
+            if ($i !== 0 && $haystack[$i - 1] === $escape) {
+                continue;
+            }
+            foreach ($enclosure as $start => $end) {
+                if (substr_compare($haystack, $end, $i, strlen($end)) === 0) {
+                    if ($enclosing && $enclosing[count($enclosing) - 1] === $end) {
+                        array_pop($enclosing);
+                        $i += strlen($end) - 1;
+                        continue 2;
+                    }
+                }
+                if (substr_compare($haystack, $start, $i, strlen($start)) === 0) {
+                    $enclosing[] = $end;
+                    $i += strlen($start) - 1;
+                    continue 2;
+                }
+            }
+
+            if (empty($enclosing)) {
+                foreach ($needles as $needle) {
+                    if (substr_compare($haystack, $needle, $i, strlen($needle)) === 0) {
+                        return $i;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+}
+if (function_exists("ryunosuke\\chmonos\\strpos_quoted") && !defined("ryunosuke\\chmonos\\strpos_quoted")) {
+    define("ryunosuke\\chmonos\\strpos_quoted", "ryunosuke\\chmonos\\strpos_quoted");
+}
+
 if (!isset($excluded_functions["str_contains"]) && (!function_exists("ryunosuke\\chmonos\\str_contains") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\str_contains"))->isInternal()))) {
     /**
      * 指定文字列を含むか返す
      *
      * Example:
      * ```php
-     * assertTrue(str_contains('abc', 'b'));
-     * assertTrue(str_contains('abc', 'B', true));
-     * assertTrue(str_contains('abc', ['b', 'x'], false, false));
-     * assertFalse(str_contains('abc', ['b', 'x'], false, true));
+     * that(str_contains('abc', 'b'))->isTrue();
+     * that(str_contains('abc', 'B', true))->isTrue();
+     * that(str_contains('abc', ['b', 'x'], false, false))->isTrue();
+     * that(str_contains('abc', ['b', 'x'], false, true))->isFalse();
      * ```
      *
      * @param string $haystack 対象文字列
@@ -1565,7 +1646,7 @@ if (!isset($excluded_functions["paml_import"]) && (!function_exists("ryunosuke\\
      * Example:
      * ```php
      * // こういったスカラー型はほとんど yaml と一緒だが、コロンの後のスペースは不要（あってもよい）
-     * assertSame(paml_import('n:null, f:false, i:123, d:3.14, s:"this is string"'), [
+     * that(paml_import('n:null, f:false, i:123, d:3.14, s:"this is string"'))->isSame([
      *     'n' => null,
      *     'f' => false,
      *     'i' => 123,
@@ -1573,7 +1654,7 @@ if (!isset($excluded_functions["paml_import"]) && (!function_exists("ryunosuke\\
      *     's' => 'this is string',
      * ]);
      * // 配列が使える（キーは連番なら不要）。ネストも可能
-     * assertSame(paml_import('a:[1,2,x:X,3], nest:[a:[b:[c:[X]]]]'), [
+     * that(paml_import('a:[1,2,x:X,3], nest:[a:[b:[c:[X]]]]'))->isSame([
      *     'a'    => [1, 2, 'x' => 'X', 3],
      *     'nest' => [
      *         'a' => [
@@ -1584,7 +1665,7 @@ if (!isset($excluded_functions["paml_import"]) && (!function_exists("ryunosuke\\
      *     ],
      * ]);
      * // bare 文字列で定数が使える
-     * assertSame(paml_import('pv:PHP_VERSION, ao:ArrayObject::STD_PROP_LIST'), [
+     * that(paml_import('pv:PHP_VERSION, ao:ArrayObject::STD_PROP_LIST'))->isSame([
      *     'pv' => \PHP_VERSION,
      *     'ao' => \ArrayObject::STD_PROP_LIST,
      * ]);
@@ -1618,7 +1699,7 @@ if (!isset($excluded_functions["paml_import"]) && (!function_exists("ryunosuke\\
             $key = null;
             $kv = array_map('trim', quoteexplode(':', $value, 2, $escapers));
             if (count($kv) === 2) {
-                list($key, $value) = $kv;
+                [$key, $value] = $kv;
             }
 
             $prefix = $value[0] ?? null;
@@ -1669,7 +1750,7 @@ if (!isset($excluded_functions["mb_trim"]) && (!function_exists("ryunosuke\\chmo
      *
      * Example:
      * ```php
-     * assertSame(mb_trim(' 　 あああ　 　'), 'あああ');
+     * that(mb_trim(' 　 あああ　 　'))->isSame('あああ');
      * ```
      *
      * @param string $string 対象文字列
@@ -1705,7 +1786,7 @@ if (!isset($excluded_functions["evaluate"]) && (!function_exists("ryunosuke\\chm
      * $c = $a + $b;
      * return $c * 3;
      * ';
-     * assertSame(evaluate($phpcode, get_defined_vars()), 9);
+     * that(evaluate($phpcode, get_defined_vars()))->isSame(9);
      * ```
      *
      * @param string $phpcode 実行する php コード
@@ -1777,14 +1858,14 @@ if (!isset($excluded_functions["parse_php"]) && (!function_exists("ryunosuke\\ch
      *     'begin' => T_NAMESPACE,
      *     'end'   => ';',
      * ]);
-     * assertSame(implode('', array_column($part, 1)), 'namespace Hogera;');
+     * that(implode('', array_column($part, 1)))->isSame('namespace Hogera;');
      *
      * // class ～ { を取得
      * $part = parse_php($phpcode, [
      *     'begin' => T_CLASS,
      *     'end'   => '{',
      * ]);
-     * assertSame(implode('', array_column($part, 1)), "class Example\n{");
+     * that(implode('', array_column($part, 1)))->isSame("class Example\n{");
      * ```
      *
      * @param string $phpcode パースする php コード
@@ -1850,7 +1931,7 @@ if (!isset($excluded_functions["parse_php"]) && (!function_exists("ryunosuke\\ch
                 continue;
             }
 
-            $result[] = $token;
+            $result[$i] = $token;
 
             foreach ($end_tokens as $t) {
                 if (isset($nest_tokens[$t])) {
@@ -1883,7 +1964,7 @@ if (!isset($excluded_functions["blank_if"]) && (!function_exists("ryunosuke\\chm
      * 言ってしまえば「falsy な値を null に変換する」とも言える。
      *
      * ここでいう falsy とは php 標準の `empty` ではなく本ライブラリの `is_empty` であることに留意（"0" は空ではない）。
-     * さらに利便性のため 0 も空ではない判定をする（strpos や array_search などで「0 は意味のある値」という事が多いので）。
+     * さらに利便性のため 0, 0.0 も空ではない判定をする（strpos や array_search などで「0 は意味のある値」という事が多いので）。
      * 乱暴に言えば「仮に文字列化したとき、情報量がゼロ」が falsy になる。
      *
      * - 「 `$var ?: 'default'` で十分なんだけど "0" が…」
@@ -1897,56 +1978,56 @@ if (!isset($excluded_functions["blank_if"]) && (!function_exists("ryunosuke\\chm
      * Example:
      * ```php
      * // falsy な値は null を返すので null 合体演算子でデフォルト値が得られる
-     * assertSame(blank_if(null) ?? 'default', 'default');
-     * assertSame(blank_if('')   ?? 'default', 'default');
+     * that(blank_if(null) ?? 'default')->isSame('default');
+     * that(blank_if('')   ?? 'default')->isSame('default');
      * // falsy じゃない値の場合は引数をそのまま返すので null 合体演算子には反応しない
-     * assertSame(blank_if(0)   ?? 'default', 0);   // 0 は空ではない
-     * assertSame(blank_if('0') ?? 'default', '0'); // "0" は空ではない
-     * assertSame(blank_if(1)   ?? 'default', 1);
-     * assertSame(blank_if('X') ?? 'default', 'X');
+     * that(blank_if(0)   ?? 'default')->isSame(0);   // 0 は空ではない
+     * that(blank_if('0') ?? 'default')->isSame('0'); // "0" は空ではない
+     * that(blank_if(1)   ?? 'default')->isSame(1);
+     * that(blank_if('X') ?? 'default')->isSame('X');
      * // 第2引数で返る値を指定できるので下記も等価となる。ただし、php の仕様上第2引数が必ず評価されるため、関数呼び出しなどだと無駄な処理となる
-     * assertSame(blank_if(null, 'default'), 'default');
-     * assertSame(blank_if('',   'default'), 'default');
-     * assertSame(blank_if(0,    'default'), 0);
-     * assertSame(blank_if('0',  'default'), '0');
-     * assertSame(blank_if(1,    'default'), 1);
-     * assertSame(blank_if('X',  'default'), 'X');
+     * that(blank_if(null, 'default'))->isSame('default');
+     * that(blank_if('',   'default'))->isSame('default');
+     * that(blank_if(0,    'default'))->isSame(0);
+     * that(blank_if('0',  'default'))->isSame('0');
+     * that(blank_if(1,    'default'))->isSame(1);
+     * that(blank_if('X',  'default'))->isSame('X');
      * // 第2引数の用途は少し短く書けることと演算子の優先順位のつらみの回避程度（`??` は結構優先順位が低い。下記を参照）
-     * assertFalse(0 < blank_if(null) ?? 1);  // (0 < null) ?? 1 となるので false
-     * assertTrue(0 < blank_if(null, 1));     // 0 < 1 となるので true
-     * assertTrue(0 < (blank_if(null) ?? 1)); // ?? で同じことしたいならこのように括弧が必要
+     * that(0 < blank_if(null) ?? 1)->isFalse();  // (0 < null) ?? 1 となるので false
+     * that(0 < blank_if(null, 1))->isTrue();     // 0 < 1 となるので true
+     * that(0 < (blank_if(null) ?? 1))->isTrue(); // ?? で同じことしたいならこのように括弧が必要
      *
      * # ここから下は既存言語機構との比較（愚痴っぽいので読まなくてもよい）
      *
      * // エルビス演算子は "0" にも反応するので正直言って使いづらい（php における falsy の定義は広すぎる）
-     * assertSame(null ?: 'default', 'default');
-     * assertSame(''   ?: 'default', 'default');
-     * assertSame(1    ?: 'default', 1);
-     * assertSame('0'  ?: 'default', 'default'); // こいつが反応してしまう
-     * assertSame('X'  ?: 'default', 'X');
+     * that(null ?: 'default')->isSame('default');
+     * that(''   ?: 'default')->isSame('default');
+     * that(1    ?: 'default')->isSame(1);
+     * that('0'  ?: 'default')->isSame('default'); // こいつが反応してしまう
+     * that('X'  ?: 'default')->isSame('X');
      * // 逆に null 合体演算子は null にしか反応しないので微妙に使い勝手が悪い（php の標準関数が false を返したりするし）
-     * assertSame(null ?? 'default', 'default'); // こいつしか反応しない
-     * assertSame(''   ?? 'default', '');
-     * assertSame(1    ?? 'default', 1);
-     * assertSame('0'  ?? 'default', '0');
-     * assertSame('X'  ?? 'default', 'X');
+     * that(null ?? 'default')->isSame('default'); // こいつしか反応しない
+     * that(''   ?? 'default')->isSame('');
+     * that(1    ?? 'default')->isSame(1);
+     * that('0'  ?? 'default')->isSame('0');
+     * that('X'  ?? 'default')->isSame('X');
      * // 恣意的な例だが、 substr は false も '0' も返し得るので ?: は使えない。 null を返すこともないので ?? も使えない（エラーも吐かない）
-     * assertSame(substr('000', 1, 1) ?: 'default', 'default'); // '0' を返すので 'default' になる
-     * assertSame(substr('xxx', 9, 1) ?: 'default', 'default'); // （文字数が足りなくて）false を返すので 'default' になる
-     * assertSame(substr('000', 1, 1) ?? 'default', '0');   // substr が null を返すことはないので 'default' になることはない
-     * assertSame(substr('xxx', 9, 1) ?? 'default', false); // substr が null を返すことはないので 'default' になることはない
+     * that(substr('000', 1, 1) ?: 'default')->isSame('default'); // '0' を返すので 'default' になる
+     * that(substr('xxx', 9, 1) ?: 'default')->isSame('default'); // （文字数が足りなくて）false を返すので 'default' になる
+     * that(substr('000', 1, 1) ?? 'default')->isSame('0');   // substr が null を返すことはないので 'default' になることはない
+     * that(substr('xxx', 9, 1) ?? 'default')->isSame(false); // substr が null を返すことはないので 'default' になることはない
      * // 要するに単に「false が返ってきた場合に 'default' としたい」だけなんだが、下記のようにめんどくさいことをせざるを得ない
-     * assertSame(substr('xxx', 9, 1) === false ? 'default' : substr('xxx', 9, 1), 'default'); // 3項演算子で2回呼ぶ
-     * assertSame(($tmp = substr('xxx', 9, 1) === false) ? 'default' : $tmp, 'default');       // 一時変数を使用する（あるいは if 文）
+     * that(substr('xxx', 9, 1) === false ? 'default' : substr('xxx', 9, 1))->isSame('default'); // 3項演算子で2回呼ぶ
+     * that(($tmp = substr('xxx', 9, 1) === false) ? 'default' : $tmp)->isSame('default');       // 一時変数を使用する（あるいは if 文）
      * // このように書きたかった
-     * assertSame(blank_if(substr('xxx', 9, 1)) ?? 'default', 'default'); // null 合体演算子版
-     * assertSame(blank_if(substr('xxx', 9, 1), 'default'), 'default');   // 第2引数版
+     * that(blank_if(substr('xxx', 9, 1)) ?? 'default')->isSame('default'); // null 合体演算子版
+     * that(blank_if(substr('xxx', 9, 1), 'default'))->isSame('default');   // 第2引数版
      *
      * // 恣意的な例その2。 0 は空ではないので array_search などにも応用できる（見つからない場合に false を返すので ?? はできないし、 false 相当を返し得るので ?: もできない）
-     * assertSame(array_search('x', ['a', 'b', 'c']) ?? 'default', false);     // 見つからないので 'default' としたいが false になってしまう
-     * assertSame(array_search('a', ['a', 'b', 'c']) ?: 'default', 'default'); // 見つかったのに 0 に反応するので 'default' になってしまう
-     * assertSame(blank_if(array_search('x', ['a', 'b', 'c'])) ?? 'default', 'default'); // このように書きたかった
-     * assertSame(blank_if(array_search('a', ['a', 'b', 'c'])) ?? 'default', 0);         // このように書きたかった
+     * that(array_search('x', ['a', 'b', 'c']) ?? 'default')->isSame(false);     // 見つからないので 'default' としたいが false になってしまう
+     * that(array_search('a', ['a', 'b', 'c']) ?: 'default')->isSame('default'); // 見つかったのに 0 に反応するので 'default' になってしまう
+     * that(blank_if(array_search('x', ['a', 'b', 'c'])) ?? 'default')->isSame('default'); // このように書きたかった
+     * that(blank_if(array_search('a', ['a', 'b', 'c'])) ?? 'default')->isSame(0);         // このように書きたかった
      * ```
      *
      * @param mixed $var 判定する値
@@ -1967,8 +2048,8 @@ if (!isset($excluded_functions["blank_if"]) && (!function_exists("ryunosuke\\chm
             return $var;
         }
 
-        // 0, "0" は false
-        if ($var === 0 || $var === '0') {
+        // 0, 0.0, "0" は false
+        if ($var === 0 || $var === 0.0 || $var === '0') {
             return $var;
         }
 
@@ -2056,11 +2137,11 @@ if (!isset($excluded_functions["cache"]) && (!function_exists("ryunosuke\\chmono
      * // 乱数を返す処理だが、キャッシュされるので同じ値になる
      * $rand1 = cache('rand', $provider);
      * $rand2 = cache('rand', $provider);
-     * assertSame($rand1, $rand2);
+     * that($rand1)->isSame($rand2);
      * // $provider に null を与えると削除される
      * cache('rand', null);
      * $rand3 = cache('rand', $provider);
-     * assertNotSame($rand1, $rand3);
+     * that($rand1)->isNotSame($rand3);
      * ```
      *
      * @param string $key キャッシュのキー
@@ -2071,8 +2152,7 @@ if (!isset($excluded_functions["cache"]) && (!function_exists("ryunosuke\\chmono
     function cache($key, $provider, $namespace = null)
     {
         static $cacheobject;
-        $cacheobject = $cacheobject ?? new class(cachedir())
-            {
+        $cacheobject = $cacheobject ?? new class(cachedir()) {
                 const CACHE_EXT = '.php-cache';
 
                 /** @var string キャッシュディレクトリ */
@@ -2161,6 +2241,9 @@ if (!isset($excluded_functions["cache"]) && (!function_exists("ryunosuke\\chmono
 
         // flush (for test)
         if ($key === null) {
+            if ($provider === null) {
+                $cacheobject->clear();
+            }
             $cacheobject = null;
             return;
         }
@@ -2301,14 +2384,14 @@ if (!isset($excluded_functions["arrayval"]) && (!function_exists("ryunosuke\\chm
      * Example:
      * ```php
      * // キャストなので基本的には配列化される
-     * assertSame(arrayval(123), [123]);
-     * assertSame(arrayval('str'), ['str']);
-     * assertSame(arrayval([123]), [123]); // 配列は配列のまま
+     * that(arrayval(123))->isSame([123]);
+     * that(arrayval('str'))->isSame(['str']);
+     * that(arrayval([123]))->isSame([123]); // 配列は配列のまま
      *
      * // $recursive = false にしない限り再帰的に適用される
      * $stdclass = stdclass(['key' => 'val']);
-     * assertSame(arrayval([$stdclass], true), [['key' => 'val']]); // true なので中身も配列化される
-     * assertSame(arrayval([$stdclass], false), [$stdclass]);       // false なので中身は変わらない
+     * that(arrayval([$stdclass], true))->isSame([['key' => 'val']]); // true なので中身も配列化される
+     * that(arrayval([$stdclass], false))->isSame([$stdclass]);       // false なので中身は変わらない
      * ```
      *
      * @param mixed $var array 化する値
@@ -2352,22 +2435,22 @@ if (!isset($excluded_functions["si_prefix"]) && (!function_exists("ryunosuke\\ch
      * Example:
      * ```php
      * // シンプルに k をつける
-     * assertSame(si_prefix(12345), '12.345 k');
+     * that(si_prefix(12345))->isSame('12.345 k');
      * // シンプルに m をつける
-     * assertSame(si_prefix(0.012345), '12.345 m');
+     * that(si_prefix(0.012345))->isSame('12.345 m');
      * // 書式フォーマットを指定できる
-     * assertSame(si_prefix(12345, 1000, '%d%s'), '12k');
-     * assertSame(si_prefix(0.012345, 1000, '%d%s'), '12m');
+     * that(si_prefix(12345, 1000, '%d%s'))->isSame('12k');
+     * that(si_prefix(0.012345, 1000, '%d%s'))->isSame('12m');
      * // ファイルサイズを byte で表示する
-     * assertSame(si_prefix(12345, 1000, '%d %sbyte'), '12 kbyte');
+     * that(si_prefix(12345, 1000, '%d %sbyte'))->isSame('12 kbyte');
      * // ファイルサイズを byte で表示する（1024）
-     * assertSame(si_prefix(10240, 1024, '%.3f %sbyte'), '10.000 kbyte');
+     * that(si_prefix(10240, 1024, '%.3f %sbyte'))->isSame('10.000 kbyte');
      * // フォーマットに null を与えると sprintf せずに配列で返す
-     * assertSame(si_prefix(12345, 1000, null), [12.345, 'k']);
+     * that(si_prefix(12345, 1000, null))->isSame([12.345, 'k']);
      * // フォーマットにクロージャを与えると実行して返す
-     * assertSame(si_prefix(12345, 1000, function ($v, $u){
+     * that(si_prefix(12345, 1000, function ($v, $u) {
      *     return number_format($v, 2) . $u;
-     * }), '12.35k');
+     * }))->isSame('12.35k');
      * ```
      *
      * @param mixed $var 丸める値
@@ -2377,26 +2460,6 @@ if (!isset($excluded_functions["si_prefix"]) && (!function_exists("ryunosuke\\ch
      */
     function si_prefix($var, $unit = 1000, $format = '%.3f %s')
     {
-        static $units = [
-            -8 => 'y', // ヨクト
-            -7 => 'z', // ゼプト
-            -6 => 'a', // アト
-            -5 => 'f', // フェムト
-            -4 => 'p', // ピコ
-            -3 => 'n', // ナノ
-            -2 => 'µ', // マイクロ
-            -1 => 'm', // ミリ
-            0  => '',  //
-            1  => 'k', // キロ
-            2  => 'M', // メガ
-            3  => 'G', // ギガ
-            4  => 'T', // テラ
-            5  => 'P', // ペタ
-            6  => 'E', // エクサ
-            7  => 'Z', // ゼタ
-            8  => 'Y', // ヨタ
-        ];
-
         assert($unit > 0);
 
         $result = function ($format, $var, $unit) {
@@ -2426,10 +2489,10 @@ if (!isset($excluded_functions["si_prefix"]) && (!function_exists("ryunosuke\\ch
                 $var /= $unit;
             }
         }
-        if (!isset($units[$n])) {
+        if (!isset(SI_UNITS[$n])) {
             throw new \InvalidArgumentException("$original is too large or small ($n).");
         }
-        return $result($format, ($original > 0 ? 1 : -1) * $var, $units[$n]);
+        return $result($format, ($original > 0 ? 1 : -1) * $var, SI_UNITS[$n][0] ?? '');
     }
 }
 if (function_exists("ryunosuke\\chmonos\\si_prefix") && !defined("ryunosuke\\chmonos\\si_prefix")) {
@@ -2460,18 +2523,18 @@ if (!isset($excluded_functions["is_empty"]) && (!function_exists("ryunosuke\\chm
      * Example:
      * ```php
      * // この辺は empty と全く同じ
-     * assertTrue(is_empty(null));
-     * assertTrue(is_empty(false));
-     * assertTrue(is_empty(0));
-     * assertTrue(is_empty(''));
+     * that(is_empty(null))->isTrue();
+     * that(is_empty(false))->isTrue();
+     * that(is_empty(0))->isTrue();
+     * that(is_empty(''))->isTrue();
      * // この辺だけが異なる
-     * assertFalse(is_empty('0'));
+     * that(is_empty('0'))->isFalse();
      * // 第2引数に true を渡すと空の stdClass も empty 判定される
      * $stdclass = new \stdClass();
-     * assertTrue(is_empty($stdclass, true));
+     * that(is_empty($stdclass, true))->isTrue();
      * // フィールドがあれば empty ではない
      * $stdclass->hoge = 123;
-     * assertFalse(is_empty($stdclass, true));
+     * that(is_empty($stdclass, true))->isFalse();
      * ```
      *
      * @param mixed $var 判定する値
@@ -2518,12 +2581,12 @@ if (!isset($excluded_functions["is_primitive"]) && (!function_exists("ryunosuke\
      *
      * Example:
      * ```php
-     * assertTrue(is_primitive(null));
-     * assertTrue(is_primitive(false));
-     * assertTrue(is_primitive(123));
-     * assertTrue(is_primitive(STDIN));
-     * assertFalse(is_primitive(new \stdClass));
-     * assertFalse(is_primitive(['array']));
+     * that(is_primitive(null))->isTrue();
+     * that(is_primitive(false))->isTrue();
+     * that(is_primitive(123))->isTrue();
+     * that(is_primitive(STDIN))->isTrue();
+     * that(is_primitive(new \stdClass))->isFalse();
+     * that(is_primitive(['array']))->isFalse();
      * ```
      *
      * @param mixed $var 調べる値
@@ -2548,14 +2611,14 @@ if (!isset($excluded_functions["is_stringable"]) && (!function_exists("ryunosuke
      * Example:
      * ```php
      * // こいつらは true
-     * assertTrue(is_stringable(null));
-     * assertTrue(is_stringable(true));
-     * assertTrue(is_stringable(3.14));
-     * assertTrue(is_stringable(STDOUT));
-     * assertTrue(is_stringable(new \Exception()));
+     * that(is_stringable(null))->isTrue();
+     * that(is_stringable(true))->isTrue();
+     * that(is_stringable(3.14))->isTrue();
+     * that(is_stringable(STDOUT))->isTrue();
+     * that(is_stringable(new \Exception()))->isTrue();
      * // こいつらは false
-     * assertFalse(is_stringable(new \ArrayObject()));
-     * assertFalse(is_stringable([1, 2, 3]));
+     * that(is_stringable(new \ArrayObject()))->isFalse();
+     * that(is_stringable([1, 2, 3]))->isFalse();
      * ```
      *
      * @param mixed $var 調べる値
@@ -2582,9 +2645,9 @@ if (!isset($excluded_functions["is_arrayable"]) && (!function_exists("ryunosuke\
      *
      * Example:
      * ```php
-     * assertTrue(is_arrayable([]));
-     * assertTrue(is_arrayable(new \ArrayObject()));
-     * assertFalse(is_arrayable(new \stdClass()));
+     * that(is_arrayable([]))->isTrue();
+     * that(is_arrayable(new \ArrayObject()))->isTrue();
+     * that(is_arrayable(new \stdClass()))->isFalse();
      * ```
      *
      * @param array $var 調べる値
@@ -2607,11 +2670,11 @@ if (!isset($excluded_functions["is_countable"]) && (!function_exists("ryunosuke\
      *
      * Example:
      * ```php
-     * assertTrue(is_countable([1, 2, 3]));
-     * assertTrue(is_countable(new \ArrayObject()));
-     * assertFalse(is_countable((function () { yield 1; })()));
-     * assertFalse(is_countable(1));
-     * assertFalse(is_countable(new \stdClass()));
+     * that(is_countable([1, 2, 3]))->isTrue();
+     * that(is_countable(new \ArrayObject()))->isTrue();
+     * that(is_countable((function () { yield 1; })()))->isFalse();
+     * that(is_countable(1))->isFalse();
+     * that(is_countable(new \stdClass()))->isFalse();
      * ```
      *
      * @polyfill
@@ -2645,7 +2708,7 @@ if (!isset($excluded_functions["var_export2"]) && (!function_exists("ryunosuke\\
      * Example:
      * ```php
      * // 単純なエクスポート
-     * assertSame(var_export2(['array' => [1, 2, 3], 'hash' => ['a' => 'A', 'b' => 'B', 'c' => 'C']], true), '[
+     * that(var_export2(['array' => [1, 2, 3], 'hash' => ['a' => 'A', 'b' => 'B', 'c' => 'C']], true))->isSame('[
      *     "array" => [1, 2, 3],
      *     "hash"  => [
      *         "a" => "A",
@@ -2660,7 +2723,7 @@ if (!isset($excluded_functions["var_export2"]) && (!function_exists("ryunosuke\\
      * $robject->a = new \stdClass();
      * $robject->a->b = new \stdClass();
      * $robject->a->b->c = $robject;
-     * assertSame(var_export2(compact('rarray', 'robject'), true), '[
+     * that(var_export2(compact('rarray', 'robject'), true))->isSame('[
      *     "rarray"  => [
      *         "a" => [
      *             "b" => [
@@ -2728,7 +2791,7 @@ if (!isset($excluded_functions["var_export2"]) && (!function_exists("ryunosuke\\
             }
             // 文字列はダブルクオート
             elseif (is_string($value)) {
-                return '"' . addcslashes($value, "\"\0\\") . '"';
+                return '"' . addcslashes($value, "\$\"\0\\") . '"';
             }
             // null は小文字で居て欲しい
             elseif (is_null($value)) {
