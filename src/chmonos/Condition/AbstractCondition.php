@@ -174,13 +174,13 @@ abstract class AbstractCondition
                 }
             }
 
-            /** @noinspection PhpUnusedLocalVariableInspection,PhpDocSignatureInspection */
+            /** @noinspection PhpUnusedLocalVariableInspection */
             $echo_function = function ($array) {
                 foreach ($array as $key => $value) {
                     echo "*/var $key = this.$key = (function(){\n" . self::encodeJson($value) . "\nreturn module.exports;\n})();\n\n/*";
                 }
             };
-            /** @noinspection PhpUnusedLocalVariableInspection,PhpDocSignatureInspection */
+            /** @noinspection PhpUnusedLocalVariableInspection */
             $echo_keyvalue = function ($key, $value) {
                 echo "*/\nthis.$key = " . self::encodeJson($value) . ";/*\n";
             };
@@ -304,8 +304,7 @@ JS;
     {
         self::$cache['context'] = self::$cache['context'] ?? [
                 'lang'       => 'php',
-                'chmonos'    => new class() implements \ArrayAccess
-                {
+                'chmonos'    => new class() implements \ArrayAccess {
                     public function offsetExists($offset) { }
 
                     public function offsetGet($offset) { return $offset; }

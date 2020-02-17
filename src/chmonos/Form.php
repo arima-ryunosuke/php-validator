@@ -284,7 +284,7 @@ class Form
     public function label($name, $attrs = [])
     {
         if ($this->currents) {
-            list($cname, $cindex) = last_keyvalue($this->currents);
+            [$cname, $cindex] = last_keyvalue($this->currents);
             $name = "$cname/$name";
             $attrs['index'] = $cindex;
         }
@@ -306,7 +306,7 @@ class Form
     public function input($name, $attrs = [])
     {
         if ($this->currents) {
-            list($cname, $cindex) = last_keyvalue($this->currents);
+            [$cname, $cindex] = last_keyvalue($this->currents);
             $name = "$cname/$name";
             $attrs['index'] = $cindex;
         }

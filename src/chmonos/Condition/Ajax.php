@@ -63,6 +63,7 @@ class Ajax extends AbstractCondition
     public static function getJavascriptCode()
     {
         /** @noinspection JSUnresolvedFunction */
+        /** @noinspection JSValidateTypes */
         return <<<'JS'
             (function() {
                 if ($value && $params.request.url) {

@@ -51,7 +51,7 @@ class Context implements \IteratorAggregate
         }
 
         if (strpos($name, '/') !== false) {
-            list($name, $rest) = explode('/', $name, 2);
+            [$name, $rest] = explode('/', $name, 2);
             return $this->inputs[$name]->context->$rest;
         }
 

@@ -228,8 +228,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $input = new class([
             'autocond' => true,
-        ]) extends Input
-        {
+        ]) extends Input {
             public function _setAutoHoge()
             {
                 $this->rule['condition']['hoge'] = 'called';
