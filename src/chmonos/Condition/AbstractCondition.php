@@ -157,7 +157,7 @@ abstract class AbstractCondition
             $phpjs_dir = __DIR__ . '/../../template/phpjs';
             $jsfiles = array_merge(glob("$phpjs_dir/locutus/*/*.js"), glob("$phpjs_dir/override/*.js"), glob("$outdir/phpjs/*.js"));
             $jsfiles = array_each($jsfiles, function (&$carry, $fn) {
-                $carry[basename($fn, '.js')] = trim(file_get_contents($fn));
+                $carry[basename($fn, '.js')] = preg_replace('@\R//# sourceMappingURL=.+\.map$@u', '', trim(file_get_contents($fn)));
             }, []);
 
             // $allcode 内に含まれていたら「使っている」とみなす
@@ -177,7 +177,7 @@ abstract class AbstractCondition
             /** @noinspection PhpUnusedLocalVariableInspection */
             $echo_function = function ($array) {
                 foreach ($array as $key => $value) {
-                    echo "*/var $key = this.$key = (function(){\n" . self::encodeJson($value) . "\nreturn module.exports;\n})();\n\n/*";
+                    echo "*/\nvar $key = this.$key = (function(){\n" . self::encodeJson($value) . "\nreturn module.exports;\n})();\n/*";
                 }
             };
             /** @noinspection PhpUnusedLocalVariableInspection */
