@@ -24,6 +24,14 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.2
+
+- [bin] npm コマンドが動いていなかったので修正
+- [bin] validator.js を生成する手段がなかったのでコマンドを追加
+- [Form] 属性引数が css セレクタ文字列を受け入れるように修正
+- [Form] 空引数の呼び出しがわかりづらすぎるので open/close エイリアスメソッドを追加
+- [Condition/AbstractCondition] 出力フォーマットを変更
+
 ## 1.0.1
 
 - [all] composer update
