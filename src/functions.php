@@ -79,9 +79,14 @@ if (!isset($excluded_functions["arrayize"]) && (!function_exists("ryunosuke\\chm
         $result = [];
         foreach ($variadic as $arg) {
             if (!is_array($arg)) {
-                $arg = [$arg];
+                $result[] = $arg;
             }
-            $result = array_merge($result, $arg);
+            elseif (!is_hasharray($arg)) {
+                $result = array_merge($result, $arg);
+            }
+            else {
+                $result += $arg;
+            }
         }
         return $result;
     }
@@ -1616,6 +1621,146 @@ if (function_exists("ryunosuke\\chmonos\\str_contains") && !defined("ryunosuke\\
     define("ryunosuke\\chmonos\\str_contains", "ryunosuke\\chmonos\\str_contains");
 }
 
+if (!isset($excluded_functions["css_selector"]) && (!function_exists("ryunosuke\\chmonos\\css_selector") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\css_selector"))->isInternal()))) {
+    /**
+     * CSS セレクタ文字をパースして配列で返す
+     *
+     * 包含などではない属性セレクタを与えると属性として認識する。
+     * 独自仕様として・・・
+     *
+     * - [!attr]: 否定属性として false を返す
+     * - {styles}: style 属性とみなす
+     *
+     * がある。
+     *
+     * Example:
+     * ```php
+     * that(css_selector('#hoge.c1.c2[name=hoge\[\]][href="http://hoge"][hidden][!readonly]{width:123px;height:456px}'))->is([
+     *     'id'       => 'hoge',
+     *     'class'    => ['c1', 'c2'],
+     *     'name'     => 'hoge[]',
+     *     'href'     => 'http://hoge',
+     *     'hidden'   => true,
+     *     'readonly' => false,
+     *     'style'    => [
+     *         'width'  => '123px',
+     *         'height' => '456px',
+     *     ],
+     * ]);
+     * ```
+     *
+     * @param string $selector CSS セレクタ
+     * @return array 属性配列
+     */
+    function css_selector($selector)
+    {
+        $id = '';
+        $classes = [];
+        $styles = [];
+        $attrs = [];
+
+        $context = null;
+        $escaping = null;
+        $chars = preg_split('##u', $selector, -1, PREG_SPLIT_NO_EMPTY);
+        for ($i = 0, $l = count($chars); $i < $l; $i++) {
+            $char = $chars[$i];
+            if ($char === '"' || $char === "'") {
+                $escaping = $escaping === $char ? null : $char;
+            }
+
+            if (!$escaping && $char === '#') {
+                if (strlen($id)) {
+                    throw new \InvalidArgumentException('#id is multiple.');
+                }
+                $context = $char;
+                continue;
+            }
+            if (!$escaping && $char === '.') {
+                $context = $char;
+                $classes[] = '';
+                continue;
+            }
+            if (!$escaping && $char === '{') {
+                $context = $char;
+                $styles[] = '';
+                continue;
+            }
+            if (!$escaping && $char === ';') {
+                $styles[] = '';
+                continue;
+            }
+            if (!$escaping && $char === '}') {
+                $context = null;
+                continue;
+            }
+            if (!$escaping && $char === '[') {
+                $context = $char;
+                $attrs[] = '';
+                continue;
+            }
+            if (!$escaping && $char === ']') {
+                $context = null;
+                continue;
+            }
+
+            if ($char === '\\') {
+                $char = $chars[++$i];
+            }
+
+            if ($context === '#') {
+                $id .= $char;
+                continue;
+            }
+            if ($context === '.') {
+                $classes[count($classes) - 1] .= $char;
+                continue;
+            }
+            if ($context === '{') {
+                $styles[count($styles) - 1] .= $char;
+                continue;
+            }
+            if ($context === '[') {
+                $attrs[count($attrs) - 1] .= $char;
+                continue;
+            }
+        }
+
+        $attrkv = [];
+        if (strlen($id)) {
+            $attrkv['id'] = $id;
+        }
+        if ($classes) {
+            $attrkv['class'] = $classes;
+        }
+        foreach ($styles as $style) {
+            $declares = array_filter(array_map('trim', explode(';', $style)), 'strlen');
+            foreach ($declares as $declare) {
+                [$k, $v] = array_map('trim', explode(':', $declare, 2)) + [1 => null];
+                if ($v === null) {
+                    throw new \InvalidArgumentException("[$k] is empty.");
+                }
+                $attrkv['style'][$k] = $v;
+            }
+        }
+        foreach ($attrs as $attr) {
+            [$k, $v] = explode('=', $attr, 2) + [1 => true];
+            if (array_key_exists($k, $attrkv)) {
+                throw new \InvalidArgumentException("[$k] is dumplicated.");
+            }
+            if ($k[0] === '!') {
+                $k = substr($k, 1);
+                $v = false;
+            }
+            $attrkv[$k] = is_string($v) ? json_decode($v) ?? $v : $v;
+        }
+
+        return $attrkv;
+    }
+}
+if (function_exists("ryunosuke\\chmonos\\css_selector") && !defined("ryunosuke\\chmonos\\css_selector")) {
+    define("ryunosuke\\chmonos\\css_selector", "ryunosuke\\chmonos\\css_selector");
+}
+
 if (!isset($excluded_functions["paml_import"]) && (!function_exists("ryunosuke\\chmonos\\paml_import") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\paml_import"))->isInternal()))) {
     /**
      * paml 的文字列をパースする
@@ -1626,7 +1771,7 @@ if (!isset($excluded_functions["paml_import"]) && (!function_exists("ryunosuke\\
      * - ほとんど yaml と同じだがフロースタイルのみでキーコロンの後のスペースは不要
      * - yaml のアンカーや複数ドキュメントのようなややこしい仕様はすべて未対応
      * - 配列を前提にしているので、トップレベルの `[]` `{}` は不要
-     * - 配列・連想配列の区別はなし。 `[]` でいわゆる php の配列、 `{}` で stdClass を表す
+     * - `[]` でいわゆる php の配列、 `{}` で stdClass を表す（オプション指定可能）
      * - bare string で php の定数を表す
      *
      * 簡易的な設定の注入に使える（yaml は標準で対応していないし、json や php 配列はクオートの必要やケツカンマ問題がある）。
@@ -1680,11 +1825,13 @@ if (!isset($excluded_functions["paml_import"]) && (!function_exists("ryunosuke\\
         $options += [
             'cache'          => true,
             'trailing-comma' => true,
+            'stdclass'       => true,
         ];
 
         static $caches = [];
         if ($options['cache']) {
-            return $caches[$pamlstring] = $caches[$pamlstring] ?? paml_import($pamlstring, ['cache' => false] + $options);
+            $key = $pamlstring . json_encode($options);
+            return $caches[$key] = $caches[$key] ?? paml_import($pamlstring, ['cache' => false] + $options);
         }
 
         $escapers = ['"' => '"', "'" => "'", '[' => ']', '{' => '}'];
@@ -1705,11 +1852,9 @@ if (!isset($excluded_functions["paml_import"]) && (!function_exists("ryunosuke\\
             $prefix = $value[0] ?? null;
             $suffix = $value[-1] ?? null;
 
-            if ($prefix === '[' && $suffix === ']') {
-                $value = (array) paml_import(substr($value, 1, -1), $options);
-            }
-            elseif ($prefix === '{' && $suffix === '}') {
-                $value = (object) paml_import(substr($value, 1, -1), $options);
+            if (($prefix === '[' && $suffix === ']') || ($prefix === '{' && $suffix === '}')) {
+                $value = paml_import(substr($value, 1, -1), $options);
+                $value = ($prefix === '[' || !$options['stdclass']) ? (array) $value : (object) $value;
             }
             elseif ($prefix === '"' && $suffix === '"') {
                 //$value = stripslashes(substr($value, 1, -1));

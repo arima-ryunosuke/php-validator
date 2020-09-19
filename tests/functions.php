@@ -780,9 +780,14 @@ if (!isset($excluded_functions["arrayize"]) && (!function_exists("ryunosuke\\chm
         $result = [];
         foreach ($variadic as $arg) {
             if (!is_array($arg)) {
-                $arg = [$arg];
+                $result[] = $arg;
             }
-            $result = array_merge($result, $arg);
+            elseif (!is_hasharray($arg)) {
+                $result = array_merge($result, $arg);
+            }
+            else {
+                $result += $arg;
+            }
         }
         return $result;
     }
@@ -1327,6 +1332,69 @@ if (!isset($excluded_functions["array_add"]) && (!function_exists("ryunosuke\\ch
 }
 if (function_exists("ryunosuke\\chmonos\\array_add") && !defined("ryunosuke\\chmonos\\array_add")) {
     define("ryunosuke\\chmonos\\array_add", "ryunosuke\\chmonos\\array_add");
+}
+
+if (!isset($excluded_functions["array_merge2"]) && (!function_exists("ryunosuke\\chmonos\\array_merge2") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\array_merge2"))->isInternal()))) {
+    /**
+     * 配列をマージして通常配列＋αで返す
+     *
+     * キー・値が維持される点で array_merge とは異なる（振り直しをせず数値配列で返す）。
+     * きちんと0からの連番で構成される点で配列の加算とは異なる。
+     * 要するに「できるだけキーが自然数（の並び）になるように」マージする。
+     *
+     * 歯抜けはそのまま維持され、文字キーは後ろに追加される（負数キーも同様）。
+     *
+     * Example:
+     * ```php
+     * // キーが入り乱れているがよく見ると通し番号が振られている配列をマージ
+     * that(array_merge2([4 => 4, 1 => 1], [0 => 0], [5 => 5, 2 => 2, 3 => 3]))->isSame([0, 1, 2, 3, 4, 5]);
+     * // 歯抜けの配列をマージ
+     * that(array_merge2([4 => 4, 1 => 1], [0 => 0], [5 => 5, 3 => 3]))->isSame([0, 1, 3 => 3, 4 => 4, 5 => 5]);
+     * // 負数や文字キーは後ろに追いやられる
+     * that(array_merge2(['a' => 'A', 1 => 1], [0 => 0], [-1 => 'X', 2 => 2, 3 => 3]))->isSame([0, 1, 2, 3, -1 => 'X', 'a' => 'A']);
+     * // 同じキーは後ろ優先
+     * that(array_merge2([0, 'a' => 'A0'], [1, 'a' => 'A1'], [2, 'a' => 'A2']))->isSame([2, 'a' => 'A2']);
+     * ```
+     *
+     * @param array $arrays マージする配列
+     * @return array マージされた配列
+     */
+    function array_merge2(...$arrays)
+    {
+        // array_merge を模倣するため前方優先
+        $arrays = array_reverse($arrays);
+
+        // 最大値の導出（負数は考慮せず文字キーとして扱う）
+        $max = -1;
+        foreach ($arrays as $array) {
+            foreach ($array as $k => $v) {
+                if (is_int($k) && $k > $max) {
+                    $max = $k;
+                }
+            }
+        }
+
+        // 最大値までを埋める
+        $result = [];
+        for ($i = 0; $i <= $max; $i++) {
+            foreach ($arrays as $array) {
+                if (isset($array[$i]) && array_key_exists($i, $array)) {
+                    $result[$i] = $array[$i];
+                    break;
+                }
+            }
+        }
+
+        // 上記は数値キーだけなので負数や文字キーを補完する
+        foreach ($arrays as $arg) {
+            $result += $arg;
+        }
+
+        return $result;
+    }
+}
+if (function_exists("ryunosuke\\chmonos\\array_merge2") && !defined("ryunosuke\\chmonos\\array_merge2")) {
+    define("ryunosuke\\chmonos\\array_merge2", "ryunosuke\\chmonos\\array_merge2");
 }
 
 if (!isset($excluded_functions["array_mix"]) && (!function_exists("ryunosuke\\chmonos\\array_mix") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\array_mix"))->isInternal()))) {
@@ -2029,6 +2097,10 @@ if (!isset($excluded_functions["array_put"]) && (!function_exists("ryunosuke\\ch
      * また、**int を与えても同様の動作**となる。
      * 第3引数に配列を指定すると潜って設定する。
      *
+     * 第4引数で追加する条件クロージャを指定できる。
+     * クロージャには `(追加する要素, 追加するキー, 追加される元配列)` が渡ってくる。
+     * このクロージャが false 相当を返した時は追加されないようになる。
+     *
      * array_set における $require_return は廃止している。
      * これはもともと end や last_key が遅かったのでオプショナルにしていたが、もう改善しているし、7.3 から array_key_last があるので、呼び元で適宜使えば良い。
      *
@@ -2048,14 +2120,19 @@ if (!isset($excluded_functions["array_put"]) && (!function_exists("ryunosuke\\ch
      * // 第3引数で配列を指定
      * that(array_put($array, 'Z', ['x', 'y', 'z']))->isSame('z');
      * that($array)->isSame(['a' => 'A', 'B', 'Z', 'Z', 'z' => 'Z', 'x' => ['y' => ['z' => 'Z']]]);
+     * // 第4引数で条件を指定（キーが存在するなら追加しない）
+     * that(array_put($array, 'Z', 'z', function ($v, $k, $array){return !isset($array[$k]);}))->isSame(false);
+     * // 第4引数で条件を指定（値が存在するなら追加しない）
+     * that(array_put($array, 'Z', null, function ($v, $k, $array){return !in_array($v, $array);}))->isSame(false);
      * ```
      *
      * @param array $array 配列
      * @param mixed $value 設定する値
      * @param array|string|int|null $key 設定するキー
-     * @return string|int 設定したキー
+     * @param callable|null $condition 追加する条件
+     * @return string|int|false 設定したキー
      */
-    function array_put(&$array, $value, $key = null)
+    function array_put(&$array, $value, $key = null, $condition = null)
     {
         if (is_array($key)) {
             $k = array_shift($key);
@@ -2063,10 +2140,16 @@ if (!isset($excluded_functions["array_put"]) && (!function_exists("ryunosuke\\ch
                 if (is_array($array) && array_key_exists($k, $array) && !is_array($array[$k])) {
                     throw new \InvalidArgumentException('$array[$k] is not array.');
                 }
-                return array_put(...[&$array[$k], $value, $key]);
+                return array_put(...[&$array[$k], $value, $key, $condition]);
             }
             else {
-                return array_put(...[&$array, $value, $k]);
+                return array_put(...[&$array, $value, $k, $condition]);
+            }
+        }
+
+        if ($condition !== null) {
+            if (!$condition($value, $key, $array)) {
+                return false;
             }
         }
 
@@ -2329,9 +2412,10 @@ if (function_exists("ryunosuke\\chmonos\\array_find") && !defined("ryunosuke\\ch
 
 if (!isset($excluded_functions["array_rekey"]) && (!function_exists("ryunosuke\\chmonos\\array_rekey") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\array_rekey"))->isInternal()))) {
     /**
-     * キーをマップ配列で置換する
+     * キーをマップ配列・callable で置換する
      *
-     * 変換先が null だとその要素は取り除かれる。
+     * 変換先・返り値が null だとその要素は取り除かれる。
+     * callable 指定時の引数は `(キー, 値, 連番インデックス, 対象配列そのもの)` が渡ってくる。
      *
      * Example:
      * ```php
@@ -2342,17 +2426,33 @@ if (!isset($excluded_functions["array_rekey"]) && (!function_exists("ryunosuke\\
      * that(array_rekey($array, ['b' => null, 'c' => 'z']))->isSame(['a' => 'A', 'z' => 'C']);
      * // キーの交換にも使える（a ⇔ c）
      * that(array_rekey($array, ['a' => 'c', 'c' => 'a']))->isSame(['c' => 'A', 'b' => 'B', 'a' => 'C']);
+     * // callable
+     * that(array_rekey($array, 'strtoupper'))->isSame(['A' => 'A', 'B' => 'B', 'C' => 'C']);
      * ```
      *
      * @param iterable $array 対象配列
-     * @param array $keymap 正規表現
+     * @param array|callable $keymap マップ配列かキーを返すクロージャ
      * @return array キーが置換された配列
      */
     function array_rekey($array, $keymap)
     {
+        // 互換性のため callable は配列以外に限定する
+        $callable = ($keymap instanceof \Closure) || (!is_array($keymap) && is_callable($keymap));
+        if ($callable) {
+            $keymap = func_user_func_array($keymap);
+        }
+
         $result = [];
+        $n = 0;
         foreach ($array as $k => $v) {
-            if (array_key_exists($k, $keymap)) {
+            if ($callable) {
+                $k = $keymap($k, $v, $n, $array);
+                // null は突っ込まない（除去）
+                if ($k !== null) {
+                    $result[$k] = $v;
+                }
+            }
+            elseif (array_key_exists($k, $keymap)) {
                 // null は突っ込まない（除去）
                 if ($keymap[$k] !== null) {
                     $result[$keymap[$k]] = $v;
@@ -2361,6 +2461,7 @@ if (!isset($excluded_functions["array_rekey"]) && (!function_exists("ryunosuke\\
             else {
                 $result[$k] = $v;
             }
+            $n++;
         }
         return $result;
     }
@@ -2602,6 +2703,11 @@ if (!isset($excluded_functions["array_where"]) && (!function_exists("ryunosuke\\
      */
     function array_where($array, $column = null, $callback = null)
     {
+        if ($column instanceof \Closure) {
+            $callback = $column;
+            $column = null;
+        }
+
         $is_array = is_array($column);
         if ($is_array) {
             if (is_hasharray($column)) {
@@ -2619,7 +2725,7 @@ if (!isset($excluded_functions["array_where"]) && (!function_exists("ryunosuke\\
                         return function ($v) use ($c) { return is_array($c) ? in_array($v, $c) : $v == $c; };
                     }
                 }, $column);
-                $callback = function ($vv, $k) use ($callbacks) {
+                $callback = function ($vv, $k, $v) use ($callbacks) {
                     foreach ($callbacks as $c => $callback) {
                         if (!$callback($vv[$c], $k)) {
                             return false;
@@ -2647,7 +2753,7 @@ if (!isset($excluded_functions["array_where"]) && (!function_exists("ryunosuke\\
                 $vv = $v[$column];
             }
 
-            if ($callback($vv, $k)) {
+            if ($callback($vv, $k, $v)) {
                 $result[$k] = $v;
             }
         }
@@ -2876,7 +2982,7 @@ if (!isset($excluded_functions["array_kvmap"]) && (!function_exists("ryunosuke\\
      * ]);
      * ```
      *
-     * @param array $array 対象配列
+     * @param iterable $array 対象配列
      * @param callable $callback 適用するコールバック
      * @return array 変換された配列
      */
@@ -4196,6 +4302,115 @@ if (!isset($excluded_functions["array_lookup"]) && (!function_exists("ryunosuke\
 }
 if (function_exists("ryunosuke\\chmonos\\array_lookup") && !defined("ryunosuke\\chmonos\\array_lookup")) {
     define("ryunosuke\\chmonos\\array_lookup", "ryunosuke\\chmonos\\array_lookup");
+}
+
+if (!isset($excluded_functions["array_select"]) && (!function_exists("ryunosuke\\chmonos\\array_select") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\array_select"))->isInternal()))) {
+    /**
+     * 指定キーの要素で抽出する
+     *
+     * $columns に単純な値を渡すとそのキーの値を選択する。
+     * キー付きで値を渡すと読み替えて選択する。
+     * キー付きでクロージャを渡すと `(キーの値, 行自体, 現在行のキー)` を引数としてコールバックして選択する。
+     * 単一のクロージャを渡すと `(行自体, 現在行のキー)` を引数としてコールバックして選択する（array_map とほぼ同じ）。
+     *
+     * Example:
+     * ```php
+     * $array = [
+     *     11 => ['id' => 1, 'name' => 'name1'],
+     *     12 => ['id' => 2, 'name' => 'name2'],
+     *     13 => ['id' => 3, 'name' => 'name3'],
+     * ];
+     *
+     * that(array_select($array, [
+     *     'id',              // id を単純取得
+     *     'alias' => 'name', // name を alias として取得
+     * ]))->isSame([
+     *     11 => ['id' => 1, 'alias' => 'name1'],
+     *     12 => ['id' => 2, 'alias' => 'name2'],
+     *     13 => ['id' => 3, 'alias' => 'name3'],
+     * ]);
+     *
+     * that(array_select($array, [
+     *     // id の 10 倍を取得
+     *     'id'     => function ($id) {return $id * 10;},
+     *     // id と name の結合を取得
+     *     'idname' => function ($null, $row, $index) {return $row['id'] . $row['name'];},
+     * ]))->isSame([
+     *     11 => ['id' => 10, 'idname' => '1name1'],
+     *     12 => ['id' => 20, 'idname' => '2name2'],
+     *     13 => ['id' => 30, 'idname' => '3name3'],
+     * ]);
+     * ```
+     *
+     * @param iterable $array 対象配列
+     * @param string|iterable|\Closure $columns 抽出項目
+     * @param int|string|null $index キーとなるキー
+     * @return array 新しい配列
+     */
+    function array_select($array, $columns, $index = null)
+    {
+        if (!is_iterable($columns) && !$columns instanceof \Closure) {
+            return array_lookup(...func_get_args());
+        }
+
+        if ($columns instanceof \Closure) {
+            $callbacks = $columns;
+        }
+        else {
+            $callbacks = [];
+            foreach ($columns as $alias => $column) {
+                if ($column instanceof \Closure) {
+                    $callbacks[$alias] = func_user_func_array($column);
+                }
+            }
+        }
+
+        $argcount = func_num_args();
+        $result = [];
+        foreach ($array as $k => $v) {
+            if ($callbacks instanceof \Closure) {
+                $row = $callbacks($v, $k);
+            }
+            else {
+                $row = [];
+                foreach ($columns as $alias => $column) {
+                    if (is_int($alias)) {
+                        $alias = $column;
+                    }
+
+                    if (isset($callbacks[$alias])) {
+                        $row[$alias] = $callbacks[$alias](attr_get($alias, $v, null), $v, $k);
+                    }
+                    elseif (attr_exists($column, $v)) {
+                        $row[$alias] = attr_get($column, $v);
+                    }
+                    else {
+                        throw new \InvalidArgumentException("$column is not exists.");
+                    }
+                }
+            }
+
+            if ($argcount === 2) {
+                $result[$k] = $row;
+            }
+            elseif ($index === null) {
+                $result[] = $row;
+            }
+            elseif (array_key_exists($index, $row)) {
+                $result[$row[$index]] = $row;
+            }
+            elseif (attr_exists($index, $v)) {
+                $result[attr_get($index, $v)] = $row;
+            }
+            else {
+                throw new \InvalidArgumentException("$index is not exists.");
+            }
+        }
+        return $result;
+    }
+}
+if (function_exists("ryunosuke\\chmonos\\array_select") && !defined("ryunosuke\\chmonos\\array_select")) {
+    define("ryunosuke\\chmonos\\array_select", "ryunosuke\\chmonos\\array_select");
 }
 
 if (!isset($excluded_functions["array_columns"]) && (!function_exists("ryunosuke\\chmonos\\array_columns") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\array_columns"))->isInternal()))) {
@@ -7408,6 +7623,7 @@ if (!isset($excluded_functions["ope_func"]) && (!function_exists("ryunosuke\\chm
      * 演算子のクロージャを返す
      *
      * 関数ベースなので `??` のような言語組み込みの特殊な演算子は若干希望通りにならない（Notice が出る）。
+     * 2つ目以降の引数でオペランドを指定できる。
      *
      * Example:
      * ```php
@@ -7421,12 +7637,16 @@ if (!isset($excluded_functions["ope_func"]) && (!function_exists("ryunosuke\\chm
      * $cond = ope_func('?:'); // 条件演算子クロージャ
      * that($cond('OK', 'NG'))->isSame('OK' ?: 'NG');               // 引数2つで呼ぶと2項演算子
      * that($cond(false, 'OK', 'NG'))->isSame(false ? 'OK' : 'NG'); // 引数3つで呼ぶと3項演算子
+     *
+     * $gt5 = ope_func('<=', 5); // 5以下を判定するクロージャ
+     * that(array_filter([1, 2, 3, 4, 5, 6, 7, 8, 9], $gt5))->isSame([1, 2, 3, 4, 5]);
      * ```
      *
      * @param string $operator 演算子
+     * @param mixed $operands 右オペランド
      * @return \Closure 演算子のクロージャ
      */
-    function ope_func($operator)
+    function ope_func($operator, ...$operands)
     {
         static $operators = null;
         $operators = $operators ?: [
@@ -7467,7 +7687,15 @@ if (!isset($excluded_functions["ope_func"]) && (!function_exists("ryunosuke\\chm
             'instanceof' => static function ($v1, $v2) { return $v1 instanceof $v2; },
         ];
 
-        return $operators[trim($operator)] ?? throws(new \InvalidArgumentException("$operator is not defined Operator."));
+        $opefunc = $operators[trim($operator)] ?? throws(new \InvalidArgumentException("$operator is not defined Operator."));
+
+        if ($operands) {
+            return static function ($v1) use ($opefunc, $operands) {
+                return $opefunc($v1, ...$operands);
+            };
+        }
+
+        return $opefunc;
     }
 }
 if (function_exists("ryunosuke\\chmonos\\ope_func") && !defined("ryunosuke\\chmonos\\ope_func")) {
@@ -7982,6 +8210,167 @@ if (function_exists("ryunosuke\\chmonos\\parameter_length") && !defined("ryunosu
     define("ryunosuke\\chmonos\\parameter_length", "ryunosuke\\chmonos\\parameter_length");
 }
 
+if (!isset($excluded_functions["parameter_default"]) && (!function_exists("ryunosuke\\chmonos\\parameter_default") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\parameter_default"))->isInternal()))) {
+    /**
+     * callable のデフォルト引数を返す
+     *
+     * オプションで指定もできる。
+     * 負数を指定した場合「最後の引数から数えた位置」になる。
+     *
+     * 内部関数には使用できない（リフレクションが対応していない）。
+     *
+     * Example:
+     * ```php
+     * $f = function ($a, $b = 'b') {};
+     * // デフォルト引数である b を返す
+     * that(parameter_default($f))->isSame([1 => 'b']);
+     * // 引数で与えるとそれが優先される
+     * that(parameter_default($f, ['A', 'B']))->isSame(['A', 'B']);
+     * ```
+     *
+     * @param callable $callable 対象 callable
+     * @param iterable|array $arguments デフォルト引数
+     * @return array デフォルト引数
+     */
+    function parameter_default(callable $callable, $arguments = [])
+    {
+        static $cache = [];
+
+        // $call_name でキャッシュ。しかしクロージャはすべて「Closure::__invoke」になるのでキャッシュできない
+        is_callable($callable, true, $call_name);
+        if (!isset($cache[$call_name]) || $callable instanceof \Closure) {
+            /** @var \ReflectionFunctionAbstract $refunc */
+            $refunc = reflect_callable($callable);
+            assert($refunc->isUserDefined(), 'no support internal callable.');
+            $cache[$call_name] = [
+                'length'  => $refunc->getNumberOfParameters(),
+                'default' => [],
+            ];
+            foreach ($refunc->getParameters() as $n => $param) {
+                if ($param->isDefaultValueAvailable()) {
+                    $cache[$call_name]['default'][$n] = $param->getDefaultValue();
+                }
+            }
+        }
+
+        // 指定されていないならそのまま返せば良い（高速化）
+        if (is_array($arguments) && !$arguments) {
+            return $cache[$call_name]['default'];
+        }
+
+        $args2 = [];
+        foreach ($arguments as $n => $arg) {
+            if ($n < 0) {
+                $n += $cache[$call_name]['length'];
+            }
+            $args2[$n] = $arg;
+        }
+
+        return array_merge2($cache[$call_name]['default'], $args2);
+    }
+}
+if (function_exists("ryunosuke\\chmonos\\parameter_default") && !defined("ryunosuke\\chmonos\\parameter_default")) {
+    define("ryunosuke\\chmonos\\parameter_default", "ryunosuke\\chmonos\\parameter_default");
+}
+
+if (!isset($excluded_functions["parameter_wiring"]) && (!function_exists("ryunosuke\\chmonos\\parameter_wiring") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\parameter_wiring"))->isInternal()))) {
+    /**
+     * callable の引数の型情報に基づいてワイヤリングした引数配列を返す
+     *
+     * ワイヤリングは下記のルールに基づいて行われる。
+     *
+     * - 引数の型とキーが完全一致
+     * - 引数の型とキーが継承・実装関係
+     *   - 複数一致した場合は解決されない
+     * - 引数名とキーが完全一致
+     *   - 可変引数は追加
+     * - 引数のデフォルト値
+     * - 得られた値がクロージャの場合は再帰的に解決
+     *   - $this は $dependency になるが FromCallable 経由の場合は元のまま
+     *
+     * Example:
+     * ```php
+     * $closure = function (\ArrayObject $ao, \Throwable $t, $array, $none, ...$misc) { return get_defined_vars(); };
+     * $params = (parameter_wiring)($closure, [
+     *     \ArrayObject::class      => $ao = new \ArrayObject([1, 2, 3]),
+     *     \RuntimeException::class => $t = new \RuntimeException('hoge'),
+     *     '$array'                 => function (\ArrayObject $ao) { return (array) $ao; },
+     *     '$misc'                  => ['x', 'y', 'z'],
+     * ]);
+     * that($params)->isSame([
+     *     0 => $ao,       // 0番目はクラス名が完全一致
+     *     1 => $t,        // 1番目はインターフェース実装
+     *     2 => [1, 2, 3], // 2番目はクロージャをコール
+     *                     // 3番目の引数は解決されない
+     *     4 => 'x',       // 可変引数なのでフラットに展開
+     *     5 => 'y',
+     *     6 => 'z',
+     * ]);
+     * ```
+     *
+     * @param callable $callable 対象 callable
+     * @param array|\ArrayAccess $dependency 引数候補配列
+     * @return array 引数配列
+     */
+    function parameter_wiring($callable, $dependency)
+    {
+        /** @var \ReflectionFunctionAbstract $ref */
+        $ref = reflect_callable($callable);
+        $result = [];
+
+        foreach ($ref->getParameters() as $n => $parameter) {
+            if ($type = $parameter->getClass()) {
+                if (isset($dependency[$pname = $type->getName()])) {
+                    $result[$n] = $dependency[$pname];
+                }
+                else {
+                    foreach ($dependency as $key => $value) {
+                        if (is_subclass_of(ltrim($key, '\\'), $type->getName(), true)) {
+                            if (array_key_exists($n, $result)) {
+                                unset($result[$n]);
+                                break;
+                            }
+                            $result[$n] = $value;
+                        }
+                    }
+                }
+            }
+            elseif (isset($dependency[$pname = '$' . $parameter->getName()])) {
+                if ($parameter->isVariadic()) {
+                    foreach (array_values(arrayize($dependency[$pname])) as $i => $v) {
+                        $result[$n + $i] = $v;
+                    }
+                }
+                else {
+                    $result[$n] = $dependency[$pname];
+                }
+            }
+            elseif ($parameter->isDefaultValueAvailable()) {
+                $result[$n] = $parameter->getDefaultValue();
+            }
+        }
+
+        // $this bind するのでオブジェクト化しておく
+        if (!is_object($dependency)) {
+            $dependency = new \ArrayObject($dependency);
+        }
+
+        // recurse for closure
+        return array_map(function ($arg) use ($dependency) {
+            if ($arg instanceof \Closure) {
+                if ((new \ReflectionFunction($arg))->getShortName() === '{closure}') {
+                    $arg = $arg->bindTo($dependency);
+                }
+                return $arg(...parameter_wiring($arg, $dependency));
+            }
+            return $arg;
+        }, $result);
+    }
+}
+if (function_exists("ryunosuke\\chmonos\\parameter_wiring") && !defined("ryunosuke\\chmonos\\parameter_wiring")) {
+    define("ryunosuke\\chmonos\\parameter_wiring", "ryunosuke\\chmonos\\parameter_wiring");
+}
+
 if (!isset($excluded_functions["function_shorten"]) && (!function_exists("ryunosuke\\chmonos\\function_shorten") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\function_shorten"))->isInternal()))) {
     /**
      * 関数の名前空間部分を除いた短い名前を取得する
@@ -8045,6 +8434,45 @@ if (!isset($excluded_functions["func_user_func_array"]) && (!function_exists("ry
 }
 if (function_exists("ryunosuke\\chmonos\\func_user_func_array") && !defined("ryunosuke\\chmonos\\func_user_func_array")) {
     define("ryunosuke\\chmonos\\func_user_func_array", "ryunosuke\\chmonos\\func_user_func_array");
+}
+
+if (!isset($excluded_functions["func_wiring"]) && (!function_exists("ryunosuke\\chmonos\\func_wiring") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\func_wiring"))->isInternal()))) {
+    /**
+     * 引数の型情報に基づいてワイヤリングしたクロージャを返す
+     *
+     * $dependency に数値キーの配列を混ぜるとデフォルト値として使用される。
+     * 得られたクロージャの呼び出し時に引数を与える事ができる。
+     *
+     * parameter_wiring も参照。
+     *
+     * Example:
+     * ```php
+     * $closure = function ($a, $b) { return func_get_args(); };
+     * $new_closure = func_wiring($closure, [
+     *     '$a' => 'a',
+     *     '$b' => 'b',
+     *     1    => 'B',
+     * ]);
+     * that($new_closure())->isSame(['a', 'B']);    // 同時指定の場合は数値キー優先
+     * that($new_closure('A'))->isSame(['A', 'B']); // 呼び出し時の引数優先
+     * ```
+     *
+     * @param callable $callable 対象 callable
+     * @param array|\ArrayAccess $dependency 引数候補配列
+     * @return \Closure 引数を確定したクロージャ
+     */
+    function func_wiring($callable, $dependency)
+    {
+        $params1 = parameter_wiring($callable, $dependency);
+        $params2 = array_filter($dependency, 'is_int', ARRAY_FILTER_USE_KEY);
+        $params = array_merge2($params1, $params2);
+        return function (...$args) use ($callable, $params) {
+            return $callable(...$args + $params);
+        };
+    }
+}
+if (function_exists("ryunosuke\\chmonos\\func_wiring") && !defined("ryunosuke\\chmonos\\func_wiring")) {
+    define("ryunosuke\\chmonos\\func_wiring", "ryunosuke\\chmonos\\func_wiring");
 }
 
 if (!isset($excluded_functions["func_new"]) && (!function_exists("ryunosuke\\chmonos\\func_new") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\func_new"))->isInternal()))) {
@@ -9732,6 +10160,11 @@ if (!isset($excluded_functions["sql_format"]) && (!function_exists("ryunosuke\\c
                         }
                     case "OR":
                     case "XOR":
+                        // WHEN の条件はカッコがない限り改行しない
+                        if ($subcontext === 'WHEN') {
+                            $result[] = $MARK_SP . $virttoken . $MARK_SP;
+                            break;
+                        }
                         $result[] = $MARK_SP . $MARK_BR . $MARK_NT . $virttoken . $MARK_SP;
                         break;
                     case "UNION":
@@ -9827,9 +10260,15 @@ if (!isset($excluded_functions["sql_format"]) && (!function_exists("ryunosuke\\c
                             $context = $uppertoken;
                         }
                         break;
+                    /** @noinspection PhpMissingBreakStatementInspection */
                     case "WHEN":
+                        $subcontext = $uppertoken;
                     case "ELSE":
                         $result[] = $MARK_BR . $MARK_NT . $virttoken . $MARK_SP;
+                        break;
+                    case "THEN":
+                        $subcontext = '';
+                        $result[] = $MARK_SP . $virttoken;
                         break;
                     case "CASE":
                         $parts = $interpret($index);
@@ -11762,87 +12201,32 @@ if (!isset($excluded_functions["htmltag"]) && (!function_exists("ryunosuke\\chmo
         };
 
         $build = static function ($selector, $content, $escape) use ($html) {
-            $tag = '';
-            $id = '';
-            $classes = [];
-            $attrs = [];
-
-            $context = null;
-            $escaping = null;
-            $chars = preg_split('##u', $selector, -1, PREG_SPLIT_NO_EMPTY);
-            for ($i = 0, $l = count($chars); $i < $l; $i++) {
-                $char = $chars[$i];
-                if ($char === '"' || $char === "'") {
-                    $escaping = $escaping === $char ? null : $char;
-                }
-
-                if (!$escaping && $char === '#') {
-                    if (strlen($id)) {
-                        throw new \InvalidArgumentException('#id is multiple.');
-                    }
-                    $context = $char;
-                    continue;
-                }
-                if (!$escaping && $char === '.') {
-                    $context = $char;
-                    $classes[] = '';
-                    continue;
-                }
-                if (!$escaping && $char === '[') {
-                    $context = $char;
-                    $attrs[] = '';
-                    continue;
-                }
-                if (!$escaping && $char === ']') {
-                    $context = null;
-                    continue;
-                }
-
-                if ($char === '\\') {
-                    $char = $chars[++$i];
-                }
-
-                if ($context === null) {
-                    $tag .= $char;
-                    continue;
-                }
-                if ($context === '#') {
-                    $id .= $char;
-                    continue;
-                }
-                if ($context === '.') {
-                    $classes[count($classes) - 1] .= $char;
-                    continue;
-                }
-                if ($context === '[') {
-                    $attrs[count($attrs) - 1] .= $char;
-                    continue;
-                }
-            }
-
+            $p = min(strpos_array($selector, ['#', '.', '[', '{']) ?: [strlen($selector)]);
+            $tag = substr($selector, 0, $p);
             if (!strlen($tag)) {
                 throw new \InvalidArgumentException('tagname is empty.');
             }
-
-            $attrkv = [];
-            if (strlen($id)) {
-                $attrkv['id'] = $id;
+            $attrs = css_selector(substr($selector, $p));
+            if (isset($attrs['class'])) {
+                $attrs['class'] = implode(' ', $attrs['class']);
             }
-            if ($classes) {
-                $attrkv['class'] = implode(' ', $classes);
-            }
-            foreach ($attrs as $attr) {
-                [$k, $v] = explode('=', $attr, 2) + [1 => null];
-                if (array_key_exists($k, $attrkv)) {
-                    throw new \InvalidArgumentException("[$k] is dumplicated.");
+            foreach ($attrs as $k => $v) {
+                if ($v === false) {
+                    unset($attrs[$k]);
+                    continue;
                 }
-                $attrkv[$k] = $v;
-            }
-            $attrs = [];
-            foreach ($attrkv as $k => $v) {
-                $attrs[] = $v === null
-                    ? $html($k)
-                    : sprintf('%s="%s"', $html($k), $html(preg_replace('#^([\"\'])|([^\\\\])([\"\'])$#u', '$2', $v)));
+                elseif ($v === true) {
+                    $v = $html($k);
+                }
+                elseif (is_array($v)) {
+                    $v = 'style="' . array_sprintf($v, function ($style, $key) {
+                            return is_int($key) ? $style : "$key:$style";
+                        }, ';') . '"';
+                }
+                else {
+                    $v = sprintf('%s="%s"', $html($k), $html(preg_replace('#^([\"\'])|([^\\\\])([\"\'])$#u', '$2', $v)));
+                }
+                $attrs[$k] = $v;
             }
 
             preg_match('#(\s*)(.+)(\s*)#u', $tag, $m);
@@ -11870,6 +12254,146 @@ if (!isset($excluded_functions["htmltag"]) && (!function_exists("ryunosuke\\chmo
 }
 if (function_exists("ryunosuke\\chmonos\\htmltag") && !defined("ryunosuke\\chmonos\\htmltag")) {
     define("ryunosuke\\chmonos\\htmltag", "ryunosuke\\chmonos\\htmltag");
+}
+
+if (!isset($excluded_functions["css_selector"]) && (!function_exists("ryunosuke\\chmonos\\css_selector") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\css_selector"))->isInternal()))) {
+    /**
+     * CSS セレクタ文字をパースして配列で返す
+     *
+     * 包含などではない属性セレクタを与えると属性として認識する。
+     * 独自仕様として・・・
+     *
+     * - [!attr]: 否定属性として false を返す
+     * - {styles}: style 属性とみなす
+     *
+     * がある。
+     *
+     * Example:
+     * ```php
+     * that(css_selector('#hoge.c1.c2[name=hoge\[\]][href="http://hoge"][hidden][!readonly]{width:123px;height:456px}'))->is([
+     *     'id'       => 'hoge',
+     *     'class'    => ['c1', 'c2'],
+     *     'name'     => 'hoge[]',
+     *     'href'     => 'http://hoge',
+     *     'hidden'   => true,
+     *     'readonly' => false,
+     *     'style'    => [
+     *         'width'  => '123px',
+     *         'height' => '456px',
+     *     ],
+     * ]);
+     * ```
+     *
+     * @param string $selector CSS セレクタ
+     * @return array 属性配列
+     */
+    function css_selector($selector)
+    {
+        $id = '';
+        $classes = [];
+        $styles = [];
+        $attrs = [];
+
+        $context = null;
+        $escaping = null;
+        $chars = preg_split('##u', $selector, -1, PREG_SPLIT_NO_EMPTY);
+        for ($i = 0, $l = count($chars); $i < $l; $i++) {
+            $char = $chars[$i];
+            if ($char === '"' || $char === "'") {
+                $escaping = $escaping === $char ? null : $char;
+            }
+
+            if (!$escaping && $char === '#') {
+                if (strlen($id)) {
+                    throw new \InvalidArgumentException('#id is multiple.');
+                }
+                $context = $char;
+                continue;
+            }
+            if (!$escaping && $char === '.') {
+                $context = $char;
+                $classes[] = '';
+                continue;
+            }
+            if (!$escaping && $char === '{') {
+                $context = $char;
+                $styles[] = '';
+                continue;
+            }
+            if (!$escaping && $char === ';') {
+                $styles[] = '';
+                continue;
+            }
+            if (!$escaping && $char === '}') {
+                $context = null;
+                continue;
+            }
+            if (!$escaping && $char === '[') {
+                $context = $char;
+                $attrs[] = '';
+                continue;
+            }
+            if (!$escaping && $char === ']') {
+                $context = null;
+                continue;
+            }
+
+            if ($char === '\\') {
+                $char = $chars[++$i];
+            }
+
+            if ($context === '#') {
+                $id .= $char;
+                continue;
+            }
+            if ($context === '.') {
+                $classes[count($classes) - 1] .= $char;
+                continue;
+            }
+            if ($context === '{') {
+                $styles[count($styles) - 1] .= $char;
+                continue;
+            }
+            if ($context === '[') {
+                $attrs[count($attrs) - 1] .= $char;
+                continue;
+            }
+        }
+
+        $attrkv = [];
+        if (strlen($id)) {
+            $attrkv['id'] = $id;
+        }
+        if ($classes) {
+            $attrkv['class'] = $classes;
+        }
+        foreach ($styles as $style) {
+            $declares = array_filter(array_map('trim', explode(';', $style)), 'strlen');
+            foreach ($declares as $declare) {
+                [$k, $v] = array_map('trim', explode(':', $declare, 2)) + [1 => null];
+                if ($v === null) {
+                    throw new \InvalidArgumentException("[$k] is empty.");
+                }
+                $attrkv['style'][$k] = $v;
+            }
+        }
+        foreach ($attrs as $attr) {
+            [$k, $v] = explode('=', $attr, 2) + [1 => true];
+            if (array_key_exists($k, $attrkv)) {
+                throw new \InvalidArgumentException("[$k] is dumplicated.");
+            }
+            if ($k[0] === '!') {
+                $k = substr($k, 1);
+                $v = false;
+            }
+            $attrkv[$k] = is_string($v) ? json_decode($v) ?? $v : $v;
+        }
+
+        return $attrkv;
+    }
+}
+if (function_exists("ryunosuke\\chmonos\\css_selector") && !defined("ryunosuke\\chmonos\\css_selector")) {
+    define("ryunosuke\\chmonos\\css_selector", "ryunosuke\\chmonos\\css_selector");
 }
 
 if (!isset($excluded_functions["build_uri"]) && (!function_exists("ryunosuke\\chmonos\\build_uri") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\build_uri"))->isInternal()))) {
@@ -12121,7 +12645,8 @@ if (!isset($excluded_functions["csv_export"]) && (!function_exists("ryunosuke\\c
      * CSV ヘッダ行は全連想配列のキーの共通項となる。
      * 順番には依存しないが、余計な要素があってもそのキーはヘッダには追加されないし、データ行にも含まれない。
      * ただし、オプションで headers が与えられた場合はそれを使用する。
-     * この headers オプションはヘッダ文字列変換も兼ねる（[key => header] で「key を header で吐き出し」となる）。
+     * この headers オプションに連想配列を与えるとヘッダ文字列変換になる（[key => header] で「key を header で吐き出し」となる）。
+     * 数値配列を与えると単純に順序指定での出力指定になるが、ヘッダ行が出力されなくなる。
      *
      * callback オプションが渡された場合は「あらゆる処理の最初」にコールされる。
      * つまりヘッダの読み換えや文字エンコーディングの変換が行われる前の状態でコールされる。
@@ -12151,6 +12676,14 @@ if (!isset($excluded_functions["csv_export"]) && (!function_exists("ryunosuke\\c
      * A2,C2
      * A3,C3
      * ");
+     *
+     * // ヘッダ行を出さない
+     * that(csv_export($csvarrays, [
+     *     'headers' => ['a', 'c'], // a と c だけを出力＋ヘッダ行なし
+     * ]))->is("A1,C1
+     * A2,C2
+     * A3,C3
+     * ");
      * ```
      *
      * @param array $csvarrays 連想配列の配列
@@ -12164,7 +12697,7 @@ if (!isset($excluded_functions["csv_export"]) && (!function_exists("ryunosuke\\c
             'enclosure' => '"',
             'escape'    => '\\',
             'encoding'  => mb_internal_encoding(),
-            'headers'   => [],
+            'headers'   => null,
             'callback'  => null, // map + filter 用コールバック（1行が参照で渡ってくるので書き換えられる&&false を返すと結果から除かれる）
             'output'    => null,
         ];
@@ -12182,18 +12715,22 @@ if (!isset($excluded_functions["csv_export"]) && (!function_exists("ryunosuke\\c
                 $size = 0;
                 $mb_internal_encoding = mb_internal_encoding();
                 if (!$headers) {
+                    $tmp = [];
                     foreach ($csvarrays as $array) {
-                        $headers = $headers ? array_intersect_key($headers, $array) : $array;
+                        $tmp = $tmp ? array_intersect_key($tmp, $array) : $array;
                     }
-                    $headers = array_keys($headers);
+                    $keys = array_keys($tmp);
+                    $headers = is_array($headers) ? $keys : array_combine($keys, $keys);
                 }
                 if (!is_hasharray($headers)) {
                     $headers = array_combine($headers, $headers);
                 }
-                if ($encoding !== $mb_internal_encoding) {
-                    mb_convert_variables($encoding, $mb_internal_encoding, $headers);
+                else {
+                    if ($encoding !== $mb_internal_encoding) {
+                        mb_convert_variables($encoding, $mb_internal_encoding, $headers);
+                    }
+                    $size += fputcsv($fp, $headers, $delimiter, $enclosure, $escape);
                 }
-                $size += fputcsv($fp, $headers, $delimiter, $enclosure, $escape);
                 $default = array_fill_keys(array_keys($headers), '');
 
                 foreach ($csvarrays as $n => $array) {
@@ -12526,7 +13063,7 @@ if (!isset($excluded_functions["paml_import"]) && (!function_exists("ryunosuke\\
      * - ほとんど yaml と同じだがフロースタイルのみでキーコロンの後のスペースは不要
      * - yaml のアンカーや複数ドキュメントのようなややこしい仕様はすべて未対応
      * - 配列を前提にしているので、トップレベルの `[]` `{}` は不要
-     * - 配列・連想配列の区別はなし。 `[]` でいわゆる php の配列、 `{}` で stdClass を表す
+     * - `[]` でいわゆる php の配列、 `{}` で stdClass を表す（オプション指定可能）
      * - bare string で php の定数を表す
      *
      * 簡易的な設定の注入に使える（yaml は標準で対応していないし、json や php 配列はクオートの必要やケツカンマ問題がある）。
@@ -12580,11 +13117,13 @@ if (!isset($excluded_functions["paml_import"]) && (!function_exists("ryunosuke\\
         $options += [
             'cache'          => true,
             'trailing-comma' => true,
+            'stdclass'       => true,
         ];
 
         static $caches = [];
         if ($options['cache']) {
-            return $caches[$pamlstring] = $caches[$pamlstring] ?? paml_import($pamlstring, ['cache' => false] + $options);
+            $key = $pamlstring . json_encode($options);
+            return $caches[$key] = $caches[$key] ?? paml_import($pamlstring, ['cache' => false] + $options);
         }
 
         $escapers = ['"' => '"', "'" => "'", '[' => ']', '{' => '}'];
@@ -12605,11 +13144,9 @@ if (!isset($excluded_functions["paml_import"]) && (!function_exists("ryunosuke\\
             $prefix = $value[0] ?? null;
             $suffix = $value[-1] ?? null;
 
-            if ($prefix === '[' && $suffix === ']') {
-                $value = (array) paml_import(substr($value, 1, -1), $options);
-            }
-            elseif ($prefix === '{' && $suffix === '}') {
-                $value = (object) paml_import(substr($value, 1, -1), $options);
+            if (($prefix === '[' && $suffix === ']') || ($prefix === '{' && $suffix === '}')) {
+                $value = paml_import(substr($value, 1, -1), $options);
+                $value = ($prefix === '[' || !$options['stdclass']) ? (array) $value : (object) $value;
             }
             elseif ($prefix === '"' && $suffix === '"') {
                 //$value = stripslashes(substr($value, 1, -1));
@@ -13399,6 +13936,8 @@ if (!isset($excluded_functions["str_guess"]) && (!function_exists("ryunosuke\\ch
      * $string に最も近い文字列を返す
      *
      * N-gram 化して類似度の高い結果を返す。
+     * $percent で一致度を受けられる。
+     * 予め値が入った変数を渡すとその一致度以上の候補を高い順で配列で返す。
      *
      * この関数の結果（内部実装）は互換性を考慮しない。
      *
@@ -13412,12 +13951,26 @@ if (!isset($excluded_functions["str_guess"]) && (!function_exists("ryunosuke\\ch
      *     'かとうあい', // マッチ度約 16.7%（"あい"があり"う"の位置が等しい）
      *     'あいゆえに', // マッチ度約 17.4%（"あい", "え"がマッチ）
      * ]))->isSame('あいゆえに');
+     *
+     * // マッチ度30%以上を高い順に配列で返す
+     * $percent = 30;
+     * that(str_guess("destory", [
+     *     'describe',
+     *     'destroy',
+     *     'destruct',
+     *     'destiny',
+     *     'destinate',
+     * ], $percent))->isSame([
+     *     'destroy',
+     *     'destiny',
+     *     'destruct',
+     * ]);
      * ```
      *
      * @param string $string 調べる文字列
      * @param array $candidates 候補文字列配列
      * @param float $percent マッチ度（％）を受ける変数
-     * @return string 候補の中で最も近い文字列
+     * @return string|array 候補の中で最も近い文字列
      */
     function str_guess($string, $candidates, &$percent = null)
     {
@@ -13437,9 +13990,8 @@ if (!isset($excluded_functions["str_guess"]) && (!function_exists("ryunosuke\\ch
 
         $sngram = $ngramer($string);
 
-        $result = null;
-        $percent = 0;
-        foreach ($candidates as $i => $candidate) {
+        $result = array_fill_keys($candidates, null);
+        foreach ($candidates as $candidate) {
             $cngram = $ngramer($candidate);
 
             // uni, bi, tri で重み付けスコア（var_dump したいことが多いので配列に入れる）
@@ -13455,22 +14007,20 @@ if (!isset($excluded_functions["str_guess"]) && (!function_exists("ryunosuke\\ch
             // 10(uni) + 20(bi) + 30(tri) + 1(levenshtein) で最大は 61
             $score = $score / 61 * 100;
 
-            /*
-            echo "$string <=> $candidate:
-  score1     : $scores[1]
-  score2     : $scores[2]
-  score3     : $scores[3]
-  score      : $score
-";
-            */
-
-            if ($percent <= $score) {
-                $percent = $score;
-                $result = $i;
-            }
+            $result[$candidate] = $score;
         }
 
-        return $candidates[$result];
+        arsort($result);
+        if ($percent === null) {
+            $percent = reset($result);
+        }
+        else {
+            return array_map('strval', array_keys(array_filter($result, function ($score) use ($percent) {
+                return $score >= $percent;
+            })));
+        }
+
+        return (string) key($result);
     }
 }
 if (function_exists("ryunosuke\\chmonos\\str_guess") && !defined("ryunosuke\\chmonos\\str_guess")) {
@@ -13995,12 +14545,12 @@ if (!isset($excluded_functions["indent_php"]) && (!function_exists("ryunosuke\\c
      *         }
      * ');
      * // 文字列を指定すればそれが使用される
-     * that(indent_php($phpcode, "\t"))->isSame('
-     * 	echo 123;
+     * that(indent_php($phpcode, "  "))->isSame('
+     *   echo 123;
      *
-     * 	if (true) {
-     * 	    echo 456;
-     * 	}
+     *   if (true) {
+     *       echo 456;
+     *   }
      * ');
      * // オプション指定
      * that(indent_php($phpcode, [
@@ -14339,7 +14889,7 @@ if (!isset($excluded_functions["optional"]) && (!function_exists("ryunosuke\\chm
      *
      * @param object|null $object オブジェクト
      * @param string $expected 期待するクラス名。指定した場合は is_a される
-     * @return mixed $object がオブジェクトならそのまま返し、違うなら NullObject を返す
+     * @return object $object がオブジェクトならそのまま返し、違うなら NullObject を返す
      */
     function optional($object, $expected = null)
     {
@@ -14368,6 +14918,7 @@ if (!isset($excluded_functions["optional"]) && (!function_exists("ryunosuke\\chm
                 // @formatter:on
             };
         }
+        /** @var object $nullobject */
         return $nullobject;
     }
 }
@@ -14386,7 +14937,8 @@ if (!isset($excluded_functions["chain"]) && (!function_exists("ryunosuke\\chmono
      * 下記の特殊ルールにより、特殊な呼び出し方ができる。
      *
      * - array_XXX, str_XXX は省略して XXX で呼び出せる
-     *   - 省略した結果、他の関数と被るようであれば短縮呼び出しは出来ない
+     *   - 省略した結果、他の関数と被るようであれば短縮呼び出しは出来ない（array_優先でコールされる）
+     *   - ini に 'rfunc.chain_overload' 定義されていれば型で分岐させることができる
      * - funcE で eval される文字列のクロージャを呼べる
      *   - 変数名は `$_` 固定だが、 `$_` が無いときに限り 最左に自動付与される
      * - funcP で配列指定オペレータのクロージャを呼べる
@@ -14536,22 +15088,24 @@ if (!isset($excluded_functions["chain"]) && (!function_exists("ryunosuke\\chmono
 
             private function _resolve($name)
             {
+                $overload = get_cfg_var('rfunc.chain_overload') ?: false; // for compatible
+                $isiterable = !$overload || is_iterable($this->data);
                 if (false
                     // for global
-                    || function_exists($fname = $name)
-                    || function_exists($fname = "array_$name")
-                    || function_exists($fname = "str_$name")
+                    || (function_exists($fname = $name))
+                    || ($isiterable && function_exists($fname = "array_$name"))
+                    || (function_exists($fname = "str_$name"))
                     // for package
                     || (defined($cname = $name) && is_callable($fname = constant($cname)))
-                    || (defined($cname = "array_$name") && is_callable($fname = constant($cname)))
+                    || ($isiterable && defined($cname = "array_$name") && is_callable($fname = constant($cname)))
                     || (defined($cname = "str_$name") && is_callable($fname = constant($cname)))
                     // for namespace
                     || (defined($cname = __NAMESPACE__ . "\\$name") && is_callable($fname = constant($cname)))
-                    || (defined($cname = __NAMESPACE__ . "\\array_$name") && is_callable($fname = constant($cname)))
+                    || ($isiterable && defined($cname = __NAMESPACE__ . "\\array_$name") && is_callable($fname = constant($cname)))
                     || (defined($cname = __NAMESPACE__ . "\\str_$name") && is_callable($fname = constant($cname)))
                     // for class
                     || (defined($cname = __CLASS__ . "::$name") && is_callable($fname = constant($cname)))
-                    || (defined($cname = __CLASS__ . "::array_$name") && is_callable($fname = constant($cname)))
+                    || ($isiterable && defined($cname = __CLASS__ . "::array_$name") && is_callable($fname = constant($cname)))
                     || (defined($cname = __CLASS__ . "::str_$name") && is_callable($fname = constant($cname)))
                 ) {
                     /** @noinspection PhpUndefinedVariableInspection */
@@ -16564,7 +17118,7 @@ if (!isset($excluded_functions["profiler"]) && (!function_exists("ryunosuke\\chm
                                     }
                                 }
                                 else {
-                                    if (preg_match($condition, $value) === false) {
+                                    if (!preg_match($condition, $value)) {
                                         continue 2;
                                     }
                                 }
@@ -17076,7 +17630,7 @@ if (!isset($excluded_functions["arrayable_key_exists"]) && (!function_exists("ry
      * that(isset($array['n']))->isFalse();                // isset だと null が false になる（参考）
      *
      * $object = new \ArrayObject($array);
-     * // 配列は array_key_exists と同じ
+     * // ArrayAccess は isset + 実際に取得を試みる
      * that(arrayable_key_exists('k', $object))->isTrue();  // もちろん存在する
      * that(arrayable_key_exists('n', $object))->isTrue();  // isset ではないので null も true
      * that(arrayable_key_exists('x', $object))->isFalse(); // 存在しないので false
@@ -17089,27 +17643,8 @@ if (!isset($excluded_functions["arrayable_key_exists"]) && (!function_exists("ry
      */
     function arrayable_key_exists($key, $arrayable)
     {
-        if (is_array($arrayable)) {
-            // see https://www.php.net/manual/function.array-key-exists.php#107786
-            return isset($arrayable[$key]) || array_key_exists($key, $arrayable);
-        }
-
-        if ($arrayable instanceof \ArrayAccess) {
-            // あるならあるでよい
-            if (isset($arrayable[$key])) {
-                return true;
-            }
-            // 問題は「ない場合」と「あるが null だった場合」の区別で、ArrayAccess の実装次第なので一元的に確定するのは不可能
-            // ここでは「ない場合はなんらかのエラー・例外が出るはず」という前提で実際に値を取得して確認する
-            try {
-                error_clear_last();
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $dummy = @$arrayable[$key];
-                return !error_get_last();
-            }
-            catch (\Throwable $t) {
-                return false;
-            }
+        if (is_array($arrayable) || $arrayable instanceof \ArrayAccess) {
+            return attr_exists($key, $arrayable);
         }
 
         throw new \InvalidArgumentException(sprintf('%s must be array or ArrayAccess (%s).', '$arrayable', var_type($arrayable)));
@@ -17117,6 +17652,119 @@ if (!isset($excluded_functions["arrayable_key_exists"]) && (!function_exists("ry
 }
 if (function_exists("ryunosuke\\chmonos\\arrayable_key_exists") && !defined("ryunosuke\\chmonos\\arrayable_key_exists")) {
     define("ryunosuke\\chmonos\\arrayable_key_exists", "ryunosuke\\chmonos\\arrayable_key_exists");
+}
+
+if (!isset($excluded_functions["attr_exists"]) && (!function_exists("ryunosuke\\chmonos\\attr_exists") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\attr_exists"))->isInternal()))) {
+    /**
+     * 配列・オブジェクトを問わずキーやプロパティの存在を確認する
+     *
+     * 配列が与えられた場合は array_key_exists と同じ。
+     * オブジェクトは一旦 isset で確認した後 null の場合は実際にアクセスして試みる。
+     *
+     * Example:
+     * ```php
+     * $array = [
+     *     'k' => 'v',
+     *     'n' => null,
+     * ];
+     * // 配列は array_key_exists と同じ
+     * that(attr_exists('k', $array))->isTrue();  // もちろん存在する
+     * that(attr_exists('n', $array))->isTrue();  // isset ではないので null も true
+     * that(attr_exists('x', $array))->isFalse(); // 存在しないので false
+     *
+     * $object = (object) $array;
+     * // オブジェクトでも使える
+     * that(attr_exists('k', $object))->isTrue();  // もちろん存在する
+     * that(attr_exists('n', $object))->isTrue();  // isset ではないので null も true
+     * that(attr_exists('x', $object))->isFalse(); // 存在しないので false
+     * ```
+     *
+     * @param int|string $key 調べるキー
+     * @param array|object $value 調べられる配列・オブジェクト
+     * @return bool $key が存在するなら true
+     */
+    function attr_exists($key, $value)
+    {
+        return attr_get($key, $value, $dummy = new \stdClass()) !== $dummy;
+    }
+}
+if (function_exists("ryunosuke\\chmonos\\attr_exists") && !defined("ryunosuke\\chmonos\\attr_exists")) {
+    define("ryunosuke\\chmonos\\attr_exists", "ryunosuke\\chmonos\\attr_exists");
+}
+
+if (!isset($excluded_functions["attr_get"]) && (!function_exists("ryunosuke\\chmonos\\attr_get") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\attr_get"))->isInternal()))) {
+    /**
+     * 配列・オブジェクトを問わずキーやプロパティの値を取得する
+     *
+     * 配列が与えられた場合は array_key_exists でチェック。
+     * オブジェクトは一旦 isset で確認した後 null の場合は実際にアクセスして取得する。
+     *
+     * Example:
+     * ```php
+     * $array = [
+     *     'k' => 'v',
+     *     'n' => null,
+     * ];
+     * that(attr_get('k', $array))->isSame('v');                  // もちろん存在する
+     * that(attr_get('n', $array))->isSame(null);                 // isset ではないので null も true
+     * that(attr_get('x', $array, 'default'))->isSame('default'); // 存在しないのでデフォルト値
+     *
+     * $object = (object) $array;
+     * // オブジェクトでも使える
+     * that(attr_get('k', $object))->isSame('v');                  // もちろん存在する
+     * that(attr_get('n', $object))->isSame(null);                 // isset ではないので null も true
+     * that(attr_get('x', $object, 'default'))->isSame('default'); // 存在しないのでデフォルト値
+     * ```
+     *
+     * @param int|string $key 取得するキー
+     * @param array|object $value 取得される配列・オブジェクト
+     * @param mixed $default なかった場合のデフォルト値
+     * @return mixed $key の値
+     */
+    function attr_get($key, $value, $default = null)
+    {
+        if (is_array($value)) {
+            // see https://www.php.net/manual/function.array-key-exists.php#107786
+            return isset($value[$key]) || array_key_exists($key, $value) ? $value[$key] : $default;
+        }
+
+        if ($value instanceof \ArrayAccess) {
+            // あるならあるでよい
+            if (isset($value[$key])) {
+                return $value[$key];
+            }
+            // 問題は「ない場合」と「あるが null だった場合」の区別で、ArrayAccess の実装次第なので一元的に確定するのは不可能
+            // ここでは「ない場合はなんらかのエラー・例外が出るはず」という前提で実際に値を取得して確認する
+            try {
+                error_clear_last();
+                $result = @$value[$key];
+                return error_get_last() ? $default : $result;
+            }
+            catch (\Throwable $t) {
+                return $default;
+            }
+        }
+
+        // 上記のプロパティ版
+        if (is_object($value)) {
+            if (isset($value->$key)) {
+                return $value->$key;
+            }
+            try {
+                error_clear_last();
+                $result = @$value->$key;
+                return error_get_last() ? $default : $result;
+            }
+            catch (\Throwable $t) {
+                return $default;
+            }
+        }
+
+        throw new \InvalidArgumentException(sprintf('%s must be array or object (%s).', '$value', var_type($value)));
+    }
+}
+if (function_exists("ryunosuke\\chmonos\\attr_get") && !defined("ryunosuke\\chmonos\\attr_get")) {
+    define("ryunosuke\\chmonos\\attr_get", "ryunosuke\\chmonos\\attr_get");
 }
 
 if (!isset($excluded_functions["si_prefix"]) && (!function_exists("ryunosuke\\chmonos\\si_prefix") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\si_prefix"))->isInternal()))) {
@@ -17965,26 +18613,42 @@ if (!isset($excluded_functions["var_pretty"]) && (!function_exists("ryunosuke\\c
      * ```
      *
      * @param mixed $value 出力する値
-     * @param string|null $context 出力コンテキスト（[null, "plain", "cli", "html"]）。 null を渡すと自動判別される
+     * @param array|string|null $context 出力コンテキスト（[null, "plain", "cli", "html"]）。 null を渡すと自動判別される
      * @param bool $return 出力するのではなく値を返すなら true
      * @return string $return: true なら値の出力結果
      */
     function var_pretty($value, $context = null, $return = false)
     {
-        // インデントの空白数
-        $INDENT = 2;
+        $options = [
+            'indent'    => 2,     // インデントの空白数
+            'context'   => null,  // html なコンテキストか cli なコンテキスト化
+            'return'    => false, // 値を戻すか出力するか
+            'trace'     => false, // スタックトレースの表示
+            'maxcount'  => null,  // 複合型の要素の数
+            'maxdepth'  => null,  // 階層構造の深さ
+            'maxlength' => null,  // 最終出力の文字数
+        ];
 
-        if ($context === null) {
-            $context = 'html'; // SAPI でテストカバレッジが辛いので if else ではなくデフォルト代入にしてある
+        // for compatible
+        if (!is_array($context)) {
+            $context = [
+                'context' => $context,
+                'return'  => $return,
+            ];
+        }
+        $options = array_replace($options, $context);
+
+        if ($options['context'] === null) {
+            $options['context'] = 'html'; // SAPI でテストカバレッジが辛いので if else ではなくデフォルト代入にしてある
             if (PHP_SAPI === 'cli') {
-                $context = is_ansi(STDOUT) && !$return ? 'cli' : 'plain';
+                $options['context'] = is_ansi(STDOUT) && !$options['return'] ? 'cli' : 'plain';
             }
         }
 
-        $colorAdapter = static function ($value, $style) use ($context) {
-            switch ($context) {
+        $colorAdapter = static function ($value, $style) use ($options) {
+            switch ($options['context']) {
                 default:
-                    throw new \InvalidArgumentException("'$context' is not supported.");
+                    throw new \InvalidArgumentException("'{$options['context']}' is not supported.");
                 case 'plain':
                     return $value;
                 case 'cli':
@@ -17996,77 +18660,169 @@ if (!isset($excluded_functions["var_pretty"]) && (!function_exists("ryunosuke\\c
             }
         };
 
-        $colorKey = static function ($value) use ($colorAdapter) {
-            if (is_int($value)) {
-                return $colorAdapter($value, 'bold');
-            }
-            return $colorAdapter($value, 'red');
-        };
-        $colorVal = static function ($value) use ($colorAdapter) {
-            switch (true) {
-                case is_null($value):
-                    return $colorAdapter('null', 'bold');
-                case is_object($value):
-                    return $colorAdapter(get_class($value), 'green') . "#" . spl_object_id($value);
-                case is_bool($value):
-                    return $colorAdapter(var_export($value, true), 'bold');
-                case is_int($value) || is_float($value) || is_string($value):
-                    return $colorAdapter(var_export($value, true), 'magenta');
-                case is_resource($value):
-                    return $colorAdapter(sprintf('%s of type (%s)', $value, get_resource_type($value)), 'bold');
+        $output = '';
+        $length = 0;
+        $appender = function (...$tokens) use (&$output, &$length, $colorAdapter, $options) {
+            foreach ($tokens as $token) {
+                $mode = $token[0];
+                $value = $token[1];
+                switch ($mode) {
+                    case 'plain':
+                        $string = $value;
+                        $result = $value;
+                        break;
+                    case 'index':
+                        $string = $value;
+                        switch (true) {
+                            case is_int($value):
+                                $result = $colorAdapter($value, 'bold');
+                                break;
+                            case is_string($value):
+                                $result = $colorAdapter($value, 'red');
+                                break;
+                            default:
+                                throw new \DomainException(); // @codeCoverageIgnore
+                        }
+                        break;
+                    case 'value':
+                        switch (true) {
+                            case is_null($value):
+                                $string = 'null';
+                                $result = $colorAdapter($string, 'bold');
+                                break;
+                            case is_object($value):
+                                $string = get_class($value) . "#" . spl_object_id($value);
+                                $result = $colorAdapter($string, 'green');
+                                break;
+                            case is_bool($value):
+                                $string = var_export($value, true);
+                                $result = $colorAdapter($string, 'bold');
+                                break;
+                            case is_scalar($value):
+                                $string = var_export($value, true);
+                                $result = $colorAdapter($string, 'magenta');
+                                break;
+                            case is_resource($value):
+                                $string = sprintf('%s of type (%s)', $value, get_resource_type($value));
+                                $result = $colorAdapter($string, 'bold');
+                                break;
+                            default:
+                                throw new \DomainException(); // @codeCoverageIgnore
+                        }
+                        break;
+                    default:
+                        throw new \DomainException(); // @codeCoverageIgnore
+                }
+                if ($options['maxlength'] && $options['maxlength'] < $length += strlen($string)) {
+                    throw new \LengthException();
+                }
+                $output .= $result;
             }
         };
 
         // 再帰用クロージャ
-        $export = function ($value, $nest = 0, $parents = []) use (&$export, $INDENT, $colorKey, $colorVal) {
+        $export = function ($value, $nest = 0, $parents = []) use (&$export, $appender, $options) {
             // 再帰を検出したら *RECURSION* とする（処理に関しては is_recursive のコメント参照）
             foreach ($parents as $parent) {
                 if ($parent === $value) {
-                    return $export('*RECURSION*');
+                    return $appender(['plain', '*RECURSION*']);
                 }
             }
+
             if (is_array($value)) {
+                $parents[] = $value;
+
+                if ($options['maxdepth'] && $nest + 1 > $options['maxdepth']) {
+                    $appender(['plain', '(too deep)']);
+                    return;
+                }
+
+                $omitted = false;
+                if ($options['maxcount'] && ($omitted = count($value) - $options['maxcount']) > 0) {
+                    $value = array_slice($value, 0, $options['maxcount'], true);
+                }
+
                 // スカラー値のみで構成されているならシンプルな再帰
                 if (!is_hasharray($value) && array_all($value, is_primitive)) {
-                    return '[' . implode(', ', array_map($export, $value)) . ']';
+                    $last = array_pop($value);
+                    $appender(['plain', '[']);
+                    foreach ($value as $v) {
+                        $appender(['value', $v], ['plain', ', ']);
+                    }
+                    $appender(['value', $last]);
+                    if ($omitted > 0) {
+                        $appender(['plain', " (more $omitted elements)"]);
+                    }
+                    $appender(['plain', ']']);
                 }
+                else {
+                    $spacer1 = str_repeat(' ', ($nest + 1) * $options['indent']);
+                    $spacer2 = str_repeat(' ', $nest * $options['indent']);
 
-                $spacer1 = str_repeat(' ', ($nest + 1) * $INDENT);
-                $spacer2 = str_repeat(' ', $nest * $INDENT);
-
-                $kvl = '';
-                $parents[] = $value;
-                foreach ($value as $k => $v) {
-                    $keystr = $colorKey($k) . ': ';
-                    $kvl .= $spacer1 . $keystr . $export($v, $nest + 1, $parents) . ",\n";
+                    $appender(['plain', "{\n"]);
+                    foreach ($value as $k => $v) {
+                        $appender(['plain', $spacer1], ['index', $k], ['plain', ': ']);
+                        $export($v, $nest + 1, $parents);
+                        $appender(['plain', ",\n"]);
+                    }
+                    if ($omitted > 0) {
+                        $appender(['plain', $spacer1]);
+                        $appender(['plain', "(more $omitted elements)\n"]);
+                    }
+                    $appender(['plain', "{$spacer2}}"]);
                 }
-                return "{\n{$kvl}{$spacer2}}";
             }
             elseif ($value instanceof \Closure) {
                 /** @var \ReflectionFunctionAbstract $ref */
                 $ref = reflect_callable($value);
                 $that = $ref->getClosureThis();
-                $thatT = $that ? $colorVal($that) : 'static';
                 $properties = $ref->getStaticVariables();
-                $propT = $properties ? $export($properties, $nest, $parents) : '{}';
-                return $colorVal($value) . "($thatT) use $propT";
+
+                $appender(['value', $value], ['plain', "("], $that ? ['value', $that] : ['plain', 'static'], ['plain', ') use ']);
+                if ($properties) {
+                    $export($properties, $nest, $parents);
+                }
+                else {
+                    $appender(['plain', '{}']);
+                }
             }
             elseif (is_object($value)) {
                 $parents[] = $value;
                 $properties = get_object_properties($value);
-                return $colorVal($value) . ' ' . ($properties ? $export($properties, $nest, $parents) : '{}');
+
+                $appender(['value', $value], ['plain', " "]);
+                if ($properties) {
+                    $export($properties, $nest, $parents);
+                }
+                else {
+                    $appender(['plain', '{}']);
+                }
             }
             else {
-                return $colorVal($value);
+                $appender(['value', $value]);
             }
         };
 
+        try {
+            $export($value);
+        }
+        catch (\LengthException $ex) {
+            $output .= '(...omitted)';
+        }
+
         // 結果を返したり出力したり
-        $result = ($return ? '' : implode("\n", array_reverse(stacktrace(null, ['format' => "%s:%s", 'args' => false, 'delimiter' => null]))) . "\n") . $export($value);
-        if ($context === 'html') {
+        $traces = [];
+        if ($options['trace']) {
+            $traces = stacktrace(null, ['format' => "%s:%s", 'args' => false, 'delimiter' => null]);
+            $traces = array_reverse(array_slice($traces, 0, $options['trace'] === true ? null : $options['trace']));
+            $traces[] = '';
+        }
+        $result = implode("\n", $traces) . $output;
+
+        if ($options['context'] === 'html') {
             $result = "<pre>$result</pre>";
         }
-        if ($return) {
+        if ($options['return']) {
             return $result;
         }
         echo $result, "\n";

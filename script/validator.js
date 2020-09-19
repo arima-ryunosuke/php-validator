@@ -38,7 +38,8 @@ function Chmonos(form, options) {
     };
 
     /// phpjs のインポート
-    /**/var array_count_values = this.array_count_values = (function(){
+    /**/
+var array_count_values = this.array_count_values = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -100,11 +101,10 @@ module.exports = function array_count_values(array) {
 
   return tmpArr;
 };
-//# sourceMappingURL=array_count_values.js.map
 return module.exports;
 })();
-
-/**/var array_flip = this.array_flip = (function(){
+/**/
+var array_flip = this.array_flip = (function(){
 "use strict";
 
 module.exports = function array_flip(trans) {
@@ -128,11 +128,10 @@ module.exports = function array_flip(trans) {
 
   return tmpArr;
 };
-//# sourceMappingURL=array_flip.js.map
 return module.exports;
 })();
-
-/**/var array_intersect_key = this.array_intersect_key = (function(){
+/**/
+var array_intersect_key = this.array_intersect_key = (function(){
 'use strict';
 
 module.exports = function array_intersect_key(arr1) {
@@ -182,11 +181,10 @@ module.exports = function array_intersect_key(arr1) {
 
   return retArr;
 };
-//# sourceMappingURL=array_intersect_key.js.map
 return module.exports;
 })();
-
-/**/var array_keys = this.array_keys = (function(){
+/**/
+var array_keys = this.array_keys = (function(){
 'use strict';
 
 module.exports = function array_keys(input, searchValue, argStrict) {
@@ -227,11 +225,10 @@ module.exports = function array_keys(input, searchValue, argStrict) {
 
   return tmpArr;
 };
-//# sourceMappingURL=array_keys.js.map
 return module.exports;
 })();
-
-/**/var array_reduce = this.array_reduce = (function(){
+/**/
+var array_reduce = this.array_reduce = (function(){
 /**
  * array_reduce
  *
@@ -251,8 +248,8 @@ module.exports = function array_reduce(input, callback, initial) {
 };
 return module.exports;
 })();
-
-/**/var count = this.count = (function(){
+/**/
+var count = this.count = (function(){
 'use strict';
 
 module.exports = function count(mixedVar, mode) {
@@ -295,11 +292,10 @@ module.exports = function count(mixedVar, mode) {
 
   return cnt;
 };
-//# sourceMappingURL=count.js.map
 return module.exports;
 })();
-
-/**/var end = this.end = (function(){
+/**/
+var end = this.end = (function(){
 'use strict';
 
 module.exports = function end(arr) {
@@ -359,11 +355,10 @@ module.exports = function end(arr) {
   pointers[arrpos + 1] = arr.length - 1;
   return arr[pointers[arrpos + 1]];
 };
-//# sourceMappingURL=end.js.map
 return module.exports;
 })();
-
-/**/var in_array = this.in_array = (function(){
+/**/
+var in_array = this.in_array = (function(){
 'use strict';
 
 module.exports = function in_array(needle, haystack, argStrict) {
@@ -408,11 +403,10 @@ module.exports = function in_array(needle, haystack, argStrict) {
 
   return false;
 };
-//# sourceMappingURL=in_array.js.map
 return module.exports;
 })();
-
-/**/var key = this.key = (function(){
+/**/
+var key = this.key = (function(){
 'use strict';
 
 module.exports = function key(arr) {
@@ -466,11 +460,10 @@ module.exports = function key(arr) {
 
   return cursor;
 };
-//# sourceMappingURL=key.js.map
 return module.exports;
 })();
-
-/**/var ctype_digit = this.ctype_digit = (function(){
+/**/
+var ctype_digit = this.ctype_digit = (function(){
 'use strict';
 
 module.exports = function ctype_digit(text) {
@@ -494,11 +487,10 @@ module.exports = function ctype_digit(text) {
 
   return text.search(p.locales[p.localeCategories.LC_CTYPE].LC_CTYPE.dg) !== -1;
 };
-//# sourceMappingURL=ctype_digit.js.map
 return module.exports;
 })();
-
-/**/var setlocale = this.setlocale = (function(){
+/**/
+var setlocale = this.setlocale = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -833,11 +825,10 @@ module.exports = function setlocale(category, locale) {
 
   return locale;
 };
-//# sourceMappingURL=setlocale.js.map
 return module.exports;
 })();
-
-/**/var date = this.date = (function(){
+/**/
+var date = this.date = (function(){
 'use strict';
 
 module.exports = function date(format, timestamp) {
@@ -1155,11 +1146,10 @@ module.exports = function date(format, timestamp) {
 
   return _date(format, timestamp);
 };
-//# sourceMappingURL=date.js.map
 return module.exports;
 })();
-
-/**/var idate = this.idate = (function(){
+/**/
+var idate = this.idate = (function(){
 'use strict';
 
 module.exports = function idate(format, timestamp) {
@@ -1230,11 +1220,10 @@ module.exports = function idate(format, timestamp) {
       throw new Error('Unrecognized _date format token');
   }
 };
-//# sourceMappingURL=idate.js.map
 return module.exports;
 })();
-
-/**/var strtotime = this.strtotime = (function(){
+/**/
+var strtotime = this.strtotime = (function(){
 'use strict';
 
 var reSpace = '[ \\t]+';
@@ -2318,11 +2307,10 @@ module.exports = function strtotime(str, now) {
 
   return Math.floor(result.toDate(new Date(now * 1000)) / 1000);
 };
-//# sourceMappingURL=strtotime.js.map
 return module.exports;
 })();
-
-/**/var time = this.time = (function(){
+/**/
+var time = this.time = (function(){
 "use strict";
 
 module.exports = function time() {
@@ -2337,11 +2325,10 @@ module.exports = function time() {
 
   return Math.floor(new Date().getTime() / 1000);
 };
-//# sourceMappingURL=time.js.map
 return module.exports;
 })();
-
-/**/var json_decode = this.json_decode = (function(){
+/**/
+var json_decode = this.json_decode = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -2429,11 +2416,10 @@ module.exports = function json_decode(strJson) {
   $locutus.php.last_error_json = 4;
   return null;
 };
-//# sourceMappingURL=json_decode.js.map
 return module.exports;
 })();
-
-/**/var log = this.log = (function(){
+/**/
+var log = this.log = (function(){
 'use strict';
 
 module.exports = function log(arg, base) {
@@ -2445,11 +2431,10 @@ module.exports = function log(arg, base) {
 
   return typeof base === 'undefined' ? Math.log(arg) : Math.log(arg) / Math.log(base);
 };
-//# sourceMappingURL=log.js.map
 return module.exports;
 })();
-
-/**/var preg_match = this.preg_match = (function(){
+/**/
+var preg_match = this.preg_match = (function(){
 /**
  * preg_match
  *
@@ -2489,8 +2474,8 @@ module.exports = function preg_match(pattern, subject, matches) {
 };
 return module.exports;
 })();
-
-/**/var join = this.join = (function(){
+/**/
+var join = this.join = (function(){
 'use strict';
 
 module.exports = function join(glue, pieces) {
@@ -2502,11 +2487,10 @@ module.exports = function join(glue, pieces) {
   var implode = require('../strings/implode');
   return implode(glue, pieces);
 };
-//# sourceMappingURL=join.js.map
 return module.exports;
 })();
-
-/**/var implode = this.implode = (function(){
+/**/
+var implode = this.implode = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -2544,11 +2528,10 @@ module.exports = function implode(glue, pieces) {
 
   return pieces;
 };
-//# sourceMappingURL=implode.js.map
 return module.exports;
 })();
-
-/**/var ltrim = this.ltrim = (function(){
+/**/
+var ltrim = this.ltrim = (function(){
 'use strict';
 
 module.exports = function ltrim(str, charlist) {
@@ -2566,11 +2549,10 @@ module.exports = function ltrim(str, charlist) {
 
   return (str + '').replace(re, '');
 };
-//# sourceMappingURL=ltrim.js.map
 return module.exports;
 })();
-
-/**/var printf = this.printf = (function(){
+/**/
+var printf = this.printf = (function(){
 'use strict';
 
 module.exports = function printf() {
@@ -2587,11 +2569,10 @@ module.exports = function printf() {
   echo(ret);
   return ret.length;
 };
-//# sourceMappingURL=printf.js.map
 return module.exports;
 })();
-
-/**/var sprintf = this.sprintf = (function(){
+/**/
+var sprintf = this.sprintf = (function(){
 'use strict';
 
 module.exports = function sprintf() {
@@ -2784,11 +2765,10 @@ module.exports = function sprintf() {
     return false;
   }
 };
-//# sourceMappingURL=sprintf.js.map
 return module.exports;
 })();
-
-/**/var getenv = this.getenv = (function(){
+/**/
+var getenv = this.getenv = (function(){
 'use strict';
 
 module.exports = function getenv(varname) {
@@ -2803,11 +2783,10 @@ module.exports = function getenv(varname) {
 
   return process.env[varname];
 };
-//# sourceMappingURL=getenv.js.map
 return module.exports;
 })();
-
-/**/var split = this.split = (function(){
+/**/
+var split = this.split = (function(){
 'use strict';
 
 module.exports = function split(delimiter, string) {
@@ -2819,11 +2798,10 @@ module.exports = function split(delimiter, string) {
   var explode = require('../strings/explode');
   return explode(delimiter, string);
 };
-//# sourceMappingURL=split.js.map
 return module.exports;
 })();
-
-/**/var explode = this.explode = (function(){
+/**/
+var explode = this.explode = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -2876,11 +2854,10 @@ module.exports = function explode(delimiter, string, limit) {
   s.splice(s.length + limit);
   return s;
 };
-//# sourceMappingURL=explode.js.map
 return module.exports;
 })();
-
-/**/var str_split = this.str_split = (function(){
+/**/
+var str_split = this.str_split = (function(){
 'use strict';
 
 module.exports = function str_split(string, splitLength) {
@@ -2913,11 +2890,10 @@ module.exports = function str_split(string, splitLength) {
 
   return chunks;
 };
-//# sourceMappingURL=str_split.js.map
 return module.exports;
 })();
-
-/**/var strlen = this.strlen = (function(){
+/**/
+var strlen = this.strlen = (function(){
 'use strict';
 
 module.exports = function strlen(string) {
@@ -2993,11 +2969,10 @@ module.exports = function strlen(string) {
 
   return lgth;
 };
-//# sourceMappingURL=strlen.js.map
 return module.exports;
 })();
-
-/**/var ini_get = this.ini_get = (function(){
+/**/
+var ini_get = this.ini_get = (function(){
 'use strict';
 
 module.exports = function ini_get(varname) {
@@ -3024,11 +2999,10 @@ module.exports = function ini_get(varname) {
 
   return '';
 };
-//# sourceMappingURL=ini_get.js.map
 return module.exports;
 })();
-
-/**/var strtolower = this.strtolower = (function(){
+/**/
+var strtolower = this.strtolower = (function(){
 'use strict';
 
 module.exports = function strtolower(str) {
@@ -3040,11 +3014,10 @@ module.exports = function strtolower(str) {
 
   return (str + '').toLowerCase();
 };
-//# sourceMappingURL=strtolower.js.map
 return module.exports;
 })();
-
-/**/var trim = this.trim = (function(){
+/**/
+var trim = this.trim = (function(){
 'use strict';
 
 module.exports = function trim(str, charlist) {
@@ -3092,11 +3065,10 @@ module.exports = function trim(str, charlist) {
 
   return whitespace.indexOf(str.charAt(0)) === -1 ? str : '';
 };
-//# sourceMappingURL=trim.js.map
 return module.exports;
 })();
-
-/**/var vsprintf = this.vsprintf = (function(){
+/**/
+var vsprintf = this.vsprintf = (function(){
 'use strict';
 
 module.exports = function vsprintf(format, args) {
@@ -3109,11 +3081,10 @@ module.exports = function vsprintf(format, args) {
 
   return sprintf.apply(this, [format].concat(args));
 };
-//# sourceMappingURL=vsprintf.js.map
 return module.exports;
 })();
-
-/**/var parse_url = this.parse_url = (function(){
+/**/
+var parse_url = this.parse_url = (function(){
 'use strict';
 
 module.exports = function parse_url(str, component) {
@@ -3184,11 +3155,10 @@ module.exports = function parse_url(str, component) {
   delete uri.source;
   return uri;
 };
-//# sourceMappingURL=parse_url.js.map
 return module.exports;
 })();
-
-/**/var is_array = this.is_array = (function(){
+/**/
+var is_array = this.is_array = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -3286,11 +3256,10 @@ module.exports = function is_array(mixedVar) {
 
   return false;
 };
-//# sourceMappingURL=is_array.js.map
 return module.exports;
 })();
-
-/**/var is_float = this.is_float = (function(){
+/**/
+var is_float = this.is_float = (function(){
 "use strict";
 
 module.exports = function is_float(mixedVar) {
@@ -3307,11 +3276,10 @@ module.exports = function is_float(mixedVar) {
 
   return +mixedVar === mixedVar && (!isFinite(mixedVar) || !!(mixedVar % 1));
 };
-//# sourceMappingURL=is_float.js.map
 return module.exports;
 })();
-
-/**/var is_int = this.is_int = (function(){
+/**/
+var is_int = this.is_int = (function(){
 "use strict";
 
 module.exports = function is_int(mixedVar) {
@@ -3336,11 +3304,10 @@ module.exports = function is_int(mixedVar) {
 
   return mixedVar === +mixedVar && isFinite(mixedVar) && !(mixedVar % 1);
 };
-//# sourceMappingURL=is_int.js.map
 return module.exports;
 })();
-
-/**/var is_null = this.is_null = (function(){
+/**/
+var is_null = this.is_null = (function(){
 "use strict";
 
 module.exports = function is_null(mixedVar) {
@@ -3354,11 +3321,10 @@ module.exports = function is_null(mixedVar) {
 
   return mixedVar === null;
 };
-//# sourceMappingURL=is_null.js.map
 return module.exports;
 })();
-
-/**/var is_string = this.is_string = (function(){
+/**/
+var is_string = this.is_string = (function(){
 'use strict';
 
 module.exports = function is_string(mixedVar) {
@@ -3372,11 +3338,10 @@ module.exports = function is_string(mixedVar) {
 
   return typeof mixedVar === 'string';
 };
-//# sourceMappingURL=is_string.js.map
 return module.exports;
 })();
-
-/**/var isset = this.isset = (function(){
+/**/
+var isset = this.isset = (function(){
 'use strict';
 
 module.exports = function isset() {
@@ -3408,11 +3373,10 @@ module.exports = function isset() {
 
   return true;
 };
-//# sourceMappingURL=isset.js.map
 return module.exports;
 })();
-
-/**/var strval = this.strval = (function(){
+/**/
+var strval = this.strval = (function(){
 'use strict';
 
 module.exports = function strval(str) {
@@ -3448,11 +3412,10 @@ module.exports = function strval(str) {
 
   return str;
 };
-//# sourceMappingURL=strval.js.map
 return module.exports;
 })();
-
-/**/var gettype = this.gettype = (function(){
+/**/
+var gettype = this.gettype = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -3521,11 +3484,10 @@ module.exports = function gettype(mixedVar) {
 
   return s;
 };
-//# sourceMappingURL=gettype.js.map
 return module.exports;
 })();
-
-/**/var filesize = this.filesize = (function(){
+/**/
+var filesize = this.filesize = (function(){
 /**
  * filesize
  *
@@ -3539,8 +3501,8 @@ module.exports = function filesize(file) {
 };
 return module.exports;
 })();
-
-/**/var getimagesize = this.getimagesize = (function(){
+/**/
+var getimagesize = this.getimagesize = (function(){
 /**
  * getimagesize
  *
@@ -3573,8 +3535,8 @@ module.exports = function getimagesize(file) {
 };
 return module.exports;
 })();
-
-/**/var mb_strlen = this.mb_strlen = (function(){
+/**/
+var mb_strlen = this.mb_strlen = (function(){
 /**
  * mb_strlen
  *
@@ -3585,8 +3547,8 @@ module.exports = function mb_strlen(str) {
 };
 return module.exports;
 })();
-
-/**/var mime_content_type = this.mime_content_type = (function(){
+/**/
+var mime_content_type = this.mime_content_type = (function(){
 /**
  * mime_content_type
  *
@@ -3600,7 +3562,6 @@ module.exports = function mime_content_type(file) {
 };
 return module.exports;
 })();
-
 /**/
 
     /// 検証ルールのインポート
