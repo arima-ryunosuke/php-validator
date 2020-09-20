@@ -7,6 +7,37 @@ class HtmlableTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
     use Htmlable;
 
+    function test_convertHtmlAttrs()
+    {
+        $expected = [
+            'id'       => 'hoge',
+            'class'    => 'c1 c2',
+            'href'     => 'http://hoge[]',
+            'target'   => 'hoge[]',
+            'hidden'   => true,
+            'readonly' => false,
+            'style'    => [
+                'width'  => '123px!important',
+                'height' => '456px',
+            ],
+        ];
+
+        $this->assertEquals($expected, $this->convertHtmlAttrs('.c1#hoge.c2[target=hoge\[\]][href="http://hoge[]"][hidden][!readonly]{width:123px!important;height:456px;}'));
+
+        $this->assertEquals($expected, $this->convertHtmlAttrs([
+            'id'       => 'hoge',
+            'class'    => ['c1', 'c2'],
+            'href'     => 'http://hoge[]',
+            'target'   => 'hoge[]',
+            'hidden'   => true,
+            'readonly' => false,
+            'style'    => [
+                'width'  => '123px!important',
+                'height' => '456px',
+            ],
+        ]));
+    }
+
     function test_createHtmlAttr()
     {
         $this->assertEquals('a="1" b="&amp;"', $this->createHtmlAttr([

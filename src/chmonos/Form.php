@@ -182,7 +182,7 @@ class Form
      * 必要な js とか属性とかも同時に吐かれる。
      * 空呼び出しで閉じタグになる。
      *
-     * @param array $attrs 属性連想配列
+     * @param array|string $attrs 属性連想配列・CSSセレクタ文字列
      * @return string html 文字列
      */
     public function form($attrs = [])
@@ -196,6 +196,8 @@ class Form
         if (func_num_args() > 0) {
             $this->currents = [];
             $this->templateValues = [];
+
+            $attrs = $this->convertHtmlAttrs($attrs);
 
             // ファイルを持っているなら強制的に multipart/form-data な post にする。
             if ($this->context->hasInputFile()) {
@@ -288,11 +290,13 @@ class Form
      * UI ラベルの描画
      *
      * @param string $name 要素名
-     * @param array $attrs 属性連想配列
+     * @param array|string $attrs 属性連想配列・CSSセレクタ文字列
      * @return string html 文字列
      */
     public function label($name, $attrs = [])
     {
+        $attrs = $this->convertHtmlAttrs($attrs);
+
         if ($this->currents) {
             [$cname, $cindex] = last_keyvalue($this->currents);
             $name = "$cname/$name";
@@ -310,11 +314,13 @@ class Form
      * UI インプットの描画
      *
      * @param string $name 要素名
-     * @param array $attrs 属性連想配列
+     * @param array|string $attrs 属性連想配列・CSSセレクタ文字列
      * @return string html 文字列
      */
     public function input($name, $attrs = [])
     {
+        $attrs = $this->convertHtmlAttrs($attrs);
+
         if ($this->currents) {
             [$cname, $cindex] = last_keyvalue($this->currents);
             $name = "$cname/$name";

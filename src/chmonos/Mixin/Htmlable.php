@@ -2,9 +2,21 @@
 namespace ryunosuke\chmonos\Mixin;
 
 use function ryunosuke\chmonos\array_sprintf;
+use function ryunosuke\chmonos\css_selector;
 
 trait Htmlable
 {
+    public static function convertHtmlAttrs($attrs)
+    {
+        if (is_string($attrs)) {
+            $attrs = css_selector($attrs);
+        }
+        if (isset($attrs['class']) && is_array($attrs['class'])) {
+            $attrs['class'] = implode(' ', $attrs['class']);
+        }
+        return $attrs;
+    }
+
     public static function createHtmlAttr($attrs, $arg = null)
     {
         $attrs = array_filter($attrs, function ($v) { return $v !== false; });
