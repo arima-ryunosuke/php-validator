@@ -338,7 +338,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // 開始タグ
         {
-            $content = $form->form(['id' => 'hoge']);
+            $content = $form->open(['id' => 'hoge']);
 
             // form 開始タグから始まる
             $this->assertStringStartsWith('<form', $content);
@@ -490,7 +490,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // 終了タグ
         {
-            $content = $form->form();
+            $content = $form->close();
 
             // <script> タグから始まる
             $this->assertStringStartsWith('<script nonce="fuga">', $content);

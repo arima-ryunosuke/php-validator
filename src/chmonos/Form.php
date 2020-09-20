@@ -240,6 +240,16 @@ class Form
         }
     }
 
+    public function open($attrs)
+    {
+        return $this->form($attrs);
+    }
+
+    public function close()
+    {
+        return $this->form();
+    }
+
     public function context($name = null, $index = null)
     {
         if (func_num_args() > 0) {
