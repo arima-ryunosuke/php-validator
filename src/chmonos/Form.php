@@ -62,6 +62,22 @@ class Form
     }
 
     /**
+     * input 要素があるか返す isset プロキシ
+     *
+     * @see Context
+     * @param string $name 要素名
+     * @return bool
+     */
+    public function __isset($name)
+    {
+        if ($name === 'context') {
+            return false;
+        }
+
+        return isset($this->context->$name);
+    }
+
+    /**
      * input 要素を返す get プロキシ
      *
      * @see Context

@@ -39,6 +39,26 @@ class Context implements \IteratorAggregate
     }
 
     /**
+     * input メンバがあるか調べる
+     *
+     * @param string $name 要素の名前
+     * @return bool
+     */
+    public function __isset($name)
+    {
+        if (isset($this->inputs[$name])) {
+            return true;
+        }
+
+        if (strpos($name, '/') !== false) {
+            [$name, $rest] = explode('/', $name, 2);
+            return isset($this->inputs[$name]->context->$rest);
+        }
+
+        return false;
+    }
+
+    /**
      * input メンバへのプロクシ
      *
      * @param string $name 要素の名前

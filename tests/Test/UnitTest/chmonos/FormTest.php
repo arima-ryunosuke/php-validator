@@ -21,6 +21,17 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertInstanceOf(Context::class, $form->context);
     }
 
+    function test___isset()
+    {
+        $form = new Form([
+            'hoge_input' => []
+        ]);
+
+        $this->assertTrue(isset($form->hoge_input));
+        $this->assertFalse(isset($form->context));
+        $this->assertFalse(isset($form->undefined));
+    }
+
     function test___get()
     {
         $form = new Form([

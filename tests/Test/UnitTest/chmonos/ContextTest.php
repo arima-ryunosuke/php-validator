@@ -101,6 +101,17 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertInstanceOf(CustomInput::class, $context->parent->context->child);
     }
 
+    function test___isset()
+    {
+        $context = new Context($this->_getRules());
+        $this->assertTrue(isset($context->parent));
+        $this->assertTrue(isset($context->children));
+        $this->assertFalse(isset($context->undefined));
+        $this->assertTrue(isset($context->{"children/child1"}));
+        $this->assertTrue(isset($context->{"children/child2"}));
+        $this->assertFalse(isset($context->{"children/child3"}));
+    }
+
     function test___get()
     {
         $context = new Context($this->_getRules());
