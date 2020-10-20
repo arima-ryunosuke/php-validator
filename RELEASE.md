@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.3
+
+- [Context] isset を実装
+
 ## 1.0.2
 
 - [bin] npm コマンドが動いていなかったので修正
