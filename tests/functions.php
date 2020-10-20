@@ -5893,7 +5893,7 @@ if (!isset($excluded_functions["date_convert"]) && (!function_exists("ryunosuke\
         if ($datetimedata === null) {
             $timestamp = microtime(true);
         }
-        elseif ($datetimedata instanceof \DateTime) {
+        elseif ($datetimedata instanceof \DateTimeInterface) {
             // @fixme DateTime オブジェクトって timestamp を float で得られないの？
             $timestamp = (float) $datetimedata->format('U.u');
         }
@@ -5929,9 +5929,10 @@ if (!isset($excluded_functions["date_convert"]) && (!function_exists("ryunosuke\
         $format = $replace($format, 'x', ['日', '月', '火', '水', '木', '金', '土'][idate('w', $timestamp)]);
 
         if (is_float($timestamp)) {
-            [$second, $micro] = explode('.', $timestamp) + [1 => '000000'];
-            $datetime = \DateTime::createFromFormat('Y/m/d H:i:s.u', date('Y/m/d H:i:s.', $second) . $micro);
-            return $datetime->format($format);
+            // datetime パラメータが UNIX タイムスタンプ (例: 946684800) だったり、タイムゾーンを含んでいたり (例: 2010-01-28T15:00:00+02:00) する場合は、 timezone パラメータや現在のタイムゾーンは無視します
+            static $dtz = null;
+            $dtz = $dtz ?? new \DateTimeZone(date_default_timezone_get());
+            return \DateTime::createFromFormat('U.u', $timestamp)->setTimezone($dtz)->format($format);
         }
         return date($format, $timestamp);
     }
@@ -6876,6 +6877,44 @@ if (!isset($excluded_functions["path_resolve"]) && (!function_exists("ryunosuke\
 }
 if (function_exists("ryunosuke\\chmonos\\path_resolve") && !defined("ryunosuke\\chmonos\\path_resolve")) {
     define("ryunosuke\\chmonos\\path_resolve", "ryunosuke\\chmonos\\path_resolve");
+}
+
+if (!isset($excluded_functions["path_relative"]) && (!function_exists("ryunosuke\\chmonos\\path_relative") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\path_relative"))->isInternal()))) {
+    /**
+     * パスを相対パスに変換して正規化する
+     *
+     * $from から $to への相対パスを返す。
+     *
+     * Example:
+     * ```php
+     * $DS = DIRECTORY_SEPARATOR;
+     * that(path_relative('/a/b/c/X', '/a/b/c/d/X'))->isSame("..{$DS}d{$DS}X");
+     * that(path_relative('/a/b/c/d/X', '/a/b/c/X'))->isSame("..{$DS}..{$DS}X");
+     * that(path_relative('/a/b/c/X', '/a/b/c/X'))->isSame("");
+     * ```
+     *
+     * @param string $from 元パス
+     * @param string $to 対象パス
+     * @return string 相対パス
+     */
+    function path_relative($from, $to)
+    {
+        $DS = DIRECTORY_SEPARATOR;
+
+        $fa = array_filter(explode($DS, path_resolve($from)), 'strlen');
+        $ta = array_filter(explode($DS, path_resolve($to)), 'strlen');
+
+        $compare = function ($a, $b) use ($DS) {
+            return $DS === '\\' ? strcasecmp($a, $b) : strcmp($a, $b);
+        };
+        $ca = array_udiff_assoc($fa, $ta, $compare);
+        $da = array_udiff_assoc($ta, $fa, $compare);
+
+        return str_repeat("..$DS", count($ca)) . implode($DS, $da);
+    }
+}
+if (function_exists("ryunosuke\\chmonos\\path_relative") && !defined("ryunosuke\\chmonos\\path_relative")) {
+    define("ryunosuke\\chmonos\\path_relative", "ryunosuke\\chmonos\\path_relative");
 }
 
 if (!isset($excluded_functions["path_normalize"]) && (!function_exists("ryunosuke\\chmonos\\path_normalize") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\path_normalize"))->isInternal()))) {
@@ -16395,8 +16434,8 @@ if (!isset($excluded_functions["process"]) && (!function_exists("ryunosuke\\chmo
      * that($stderr)->isSame('err'); // 標準エラーに書き込んでいるので "err" が格納される
      * ```
      *
-     * @param string $command 実行コマンド。escapeshellcmd される
-     * @param array|string $args コマンドライン引数。文字列はそのまま結合される。配列は escapeshellarg された上でキーと結合される
+     * @param string $command 実行コマンド。php7.4 未満では escapeshellcmd される
+     * @param array|string $args コマンドライン引数。php7.4 未満では文字列はそのまま結合され、配列は escapeshellarg された上でキーと結合される
      * @param string|resource $stdin 標準入力（string を渡すと単純に読み取れられる。resource を渡すと fread される）
      * @param string|resource $stdout 標準出力（string を渡すと参照渡しで格納される。resource を渡すと fwrite される）
      * @param string|resource $stderr 標準エラー（string を渡すと参照渡しで格納される。resource を渡すと fwrite される）
@@ -16406,16 +16445,28 @@ if (!isset($excluded_functions["process"]) && (!function_exists("ryunosuke\\chmo
      */
     function process($command, $args = [], $stdin = '', &$stdout = '', &$stderr = '', $cwd = null, array $env = null)
     {
-        $ecommand = escapeshellcmd($command);
-
-        if (is_array($args)) {
-            $args = array_sprintf($args, function ($v, $k) {
-                $ev = escapeshellarg($v);
-                return is_int($k) ? $ev : "$k $ev";
-            }, ' ');
+        if (version_compare(PHP_VERSION, '7.4.0') >= 0 && is_array($args)) {
+            // @codeCoverageIgnoreStart
+            $statement = [$command];
+            foreach ($args as $k => $v) {
+                if (!is_int($k)) {
+                    $statement[] = $k;
+                }
+                $statement[] = $v;
+            }
+            // @codeCoverageIgnoreEnd
+        }
+        else {
+            if (is_array($args)) {
+                $args = array_sprintf($args, function ($v, $k) {
+                    $ev = escapeshellarg($v);
+                    return is_int($k) ? $ev : "$k $ev";
+                }, ' ');
+            }
+            $statement = escapeshellcmd($command) . " $args";
         }
 
-        $proc = proc_open("$ecommand $args", [
+        $proc = proc_open($statement, [
             0 => is_resource($stdin) ? $stdin : ['pipe', 'r'],
             1 => ['pipe', 'w'],
             2 => ['pipe', 'w'],
@@ -16907,6 +16958,8 @@ if (!isset($excluded_functions["profiler"]) && (!function_exists("ryunosuke\\chm
          * @method fopen($filename, $mode, $use_include_path = false, $context = null)
          */
         class {
+            const DECLARE_TICKS = "<?php declare(ticks=1) ?>";
+
             /** @var int https://github.com/php/php-src/blob/php-7.2.11/main/php_streams.h#L528-L529 */
             private const STREAM_OPEN_FOR_INCLUDE = 0x00000080;
 
@@ -16914,6 +16967,7 @@ if (!isset($excluded_functions["profiler"]) && (!function_exists("ryunosuke\\chm
             public $context;
 
             private $require;
+            private $prepend;
             private $handle;
 
             public function __call($name, $arguments)
@@ -16967,8 +17021,9 @@ if (!isset($excluded_functions["profiler"]) && (!function_exists("ryunosuke\\chm
 
             public function stream_open($path, $mode, $options, &$opened_path)
             {
-                $use_path = $options & STREAM_USE_PATH;
                 $this->require = $options & self::STREAM_OPEN_FOR_INCLUDE;
+                $this->prepend = false;
+                $use_path = $options & STREAM_USE_PATH;
                 if ($options & STREAM_REPORT_ERRORS) {
                     $this->handle = $this->fopen($path, $mode, $use_path); // @codeCoverageIgnore
                 }
@@ -16983,19 +17038,22 @@ if (!isset($excluded_functions["profiler"]) && (!function_exists("ryunosuke\\chm
 
             public function stream_read($count)
             {
-                $DECLARE = "<?php declare(ticks=1) ?>";
-
-                $pos = ftell($this->handle);
-                $return = fread($this->handle, $count - strlen($DECLARE));
-                if ($return === false) {
-                    return false; // @codeCoverageIgnore
+                if (!$this->prepend && $this->require && ftell($this->handle) === 0) {
+                    $this->prepend = true;
+                    return self::DECLARE_TICKS;
                 }
+                return fread($this->handle, $count);
+            }
 
-                $prefix = '';
-                if ($pos === 0 && $this->require) {
-                    $prefix = $DECLARE;
+            public function stream_stat()
+            {
+                $stat = fstat($this->handle);
+                if ($this->require) {
+                    $decsize = strlen(self::DECLARE_TICKS);
+                    $stat[7] += $decsize;
+                    $stat['size'] += $decsize;
                 }
-                return $prefix . $return;
+                return $stat;
             }
 
             public function stream_set_option($option, $arg1, $arg2)
@@ -17009,8 +17067,10 @@ if (!isset($excluded_functions["profiler"]) && (!function_exists("ryunosuke\\chm
                         return stream_set_blocking($this->handle, $arg1);
                     case STREAM_OPTION_READ_TIMEOUT:
                         return stream_set_timeout($this->handle, $arg1, $arg2);
+                    case STREAM_OPTION_READ_BUFFER:
+                        return stream_set_read_buffer($this->handle, $arg2) === 0; // @todo $arg1 is used?
                     case STREAM_OPTION_WRITE_BUFFER:
-                        return stream_set_write_buffer($this->handle, $arg2); // @todo $arg1 is used?
+                        return stream_set_write_buffer($this->handle, $arg2) === 0; // @todo $arg1 is used?
                 }
                 // @codeCoverageIgnoreEnd
             }
@@ -18737,13 +18797,17 @@ if (!isset($excluded_functions["var_pretty"]) && (!function_exists("ryunosuke\\c
                     return;
                 }
 
+                $count = count($value);
                 $omitted = false;
-                if ($options['maxcount'] && ($omitted = count($value) - $options['maxcount']) > 0) {
+                if ($options['maxcount'] && ($omitted = $count - $options['maxcount']) > 0) {
                     $value = array_slice($value, 0, $options['maxcount'], true);
                 }
 
+                if ($count === 0){
+                    $appender(['plain', '['], ['plain', ']']);
+                }
                 // スカラー値のみで構成されているならシンプルな再帰
-                if (!is_hasharray($value) && array_all($value, is_primitive)) {
+                elseif (!is_hasharray($value) && array_all($value, is_primitive)) {
                     $last = array_pop($value);
                     $appender(['plain', '[']);
                     foreach ($value as $v) {
@@ -18755,6 +18819,7 @@ if (!isset($excluded_functions["var_pretty"]) && (!function_exists("ryunosuke\\c
                     }
                     $appender(['plain', ']']);
                 }
+                // 連想配列だったり階層を持っていたりするなら改行＋桁合わせ
                 else {
                     $spacer1 = str_repeat(' ', ($nest + 1) * $options['indent']);
                     $spacer2 = str_repeat(' ', $nest * $options['indent']);
