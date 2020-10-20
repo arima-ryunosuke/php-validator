@@ -175,7 +175,7 @@ JS;
      *
      * コントローラ内でこのメソッドを呼んで結果を json で返すような使い方になる。
      *
-     * @param array $fields 依存データ。未指定時はよしなに
+     * @param array|null $fields 依存データ。未指定時はよしなに
      * @return array isvalid フラグと message 配列
      */
     public function response($fields = null)

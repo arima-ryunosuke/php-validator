@@ -70,7 +70,7 @@ class Input
      * コンストラクタ
      *
      * @param array $rule ルール配列
-     * @param Input $parent 親要素
+     * @param Input|null $parent 親要素
      */
     public function __construct($rule, $parent = null)
     {
@@ -292,7 +292,7 @@ class Input
     /**
      * value ゲッター
      *
-     * @param int $index 欲しい連番
+     * @param int|null $index 欲しい連番
      * @return mixed この UI の値
      */
     public function getValue($index = null)

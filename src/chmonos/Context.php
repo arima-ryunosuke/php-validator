@@ -16,8 +16,8 @@ class Context implements \IteratorAggregate
      * コンストラクタ
      *
      * @param array $rules ルール配列
-     * @param Input $parent 親
-     * @param string Input クラス
+     * @param Input|null $parent 親
+     * @param string|null $inputClass Input クラス
      */
     public function __construct(array $rules, $parent = null, $inputClass = null)
     {
@@ -84,7 +84,7 @@ class Context implements \IteratorAggregate
      * 例えばコンストラクタ内でネスト要素のコンストラクタが呼ばれる可能性がある。
      * つまりコンストラクタ内で「親子を含めた全要素が出揃っている」という状況を得ることは出来ない。
      *
-     * @param Context $root 親を辿るためにルート要素を持ち回すが内部用なので呼び出し側は気にしなくていい
+     * @param Context|null $root 親を辿るためにルート要素を持ち回すが内部用なので呼び出し側は気にしなくていい
      * @return $this
      */
     public function initialize($root = null)
@@ -125,7 +125,7 @@ class Context implements \IteratorAggregate
      * バリデート
      *
      * @param array $values 検証する値が入った連想配列
-     * @param array $original 上位要素検証のため入力元配列を持ち回すが内部用なので呼び出し側は気にしなくていい
+     * @param array|null $original 上位要素検証のため入力元配列を持ち回すが内部用なので呼び出し側は気にしなくていい
      * @return bool エラーがないならtrue
      */
     public function validate(array $values, $original = null)

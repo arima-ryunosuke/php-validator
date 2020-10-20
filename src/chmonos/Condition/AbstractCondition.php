@@ -453,7 +453,7 @@ JS;
      * エラーメッセージを追加する
      *
      * @param string $messageKey
-     * @param string $message
+     * @param string|null $message
      * @return static
      */
     public function addMessage($messageKey, $message = null)
