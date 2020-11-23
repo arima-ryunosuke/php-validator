@@ -24,6 +24,12 @@ class PasswordTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertEquals($validate->isValid('000'), false);
         $this->assertEquals($validate->isValid('01'), true);
 
+        $validate = new Password('lower_numeric', 1);
+        $this->assertEquals($validate->isValid('aaa123'), true);
+        $this->assertEquals($validate->isValid('aaa'), false);
+        $this->assertEquals($validate->isValid('123'), false);
+        $this->assertEquals($validate->isValid('AAA123'), false);
+
         $validate = new Password('symbol');
         $this->assertEquals($validate->isValid('!'), false);
         $this->assertEquals($validate->isValid('!!'), false);

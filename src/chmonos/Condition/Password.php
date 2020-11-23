@@ -20,8 +20,10 @@ use ryunosuke\chmonos\Condition\Interfaces;
  *
  * プリセットとして
  * - alpha (大文字小文字半角英数)
- * - numeric (大文字小文字半角英数)
- * - symbol (大文字小文字半角英数)
+ * - lower (小文字半角英数)
+ * - upper (大文字半角英数)
+ * - numeric (半角数字)
+ * - symbol (よく使われる記号系)
  * が用意されている。
  * 上記を含むような文字列を指定すれば使用される（'alpha_numeric' で半角英数字になる）。
  */
@@ -40,8 +42,10 @@ class Password extends AbstractCondition implements Interfaces\ImeMode, Interfac
     private static $preset = [
         'alpha'   => [
             'a～z' => 'abcdefghijklmnopqrstuvwxyz',
-            'A～Z' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            'A～Z' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
         ],
+        'lower'   => ['a～z' => 'abcdefghijklmnopqrstuvwxyz'],
+        'upper'   => ['A～Z' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'],
         'numeric' => ['0～9' => '0123456789'],
         'symbol'  => ['!#$%+_' => '!#$%+_'],
     ];
