@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.4
+
+- [feature][Condition/Password] プリセットに lower/upper を追加
+
 ## 1.0.3
 
 - [Context] isset を実装
