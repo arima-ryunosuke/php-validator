@@ -7,22 +7,22 @@ namespace ryunosuke\chmonos;
 # constants
 if (!defined("ryunosuke\\chmonos\\IS_OWNSELF")) {
     /** 自分自身を表す定数 */
-    define("ryunosuke\\chmonos\\IS_OWNSELF", 128);
+    define("ryunosuke\\chmonos\\IS_OWNSELF", 2);
 }
 
 if (!defined("ryunosuke\\chmonos\\IS_PUBLIC")) {
-    /** public を表す定数 @see \ReflectionProperty::IS_PUBLIC */
-    define("ryunosuke\\chmonos\\IS_PUBLIC", 256);
+    /** public を表す定数 */
+    define("ryunosuke\\chmonos\\IS_PUBLIC", 4);
 }
 
 if (!defined("ryunosuke\\chmonos\\IS_PROTECTED")) {
-    /** protected を表す定数 @see \ReflectionProperty::IS_PROTECTED */
-    define("ryunosuke\\chmonos\\IS_PROTECTED", 512);
+    /** protected を表す定数 */
+    define("ryunosuke\\chmonos\\IS_PROTECTED", 8);
 }
 
 if (!defined("ryunosuke\\chmonos\\IS_PRIVATE")) {
-    /** private を表す定数 @see \ReflectionProperty::IS_PRIVATE */
-    define("ryunosuke\\chmonos\\IS_PRIVATE", 1024);
+    /** private を表す定数 */
+    define("ryunosuke\\chmonos\\IS_PRIVATE", 16);
 }
 
 if (!defined("ryunosuke\\chmonos\\TOKEN_NAME")) {
@@ -320,8 +320,8 @@ if (!isset($excluded_functions["array_sprintf"]) && (!function_exists("ryunosuke
      * ```
      *
      * @param iterable $array 対象配列
-     * @param string|callable $format 書式文字列あるいはクロージャ
-     * @param string $glue 結合文字列。未指定時は implode しない
+     * @param string|callable|null $format 書式文字列あるいはクロージャ
+     * @param ?string $glue 結合文字列。未指定時は implode しない
      * @return array|string sprintf された配列
      */
     function array_sprintf($array, $format = null, $glue = null)
@@ -330,15 +330,16 @@ if (!isset($excluded_functions["array_sprintf"]) && (!function_exists("ryunosuke
             $callback = func_user_func_array($format);
         }
         elseif ($format === null) {
-            $callback = function ($v, $k) { return vsprintf($k, is_array($v) ? $v : [$v]); };
+            $callback = function ($v, $k, $n) { return vsprintf($k, is_array($v) ? $v : [$v]); };
         }
         else {
-            $callback = function ($v, $k) use ($format) { return sprintf($format, $v, $k); };
+            $callback = function ($v, $k, $n) use ($format) { return sprintf($format, $v, $k); };
         }
 
         $result = [];
+        $n = 0;
         foreach ($array as $k => $v) {
-            $result[] = $callback($v, $k);
+            $result[] = $callback($v, $k, $n++);
         }
 
         if ($glue !== null) {
@@ -411,8 +412,9 @@ if (!isset($excluded_functions["array_get"]) && (!function_exists("ryunosuke\\ch
 
         if ($key instanceof \Closure) {
             $result = [];
+            $n = 0;
             foreach ($array as $k => $v) {
-                if ($key($v, $k)) {
+                if ($key($v, $k, $n++)) {
                     if (func_num_args() === 2) {
                         return $v;
                     }
@@ -501,8 +503,9 @@ if (!isset($excluded_functions["array_unset"]) && (!function_exists("ryunosuke\\
 
         if ($key instanceof \Closure) {
             $result = [];
+            $n = 0;
             foreach ($array as $k => $v) {
-                if ($key($v, $k)) {
+                if ($key($v, $k, $n++)) {
                     $result[$k] = $v;
                     unset($array[$k]);
                 }
@@ -651,8 +654,9 @@ if (!isset($excluded_functions["array_map_key"]) && (!function_exists("ryunosuke
     {
         $callback = func_user_func_array($callback);
         $result = [];
+        $n = 0;
         foreach ($array as $k => $v) {
-            $k2 = $callback($k, $v);
+            $k2 = $callback($k, $v, $n++);
             if ($k2 !== null) {
                 $result[$k2] = $v;
             }
@@ -858,7 +862,7 @@ if (!isset($excluded_functions["array_all"]) && (!function_exists("ryunosuke\\ch
      * ```
      *
      * @param iterable $array 対象配列
-     * @param callable $callback 評価クロージャ。 null なら値そのもので評価
+     * @param ?callable $callback 評価クロージャ。 null なら値そのもので評価
      * @param bool|mixed $default 空配列の場合のデフォルト値
      * @return bool 全要素が true なら true
      */
@@ -870,8 +874,9 @@ if (!isset($excluded_functions["array_all"]) && (!function_exists("ryunosuke\\ch
 
         $callback = func_user_func_array($callback);
 
+        $n = 0;
         foreach ($array as $k => $v) {
-            if (!$callback($v, $k)) {
+            if (!$callback($v, $k, $n++)) {
                 return false;
             }
         }
@@ -986,7 +991,7 @@ if (!isset($excluded_functions["get_class_constants"]) && (!function_exists("ryu
      * ```
      *
      * @param string|object $class クラス名 or オブジェクト
-     * @param int $filter アクセスレベル定数
+     * @param ?int $filter アクセスレベル定数
      * @return array クラス定数の配列
      */
     function get_class_constants($class, $filter = null)
@@ -996,11 +1001,15 @@ if (!isset($excluded_functions["get_class_constants"]) && (!function_exists("ryu
 
         $result = [];
         foreach ((new \ReflectionClass($class))->getReflectionConstants() as $constant) {
-            if (($filter & IS_OWNSELF) === IS_OWNSELF && $constant->getDeclaringClass()->name !== $class) {
+            if (($filter & IS_OWNSELF) && $constant->getDeclaringClass()->name !== $class) {
                 continue;
             }
             $modifiers = $constant->getModifiers();
-            if (($modifiers & $filter) === $modifiers) {
+            $modifiers2 = 0;
+            $modifiers2 |= ($modifiers & \ReflectionProperty::IS_PUBLIC) ? IS_PUBLIC : 0;
+            $modifiers2 |= ($modifiers & \ReflectionProperty::IS_PROTECTED) ? IS_PROTECTED : 0;
+            $modifiers2 |= ($modifiers & \ReflectionProperty::IS_PRIVATE) ? IS_PRIVATE : 0;
+            if ($modifiers2 & $filter) {
                 $result[$constant->name] = $constant->getValue();
             }
         }
@@ -1133,7 +1142,7 @@ if (!isset($excluded_functions["delegate"]) && (!function_exists("ryunosuke\\chm
      *
      * @param \Closure $invoker クロージャを実行するためのクロージャ（実処理）
      * @param callable $callable 最終的に実行したいクロージャ
-     * @param int $arity 引数の数
+     * @param ?int $arity 引数の数
      * @return callable $callable を実行するクロージャ
      */
     function delegate($invoker, $callable, $arity = null)
@@ -1451,7 +1460,7 @@ if (!isset($excluded_functions["quoteexplode"]) && (!function_exists("ryunosuke\
      *
      * @param string|array $delimiter 分割文字列
      * @param string $string 対象文字列
-     * @param int $limit 分割数。負数未対応
+     * @param ?int $limit 分割数。負数未対応
      * @param array|string $enclosures 囲い文字。 ["start" => "end"] で開始・終了が指定できる
      * @param string $escape エスケープ文字
      * @return array 分割された配列
@@ -1951,13 +1960,13 @@ if (!isset($excluded_functions["evaluate"]) && (!function_exists("ryunosuke\\chm
 
         try {
             if ($cachefile) {
-                return (static function () {
+                return ($dummy = static function () {
                     extract(func_get_arg(1));
                     return require func_get_arg(0);
                 })($cachefile, $contextvars);
             }
             else {
-                return (static function () {
+                return ($dummy = static function () {
                     extract(func_get_arg(1));
                     return eval(func_get_arg(0));
                 })($phpcode, $contextvars);
@@ -2215,7 +2224,7 @@ if (!isset($excluded_functions["get_uploaded_files"]) && (!function_exists("ryun
      *
      * サンプルを書くと長くなるので例は{@source \ryunosuke\Test\Package\UtilityTest::test_get_uploaded_files() テストファイル}を参照。
      *
-     * @param array $files $_FILES の同じ構造の配列。省略時は $_FILES
+     * @param ?array $files $_FILES の同じ構造の配列。省略時は $_FILES
      * @return array $_FILES を $_POST などと同じ構造にした配列
      */
     function get_uploaded_files($files = null)
@@ -2291,7 +2300,7 @@ if (!isset($excluded_functions["cache"]) && (!function_exists("ryunosuke\\chmono
      *
      * @param string $key キャッシュのキー
      * @param callable $provider キャッシュがない場合にコールされる callable
-     * @param string $namespace 名前空間
+     * @param ?string $namespace 名前空間
      * @return mixed キャッシュ
      */
     function cache($key, $provider, $namespace = null)
@@ -2923,7 +2932,6 @@ if (!isset($excluded_functions["var_export2"]) && (!function_exists("ryunosuke\\
                 $kvl = '';
                 $parents[] = $value;
                 foreach ($value as $k => $v) {
-                    /** @noinspection PhpUndefinedVariableInspection */
                     $keystr = $hashed ? $keys[$k] . str_repeat(' ', $maxlen - strlen($keys[$k])) . ' => ' : '';
                     $kvl .= $spacer1 . $keystr . $export($v, $nest + 1, $parents) . ",\n";
                 }
