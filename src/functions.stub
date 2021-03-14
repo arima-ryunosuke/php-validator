@@ -668,52 +668,6 @@ if (function_exists("ryunosuke\\chmonos\\array_map_key") && !defined("ryunosuke\
     define("ryunosuke\\chmonos\\array_map_key", "ryunosuke\\chmonos\\array_map_key");
 }
 
-if (!isset($excluded_functions["array_map_method"]) && (!function_exists("ryunosuke\\chmonos\\array_map_method") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\array_map_method"))->isInternal()))) {
-    /**
-     * メソッドを指定できるようにした array_map
-     *
-     * 配列内の要素は全て同一（少なくともシグネチャが同じ $method が存在する）オブジェクトでなければならない。
-     * スルーする場合は $ignore=true とする。スルーした場合 map ではなく filter される（結果配列に含まれない）。
-     * $ignore=null とすると 何もせずそのまま要素を返す。
-     *
-     * Example:
-     * ```php
-     * $exa = new \Exception('a');
-     * $exb = new \Exception('b');
-     * $std = new \stdClass();
-     * // getMessage で map される
-     * that(array_map_method([$exa, $exb], 'getMessage'))->isSame(['a', 'b']);
-     * // getMessage で map されるが、メソッドが存在しない場合は取り除かれる
-     * that(array_map_method([$exa, $exb, $std, null], 'getMessage', [], true))->isSame(['a', 'b']);
-     * // getMessage で map されるが、メソッドが存在しない場合はそのまま返す
-     * that(array_map_method([$exa, $exb, $std, null], 'getMessage', [], null))->isSame(['a', 'b', $std, null]);
-     * ```
-     *
-     * @param iterable $array 対象配列
-     * @param string $method メソッド
-     * @param array $args メソッドに渡る引数
-     * @param bool|null $ignore メソッドが存在しない場合にスルーするか。null を渡すと要素そのものを返す
-     * @return array $method が true を返した新しい配列
-     */
-    function array_map_method($array, $method, $args = [], $ignore = false)
-    {
-        if ($ignore === true) {
-            $array = array_filter(arrayval($array, false), function ($object) use ($method) {
-                return is_callable([$object, $method]);
-            });
-        }
-        return array_map(function ($object) use ($method, $args, $ignore) {
-            if ($ignore === null && !is_callable([$object, $method])) {
-                return $object;
-            }
-            return ([$object, $method])(...$args);
-        }, arrayval($array, false));
-    }
-}
-if (function_exists("ryunosuke\\chmonos\\array_map_method") && !defined("ryunosuke\\chmonos\\array_map_method")) {
-    define("ryunosuke\\chmonos\\array_map_method", "ryunosuke\\chmonos\\array_map_method");
-}
-
 if (!isset($excluded_functions["array_each"]) && (!function_exists("ryunosuke\\chmonos\\array_each") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\array_each"))->isInternal()))) {
     /**
      * array_reduce の参照版（のようなもの）
@@ -1050,32 +1004,16 @@ if (!isset($excluded_functions["get_object_properties"]) && (!function_exists("r
      */
     function get_object_properties($object)
     {
-        if (function_exists('get_mangled_object_vars')) {
-            get_mangled_object_vars($object); // @codeCoverageIgnore
+        $fields = [];
+        foreach ((array) $object as $name => $field) {
+            if (preg_match('#\A\\000(.+?)\\000(.+)#usm', $name, $m)) {
+                $name = $m[2];
+            }
+            if (!array_key_exists($name, $fields)) {
+                $fields[$name] = $field;
+            }
         }
-
-        static $refs = [];
-        $class = get_class($object);
-        if (!isset($refs[$class])) {
-            // var_export や var_dump で得られるものは「親が優先」となっているが、不具合的動作だと思うので「子を優先」とする
-            $refs[$class] = [];
-            $ref = new \ReflectionClass($class);
-            do {
-                $refs[$ref->name] = array_each($ref->getProperties(), function (&$carry, \ReflectionProperty $rp) {
-                    if (!$rp->isStatic()) {
-                        $rp->setAccessible(true);
-                        $carry[$rp->getName()] = $rp;
-                    }
-                }, []);
-                $refs[$class] += $refs[$ref->name];
-            } while ($ref = $ref->getParentClass());
-        }
-
-        // 配列キャストだと private で ヌル文字が出たり static が含まれたりするのでリフレクションで取得して勝手プロパティで埋める
-        $vars = array_map_method($refs[$class], 'getValue', [$object]);
-        $vars += get_object_vars($object);
-
-        return $vars;
+        return $fields;
     }
 }
 if (function_exists("ryunosuke\\chmonos\\get_object_properties") && !defined("ryunosuke\\chmonos\\get_object_properties")) {
@@ -1997,7 +1935,7 @@ if (!isset($excluded_functions["parse_php"]) && (!function_exists("ryunosuke\\ch
      * php のコード断片をパースする
      *
      * 結果配列は token_get_all したものだが、「字句の場合に文字列で返す」仕様は適用されずすべて配列で返す。
-     * つまり必ず `[TOKENID, TOKEN, LINE]` で返す。
+     * つまり必ず `[TOKENID, TOKEN, LINE, POS]` で返す。
      *
      * Example:
      * ```php
@@ -2046,24 +1984,27 @@ if (!isset($excluded_functions["parse_php"]) && (!function_exists("ryunosuke\\ch
         ];
         $option += $default;
 
+        $flags = $option['flags'];
         static $cache = [];
-        $tokens = $cache[$phpcode] ?? array_map(function ($token) use ($option) {
+        if (!($option['cache'] && isset($cache[$phpcode][$flags]))) {
+            $position = -6;
+            $tokens = token_get_all("<?php $phpcode", $flags);
+            $last = [null, 1, 0];
+            foreach ($tokens as $n => $token) {
                 // token_get_all の結果は微妙に扱いづらいので少し調整する（string/array だったり、名前変換の必要があったり）
-                if (is_array($token)) {
-                    // for debug
-                    if ($option['flags'] & TOKEN_NAME) {
-                        $token[] = token_name($token[0]);
-                    }
-                    return $token;
+                if (!is_array($token)) {
+                    $token = [ord($token), $token, $last[2] + preg_match_all('/(?:\r\n|\r|\n)/', $last[1])];
                 }
-                else {
-                    // string -> [TOKEN, CHAR, LINE]
-                    return [null, $token, 0];
+                $token[] = $position;
+                if ($flags & TOKEN_NAME) {
+                    $token[] = token_name($token[0]);
                 }
-            }, token_get_all("<?php $phpcode", $option['flags']));
-        if ($option['cache']) {
-            $cache[$phpcode] = $tokens;
+                $position += strlen($token[1]);
+                $tokens[$n] = $last = $token;
+            }
+            $cache[$phpcode][$flags] = $tokens;
         }
+        $tokens = $cache[$phpcode][$flags];
 
         $begin_tokens = (array) $option['begin'];
         $end_tokens = (array) $option['end'];

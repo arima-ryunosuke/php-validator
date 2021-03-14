@@ -19,7 +19,7 @@
     "php": ">=7.2"
   },
   "require-dev": {
-    "ryunosuke/functions": "1.4.13",
+    "ryunosuke/functions": "1.4.15",
     "phpunit/phpunit": "7.*",
     "facebook/webdriver": "1.*"
   },
@@ -28,7 +28,7 @@
       "ryunosuke\\chmonos\\": "src/chmonos"
     },
     "files": [
-      "src/functions.php"
+      "src/functions.stub"
     ]
   },
   "autoload-dev": {
