@@ -239,20 +239,20 @@ class Form
             ]);
 
             $script = "
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
     var thisform = document.getElementById({$this->encodeJson($this->id)});
     thisform.chmonos = new Chmonos(thisform, $jsoption);
-})();";
+});";
 
             return "<form {$this->createHtmlAttr($attrs)}><script {$this->createHtmlAttr($scriptAttrs)}>$script</script>$csrf_input";
         }
         // 閉じタグ
         else {
             $script = "
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
     var thisform = document.getElementById({$this->encodeJson($this->id)});
     thisform.chmonos.initialize({$this->encodeJson($this->templateValues)});
-})();";
+});";
 
             return "<script {$this->createHtmlAttr($scriptAttrs)}>$script</script></form>";
         }
