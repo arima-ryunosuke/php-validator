@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.7
+
+- [fixbug][Form] script の非同期読み込み時にエラーが出てしまう不具合を修正
+
 ## 1.0.6
 
 - [feature] bump version
