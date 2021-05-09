@@ -119,8 +119,16 @@ $dynamic_rule = [
     </table>
 
     <script type="text/javascript">
-        (function () {
+        document.addEventListener('DOMContentLoaded', function() {
             var chmonos = document.getElementById('template_form').chmonos;
+            // 画面構築時の初期生成開始時に spawnBegin イベントが呼ばれる
+            $('[data-vtemplate-name=rows]').on('spawnBegin', function (e) {
+                console.log(e);
+            });
+            // 画面構築時の初期生成完了時に spawnEnd イベントが呼ばれる
+            $('[data-vtemplate-name=rows]').on('spawnEnd', function (e) {
+                console.log(e);
+            });
             // ノード生成時に spawn イベントが呼ばれる
             $('[data-vtemplate-name=rows]').on('spawn', function (e) {
                 console.log('ノード追加', e.detail.node);
@@ -143,7 +151,7 @@ $dynamic_rule = [
                 // cull を使わず単純にノード削除でも特に問題はない
                 chmonos.cull('rows', this.closest('tr'));
             });
-        })();
+        });
     </script>
     <input type="submit" id="template_form_submit" class="btn btn-primary" value="post">
     <label class='btn btn-warning'>
@@ -208,7 +216,7 @@ $dynamic_rule = [
     </table>
 
     <script type="text/javascript">
-        (function () {
+        document.addEventListener('DOMContentLoaded', function() {
             var chmonos = document.getElementById('context_form').chmonos;
             // 追加ボタン
             $(document).on('click', '.append_row2', function () {
@@ -221,7 +229,7 @@ $dynamic_rule = [
                 // cull を使わず単純にノード削除でも特に問題はない
                 chmonos.cull('rows', this.closest('tr'));
             });
-        })();
+        });
     </script>
     <input type="submit" id="context_form_submit" class="btn btn-primary" value="post">
     <label class='btn btn-warning'>
