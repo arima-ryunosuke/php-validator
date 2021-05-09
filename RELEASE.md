@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.8
+
+- [feature][template] spawn 開始/終了イベントを実装
+
 ## 1.0.7
 
 - [fixbug][Form] script の非同期読み込み時にエラーが出てしまう不具合を修正
