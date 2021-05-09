@@ -270,10 +270,18 @@ function Chmonos(form, options) {
     chmonos.initialize = function (values) {
         // js レンダリング
         Object.keys(values || {}).forEach(function (tname) {
+            var curValues = values[tname] || {};
+            var eventArgs = {
+                detail: {
+                    values: curValues,
+                },
+            };
             var template = form.querySelector('[data-vtemplate-name="' + tname + '"]');
-            Object.keys(values[tname] || {}).forEach(function (index) {
-                chmonos.spawn(template, null, values[tname][index], index);
+            template.dispatchEvent(new CustomEvent('spawnBegin', eventArgs));
+            Object.keys(curValues).forEach(function (index) {
+                chmonos.spawn(template, null, curValues[index], index);
             });
+            template.dispatchEvent(new CustomEvent('spawnEnd', eventArgs));
         });
 
         // サーバー側の結果を表示
