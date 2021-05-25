@@ -95,7 +95,21 @@ $basic_form = new \ryunosuke\chmonos\Form([
             'Requires' => null,
         ],
         'invisible' => true,
-    ]
+    ],
+    'client'             => [
+        'title'     => 'jsのみ',
+        'condition' => [
+            'Requires' => null,
+        ],
+        'checkmode' => ['client' => true, 'server' => false],
+    ],
+    'server'             => [
+        'title'     => 'phpのみ',
+        'condition' => [
+            'Requires' => null,
+        ],
+        'checkmode' => ['client' => false, 'server' => true],
+    ],
 ], [
     'tokenName' => 'csrf_token',
 ]);
@@ -193,6 +207,14 @@ resetForm($basic_form, 'basic_form');
             ここに不可視要素があります：
             <label><input type="checkbox" name="toggleInvisible" value="1" onchange="$('#invisible-wrapper').toggle()">表示する</label>
         </td>
+    </tr>
+    <tr>
+        <th>jsのみ</th>
+        <td><?= $basic_form->input('client') ?></td>
+    </tr>
+    <tr>
+        <th>phpのみ</th>
+        <td><?= $basic_form->input('server') ?></td>
     </tr>
 </table>
 <input type="submit" id="basic_form_submit" class="btn btn-primary" value="post">

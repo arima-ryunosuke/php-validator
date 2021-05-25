@@ -236,6 +236,14 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'Password' => null
         ]
     ],
+    'step'                  => [
+        'title'     => '倍数',
+        'condition' => [
+            'Decimal' => [3, 1],
+            'Range'   => [0, 99.9],
+            'Step'    => 0.5,
+        ]
+    ],
     'range'                 => [
         'title'     => '数値範囲',
         'condition' => [
@@ -514,6 +522,11 @@ resetForm($condition_form, 'condition_form');
     <tr>
         <th>Password(a～z,A～Z,0～9,$%+)</th>
         <td><?= $condition_form->input('password') ?></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>倍数(0.5)</th>
+        <td><?= $condition_form->input('step') ?></td>
         <td></td>
     </tr>
     <tr>
