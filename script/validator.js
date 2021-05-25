@@ -2419,6 +2419,29 @@ module.exports = function json_decode(strJson) {
 return module.exports;
 })();
 /**/
+var abs = this.abs = (function(){
+"use strict";
+
+module.exports = function abs(mixedNumber) {
+  //  discuss at: http://locutus.io/php/abs/
+  // original by: Waldo Malqui Silva (http://waldo.malqui.info)
+  // improved by: Karol Kowalski
+  // improved by: Kevin van Zonneveld (http://kvz.io)
+  // improved by: Jonas Raoni Soares Silva (http://www.jsfromhell.com)
+  //   example 1: abs(4.2)
+  //   returns 1: 4.2
+  //   example 2: abs(-4.2)
+  //   returns 2: 4.2
+  //   example 3: abs(-5)
+  //   returns 3: 5
+  //   example 4: abs('_argos')
+  //   returns 4: 0
+
+  return Math.abs(mixedNumber) || 0;
+};
+return module.exports;
+})();
+/**/
 var log = this.log = (function(){
 'use strict';
 
@@ -2430,6 +2453,86 @@ module.exports = function log(arg, base) {
   //   returns 1: 8.212871815082147
 
   return typeof base === 'undefined' ? Math.log(arg) : Math.log(arg) / Math.log(base);
+};
+return module.exports;
+})();
+/**/
+var pow = this.pow = (function(){
+"use strict";
+
+module.exports = function pow(base, exp) {
+  //  discuss at: http://locutus.io/php/pow/
+  // original by: Onno Marsman (https://twitter.com/onnomarsman)
+  // improved by: Waldo Malqui Silva (https://fayr.us/waldo/)
+  //   example 1: pow(8723321.4, 7)
+  //   returns 1: 3.8439091680779e+48
+
+  return Number(Math.pow(base, exp).toPrecision(15));
+};
+return module.exports;
+})();
+/**/
+var round = this.round = (function(){
+'use strict';
+
+module.exports = function round(value, precision, mode) {
+  //  discuss at: http://locutus.io/php/round/
+  // original by: Philip Peterson
+  //  revised by: Onno Marsman (https://twitter.com/onnomarsman)
+  //  revised by: T.Wild
+  //  revised by: Rafał Kukawski (http://blog.kukawski.pl)
+  //    input by: Greenseed
+  //    input by: meo
+  //    input by: William
+  //    input by: Josep Sanz (http://www.ws3.es/)
+  // bugfixed by: Brett Zamir (http://brett-zamir.me)
+  //      note 1: Great work. Ideas for improvement:
+  //      note 1: - code more compliant with developer guidelines
+  //      note 1: - for implementing PHP constant arguments look at
+  //      note 1: the pathinfo() function, it offers the greatest
+  //      note 1: flexibility & compatibility possible
+  //   example 1: round(1241757, -3)
+  //   returns 1: 1242000
+  //   example 2: round(3.6)
+  //   returns 2: 4
+  //   example 3: round(2.835, 2)
+  //   returns 3: 2.84
+  //   example 4: round(1.1749999999999, 2)
+  //   returns 4: 1.17
+  //   example 5: round(58551.799999999996, 2)
+  //   returns 5: 58551.8
+
+  var m, f, isHalf, sgn; // helper variables
+  // making sure precision is integer
+  precision |= 0;
+  m = Math.pow(10, precision);
+  value *= m;
+  // sign of the number
+  sgn = value > 0 | -(value < 0);
+  isHalf = value % 1 === 0.5 * sgn;
+  f = Math.floor(value);
+
+  if (isHalf) {
+    switch (mode) {
+      case 'PHP_ROUND_HALF_DOWN':
+        // rounds .5 toward zero
+        value = f + (sgn < 0);
+        break;
+      case 'PHP_ROUND_HALF_EVEN':
+        // rouds .5 towards the next even integer
+        value = f + f % 2 * sgn;
+        break;
+      case 'PHP_ROUND_HALF_ODD':
+        // rounds .5 towards the next odd integer
+        value = f + !(f % 2);
+        break;
+      default:
+        // rounds .5 away from zero
+        value = f + (sgn > 0);
+    }
+  }
+
+  return (isHalf ? value : Math.round(value)) / m;
 };
 return module.exports;
 })();
@@ -3978,6 +4081,16 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
             }, $statement, $getDepend, $context), true);
         }, $getDepend, $context), false)) {
             $nofify($value, $error, $consts);
+        }},"Step":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $match;
+// 
+
+        $match = [];
+
+        if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value, $match)) {
+            return $error($consts['INVALID']);
+        }
+        if (abs(round($value / $params['step']) * $params['step'] - $value) > pow(2, -52)) {
+            $error($consts['INVALID_STEP']);
         }},"StringLength":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $length;
 // 
 
@@ -4053,12 +4166,12 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
 
     /// エラー定数のインポート
     /**/
-this.constants = {"Ajax":{"INVALID":"AjaxInvalid"},"ArrayLength":{"INVALID":"ArrayLengthInvalidLength","TOO_SHORT":"ArrayLengthInvalidMin","TOO_LONG":"ArrayLengthInvalidMax","SHORTLONG":"ArrayLengthInvalidMinMax"},"Aruiha":{"INVALID":"AruihaInvalid"},"Callback":{"INVALID":"CallbackInvalid"},"Compare":{"INVALID":"compareInvalid","EQUAL":"compareEqual","NOT_EQUAL":"compareNotEqual","LESS_THAN":"compareLessThan","GREATER_THAN":"compareGreaterThan","SIMILAR":"compareSimilar"},"Date":{"INVALID":"dateInvalid","INVALID_DATE":"dateInvalidDate","FALSEFORMAT":"dateFalseFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Decimal":{"INVALID":"DecimalInvalid","INVALID_INT":"DecimalInvalidInt","INVALID_DEC":"DecimalInvalidDec","INVALID_INTDEC":"DecimalInvalidIntDec","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Digits":{"INVALID":"notDigits","NOT_DIGITS":"digitsInvalid","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"EmailAddress":{"INVALID":"emailAddressInvalid","INVALID_FORMAT":"emailAddressInvalidFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileSize":{"INVALID":"FileSizeInvalid","INVALID_OVER":"FileSizeInvalidOver"},"FileType":{"INVALID":"FileTypeInvalid","INVALID_TYPE":"FileTypeInvalidType"},"Hostname":{"INVALID":"InvalidHostname","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"ImageSize":{"INVALID":"ImageFileInvalid","INVALID_WIDTH":"ImageFileInvalidWidth","INVALID_HEIGHT":"ImageFileInvalidHeight"},"InArray":{"INVALID":"InvalidInArray","NOT_IN_ARRAY":"notInArray"},"Json":{"INVALID":"JsonInvalid","INVALID_INVALID_SCHEMA":"JsonInvalidSchema"},"NotInArray":{"INVALID":"InvalidNotInArray","VALUE_IN_ARRAY":"valueInArray"},"Password":{"INVALID":"InvalidPassword","INVALID_PASSWORD_LESS":"InvalidPasswordLess","INVALID_PASSWORD_WEAK":"InvalidPasswordWeak","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Range":{"INVALID":"RangeInvalid","INVALID_MIN":"RangeInvalidMin","INVALID_MAX":"RangeInvalidMax","INVALID_MINMAX":"RangeInvalidMinMax","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Regex":{"INVALID":"regexInvalid","ERROROUS":"regexErrorous","NOT_MATCH":"regexNotMatch","NEGATION":"regexNegation"},"Requires":{"INVALID":"RequireInvalid","INVALID_TEXT":"RequireInvalidText","INVALID_MULTIPLE":"RequireInvalidSelectSingle"},"StringLength":{"INVALID":"StringLengthInvalidLength","TOO_SHORT":"StringLengthInvalidMin","TOO_LONG":"StringLengthInvalidMax","SHORTLONG":"StringLengthInvalidMinMax","DIFFERENT":"StringLengthInvalidDifferenr"},"Telephone":{"INVALID":"InvalidTelephone","INVALID_TELEPHONE":"InvalidTelephoneNumber","INVALID_WITH_HYPHEN":"InvalidTelephoneWithHyphen","INVALID_NONE_HYPHEN":"InvalidTelephoneNoneHyphen","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Unique":{"INVALID":"UniqueInvalid","NO_UNIQUE":"UniqueNoUnique"},"Uri":{"INVALID":"UriInvalid","INVALID_SCHEME":"UriInvalidScheme","INVALID_HOST":"UriInvalidHost","INVALID_PORT":"UriInvalidPort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4}};/*
+this.constants = {"Ajax":{"INVALID":"AjaxInvalid"},"ArrayLength":{"INVALID":"ArrayLengthInvalidLength","TOO_SHORT":"ArrayLengthInvalidMin","TOO_LONG":"ArrayLengthInvalidMax","SHORTLONG":"ArrayLengthInvalidMinMax"},"Aruiha":{"INVALID":"AruihaInvalid"},"Callback":{"INVALID":"CallbackInvalid"},"Compare":{"INVALID":"compareInvalid","EQUAL":"compareEqual","NOT_EQUAL":"compareNotEqual","LESS_THAN":"compareLessThan","GREATER_THAN":"compareGreaterThan","SIMILAR":"compareSimilar"},"Date":{"INVALID":"dateInvalid","INVALID_DATE":"dateInvalidDate","FALSEFORMAT":"dateFalseFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Decimal":{"INVALID":"DecimalInvalid","INVALID_INT":"DecimalInvalidInt","INVALID_DEC":"DecimalInvalidDec","INVALID_INTDEC":"DecimalInvalidIntDec","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Digits":{"INVALID":"notDigits","NOT_DIGITS":"digitsInvalid","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"EmailAddress":{"INVALID":"emailAddressInvalid","INVALID_FORMAT":"emailAddressInvalidFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileSize":{"INVALID":"FileSizeInvalid","INVALID_OVER":"FileSizeInvalidOver"},"FileType":{"INVALID":"FileTypeInvalid","INVALID_TYPE":"FileTypeInvalidType"},"Hostname":{"INVALID":"InvalidHostname","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"ImageSize":{"INVALID":"ImageFileInvalid","INVALID_WIDTH":"ImageFileInvalidWidth","INVALID_HEIGHT":"ImageFileInvalidHeight"},"InArray":{"INVALID":"InvalidInArray","NOT_IN_ARRAY":"notInArray"},"Json":{"INVALID":"JsonInvalid","INVALID_INVALID_SCHEMA":"JsonInvalidSchema"},"NotInArray":{"INVALID":"InvalidNotInArray","VALUE_IN_ARRAY":"valueInArray"},"Password":{"INVALID":"InvalidPassword","INVALID_PASSWORD_LESS":"InvalidPasswordLess","INVALID_PASSWORD_WEAK":"InvalidPasswordWeak","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Range":{"INVALID":"RangeInvalid","INVALID_MIN":"RangeInvalidMin","INVALID_MAX":"RangeInvalidMax","INVALID_MINMAX":"RangeInvalidMinMax","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Regex":{"INVALID":"regexInvalid","ERROROUS":"regexErrorous","NOT_MATCH":"regexNotMatch","NEGATION":"regexNegation"},"Requires":{"INVALID":"RequireInvalid","INVALID_TEXT":"RequireInvalidText","INVALID_MULTIPLE":"RequireInvalidSelectSingle"},"Step":{"INVALID":"StepInvalid","INVALID_STEP":"StepInvalidInt","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"StringLength":{"INVALID":"StringLengthInvalidLength","TOO_SHORT":"StringLengthInvalidMin","TOO_LONG":"StringLengthInvalidMax","SHORTLONG":"StringLengthInvalidMinMax","DIFFERENT":"StringLengthInvalidDifferenr"},"Telephone":{"INVALID":"InvalidTelephone","INVALID_TELEPHONE":"InvalidTelephoneNumber","INVALID_WITH_HYPHEN":"InvalidTelephoneWithHyphen","INVALID_NONE_HYPHEN":"InvalidTelephoneNoneHyphen","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Unique":{"INVALID":"UniqueInvalid","NO_UNIQUE":"UniqueNoUnique"},"Uri":{"INVALID":"UriInvalid","INVALID_SCHEME":"UriInvalidScheme","INVALID_HOST":"UriInvalidHost","INVALID_PORT":"UriInvalidPort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4}};/*
 */
 
     /// エラー文言のインポート
     /**/
-this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid value given","ArrayLengthInvalidMin":"%min%件以上は入力してください","ArrayLengthInvalidMax":"%max%件以下で入力して下さい","ArrayLengthInvalidMinMax":"%min%件～%max%件を入力して下さい"},"Aruiha":{"AruihaInvalid":"必ず呼び出し元で再宣言する"},"Callback":{"CallbackInvalid":"クロージャの戻り値で上書きされる"},"Compare":{"compareInvalid":"Invalid value given","compareEqual":"%operand%と同じ値を入力してください","compareNotEqual":"%operand%と異なる値を入力してください","compareLessThan":"%operand%より小さい値を入力してください","compareGreaterThan":"%operand%より大きい値を入力してください"},"Date":{"dateInvalid":"Invalid value given","dateInvalidDate":"有効な日付を入力してください","dateFalseFormat":"%format%形式で入力してください"},"Decimal":{"DecimalInvalid":"小数値を入力してください","DecimalInvalidInt":"整数部分を%int%桁以下で入力してください","DecimalInvalidDec":"小数部分を%dec%桁以下で入力してください","DecimalInvalidIntDec":"整数部分を%int%桁、小数部分を%dec%桁以下で入力してください"},"Digits":{"notDigits":"Invalid value given","digitsInvalid":"整数を入力してください"},"EmailAddress":{"emailAddressInvalid":"Invalid value given","emailAddressInvalidFormat":"メールアドレスを正しく入力してください"},"FileSize":{"FileSizeInvalid":"入力ファイルが不正です","FileSizeInvalidOver":"ファイルサイズが大きすぎます。%message%以下のファイルを選択してください"},"FileType":{"FileTypeInvalid":"入力ファイルが不正です","FileTypeInvalidType":"%type%形式のファイルを選択して下さい"},"Hostname":{"InvalidHostname":"ホスト名を正しく入力してください"},"ImageSize":{"ImageFileInvalid":"画像ファイルを入力してください","ImageFileInvalidWidth":"横サイズは%width%ピクセル以下で選択してください","ImageFileInvalidHeight":"縦サイズは%height%ピクセル以下で選択してください"},"InArray":{"InvalidInArray":"Invalid value given","notInArray":"選択値が不正です"},"Json":{"JsonInvalid":"JSON文字列が不正です","JsonInvalidSchema":"キーが不正です"},"NotInArray":{"InvalidNotInArray":"Invalid value given","valueInArray":"選択値が不正です"},"Password":{"InvalidPassword":"Invalid value given","InvalidPasswordLess":"%char_types%を含めてください","InvalidPasswordWeak":"%char_types%のいずれかを%repeat%文字以上含めてください"},"Range":{"RangeInvalid":"Invalid value given","RangeInvalidMin":"%min%以上で入力して下さい","RangeInvalidMax":"%max%以下で入力して下さい","RangeInvalidMinMax":"%min%以上%max%以下で入力して下さい"},"Regex":{"regexInvalid":"Invalid value given","regexErrorous":"There was%pattern%'","regexNotMatch":"パターンに一致しません","regexNegation":"使用できない文字が含まれています"},"Requires":{"RequireInvalid":"Invalid value given","RequireInvalidText":"入力必須です","RequireInvalidSelectSingle":"選択してください"},"StringLength":{"StringLengthInvalidLength":"Invalid value given","StringLengthInvalidMin":"%min%文字以上で入力して下さい","StringLengthInvalidMax":"%max%文字以下で入力して下さい","StringLengthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringLengthInvalidDifferenr":"%min%文字で入力して下さい"},"Telephone":{"InvalidTelephone":"電話番号を正しく入力してください","InvalidTelephoneNumber":"電話番号を入力してください","InvalidTelephoneWithHyphen":"ハイフン付きで電話番号を入力してください","InvalidTelephoneNoneHyphen":"ハイフン無しで電話番号を入力してください"},"Unique":{"UniqueInvalid":"Invalid value given","UniqueNoUnique":"値が重複しています"},"Uri":{"UriInvalid":"URLをスキームから正しく入力してください","UriInvalidScheme":"スキームが不正です(%schemes%のみ)","UriInvalidHost":"ホスト名が不正です","UriInvalidPort":"ポート番号が不正です"}};/*
+this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid value given","ArrayLengthInvalidMin":"%min%件以上は入力してください","ArrayLengthInvalidMax":"%max%件以下で入力して下さい","ArrayLengthInvalidMinMax":"%min%件～%max%件を入力して下さい"},"Aruiha":{"AruihaInvalid":"必ず呼び出し元で再宣言する"},"Callback":{"CallbackInvalid":"クロージャの戻り値で上書きされる"},"Compare":{"compareInvalid":"Invalid value given","compareEqual":"%operand%と同じ値を入力してください","compareNotEqual":"%operand%と異なる値を入力してください","compareLessThan":"%operand%より小さい値を入力してください","compareGreaterThan":"%operand%より大きい値を入力してください"},"Date":{"dateInvalid":"Invalid value given","dateInvalidDate":"有効な日付を入力してください","dateFalseFormat":"%format%形式で入力してください"},"Decimal":{"DecimalInvalid":"小数値を入力してください","DecimalInvalidInt":"整数部分を%int%桁以下で入力してください","DecimalInvalidDec":"小数部分を%dec%桁以下で入力してください","DecimalInvalidIntDec":"整数部分を%int%桁、小数部分を%dec%桁以下で入力してください"},"Digits":{"notDigits":"Invalid value given","digitsInvalid":"整数を入力してください"},"EmailAddress":{"emailAddressInvalid":"Invalid value given","emailAddressInvalidFormat":"メールアドレスを正しく入力してください"},"FileSize":{"FileSizeInvalid":"入力ファイルが不正です","FileSizeInvalidOver":"ファイルサイズが大きすぎます。%message%以下のファイルを選択してください"},"FileType":{"FileTypeInvalid":"入力ファイルが不正です","FileTypeInvalidType":"%type%形式のファイルを選択して下さい"},"Hostname":{"InvalidHostname":"ホスト名を正しく入力してください"},"ImageSize":{"ImageFileInvalid":"画像ファイルを入力してください","ImageFileInvalidWidth":"横サイズは%width%ピクセル以下で選択してください","ImageFileInvalidHeight":"縦サイズは%height%ピクセル以下で選択してください"},"InArray":{"InvalidInArray":"Invalid value given","notInArray":"選択値が不正です"},"Json":{"JsonInvalid":"JSON文字列が不正です","JsonInvalidSchema":"キーが不正です"},"NotInArray":{"InvalidNotInArray":"Invalid value given","valueInArray":"選択値が不正です"},"Password":{"InvalidPassword":"Invalid value given","InvalidPasswordLess":"%char_types%を含めてください","InvalidPasswordWeak":"%char_types%のいずれかを%repeat%文字以上含めてください"},"Range":{"RangeInvalid":"Invalid value given","RangeInvalidMin":"%min%以上で入力して下さい","RangeInvalidMax":"%max%以下で入力して下さい","RangeInvalidMinMax":"%min%以上%max%以下で入力して下さい"},"Regex":{"regexInvalid":"Invalid value given","regexErrorous":"There was%pattern%'","regexNotMatch":"パターンに一致しません","regexNegation":"使用できない文字が含まれています"},"Requires":{"RequireInvalid":"Invalid value given","RequireInvalidText":"入力必須です","RequireInvalidSelectSingle":"選択してください"},"Step":{"StepInvalid":"Invalid value given","StepInvalidInt":"%step%の倍数で入力してください"},"StringLength":{"StringLengthInvalidLength":"Invalid value given","StringLengthInvalidMin":"%min%文字以上で入力して下さい","StringLengthInvalidMax":"%max%文字以下で入力して下さい","StringLengthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringLengthInvalidDifferenr":"%min%文字で入力して下さい"},"Telephone":{"InvalidTelephone":"電話番号を正しく入力してください","InvalidTelephoneNumber":"電話番号を入力してください","InvalidTelephoneWithHyphen":"ハイフン付きで電話番号を入力してください","InvalidTelephoneNoneHyphen":"ハイフン無しで電話番号を入力してください"},"Unique":{"UniqueInvalid":"Invalid value given","UniqueNoUnique":"値が重複しています"},"Uri":{"UriInvalid":"URLをスキームから正しく入力してください","UriInvalidScheme":"スキームが不正です(%schemes%のみ)","UriInvalidHost":"ホスト名が不正です","UriInvalidPort":"ポート番号が不正です"}};/*
 */
 
     /// 初期化（コンストラクション）
