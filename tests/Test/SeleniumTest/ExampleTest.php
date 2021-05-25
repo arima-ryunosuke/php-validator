@@ -328,6 +328,19 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_step(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('step', '1.4');
+        $this->assertCount(1, $driver->getErrors());
+        $driver->setValue('step', '1.5');
+        $this->assertCount(0, $driver->getErrors());
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_range(WebDriver $driver)
     {
         $driver->path('/example/index.php');
