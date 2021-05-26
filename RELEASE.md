@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.9
+
+- [change][Input] javascript を廃止して checkmode を新設
+- [fixbug][Input] _getRange の不具合を修正
+- [feature][Condition/Step] 実装
+
 ## 1.0.8
 
 - [feature][template] spawn 開始/終了イベントを実装
