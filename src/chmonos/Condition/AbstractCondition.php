@@ -6,6 +6,7 @@ use function ryunosuke\chmonos\array_each;
 use function ryunosuke\chmonos\array_map_key;
 use function ryunosuke\chmonos\array_unset;
 use function ryunosuke\chmonos\callable_code;
+use function ryunosuke\chmonos\class_shorten;
 use function ryunosuke\chmonos\dirmtime;
 use function ryunosuke\chmonos\get_class_constants;
 use function ryunosuke\chmonos\paml_import;
@@ -31,6 +32,9 @@ abstract class AbstractCondition
 
     /** @var array バリデーションメッセージのテンプレート（共通） */
     protected static $messageTemplates = [];
+
+    /** @var string[] バリデーションモード（サーバー・クライアントのどっちで検証するか） */
+    private $checkmode = ['server' => true, 'client' => true];
 
     /** @var array バリデーションメッセージのテンプレート（固有） */
     protected $changedMessageTemplates = [];
@@ -351,6 +355,12 @@ JS;
      */
     public function isValid($value, $fields = [])
     {
+        $this->messages = [];
+
+        if (!$this->checkmode['server']) {
+            return true;
+        }
+
         static $constants;
         $constants = $constants ?? get_class_constants($this);
 
@@ -362,8 +372,6 @@ JS;
             }
             $this->addMessage($messageKey, $message);
         };
-
-        $this->messages = [];
 
         $context = self::$cache['context'] + static::prevalidate($value, $fields, $params);
         static::validate($value, $fields, $params, $constants, $error, $context);
@@ -406,6 +414,42 @@ JS;
     {
         // 基本的には空。個別はオーバーライドして対応
         return [];
+    }
+
+    /**
+     * バリデーションルール（Input 側で使うやつを一緒くたにしたもの）を返す
+     *
+     * @return array
+     */
+    public function getRule()
+    {
+        if (!$this->checkmode['client']) {
+            return null;
+        }
+
+        return [
+            'cname'     => class_shorten($this),
+            'param'     => $this->getValidationParam(),
+            'arrayable' => $this->isArrayableValidation(),
+            'message'   => $this->getMessageTemplates(),
+            'fields'    => $this->getFields(),
+        ];
+    }
+
+    /**
+     * チェックモードを設定する
+     *
+     * @param bool|array $checkmode チェックモード
+     * @return static
+     */
+    public function setCheckMode($checkmode)
+    {
+        assert(is_bool($checkmode) || is_array($checkmode));
+        if (is_bool($checkmode)) {
+            $checkmode = array_fill_keys(array_keys($this->checkmode), $checkmode);
+        }
+        $this->checkmode = array_intersect_key($checkmode + $this->checkmode, $this->checkmode);
+        return $this;
     }
 
     /**

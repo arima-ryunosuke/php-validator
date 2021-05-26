@@ -34,6 +34,15 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertEquals(1, $input->default);
     }
 
+    function test___construct_js()
+    {
+        $input = new Input(['javascript' => true]);
+        $this->assertEquals(['server' => true, 'client' => true], $input->checkmode);
+
+        $input = new Input(['javascript' => false]);
+        $this->assertEquals(['server' => true, 'client' => false], $input->checkmode);
+    }
+
     function test___isset()
     {
         $input = new Input([]);

@@ -21,24 +21,24 @@ class Input
 
     /** @var array 生成時のデフォルト値 */
     protected static $defaultRule = [
-        'title'      => '',
-        'condition'  => [],
-        'options'    => [],
-        'event'      => ['change'],
-        'propagate'  => [],
-        'dependent'  => true,
-        'message'    => [],
-        'phantom'    => [],
-        'attribute'  => [],
-        'inputs'     => [],
-        'javascript' => true,
-        'wrapper'    => null,
-        'invisible'  => false,
-        'trimming'   => true,
-        'ime-mode'   => true,
-        'autocond'   => true,
-        'multiple'   => null,
-        'pseudo'     => true,
+        'title'     => '',
+        'condition' => [],
+        'options'   => [],
+        'event'     => ['change'],
+        'propagate' => [],
+        'dependent' => true,
+        'message'   => [],
+        'phantom'   => [],
+        'attribute' => [],
+        'inputs'    => [],
+        'checkmode' => ['server' => true, 'client' => true],
+        'wrapper'   => null,
+        'invisible' => false,
+        'trimming'  => true,
+        'ime-mode'  => true,
+        'autocond'  => true,
+        'multiple'  => null,
+        'pseudo'    => true,
         // 'default'    => null, // あるかないかでデフォルト値を決めるのでコメントアウト
     ];
 
@@ -81,11 +81,17 @@ class Input
         $rule['attribute'] = arrayize($rule['attribute']);
         $rule['event'] = arrayize($rule['event']);
 
+        // for compatible
+        if (array_key_exists('javascript', $rule) && !$rule['javascript']) {
+            $rule['checkmode']['client'] = false;
+        }
+
         // 文字列指定の Condition をオブジェクト化する
         foreach ($rule['condition'] as $name => $condition) {
             if (!($condition instanceof AbstractCondition)) {
                 $rule['condition'][$name] = AbstractCondition::create($name, $condition);
             }
+            $rule['condition'][$name]->setCheckMode($rule['checkmode']);
         }
 
         // 検証メッセージ設定
@@ -512,22 +518,8 @@ class Input
      */
     public function getValidationRule()
     {
-        // 情報量がそこそこでかいので js チェックが有効の場合のみ含める
-        $conditions = [];
-        if ($this->javascript) {
-            foreach ($this->condition as $name => $condition) {
-                $conditions[$name] = [
-                    'cname'     => class_shorten($condition),
-                    'param'     => $condition->getValidationParam(),
-                    'arrayable' => $condition->isArrayableValidation(),
-                    'message'   => $condition->getMessageTemplates(),
-                    'fields'    => $condition->getFields(),
-                ];
-            }
-        }
-
         return [
-            'condition' => $conditions,
+            'condition' => array_map_filter($this->condition, function ($condition) { return $condition->getRule(); }),
             'event'     => (array) $this->event,
             'propagate' => (array) $this->propagate,
             'phantom'   => (array) $this->phantom,

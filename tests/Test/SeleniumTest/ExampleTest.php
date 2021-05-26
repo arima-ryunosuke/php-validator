@@ -14,12 +14,29 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     {
         $driver->path('/example/index.php');
 
-        $driver->click('#basic_form_submit');
-        $this->assertCount(1, $driver->getErrors(null, false));
-
         $driver->setValue('toggleInvisible', 1);
-        $driver->click('#basic_form_submit');
+        $driver->setValue('invisible', 'hoge');
+        $this->assertCount(0, $driver->getErrors(null, false));
+
+        $driver->setValue('invisible', '');
+        $driver->setValue('toggleInvisible', 0);
         $this->assertCount(1, $driver->getErrors(null, false));
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
+    function test_ignore_checkmode(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('client', 'hoge');
+        $driver->setValue('server', 'hoge');
+        $this->assertCount(0, $driver->getErrors());
+
+        $driver->setValue('client', '');
+        $driver->setValue('server', '');
+        $this->assertCount(1, $driver->getErrors());
     }
 
     /**
@@ -32,7 +49,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('ajax1', '1');
         $driver->setValue('ajax2', '2');
         $driver->setValue('ajax_sum', '5');
-        $this->assertCount(1, $driver->getErrors(1, 3));
+        $this->assertCount(1, $driver->getErrors());
     }
 
     /**

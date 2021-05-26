@@ -194,6 +194,10 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
         $condition = new Callback(function ($value, $error) { $error('this is error'); }, [], 'userdata');
         $this->assertEquals(false, $condition->isValid(null));
         $this->assertEquals([Callback::INVALID => 'this is error'], $condition->getMessages());
+
+        $condition->setCheckMode(false);
+        $this->assertEquals(true, $condition->isValid(null));
+        $this->assertEquals([], $condition->getMessages());
     }
 
     function test_isArrayableValidation()
@@ -225,6 +229,31 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $condition->setMessageTemplate('test', Callback::INVALID);
         $this->assertEquals(['CallbackInvalid' => 'test'], $condition->getMessageTemplates());
+    }
+
+    function test_getRule()
+    {
+        $condition = new Callback(function () { });
+        $this->assertEquals(['cname', 'param', 'arrayable', 'message', 'fields'], array_keys($condition->getRule()));
+
+        $condition->setCheckMode(false);
+        $this->assertNull($condition->getRule());
+    }
+
+    function test_setCheckMode()
+    {
+        $condition = new Callback(function () { });
+        $checkmode = \Closure::bind(function () {
+            /** @noinspection PhpUndefinedFieldInspection */
+            return $this->checkmode;
+        }, $condition, AbstractCondition::class);
+
+        $condition->setCheckMode(false);
+        $this->assertEquals(['server' => false, 'client' => false], $checkmode());
+        $condition->setCheckMode(true);
+        $this->assertEquals(['server' => true, 'client' => true], $checkmode());
+        $condition->setCheckMode(['server' => false, 'hogera' => 123]);
+        $this->assertEquals(['server' => false, 'client' => true], $checkmode());
     }
 
     function test_addMessage()
