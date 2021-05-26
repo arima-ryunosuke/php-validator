@@ -333,6 +333,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'condition' => [
                 'Range'   => [0, 999],
                 'Decimal' => [2, 3],
+                'Step'    => [0.5],
             ]
         ];
         $input = new Input($rule);
@@ -341,7 +342,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $range = $getRange();
         $this->assertEquals($range['min'], "0"); // min は Range の 0
         $this->assertEquals($range['max'], "99.999"); // max は Decimal の 99.999
-        $this->assertEquals($range['step'], "0.001"); // step は Decimal の 0.001
+        $this->assertEquals($range['step'], "0.5"); // step は Step の 0.5
     }
 
     function test_getMaxlength()

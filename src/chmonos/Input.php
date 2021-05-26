@@ -437,7 +437,7 @@ class Input
                 if ($range['max'] === null || ($max !== null && $max < $range['max'])) {
                     $range['max'] = $max;
                 }
-                if ($range['step'] === null || ($step !== null && $step < $range['step'])) {
+                if ($range['step'] === null || ($step !== null && $step > $range['step'])) {
                     $range['step'] = $step;
                 }
             }
