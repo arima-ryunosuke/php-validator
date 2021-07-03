@@ -49,7 +49,7 @@ class WebDriver extends RemoteWebDriver
                 if (in_array($e->getAttribute('type'), ['checkbox', 'radio'])) {
                     $inputs = $this->findElements(WebDriverBy::cssSelector("[name='$name']:not([type=hidden])"));
                     foreach ($inputs as $input) {
-                        if ($clearable && $input->getAttribute('checked')) {
+                        if ($clearable && $input->isSelected()) {
                             $input->click();
                         }
                         if (in_array($input->getAttribute('value'), $values)) {
@@ -58,7 +58,7 @@ class WebDriver extends RemoteWebDriver
                     }
                     break;
                 }
-                foreach ($es as $n => $e) {
+                foreach ($es as $e) {
                     if (in_array($e->getAttribute('type'), ['file'])) {
                         $e->setFileDetector(new LocalFileDetector());
                     }
@@ -66,7 +66,7 @@ class WebDriver extends RemoteWebDriver
 
             case 'textarea':
                 if ($clearable) {
-                    foreach ($es as $n => $e) {
+                    foreach ($es as $e) {
                         $e->clear();
                     }
                 }

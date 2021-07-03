@@ -10,7 +10,7 @@ use function ryunosuke\chmonos\class_shorten;
 use function ryunosuke\chmonos\dirmtime;
 use function ryunosuke\chmonos\get_class_constants;
 use function ryunosuke\chmonos\paml_import;
-use function ryunosuke\chmonos\str_contains;
+use function ryunosuke\chmonos\str_exists;
 
 /**
  * 検証条件抽象クラス
@@ -82,6 +82,7 @@ abstract class AbstractCondition
 
         foreach ($messages as $key => $message) {
             if (class_exists($key)) {
+                /** @var self $key */
                 $key::$messageTemplates = (array) $message + $key::$messageTemplates;
             }
             elseif (isset(static::$messageTemplates[$key])) {
@@ -256,7 +257,7 @@ JS;
      */
     public static function create($name, $arguments = [])
     {
-        if (is_string($arguments) && str_contains($arguments, ['(', ')'], false, true) !== false) {
+        if (is_string($arguments) && str_exists($arguments, ['(', ')'], false, true) !== false) {
             $name = $arguments;
             $arguments = [];
         }

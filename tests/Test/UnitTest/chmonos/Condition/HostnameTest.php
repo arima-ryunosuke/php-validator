@@ -9,66 +9,66 @@ class HostnameTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_regular()
     {
         $validate = new Hostname(['']);
-        $this->assertEquals($validate->isValid('127.0.0.1'), false);
-        $this->assertEquals($validate->isValid('::'), false);
-        $this->assertEquals($validate->isValid('example.com'), true);
-        $this->assertEquals($validate->isValid('localhost'), true);
-        $this->assertEquals($validate->isValid('example.com.'), false);
-        $this->assertEquals($validate->isValid('.localhost'), false);
-        $this->assertEquals($validate->isValid('.localhost.'), false);
-        $this->assertEquals($validate->isValid('exa_mple.com'), false);
-        $this->assertEquals($validate->isValid('1localhost'), true);
-        $this->assertEquals($validate->isValid('1example.com'), true);
-        $this->assertEquals($validate->isValid('example.1com'), false);
-        $this->assertEquals($validate->isValid('example.com.com.com'), true);
-        $this->assertEquals($validate->isValid('example.com.com.com.'), false);
+        $this->assertEquals(false, $validate->isValid('127.0.0.1'));
+        $this->assertEquals(false, $validate->isValid('::'));
+        $this->assertEquals(true, $validate->isValid('example.com'));
+        $this->assertEquals(true, $validate->isValid('localhost'));
+        $this->assertEquals(false, $validate->isValid('example.com.'));
+        $this->assertEquals(false, $validate->isValid('.localhost'));
+        $this->assertEquals(false, $validate->isValid('.localhost.'));
+        $this->assertEquals(false, $validate->isValid('exa_mple.com'));
+        $this->assertEquals(true, $validate->isValid('1localhost'));
+        $this->assertEquals(true, $validate->isValid('1example.com'));
+        $this->assertEquals(false, $validate->isValid('example.1com'));
+        $this->assertEquals(true, $validate->isValid('example.com.com.com'));
+        $this->assertEquals(false, $validate->isValid('example.com.com.com.'));
 
-        $this->assertEquals($validate->isValid('a.b.c'), true);
-        $this->assertEquals($validate->isValid('1.2.c'), true);
-        $this->assertEquals($validate->isValid('2nd.example.com'), true);
-        $this->assertEquals($validate->isValid('999.example.com'), true);
-        $this->assertEquals($validate->isValid('1.2.0.192.in-addr.arpa'), true);
+        $this->assertEquals(true, $validate->isValid('a.b.c'));
+        $this->assertEquals(true, $validate->isValid('1.2.c'));
+        $this->assertEquals(true, $validate->isValid('2nd.example.com'));
+        $this->assertEquals(true, $validate->isValid('999.example.com'));
+        $this->assertEquals(true, $validate->isValid('1.2.0.192.in-addr.arpa'));
 
         $validate = new Hostname(['', 'cidr', 4, 6]);
-        $this->assertEquals($validate->isValid('127.0.0.1'), true);
-        $this->assertEquals($validate->isValid('127.0.0.1/24'), true);
-        $this->assertEquals($validate->isValid('::'), true);
-        $this->assertEquals($validate->isValid('example.com'), true);
-        $this->assertEquals($validate->isValid('localhost'), true);
+        $this->assertEquals(true, $validate->isValid('127.0.0.1'));
+        $this->assertEquals(true, $validate->isValid('127.0.0.1/24'));
+        $this->assertEquals(true, $validate->isValid('::'));
+        $this->assertEquals(true, $validate->isValid('example.com'));
+        $this->assertEquals(true, $validate->isValid('localhost'));
     }
 
     function test_cidr()
     {
         $validate = new Hostname(['cidr']);
         // 下記は false のはず
-        $this->assertEquals($validate->isValid('127.0.0.1/'), false);
-        $this->assertEquals($validate->isValid('127.0.0.1/a'), false);
-        $this->assertEquals($validate->isValid('127.0.0.1/33'), false);
+        $this->assertEquals(false, $validate->isValid('127.0.0.1/'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1/a'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1/33'));
         // 普通の ipv4 nocidr も受け付けない（受け付けたい場合は 4 を明示的に指定する）
-        $this->assertEquals($validate->isValid('127.0.0.1'), false);
+        $this->assertEquals(false, $validate->isValid('127.0.0.1'));
 
         // 全サブネットでテスト
         foreach (range(0, 32) as $s) {
-            $this->assertEquals($validate->isValid('127.0.0.1/' . $s), true);
+            $this->assertEquals(true, $validate->isValid('127.0.0.1/' . $s));
         }
     }
 
     function test_ipv4()
     {
         $validate = new Hostname([4]);
-        $this->assertEquals($validate->isValid('127.0.0.1'), true);
-        $this->assertEquals($validate->isValid('::'), false);
-        $this->assertEquals($validate->isValid('example.com'), false);
-        $this->assertEquals($validate->isValid('localhost'), false);
+        $this->assertEquals(true, $validate->isValid('127.0.0.1'));
+        $this->assertEquals(false, $validate->isValid('::'));
+        $this->assertEquals(false, $validate->isValid('example.com'));
+        $this->assertEquals(false, $validate->isValid('localhost'));
     }
 
     function test_ipv6()
     {
         $validate = new Hostname([6]);
-        $this->assertEquals($validate->isValid('127.0.0.1'), false);
-        $this->assertEquals($validate->isValid('::'), true);
-        $this->assertEquals($validate->isValid('example.com'), false);
-        $this->assertEquals($validate->isValid('localhost'), false);
+        $this->assertEquals(false, $validate->isValid('127.0.0.1'));
+        $this->assertEquals(true, $validate->isValid('::'));
+        $this->assertEquals(false, $validate->isValid('example.com'));
+        $this->assertEquals(false, $validate->isValid('localhost'));
     }
 
     function test_getImeMode()

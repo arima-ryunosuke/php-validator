@@ -8,31 +8,31 @@ class DecimalTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid()
     {
         $validate = new Decimal(3, 3);
-        $this->assertEquals($validate->isValid('invalid'), false);
-        $this->assertEquals($validate->isValid(12345.12345), false);
+        $this->assertEquals(false, $validate->isValid('invalid'));
+        $this->assertEquals(false, $validate->isValid(12345.12345));
 
         $validate = new Decimal(5, 3);
-        $this->assertEquals($validate->isValid(1.1), true);
-        $this->assertEquals($validate->isValid(12345.123), true);
-        $this->assertEquals($validate->isValid(123456.123), false);
-        $this->assertEquals($validate->isValid(12345.1234), false);
-        $this->assertEquals($validate->isValid(0.123), true);
-        $this->assertEquals($validate->isValid(0.1234), false);
-        $this->assertEquals($validate->isValid(12), true);
-        $this->assertEquals($validate->isValid(123456), false);
+        $this->assertEquals(true, $validate->isValid(1.1));
+        $this->assertEquals(true, $validate->isValid(12345.123));
+        $this->assertEquals(false, $validate->isValid(123456.123));
+        $this->assertEquals(false, $validate->isValid(12345.1234));
+        $this->assertEquals(true, $validate->isValid(0.123));
+        $this->assertEquals(false, $validate->isValid(0.1234));
+        $this->assertEquals(true, $validate->isValid(12));
+        $this->assertEquals(false, $validate->isValid(123456));
 
         $validate = new Decimal(5, 0);
-        $this->assertEquals($validate->isValid(0), true);
-        $this->assertEquals($validate->isValid(1), true);
-        $this->assertEquals($validate->isValid(12345), true);
-        $this->assertEquals($validate->isValid(12345.1), false);
-        $this->assertEquals($validate->isValid(12345.12), false);
-        $this->assertEquals($validate->isValid(12345.123), false);
-        $this->assertEquals($validate->isValid(12345.1234), false);
-        $this->assertEquals($validate->isValid(1.1), false);
-        $this->assertEquals($validate->isValid(1.12), false);
-        $this->assertEquals($validate->isValid(1.123), false);
-        $this->assertEquals($validate->isValid(1.1234), false);
+        $this->assertEquals(true, $validate->isValid(0));
+        $this->assertEquals(true, $validate->isValid(1));
+        $this->assertEquals(true, $validate->isValid(12345));
+        $this->assertEquals(false, $validate->isValid(12345.1));
+        $this->assertEquals(false, $validate->isValid(12345.12));
+        $this->assertEquals(false, $validate->isValid(12345.123));
+        $this->assertEquals(false, $validate->isValid(12345.1234));
+        $this->assertEquals(false, $validate->isValid(1.1));
+        $this->assertEquals(false, $validate->isValid(1.12));
+        $this->assertEquals(false, $validate->isValid(1.123));
+        $this->assertEquals(false, $validate->isValid(1.1234));
     }
 
     function test_getRange()

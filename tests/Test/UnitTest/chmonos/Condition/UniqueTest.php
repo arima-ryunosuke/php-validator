@@ -26,28 +26,28 @@ class UniqueTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // 重複なし
         $values = $base_values;
-        $this->assertEquals($validate->isValid('val', $values), true);
+        $this->assertEquals(true, $validate->isValid('val', $values));
 
         // 重複あり
         $values = $base_values;
         $values['/values'][] = [
             'unique' => 'val'
         ];
-        $this->assertEquals($validate->isValid('val', $values), false);
+        $this->assertEquals(false, $validate->isValid('val', $values));
 
         $validate = new Unique(false);
         $validate->initialize(null, null, 'values', 'unique');
 
         // ケース無視重複なし
         $values = $base_values;
-        $this->assertEquals($validate->isValid('val', $values), true);
+        $this->assertEquals(true, $validate->isValid('val', $values));
 
         // ケース無視重複あり
         $values = $base_values;
         $values['/values'][] = [
             'unique' => 'VAL'
         ];
-        $this->assertEquals($validate->isValid('val', $values), false);
+        $this->assertEquals(false, $validate->isValid('val', $values));
     }
 
     function test_valid_single()
@@ -63,12 +63,12 @@ class UniqueTest extends \ryunosuke\Test\AbstractUnitTestCase
         // 重複なし
         $validate = new Unique(true);
         $validate->initialize(null, null, 'values', 'unique');
-        $this->assertEquals($validate->isValid('val', $values), true);
+        $this->assertEquals(true, $validate->isValid('val', $values));
 
         // ケース無視重複なし
         $validate = new Unique(false);
         $validate->initialize(null, null, 'values', 'unique');
-        $this->assertEquals($validate->isValid('val', $values), true);
+        $this->assertEquals(true, $validate->isValid('val', $values));
     }
 
     function test_setRootName()

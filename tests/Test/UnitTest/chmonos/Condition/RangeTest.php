@@ -9,39 +9,39 @@ class RangeTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Range(1, null);
 
-        $this->assertEquals($validate->isValid('0'), false);
-        $this->assertEquals($validate->isValid('1'), true);
-        $this->assertEquals($validate->isValid('999'), true);
-        $this->assertEquals($validate->isValid(0), false);
-        $this->assertEquals($validate->isValid(1), true);
-        $this->assertEquals($validate->isValid(999), true);
+        $this->assertEquals(false, $validate->isValid('0'));
+        $this->assertEquals(true, $validate->isValid('1'));
+        $this->assertEquals(true, $validate->isValid('999'));
+        $this->assertEquals(false, $validate->isValid(0));
+        $this->assertEquals(true, $validate->isValid(1));
+        $this->assertEquals(true, $validate->isValid(999));
     }
 
     function test_max()
     {
         $validate = new Range(null, 999);
 
-        $this->assertEquals($validate->isValid('-1'), true);
-        $this->assertEquals($validate->isValid('0'), true);
-        $this->assertEquals($validate->isValid('1'), true);
-        $this->assertEquals($validate->isValid('999'), true);
-        $this->assertEquals($validate->isValid('1000'), false);
-        $this->assertEquals($validate->isValid(-1), true);
-        $this->assertEquals($validate->isValid(0), true);
-        $this->assertEquals($validate->isValid(1), true);
-        $this->assertEquals($validate->isValid(999), true);
-        $this->assertEquals($validate->isValid(1000), false);
+        $this->assertEquals(true, $validate->isValid('-1'));
+        $this->assertEquals(true, $validate->isValid('0'));
+        $this->assertEquals(true, $validate->isValid('1'));
+        $this->assertEquals(true, $validate->isValid('999'));
+        $this->assertEquals(false, $validate->isValid('1000'));
+        $this->assertEquals(true, $validate->isValid(-1));
+        $this->assertEquals(true, $validate->isValid(0));
+        $this->assertEquals(true, $validate->isValid(1));
+        $this->assertEquals(true, $validate->isValid(999));
+        $this->assertEquals(false, $validate->isValid(1000));
     }
 
     function test_minmax()
     {
         $validate = new Range(1, 999);
 
-        $this->assertEquals($validate->isValid('-1'), false);
-        $this->assertEquals($validate->isValid('0'), false);
-        $this->assertEquals($validate->isValid('1'), true);
-        $this->assertEquals($validate->isValid('999'), true);
-        $this->assertEquals($validate->isValid('1000'), false);
+        $this->assertEquals(false, $validate->isValid('-1'));
+        $this->assertEquals(false, $validate->isValid('0'));
+        $this->assertEquals(true, $validate->isValid('1'));
+        $this->assertEquals(true, $validate->isValid('999'));
+        $this->assertEquals(false, $validate->isValid('1000'));
     }
 
     function test_getImeMode()

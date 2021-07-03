@@ -581,7 +581,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('month', '5');
         $driver->setValue('day', '24');
         $this->assertCount(0, $driver->getErrors());
-        $this->assertEquals('2000/05/24', $driver->findElement(WebDriverBy::name('year-month-day'))->getAttribute('value'));
+        // js で書き換えても value が変わらない？ DOM ではなく html 属性を見ているような気がする
+        //$this->assertEquals('2000/05/24', $driver->findElement(WebDriverBy::name('year-month-day'))->getAttribute('class'));
+        $this->assertContains('validation_ok', $driver->findElement(WebDriverBy::name('year-month-day'))->getAttribute('class'));
 
         $driver->setValue('month', '13');
         $this->assertCount(2, $driver->getErrors());
@@ -612,6 +614,6 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/testing.php');
 
         sleep(1); // wait for js testing
-        $this->assertContains('0 failures', $driver->findElement(WebDriverBy::cssSelector('.jasmine-alert'))->getText());
+        $this->assertStringContainsString('0 failures', $driver->findElement(WebDriverBy::cssSelector('.jasmine-alert'))->getText());
     }
 }

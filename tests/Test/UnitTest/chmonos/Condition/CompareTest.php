@@ -13,15 +13,15 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // equal/string
         $validate = new Compare('===', 'depend');
-        $this->assertEquals($validate->isValid('12345', $values), true);
-        $this->assertEquals($validate->isValid(12345, $values), false);
-        $this->assertEquals($validate->isValid('54321', $values), false);
+        $this->assertEquals(true, $validate->isValid('12345', $values));
+        $this->assertEquals(false, $validate->isValid(12345, $values));
+        $this->assertEquals(false, $validate->isValid('54321', $values));
 
         // equal/number
         $validate = new Compare('==', 'depend');
-        $this->assertEquals($validate->isValid('12345', $values), true);
-        $this->assertEquals($validate->isValid(12345, $values), true);
-        $this->assertEquals($validate->isValid(54321, $values), false);
+        $this->assertEquals(true, $validate->isValid('12345', $values));
+        $this->assertEquals(true, $validate->isValid(12345, $values));
+        $this->assertEquals(false, $validate->isValid(54321, $values));
     }
 
     function test_valid_equal_filter()
@@ -32,7 +32,7 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // equal/string
         $validate = new Compare('==', 'depend', 'strtoupper');
-        $this->assertEquals($validate->isValid('ABCDE', $values), true);
+        $this->assertEquals(true, $validate->isValid('ABCDE', $values));
     }
 
     function test_valid_notequal()
@@ -43,15 +43,15 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // notequal/string
         $validate = new Compare('!==', 'depend');
-        $this->assertEquals($validate->isValid('12345', $values), false);
-        $this->assertEquals($validate->isValid(12345, $values), true);
-        $this->assertEquals($validate->isValid('54321', $values), true);
+        $this->assertEquals(false, $validate->isValid('12345', $values));
+        $this->assertEquals(true, $validate->isValid(12345, $values));
+        $this->assertEquals(true, $validate->isValid('54321', $values));
 
         // notequal/number
         $validate = new Compare('!=', 'depend');
-        $this->assertEquals($validate->isValid('12345', $values), false);
-        $this->assertEquals($validate->isValid(12345, $values), false);
-        $this->assertEquals($validate->isValid(54321, $values), true);
+        $this->assertEquals(false, $validate->isValid('12345', $values));
+        $this->assertEquals(false, $validate->isValid(12345, $values));
+        $this->assertEquals(true, $validate->isValid(54321, $values));
     }
 
     function test_valid_less()
@@ -62,9 +62,9 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // less/number
         $validate = new Compare('<=', 'depend');
-        $this->assertEquals($validate->isValid('12344', $values), true);
-        $this->assertEquals($validate->isValid('12345', $values), true);
-        $this->assertEquals($validate->isValid('12346', $values), false);
+        $this->assertEquals(true, $validate->isValid('12344', $values));
+        $this->assertEquals(true, $validate->isValid('12345', $values));
+        $this->assertEquals(false, $validate->isValid('12346', $values));
 
         $values = [
             'depend' => '2011/11/11 11:11:11'
@@ -72,9 +72,9 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // less/date
         $validate = new Compare('<', 'depend', 'strtotime');
-        $this->assertEquals($validate->isValid('2011/11/11 11:11:10', $values), true);
-        $this->assertEquals($validate->isValid('2011/11/11 11:11:11', $values), false);
-        $this->assertEquals($validate->isValid('2011/11/11 11:11:12', $values), false);
+        $this->assertEquals(true, $validate->isValid('2011/11/11 11:11:10', $values));
+        $this->assertEquals(false, $validate->isValid('2011/11/11 11:11:11', $values));
+        $this->assertEquals(false, $validate->isValid('2011/11/11 11:11:12', $values));
     }
 
     function test_valid_great()
@@ -85,9 +85,9 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // great/number
         $validate = new Compare('>=', 'depend');
-        $this->assertEquals($validate->isValid('12344', $values), false);
-        $this->assertEquals($validate->isValid('12345', $values), true);
-        $this->assertEquals($validate->isValid('12346', $values), true);
+        $this->assertEquals(false, $validate->isValid('12344', $values));
+        $this->assertEquals(true, $validate->isValid('12345', $values));
+        $this->assertEquals(true, $validate->isValid('12346', $values));
 
         $values = [
             'depend' => '2011/11/11 11:11:11'
@@ -95,9 +95,9 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // great/date
         $validate = new Compare('>', 'depend', 'strtotime');
-        $this->assertEquals($validate->isValid('2011/11/11 11:11:10', $values), false);
-        $this->assertEquals($validate->isValid('2011/11/11 11:11:11', $values), false);
-        $this->assertEquals($validate->isValid('2011/11/11 11:11:12', $values), true);
+        $this->assertEquals(false, $validate->isValid('2011/11/11 11:11:10', $values));
+        $this->assertEquals(false, $validate->isValid('2011/11/11 11:11:11', $values));
+        $this->assertEquals(true, $validate->isValid('2011/11/11 11:11:12', $values));
     }
 
     function test_valid_offset()
@@ -108,9 +108,9 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // less/number
         $validate = new Compare('<=', 'depend', '', 100);
-        $this->assertEquals($validate->isValid('12244', $values), true);
-        $this->assertEquals($validate->isValid('12245', $values), true);
-        $this->assertEquals($validate->isValid('12246', $values), false);
+        $this->assertEquals(true, $validate->isValid('12244', $values));
+        $this->assertEquals(true, $validate->isValid('12245', $values));
+        $this->assertEquals(false, $validate->isValid('12246', $values));
 
         $values = [
             'depend' => '2011/11/11 11:11:11'
@@ -118,16 +118,16 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // great/date
         $validate = new Compare('>=', 'depend', 'strtotime', -60);
-        $this->assertEquals($validate->isValid('2011/11/11 11:12:10', $values), false);
-        $this->assertEquals($validate->isValid('2011/11/11 11:12:11', $values), true);
-        $this->assertEquals($validate->isValid('2011/11/11 11:12:12', $values), true);
+        $this->assertEquals(false, $validate->isValid('2011/11/11 11:12:10', $values));
+        $this->assertEquals(true, $validate->isValid('2011/11/11 11:12:11', $values));
+        $this->assertEquals(true, $validate->isValid('2011/11/11 11:12:12', $values));
     }
 
     function test_valid_direct()
     {
         $validate = new Compare('>=', '2018/12/12 12:34:56', 'strtotime', 0, true);
-        $this->assertEquals($validate->isValid('2018/12/12 12:34:55'), false);
-        $this->assertEquals($validate->isValid('2018/12/12 12:34:57'), true);
+        $this->assertEquals(false, $validate->isValid('2018/12/12 12:34:55'));
+        $this->assertEquals(true, $validate->isValid('2018/12/12 12:34:57'));
     }
 
     function test_valid_empty()
@@ -137,8 +137,8 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
         ];
 
         $validate = new Compare('==', 'depend');
-        $this->assertEquals($validate->isValid(+100, $values), true);
-        $this->assertEquals($validate->isValid(-100, $values), true);
+        $this->assertEquals(true, $validate->isValid(+100, $values));
+        $this->assertEquals(true, $validate->isValid(-100, $values));
     }
 
     function test_getPropagation()

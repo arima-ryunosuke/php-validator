@@ -121,6 +121,7 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertInstanceOf(Input::class, $context->{"children/child2"});
 
         $this->expectException(\InvalidArgumentException::class);
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $context->undefinedProperty;
     }
 

@@ -20,18 +20,18 @@ class AruihaTest extends \ryunosuke\Test\AbstractUnitTestCase
             new Compare('>=', 'dependG'),
         ]);
 
-        $this->assertEquals($validate->isValid(-2, $values), true);
+        $this->assertEquals(true, $validate->isValid(-2, $values));
         $this->assertEmpty($validate->getMessages());
-        $this->assertEquals($validate->isValid(-1, $values), true);
+        $this->assertEquals(true, $validate->isValid(-1, $values));
         $this->assertEmpty($validate->getMessages());
-        $this->assertEquals($validate->isValid(0, $values), false);
+        $this->assertEquals(false, $validate->isValid(0, $values));
         $this->assertNotEmpty($validate->getMessages());
-        $this->assertEquals($validate->isValid(1, $values), true);
+        $this->assertEquals(true, $validate->isValid(1, $values));
         $this->assertEmpty($validate->getMessages());
-        $this->assertEquals($validate->isValid(2, $values), true);
+        $this->assertEquals(true, $validate->isValid(2, $values));
         $this->assertEmpty($validate->getMessages());
 
-        $this->assertEquals($validate->getFields(), ['dependL', 'dependG']);
+        $this->assertEquals(['dependL', 'dependG'], $validate->getFields());
     }
 
     function test_range()
@@ -41,23 +41,23 @@ class AruihaTest extends \ryunosuke\Test\AbstractUnitTestCase
             'Range' => [1, 3],
         ]);
 
-        $this->assertEquals($validate->isValid(-4), false);
+        $this->assertEquals(false, $validate->isValid(-4));
         $this->assertNotEmpty($validate->getMessages());
-        $this->assertEquals($validate->isValid(-3), true);
+        $this->assertEquals(true, $validate->isValid(-3));
         $this->assertEmpty($validate->getMessages());
-        $this->assertEquals($validate->isValid(-2), true);
+        $this->assertEquals(true, $validate->isValid(-2));
         $this->assertEmpty($validate->getMessages());
-        $this->assertEquals($validate->isValid(-1), true);
+        $this->assertEquals(true, $validate->isValid(-1));
         $this->assertEmpty($validate->getMessages());
-        $this->assertEquals($validate->isValid(0), false);
+        $this->assertEquals(false, $validate->isValid(0));
         $this->assertNotEmpty($validate->getMessages());
-        $this->assertEquals($validate->isValid(1), true);
+        $this->assertEquals(true, $validate->isValid(1));
         $this->assertEmpty($validate->getMessages());
-        $this->assertEquals($validate->isValid(2), true);
+        $this->assertEquals(true, $validate->isValid(2));
         $this->assertEmpty($validate->getMessages());
-        $this->assertEquals($validate->isValid(3), true);
+        $this->assertEquals(true, $validate->isValid(3));
         $this->assertEmpty($validate->getMessages());
-        $this->assertEquals($validate->isValid(4), false);
+        $this->assertEquals(false, $validate->isValid(4));
         $this->assertNotEmpty($validate->getMessages());
     }
 
@@ -66,15 +66,15 @@ class AruihaTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Aruiha([
             new Range(-3, -1),
         ]);
-        $this->assertEquals($validate->getMaxLength(), null);
+        $this->assertEquals(null, $validate->getMaxLength());
 
         $validate = new Aruiha([
             'StringLength' => [0, 10],
             new EmailAddress('#this_is_regex#'),
         ]);
 
-        $this->assertEquals($validate->getMaxLength(), 256);
-        $this->assertEquals($validate->getValidationParam(), [
+        $this->assertEquals(256, $validate->getMaxLength());
+        $this->assertEquals([
             'condition' => [
                 [
                     'class' => 'StringLength',
@@ -90,6 +90,6 @@ class AruihaTest extends \ryunosuke\Test\AbstractUnitTestCase
                     ],
                 ],
             ],
-        ]);
+        ], $validate->getValidationParam());
     }
 }

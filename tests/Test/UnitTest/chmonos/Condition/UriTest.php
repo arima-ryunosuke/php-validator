@@ -10,37 +10,37 @@ class UriTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Uri();
 
-        $this->assertEquals($validate->isValid('http://hostname'), true);
-        $this->assertEquals($validate->isValid('hoge:///hostname'), false);
-        $this->assertEquals($validate->isValid('fuga:/hostname'), false);
-        $this->assertEquals($validate->isValid('fuga:hostname'), false);
-        $this->assertEquals($validate->isValid('hostname'), false);
+        $this->assertEquals(true, $validate->isValid('http://hostname'));
+        $this->assertEquals(false, $validate->isValid('hoge:///hostname'));
+        $this->assertEquals(false, $validate->isValid('fuga:/hostname'));
+        $this->assertEquals(false, $validate->isValid('fuga:hostname'));
+        $this->assertEquals(false, $validate->isValid('hostname'));
     }
 
     function test_scheme()
     {
         // 指定なし（全許可）
         $validate = new Uri([]);
-        $this->assertEquals($validate->isValid('http://hostname'), true);
-        $this->assertEquals($validate->isValid('https://hostname'), true);
-        $this->assertEquals($validate->isValid('ftp://hostname'), true);
+        $this->assertEquals(true, $validate->isValid('http://hostname'));
+        $this->assertEquals(true, $validate->isValid('https://hostname'));
+        $this->assertEquals(true, $validate->isValid('ftp://hostname'));
 
         // http, https のみ
         $validate = new Uri([
             'http',
             'https'
         ]);
-        $this->assertEquals($validate->isValid('http://hostname'), true);
-        $this->assertEquals($validate->isValid('https://hostname'), true);
-        $this->assertEquals($validate->isValid('ftp://hostname'), false);
+        $this->assertEquals(true, $validate->isValid('http://hostname'));
+        $this->assertEquals(true, $validate->isValid('https://hostname'));
+        $this->assertEquals(false, $validate->isValid('ftp://hostname'));
 
         // ftpのみ
         $validate = new Uri([
             'ftp'
         ]);
-        $this->assertEquals($validate->isValid('http://hostname'), false);
-        $this->assertEquals($validate->isValid('https://hostname'), false);
-        $this->assertEquals($validate->isValid('ftp://hostname'), true);
+        $this->assertEquals(false, $validate->isValid('http://hostname'));
+        $this->assertEquals(false, $validate->isValid('https://hostname'));
+        $this->assertEquals(true, $validate->isValid('ftp://hostname'));
     }
 
     function test_getImeMode()

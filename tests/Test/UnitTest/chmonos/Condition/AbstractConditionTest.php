@@ -204,7 +204,7 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Decimal(1, 10);
 
-        $this->assertEquals($validate->isArrayableValidation(), false);
+        $this->assertEquals(false, $validate->isArrayableValidation());
     }
 
     function test_getValidationParam()

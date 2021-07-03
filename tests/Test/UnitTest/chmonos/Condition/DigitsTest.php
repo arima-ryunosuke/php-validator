@@ -8,14 +8,14 @@ class DigitsTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid()
     {
         $validate = new Digits();
-        $this->assertEquals($validate->isValid(0), true);
-        $this->assertEquals($validate->isValid(0.9), false);
-        $this->assertEquals($validate->isValid('0'), true);
-        $this->assertEquals($validate->isValid('0.9'), false);
-        $this->assertEquals($validate->isValid(001), true);
-        $this->assertEquals($validate->isValid(0x2), true);
-        $this->assertEquals($validate->isValid(-5), true);
-        $this->assertEquals($validate->isValid('12e34'), false);
+        $this->assertEquals(true, $validate->isValid(0));
+        $this->assertEquals(false, $validate->isValid(0.9));
+        $this->assertEquals(true, $validate->isValid('0'));
+        $this->assertEquals(false, $validate->isValid('0.9'));
+        $this->assertEquals(true, $validate->isValid(001));
+        $this->assertEquals(true, $validate->isValid(0x2));
+        $this->assertEquals(true, $validate->isValid(-5));
+        $this->assertEquals(false, $validate->isValid('12e34'));
     }
 
     function test_getImeMode()

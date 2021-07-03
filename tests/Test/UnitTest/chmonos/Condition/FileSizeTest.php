@@ -11,13 +11,13 @@ class FileSizeTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // 10240バイト以下
         $validate = new FileSize(10240);
-        $this->assertEquals($validate->isValid($dir . '10239.dat'), true);
-        $this->assertEquals($validate->isValid($dir . '10240.dat'), true);
-        $this->assertEquals($validate->isValid($dir . '10241.dat'), false);
+        $this->assertEquals(true, $validate->isValid($dir . '10239.dat'));
+        $this->assertEquals(true, $validate->isValid($dir . '10240.dat'));
+        $this->assertEquals(false, $validate->isValid($dir . '10241.dat'));
 
         // 存在しないファイル
         $validate = new FileSize(10);
-        $this->assertEquals(@$validate->isValid($dir . 'notfound'), false);
+        $this->assertEquals(false, @$validate->isValid($dir . 'notfound'));
     }
 
     function test_getType()

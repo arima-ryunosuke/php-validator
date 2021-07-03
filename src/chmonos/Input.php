@@ -106,7 +106,7 @@ class Input
             }
             // 文字列なら共通で設定
             elseif (is_string($message)) {
-                foreach ($rule['condition'] as $name => $condition) {
+                foreach ($rule['condition'] as $condition) {
                     $condition->setMessageTemplate("$message", $key);
                 }
             }

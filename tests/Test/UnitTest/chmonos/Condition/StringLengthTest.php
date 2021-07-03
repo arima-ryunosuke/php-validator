@@ -9,29 +9,29 @@ class StringLengthTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new StringLength(1, null);
 
-        $this->assertEquals($validate->isValid(str_repeat('x', 0)), false);
-        $this->assertEquals($validate->isValid(str_repeat('x', 1)), true);
-        $this->assertEquals($validate->isValid(str_repeat('x', 65535)), true);
+        $this->assertEquals(false, $validate->isValid(str_repeat('x', 0)));
+        $this->assertEquals(true, $validate->isValid(str_repeat('x', 1)));
+        $this->assertEquals(true, $validate->isValid(str_repeat('x', 65535)));
     }
 
     function test_max()
     {
         $validate = new StringLength(null, 10);
 
-        $this->assertEquals($validate->isValid(str_repeat('x', 0)), true);
-        $this->assertEquals($validate->isValid(str_repeat('x', 1)), true);
-        $this->assertEquals($validate->isValid(str_repeat('x', 10)), true);
-        $this->assertEquals($validate->isValid(str_repeat('x', 11)), false);
+        $this->assertEquals(true, $validate->isValid(str_repeat('x', 0)));
+        $this->assertEquals(true, $validate->isValid(str_repeat('x', 1)));
+        $this->assertEquals(true, $validate->isValid(str_repeat('x', 10)));
+        $this->assertEquals(false, $validate->isValid(str_repeat('x', 11)));
     }
 
     function test_minmax()
     {
         $validate = new StringLength(1, 10);
 
-        $this->assertEquals($validate->isValid(str_repeat('x', 0)), false);
-        $this->assertEquals($validate->isValid(str_repeat('x', 1)), true);
-        $this->assertEquals($validate->isValid(str_repeat('x', 10)), true);
-        $this->assertEquals($validate->isValid(str_repeat('x', 11)), false);
+        $this->assertEquals(false, $validate->isValid(str_repeat('x', 0)));
+        $this->assertEquals(true, $validate->isValid(str_repeat('x', 1)));
+        $this->assertEquals(true, $validate->isValid(str_repeat('x', 10)));
+        $this->assertEquals(false, $validate->isValid(str_repeat('x', 11)));
     }
 
     function test_different()

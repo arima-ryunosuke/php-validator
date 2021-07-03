@@ -91,7 +91,7 @@ class Context implements \IteratorAggregate
     {
         $root = $root ?? $this;
 
-        foreach ($this->inputs as $name => $input) {
+        foreach ($this->inputs as $input) {
             $input->initialize($root, $this);
         }
         return $this;
@@ -191,13 +191,13 @@ class Context implements \IteratorAggregate
     public function getFlatMessages($format = '[%s] %s', $childformat = '%s %d行目 - %s')
     {
         $result = [];
-        foreach ($this->inputs as $name => $input) {
+        foreach ($this->inputs as $input) {
             foreach ($input->getMessages() as $n => $messages) {
                 foreach ($messages as $key => $message) {
                     if (is_array($message)) {
                         foreach ($message as $msgs) {
                             $ctitle = $input->context->inputs[$key]->title;
-                            foreach ($msgs as $g => $m) {
+                            foreach ($msgs as $m) {
                                 $title = sprintf($childformat, $input->title, $n + 1, $ctitle);
                                 $result[] = sprintf($format, $title, $m);
                             }
@@ -239,7 +239,7 @@ class Context implements \IteratorAggregate
      */
     public function hasInputFile()
     {
-        foreach ($this->inputs as $name => $input) {
+        foreach ($this->inputs as $input) {
             // 子要素が持ってたら true
             if ($input->getType() === 'file') {
                 return true;

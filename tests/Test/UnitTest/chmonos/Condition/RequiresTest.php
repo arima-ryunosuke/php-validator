@@ -24,7 +24,7 @@ class RequiresTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Requires();
 
-        $this->assertEquals($validate->isArrayableValidation(), true);
+        $this->assertEquals(true, $validate->isArrayableValidation());
     }
 
     function test_getFields_getPropagation()
@@ -38,107 +38,107 @@ class RequiresTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Requires();
 
-        $this->assertEquals($validate->isValid('-1'), true);
-        $this->assertEquals($validate->isValid('0'), true);
-        $this->assertEquals($validate->isValid('1'), true);
-        $this->assertEquals($validate->isValid(' '), true);
-        $this->assertEquals($validate->isValid([1]), true);
-        $this->assertEquals($validate->isValid(''), false);
-        $this->assertEquals($validate->isValid(null), false);
-        $this->assertEquals($validate->isValid([]), false);
-        $this->assertEquals($validate->isValid([null]), true);
+        $this->assertEquals(true, $validate->isValid('-1'));
+        $this->assertEquals(true, $validate->isValid('0'));
+        $this->assertEquals(true, $validate->isValid('1'));
+        $this->assertEquals(true, $validate->isValid(' '));
+        $this->assertEquals(true, $validate->isValid([1]));
+        $this->assertEquals(false, $validate->isValid(''));
+        $this->assertEquals(false, $validate->isValid(null));
+        $this->assertEquals(false, $validate->isValid([]));
+        $this->assertEquals(true, $validate->isValid([null]));
     }
 
     function test_valid_equal()
     {
         $validate = new Requires(['dependent' => ['==', '123']]);
-        $this->assertEquals($validate->isValid('', ['dependent' => '123']), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => 123]), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => '456']), true);
-        $this->assertEquals($validate->isValid('ok', ['dependent' => '']), true);
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => '123']));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => 123]));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => '456']));
+        $this->assertEquals(true, $validate->isValid('ok', ['dependent' => '']));
 
         $validate = new Requires(['dependent' => ['===', '123']]);
-        $this->assertEquals($validate->isValid('', ['dependent' => '123']), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => 123]), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => '456']), true);
-        $this->assertEquals($validate->isValid('ok', ['dependent' => '']), true);
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => '123']));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => 123]));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => '456']));
+        $this->assertEquals(true, $validate->isValid('ok', ['dependent' => '']));
     }
 
     function test_valid_notequal()
     {
         $validate = new Requires(['dependent' => ['!=', '123']]);
-        $this->assertEquals($validate->isValid('', ['dependent' => '123']), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => 123]), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => '456']), false);
-        $this->assertEquals($validate->isValid('ok', ['dependent' => '']), true);
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => '123']));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => 123]));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => '456']));
+        $this->assertEquals(true, $validate->isValid('ok', ['dependent' => '']));
 
         $validate = new Requires(['dependent' => ['!==', '123']]);
-        $this->assertEquals($validate->isValid('', ['dependent' => '123']), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => 123]), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => '456']), false);
-        $this->assertEquals($validate->isValid('ok', ['dependent' => '']), true);
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => '123']));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => 123]));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => '456']));
+        $this->assertEquals(true, $validate->isValid('ok', ['dependent' => '']));
     }
 
     function test_valid_lt()
     {
         $validate = new Requires(['dependent' => ['<', '123']]);
-        $this->assertEquals($validate->isValid('', ['dependent' => '122']), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => '123']), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => '124']), true);
-        $this->assertEquals($validate->isValid('ok', ['dependent' => '']), true);
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => '122']));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => '123']));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => '124']));
+        $this->assertEquals(true, $validate->isValid('ok', ['dependent' => '']));
 
         $validate = new Requires(['dependent' => ['<=', '123']]);
-        $this->assertEquals($validate->isValid('', ['dependent' => '122']), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => '123']), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => '124']), true);
-        $this->assertEquals($validate->isValid('ok', ['dependent' => '']), true);
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => '122']));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => '123']));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => '124']));
+        $this->assertEquals(true, $validate->isValid('ok', ['dependent' => '']));
     }
 
     function test_valid_gt()
     {
         $validate = new Requires(['dependent' => ['>', '123']]);
-        $this->assertEquals($validate->isValid('', ['dependent' => '122']), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => '123']), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => '124']), false);
-        $this->assertEquals($validate->isValid('ok', ['dependent' => '']), true);
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => '122']));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => '123']));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => '124']));
+        $this->assertEquals(true, $validate->isValid('ok', ['dependent' => '']));
 
         $validate = new Requires(['dependent' => ['>=', '123']]);
-        $this->assertEquals($validate->isValid('', ['dependent' => '122']), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => '123']), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => '124']), false);
-        $this->assertEquals($validate->isValid('ok', ['dependent' => '']), true);
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => '122']));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => '123']));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => '124']));
+        $this->assertEquals(true, $validate->isValid('ok', ['dependent' => '']));
     }
 
     function test_valid_any()
     {
         $validate = new Requires(['dependent' => ['any', ['y', 'z']]]);
-        $this->assertEquals($validate->isValid('', ['dependent' => 'x']), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => 'y']), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => 'z']), false);
-        $this->assertEquals($validate->isValid('ok', ['dependent' => '']), true);
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => 'x']));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => 'y']));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => 'z']));
+        $this->assertEquals(true, $validate->isValid('ok', ['dependent' => '']));
 
         $validate = new Requires(['dependent' => ['notany', ['y', 'z']]]);
-        $this->assertEquals($validate->isValid('', ['dependent' => 'x']), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => 'y']), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => 'z']), true);
-        $this->assertEquals($validate->isValid('ok', ['dependent' => '']), true);
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => 'x']));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => 'y']));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => 'z']));
+        $this->assertEquals(true, $validate->isValid('ok', ['dependent' => '']));
     }
 
     function test_valid_in()
     {
         $validate = new Requires(['dependent' => ['in', ['y', 'z']]]);
-        $this->assertEquals($validate->isValid('', ['dependent' => ['x', 'y', 'z']]), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => ['y', 'z']]), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => ['y']]), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => ['z']]), true);
-        $this->assertEquals($validate->isValid('ok', ['dependent' => []]), true);
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => ['x', 'y', 'z']]));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => ['y', 'z']]));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => ['y']]));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => ['z']]));
+        $this->assertEquals(true, $validate->isValid('ok', ['dependent' => []]));
 
         $validate = new Requires(['dependent' => ['notin', ['y', 'z']]]);
-        $this->assertEquals($validate->isValid('', ['dependent' => ['x', 'y', 'z']]), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => ['y', 'z']]), true);
-        $this->assertEquals($validate->isValid('', ['dependent' => ['y']]), false);
-        $this->assertEquals($validate->isValid('', ['dependent' => ['z']]), false);
-        $this->assertEquals($validate->isValid('ok', ['dependent' => []]), true);
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => ['x', 'y', 'z']]));
+        $this->assertEquals(true, $validate->isValid('', ['dependent' => ['y', 'z']]));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => ['y']]));
+        $this->assertEquals(false, $validate->isValid('', ['dependent' => ['z']]));
+        $this->assertEquals(true, $validate->isValid('ok', ['dependent' => []]));
     }
 
     function test_valid_and()
@@ -147,22 +147,22 @@ class RequiresTest extends \ryunosuke\Test\AbstractUnitTestCase
             'dependent1' => ['==', '123'],
             'dependent2' => ['==', '456'],
         ]);
-        $this->assertEquals($validate->isValid('', [
+        $this->assertEquals(false, $validate->isValid('', [
             'dependent1' => '123',
             'dependent2' => '456',
-        ]), false);
-        $this->assertEquals($validate->isValid('', [
+        ]));
+        $this->assertEquals(true, $validate->isValid('', [
             'dependent1' => '123',
             'dependent2' => 'xxx',
-        ]), true);
-        $this->assertEquals($validate->isValid('', [
+        ]));
+        $this->assertEquals(true, $validate->isValid('', [
             'dependent1' => 'xxx',
             'dependent2' => '456',
-        ]), true);
-        $this->assertEquals($validate->isValid('ok', [
+        ]));
+        $this->assertEquals(true, $validate->isValid('ok', [
             'dependent1' => '123',
             'dependent2' => '456',
-        ]), true);
+        ]));
     }
 
     function test_valid_or()
@@ -171,21 +171,21 @@ class RequiresTest extends \ryunosuke\Test\AbstractUnitTestCase
             ['dependent1' => ['==', '123']],
             ['dependent2' => ['==', '456']],
         ]);
-        $this->assertEquals($validate->isValid('', [
+        $this->assertEquals(false, $validate->isValid('', [
             'dependent1' => '123',
             'dependent2' => '456',
-        ]), false);
-        $this->assertEquals($validate->isValid('', [
+        ]));
+        $this->assertEquals(false, $validate->isValid('', [
             'dependent1' => '123',
             'dependent2' => 'xxx',
-        ]), false);
-        $this->assertEquals($validate->isValid('', [
+        ]));
+        $this->assertEquals(false, $validate->isValid('', [
             'dependent1' => 'xxx',
             'dependent2' => '456',
-        ]), false);
-        $this->assertEquals($validate->isValid('ok', [
+        ]));
+        $this->assertEquals(true, $validate->isValid('ok', [
             'dependent1' => '123',
             'dependent2' => '456',
-        ]), true);
+        ]));
     }
 }

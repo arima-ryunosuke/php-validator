@@ -64,7 +64,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertTrue(is_array($input->propagate));
 
         $this->assertException(new \InvalidArgumentException('undefined property'), function () use ($input) {
-            $input->hogera;
+            return $input->hogera;
         });
     }
 
@@ -349,9 +349,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $getRange = self::publishMethod($input, '_getRange');
         $range = $getRange();
-        $this->assertEquals($range['min'], "0"); // min は Range の 0
-        $this->assertEquals($range['max'], "99.999"); // max は Decimal の 99.999
-        $this->assertEquals($range['step'], "0.5"); // step は Step の 0.5
+        $this->assertEquals("0", $range['min']); // min は Range の 0
+        $this->assertEquals("99.999", $range['max']); // max は Decimal の 99.999
+        $this->assertEquals("0.5", $range['step']); // step は Step の 0.5
     }
 
     function test_getMaxlength()
@@ -369,7 +369,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // EmailAddress(256) に負けずに 20 になるはず
         $getMaxlength = self::publishMethod($input, '_getMaxlength');
-        $this->assertEquals($getMaxlength(), 20);
+        $this->assertEquals(20, $getMaxlength());
 
         $rule = [
             'condition' => [
@@ -384,7 +384,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // 指定順は影響しないはず
         $getMaxlength = self::publishMethod($input, '_getMaxlength');
-        $this->assertEquals($getMaxlength(), 20);
+        $this->assertEquals(20, $getMaxlength());
     }
 
     function test_getImeMode()
@@ -408,7 +408,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'condition' => ['EmailAddress' => null]
         ]);
         $getImeMode = self::publishMethod($input, '_getImeMode');
-        $this->assertEquals($getImeMode(), 'disabled');
+        $this->assertEquals('disabled', $getImeMode());
     }
 
     function test_getDependent()
@@ -592,7 +592,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ], $input->label());
 
-        $this->assertContains('for="input-id"', $input->label(['for' => 'input-id']));
+        $this->assertStringContainsString('for="input-id"', $input->label(['for' => 'input-id']));
     }
 
     function test_label_context()
@@ -620,7 +620,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ], $input->context->child->label());
 
-        $this->assertContains('for="input-id"', $input->label(['for' => 'input-id']));
+        $this->assertStringContainsString('for="input-id"', $input->label(['for' => 'input-id']));
     }
 
     function test_input()
@@ -721,9 +721,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $value = [1, 2, 3];
         $input->setValue($value);
 
-        $this->assertContains('name="hoge[]" id="hoge_0" value="1"', $input->input());
-        $this->assertContains('name="hoge[]" id="hoge_1" value="2"', $input->input());
-        $this->assertContains('name="hoge[]" id="hoge_2" value="3"', $input->input());
+        $this->assertStringContainsString('name="hoge[]" id="hoge_0" value="1"', $input->input());
+        $this->assertStringContainsString('name="hoge[]" id="hoge_1" value="2"', $input->input());
+        $this->assertStringContainsString('name="hoge[]" id="hoge_2" value="3"', $input->input());
     }
 
     function test_input_wrapper()
@@ -733,8 +733,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'wrapper' => 'input-class',
         ]);
 
-        $this->assertContains('<span class="input-class input-text">', $input->input());
-        $this->assertContains('<span class="hogera input-text">', $input->input(['wrapper' => 'hogera']));
+        $this->assertStringContainsString('<span class="input-class input-text">', $input->input());
+        $this->assertStringContainsString('<span class="hogera input-text">', $input->input(['wrapper' => 'hogera']));
     }
 
     function test_inputArrays()

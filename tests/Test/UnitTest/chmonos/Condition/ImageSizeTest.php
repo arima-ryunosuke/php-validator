@@ -10,25 +10,25 @@ class ImageSizeTest extends \ryunosuke\Test\AbstractUnitTestCase
         $dir = __DIR__ . '/_files/';
 
         $validate = new ImageSize(200, 200);
-        $this->assertEquals($validate->isValid($dir . 'jpg.jpg'), true);
+        $this->assertEquals(true, $validate->isValid($dir . 'jpg.jpg'));
 
         $validate = new ImageSize(1, 999);
-        $this->assertEquals($validate->isValid($dir . 'gif.gif'), false);
+        $this->assertEquals(false, $validate->isValid($dir . 'gif.gif'));
         $this->assertContains('横サイズ', $validate->getMessages()[ImageSize::INVALID_WIDTH]);
 
         $validate = new ImageSize(999, 1);
-        $this->assertEquals($validate->isValid($dir . 'gif.gif'), false);
+        $this->assertEquals(false, $validate->isValid($dir . 'gif.gif'));
         $this->assertContains('縦サイズ', $validate->getMessages()[ImageSize::INVALID_HEIGHT]);
 
         $validate = new ImageSize(360, 270);
-        $this->assertEquals($validate->isValid($dir . 'gif.gif'), true);
+        $this->assertEquals(true, $validate->isValid($dir . 'gif.gif'));
         $validate = new ImageSize(359, 270);
-        $this->assertEquals($validate->isValid($dir . 'gif.gif'), false);
+        $this->assertEquals(false, $validate->isValid($dir . 'gif.gif'));
         $validate = new ImageSize(360, 269);
-        $this->assertEquals($validate->isValid($dir . 'gif.gif'), false);
+        $this->assertEquals(false, $validate->isValid($dir . 'gif.gif'));
 
-        $this->assertEquals($validate->isValid($dir . 'csv.txt'), false);
-        $this->assertEquals(@$validate->isValid($dir . 'notfound'), false);
+        $this->assertEquals(false, $validate->isValid($dir . 'csv.txt'));
+        $this->assertEquals(false, @$validate->isValid($dir . 'notfound'));
     }
 
     function test_getType()

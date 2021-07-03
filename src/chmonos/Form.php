@@ -31,7 +31,7 @@ class Form
     private $token;
 
     /** @var array */
-    private $options = [];
+    private $options;
 
     /** @var array */
     private $currents = [];

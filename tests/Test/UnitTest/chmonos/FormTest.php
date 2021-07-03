@@ -119,8 +119,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $form_tag = $form->form([]) . 'dummy' . $form->form();
 
         // multipart/form-data な post になるはず
-        $this->assertContains('method="post"', $form_tag);
-        $this->assertContains('enctype="multipart/form-data"', $form_tag);
+        $this->assertStringContainsString('method="post"', $form_tag);
+        $this->assertStringContainsString('enctype="multipart/form-data"', $form_tag);
     }
 
     function test_validate()
@@ -354,9 +354,9 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             // form 開始タグから始まる
             $this->assertStringStartsWith('<form', $content);
             // id が設定されている
-            $this->assertContains('id="hoge"', $content);
+            $this->assertStringContainsString('id="hoge"', $content);
             // nonce がある
-            $this->assertContains('nonce="fuga"', $content);
+            $this->assertStringContainsString('nonce="fuga"', $content);
         }
 
         // context
@@ -431,9 +431,9 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             // <script から始まる
             $this->assertStringStartsWith('<script', $content);
             // type=text/x-template
-            $this->assertContains('type="text/x-template"', $content);
+            $this->assertStringContainsString('type="text/x-template"', $content);
             // nonce がある
-            $this->assertContains('nonce="fuga"', $content);
+            $this->assertStringContainsString('nonce="fuga"', $content);
 
             // label が描画できる
             $this->assertAttribute([
@@ -508,7 +508,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             // </form> で終わる
             $this->assertStringEndsWith('</form>', $content);
             // initialize の呼び出しがある
-            $this->assertContains('chmonos.initialize', $content);
+            $this->assertStringContainsString('chmonos.initialize', $content);
         }
     }
 
@@ -518,8 +518,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             'tokenName' => 'hoge',
         ]);
         // method=post 時のみ含まれる
-        $this->assertNotContains("<input type='hidden' name='hoge'", $form->form(['method' => 'get']));
-        $this->assertContains("<input type='hidden' name='hoge'", $form->form(['method' => 'post']));
+        $this->assertStringNotContainsString("<input type='hidden' name='hoge'", $form->form(['method' => 'get']));
+        $this->assertStringContainsString("<input type='hidden' name='hoge'", $form->form(['method' => 'post']));
 
     }
 }

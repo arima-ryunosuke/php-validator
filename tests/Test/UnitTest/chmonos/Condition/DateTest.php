@@ -8,33 +8,33 @@ class DateTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid()
     {
         $validate = new Date('Y/m/d H:i:s');
-        $this->assertEquals($validate->isValid('yyyy/09/30 12:34:56'), false);
-        $this->assertEquals($validate->isValid('1985/13/30 12:34:56'), false);
-        $this->assertEquals($validate->isValid('1985/09/32 12:34:56'), false);
-        $this->assertEquals($validate->isValid('1985/09/30 25:34:56'), false);
-        $this->assertEquals($validate->isValid('1985/09/30 12:61:56'), false);
-        $this->assertEquals($validate->isValid('1985/09/30 12:34:65'), false);
-        $this->assertEquals($validate->isValid('1985/09/30 12:34:56'), true);
-        $this->assertEquals($validate->isValid('2040/09/30 12:34:56'), true);
+        $this->assertEquals(false, $validate->isValid('yyyy/09/30 12:34:56'));
+        $this->assertEquals(false, $validate->isValid('1985/13/30 12:34:56'));
+        $this->assertEquals(false, $validate->isValid('1985/09/32 12:34:56'));
+        $this->assertEquals(false, $validate->isValid('1985/09/30 25:34:56'));
+        $this->assertEquals(false, $validate->isValid('1985/09/30 12:61:56'));
+        $this->assertEquals(false, $validate->isValid('1985/09/30 12:34:65'));
+        $this->assertEquals(true, $validate->isValid('1985/09/30 12:34:56'));
+        $this->assertEquals(true, $validate->isValid('2040/09/30 12:34:56'));
 
         $validate = new Date('Y/m/d H:i');
-        $this->assertEquals($validate->isValid('yyyy/09/30 12:34'), false);
-        $this->assertEquals($validate->isValid('1985/13/30 12:34'), false);
-        $this->assertEquals($validate->isValid('1985/09/32 12:34'), false);
-        $this->assertEquals($validate->isValid('1985/09/30 25:34'), false);
-        $this->assertEquals($validate->isValid('1985/09/30 12:61'), false);
-        $this->assertEquals($validate->isValid('1985/09/30 12:34'), true);
-        $this->assertEquals($validate->isValid('1985/09/30 12:34'), true);
-        $this->assertEquals($validate->isValid('2040/09/30 12:34'), true);
+        $this->assertEquals(false, $validate->isValid('yyyy/09/30 12:34'));
+        $this->assertEquals(false, $validate->isValid('1985/13/30 12:34'));
+        $this->assertEquals(false, $validate->isValid('1985/09/32 12:34'));
+        $this->assertEquals(false, $validate->isValid('1985/09/30 25:34'));
+        $this->assertEquals(false, $validate->isValid('1985/09/30 12:61'));
+        $this->assertEquals(true, $validate->isValid('1985/09/30 12:34'));
+        $this->assertEquals(true, $validate->isValid('1985/09/30 12:34'));
+        $this->assertEquals(true, $validate->isValid('2040/09/30 12:34'));
     }
 
     function test_valid_time()
     {
         $validate = new Date('H:i:s');
-        $this->assertEquals($validate->isValid('12:34'), false);
-        $this->assertEquals($validate->isValid('12:34:60'), false);
-        $this->assertEquals($validate->isValid('12:34:aa'), false);
-        $this->assertEquals($validate->isValid('12:34:56'), true);
+        $this->assertEquals(false, $validate->isValid('12:34'));
+        $this->assertEquals(false, $validate->isValid('12:34:60'));
+        $this->assertEquals(false, $validate->isValid('12:34:aa'));
+        $this->assertEquals(true, $validate->isValid('12:34:56'));
     }
 
     function test_getImeMode()
