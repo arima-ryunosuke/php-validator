@@ -35,6 +35,16 @@ class HostnameTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertEquals(true, $validate->isValid('::'));
         $this->assertEquals(true, $validate->isValid('example.com'));
         $this->assertEquals(true, $validate->isValid('localhost'));
+
+        $validate = new Hostname(['', 'cidr', 4, 6], null);
+        $this->assertEquals(true, $validate->isValid('127.0.0.1'));
+        $this->assertEquals(true, $validate->isValid('127.0.0.1/24'));
+        $this->assertEquals(true, $validate->isValid('example.com'));
+        $this->assertEquals(true, $validate->isValid('localhost'));
+        $this->assertEquals(true, $validate->isValid('127.0.0.1:80'));
+        $this->assertEquals(true, $validate->isValid('127.0.0.1/24:80'));
+        $this->assertEquals(true, $validate->isValid('example.com:80'));
+        $this->assertEquals(true, $validate->isValid('localhost:80'));
     }
 
     function test_cidr()
@@ -51,6 +61,24 @@ class HostnameTest extends \ryunosuke\Test\AbstractUnitTestCase
         foreach (range(0, 32) as $s) {
             $this->assertEquals(true, $validate->isValid('127.0.0.1/' . $s));
         }
+
+        $validate = new Hostname(['cidr'], true);
+        $this->assertEquals(true, $validate->isValid('127.0.0.1/16:80'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:65536'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:009'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1/16'));
+
+        $validate = new Hostname(['cidr'], false);
+        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:80'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:65536'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:009'));
+        $this->assertEquals(true, $validate->isValid('127.0.0.1/16'));
+
+        $validate = new Hostname(['cidr'], null);
+        $this->assertEquals(true, $validate->isValid('127.0.0.1/16:80'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:65536'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:009'));
+        $this->assertEquals(true, $validate->isValid('127.0.0.1/16'));
     }
 
     function test_ipv4()
@@ -60,6 +88,24 @@ class HostnameTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertEquals(false, $validate->isValid('::'));
         $this->assertEquals(false, $validate->isValid('example.com'));
         $this->assertEquals(false, $validate->isValid('localhost'));
+
+        $validate = new Hostname([4], true);
+        $this->assertEquals(true, $validate->isValid('127.0.0.1:80'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1:65536'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1:009'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1'));
+
+        $validate = new Hostname([4], false);
+        $this->assertEquals(false, $validate->isValid('127.0.0.1:80'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1:65536'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1:009'));
+        $this->assertEquals(true, $validate->isValid('127.0.0.1'));
+
+        $validate = new Hostname([4], null);
+        $this->assertEquals(true, $validate->isValid('127.0.0.1:80'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1:65536'));
+        $this->assertEquals(false, $validate->isValid('127.0.0.1:009'));
+        $this->assertEquals(true, $validate->isValid('127.0.0.1'));
     }
 
     function test_ipv6()

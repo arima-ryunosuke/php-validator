@@ -279,9 +279,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('hostname', '127.0.0.1');
         $driver->setValue('hostname_v4', 'host_name');
-        $this->assertCount(2, $driver->getErrors());
+        $driver->setValue('hostname_port', 'host_name');
+        $this->assertCount(3, $driver->getErrors());
         $driver->setValue('hostname', 'aaa.bbb');
         $driver->setValue('hostname_v4', '127.0.0.1/32');
+        $driver->setValue('hostname_port', 'aaa.bbb:80');
         $this->assertCount(0, $driver->getErrors());
     }
 
