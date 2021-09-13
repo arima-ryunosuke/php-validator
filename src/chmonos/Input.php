@@ -258,9 +258,13 @@ class Input
         elseif (array_key_exists($this->name, $values)) {
             $value = $values[$this->name];
 
-            // 空文字の multiple な疑似型は配列にする
-            if ($this->pseudo && $this->multiple && $value === '') {
-                $value = [];
+            if ($this->pseudo !== false && $value === '') {
+                if ($this->multiple) {
+                    $value = $this->pseudo === true ? [] : (array) $this->pseudo;
+                }
+                else {
+                    $value = $this->pseudo === true ? '' : (string) $this->pseudo;
+                }
             }
         }
         else {
@@ -736,7 +740,7 @@ class Input
     protected function _inputCheckbox($attrs)
     {
         $hidden = '';
-        if ($this->pseudo) {
+        if ($this->pseudo !== false) {
             $hidden = $this->_pseudoHidden($attrs['name']);
         }
 
@@ -782,7 +786,7 @@ class Input
     protected function _inputSelect($attrs)
     {
         $hidden = '';
-        if ($this->pseudo && $this->multiple) {
+        if ($this->pseudo !== false && $this->multiple) {
             $hidden = $this->_pseudoHidden($attrs['name']);
         }
 

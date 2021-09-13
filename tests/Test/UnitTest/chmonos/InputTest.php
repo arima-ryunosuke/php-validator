@@ -115,21 +115,21 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertEquals('hogera', $input->normalize(['hoge' => 'hogera']));
         // trim される
         $this->assertEquals('hogera', $input->normalize(['hoge' => ' hogera ']));
-        // pseudo で multiple で空文字なら配列になる
+        // pseudo:true で multiple で空文字なら配列になる
         $this->assertEquals([], $input->normalize(['hoge' => '']));
 
         $input = new Input([
             'name'     => 'hoge',
             'default'  => 'DDD',
-            'pseudo'   => true,
+            'pseudo'   => 'hoge',
             'multiple' => false,
             'trimming' => false,
         ]);
 
         // trim されない
         $this->assertEquals(' hogera ', $input->normalize(['hoge' => ' hogera ']));
-        // pseudo で multiple で空文字なら配列になる
-        $this->assertEquals('', $input->normalize(['hoge' => '']));
+        // pseudo:値指定で multiple で空文字ならその値になる
+        $this->assertEquals('hoge', $input->normalize(['hoge' => '']));
 
         $input = new Input([
             'name'    => 'hoge',
