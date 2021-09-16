@@ -29,7 +29,7 @@ abstract class AbstractUnitTestCase extends \PHPUnit\Framework\TestCase
             }
             // メッセージも指定されていたときのみ
             if (strlen($e->getMessage()) > 0) {
-                self::assertContains($e->getMessage(), $ex->getMessage(), $message);
+                self::assertStringContainsString($e->getMessage(), $ex->getMessage(), $message);
             }
             return;
         }

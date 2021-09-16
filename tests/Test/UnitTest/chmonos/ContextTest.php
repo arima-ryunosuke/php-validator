@@ -296,11 +296,11 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // フォーマット未指定
         $messages = $context->getFlatMessages();
-        $this->assertContains('[親項目] 2文字～6文字で入力して下さい', $messages[0]);
+        $this->assertStringContainsString('[親項目] 2文字～6文字で入力して下さい', $messages[0]);
 
         // フォーマット指定
         $messages = $context->getFlatMessages('【%s】 %s');
-        $this->assertContains('【親項目】 2文字～6文字で入力して下さい', $messages[0]);
+        $this->assertStringContainsString('【親項目】 2文字～6文字で入力して下さい', $messages[0]);
 
         //-----------------------------------------------
 
@@ -310,13 +310,13 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // フォーマット未指定
         $messages = $context->getFlatMessages();
-        $this->assertContains('[子項目配列 1行目 - 子項目1] メールアドレスを正しく入力してください', $messages[0]);
-        $this->assertContains('[子項目配列 2行目 - 子項目2] 小数部分を3桁以下で入力してください', $messages[1]);
+        $this->assertStringContainsString('[子項目配列 1行目 - 子項目1] メールアドレスを正しく入力してください', $messages[0]);
+        $this->assertStringContainsString('[子項目配列 2行目 - 子項目2] 小数部分を3桁以下で入力してください', $messages[1]);
 
         // フォーマット指定
         $messages = $context->getFlatMessages('【%s】 %s', '%sの%d個目：%s');
-        $this->assertContains('【子項目配列の1個目：子項目1】 メールアドレスを正しく入力してください', $messages[0]);
-        $this->assertContains('【子項目配列の2個目：子項目2】 小数部分を3桁以下で入力してください', $messages[1]);
+        $this->assertStringContainsString('【子項目配列の1個目：子項目1】 メールアドレスを正しく入力してください', $messages[0]);
+        $this->assertStringContainsString('【子項目配列の2個目：子項目2】 小数部分を3桁以下で入力してください', $messages[1]);
     }
 
     function test_getFlatMessages_withArrays()

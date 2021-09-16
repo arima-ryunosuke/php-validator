@@ -14,11 +14,11 @@ class ImageSizeTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $validate = new ImageSize(1, 999);
         $this->assertEquals(false, $validate->isValid($dir . 'gif.gif'));
-        $this->assertContains('横サイズ', $validate->getMessages()[ImageSize::INVALID_WIDTH]);
+        $this->assertStringContainsString('横サイズ', $validate->getMessages()[ImageSize::INVALID_WIDTH]);
 
         $validate = new ImageSize(999, 1);
         $this->assertEquals(false, $validate->isValid($dir . 'gif.gif'));
-        $this->assertContains('縦サイズ', $validate->getMessages()[ImageSize::INVALID_HEIGHT]);
+        $this->assertStringContainsString('縦サイズ', $validate->getMessages()[ImageSize::INVALID_HEIGHT]);
 
         $validate = new ImageSize(360, 270);
         $this->assertEquals(true, $validate->isValid($dir . 'gif.gif'));

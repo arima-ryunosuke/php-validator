@@ -40,6 +40,6 @@ class StringLengthTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $validate->isValid(str_repeat('x', 0));
         $messages = $validate->getMessages();
-        $this->assertContains('3文字で', $messages[StringLength::DIFFERENT]);
+        $this->assertStringContainsString('3文字で', $messages[StringLength::DIFFERENT]);
     }
 }

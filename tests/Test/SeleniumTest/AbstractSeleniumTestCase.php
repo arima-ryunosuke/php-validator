@@ -41,7 +41,7 @@ abstract class AbstractSeleniumTestCase extends \ryunosuke\Test\AbstractUnitTest
         return array_map(function ($driver) { return [$driver]; }, self::getDrivers());
     }
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
 
@@ -50,7 +50,7 @@ abstract class AbstractSeleniumTestCase extends \ryunosuke\Test\AbstractUnitTest
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
 

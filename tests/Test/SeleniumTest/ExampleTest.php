@@ -585,7 +585,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $this->assertCount(0, $driver->getErrors());
         // js で書き換えても value が変わらない？ DOM ではなく html 属性を見ているような気がする
         //$this->assertEquals('2000/05/24', $driver->findElement(WebDriverBy::name('year-month-day'))->getAttribute('class'));
-        $this->assertContains('validation_ok', $driver->findElement(WebDriverBy::name('year-month-day'))->getAttribute('class'));
+        $this->assertStringContainsString('validation_ok', $driver->findElement(WebDriverBy::name('year-month-day'))->getAttribute('class'));
 
         $driver->setValue('month', '13');
         $this->assertCount(2, $driver->getErrors());

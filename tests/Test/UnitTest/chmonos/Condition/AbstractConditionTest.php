@@ -138,8 +138,8 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
         rm_rf($tmp_dir, false);
         $this->assertTrue(AbstractCondition::outputJavascript($tmp_dir, true));
 
-        $this->assertContains('core_validate', file_get_contents("$tmp_dir/validator.js"));
-        $this->assertContains('"CustomCondition":', file_get_contents("$tmp_dir/validator.js"));
+        $this->assertStringContainsString('core_validate', file_get_contents("$tmp_dir/validator.js"));
+        $this->assertStringContainsString('"CustomCondition":', file_get_contents("$tmp_dir/validator.js"));
 
         // 出したばかりなので false になるはず
         $this->assertFalse(AbstractCondition::outputJavascript($tmp_dir));
