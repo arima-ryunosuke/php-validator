@@ -118,47 +118,52 @@ $dynamic_rule = [
         <?= $template_form->template() ?>
     </table>
 
-    <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function() {
-            var chmonos = document.getElementById('template_form').chmonos;
-            // 画面構築時の初期生成開始時に spawnBegin イベントが呼ばれる
-            $('[data-vtemplate-name=rows]').on('spawnBegin', function (e) {
-                console.log(e);
-            });
-            // 画面構築時の初期生成完了時に spawnEnd イベントが呼ばれる
-            $('[data-vtemplate-name=rows]').on('spawnEnd', function (e) {
-                console.log(e);
-            });
-            // ノード生成時に spawn イベントが呼ばれる
-            $('[data-vtemplate-name=rows]').on('spawn', function (e) {
-                console.log('ノード追加', e.detail.node);
-                var t = $(e.detail.node).find('[data-vinput-class="rows/title"]');
-                t.after($('<span>' + t.val() + '</span>'));
-            });
-            // ノード削除時に cull  イベントが呼ばれる
-            $('[data-vtemplate-name=rows]').on('cull', function (e) {
-                console.log('ノード削除', e.detail.node);
-            });
-            // 追加ボタン
-            $(document).on('click', '.append_row1', function () {
-                chmonos.spawn('rows', function (node) {
-                    $(this.parentNode).append(node);
-                }, {title: Math.round(Math.random() * 10), multiple: [2, 3]});
-            });
-            // 削除ボタン
-            $(document).on('click', '.delete_row1', function () {
-                // cull を呼ぶとそのノードが削除される
-                // cull を使わず単純にノード削除でも特に問題はない
-                chmonos.cull('rows', this.closest('tr'));
-            });
-        });
-    </script>
     <input type="submit" id="template_form_submit" class="btn btn-primary" value="post">
     <label class='btn btn-warning'>
         <input type='checkbox' class="js-enable-switcher" checked>
         js チェック有効
     </label>
     <?= $template_form->form() ?>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var chmonos = document.getElementById('template_form').chmonos;
+            // 画面構築時の初期生成開始時に spawnBegin イベントが呼ばれる
+            document.querySelector('[data-vtemplate-name=rows]').addEventListener('spawnBegin', function (e) {
+                console.log(e);
+            });
+            // 画面構築時の初期生成完了時に spawnEnd イベントが呼ばれる
+            document.querySelector('[data-vtemplate-name=rows]').addEventListener('spawnEnd', function (e) {
+                console.log(e);
+            });
+            // ノード生成時に spawn イベントが呼ばれる
+            document.querySelector('[data-vtemplate-name=rows]').addEventListener('spawn', function (e) {
+                console.log('ノード追加', e.detail.node);
+                var t = e.detail.node.querySelector('[data-vinput-class="rows/title"]');
+                var span = document.createElement('span');
+                span.textContent = t.value;
+                t.parentNode.insertBefore(span, t.nextElementSibling);
+            });
+            // ノード削除時に cull  イベントが呼ばれる
+            document.querySelector('[data-vtemplate-name=rows]').addEventListener('cull', function (e) {
+                console.log('ノード削除', e.detail.node);
+            });
+            // 追加ボタン
+            document.querySelector('.append_row1').addEventListener('click', function (e) {
+                chmonos.spawn('rows', function (node) {
+                    this.parentNode.appendChild(node);
+                }, {title: Math.round(Math.random() * 10), multiple: [2, 3]});
+            });
+            // 削除ボタン
+            document.getElementById('template_form').addEventListener('click', function (e) {
+                if (e.target.matches('.delete_row1')) {
+                    // cull を呼ぶとそのノードが削除される
+                    // cull を使わず単純にノード削除でも特に問題はない
+                    chmonos.cull('rows', e.target.closest('tr'));
+                }
+            });
+        });
+    </script>
 </section>
 
 <section>
@@ -215,26 +220,29 @@ $dynamic_rule = [
         </tbody>
     </table>
 
-    <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function() {
-            var chmonos = document.getElementById('context_form').chmonos;
-            // 追加ボタン
-            $(document).on('click', '.append_row2', function () {
-                var node = chmonos.birth(document.querySelector('#rows-template'), {title: Math.round(Math.random() * 10)});
-                $('#context-table').append(node);
-            });
-            // 削除ボタン
-            $(document).on('click', '.delete_row2', function () {
-                // cull を呼ぶとそのノードが削除される
-                // cull を使わず単純にノード削除でも特に問題はない
-                chmonos.cull('rows', this.closest('tr'));
-            });
-        });
-    </script>
     <input type="submit" id="context_form_submit" class="btn btn-primary" value="post">
     <label class='btn btn-warning'>
         <input type='checkbox' class="js-enable-switcher" checked>
         js チェック有効
     </label>
     <?= $context_form->form() ?>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var chmonos = document.getElementById('context_form').chmonos;
+            // 追加ボタン
+            document.querySelector('.append_row2').addEventListener('click', function (e) {
+                var node = chmonos.birth(document.querySelector('#rows-template'), {title: Math.round(Math.random() * 10)});
+                document.querySelector('#context-table>tbody').appendChild(node);
+            });
+            // 削除ボタン
+            document.getElementById('context_form').addEventListener('click', function (e) {
+                if (e.target.matches('.delete_row2')) {
+                    // cull を呼ぶとそのノードが削除される
+                    // cull を使わず単純にノード削除でも特に問題はない
+                    chmonos.cull('rows', e.target.closest('tr'));
+                }
+            });
+        });
+    </script>
 </section>

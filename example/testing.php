@@ -12,10 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.4.0/boot.js"></script>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../script/validator-error.css"/>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script type="text/javascript" src="../script/polyfill.js"></script>
-    <script type="text/javascript" src="../script/validator-error.js"></script>
     <script type="text/javascript" src="./validator.js"></script>
 </head>
 <body>

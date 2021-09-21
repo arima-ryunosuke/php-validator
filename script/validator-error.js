@@ -490,7 +490,7 @@
         module.exports = factory(require('jquery'));
     }
     else {
-        window.toastr = factory(window.jQuery);
+        Chmonos.toastr = factory(window.jQuery);
     }
 }));
 
@@ -560,7 +560,6 @@
         });
     }
 
-    // toastr のオプション（プロジェクト側で使おうこともあるだろうので全オプションを指定する）
     var toastrOptions = {
         tapToDismiss: false,
         containerId: 'chmonos-toast-container',
@@ -626,7 +625,7 @@
         var TOAST_NAME = 'vinput-toastr-' + type;
         var message = collectMessage(errors);
         if (message.length) {
-            var toast = $input.data(TOAST_NAME) || toastr[type](' ', $input.data('validation-title') || '', $.extend(true, {
+            var toast = $input.data(TOAST_NAME) || Chmonos.toastr[type](' ', $input.data('validation-title') || '', $.extend(true, {
                 onclick: function () {
                     scrollAndBlink($input);
                     return false;

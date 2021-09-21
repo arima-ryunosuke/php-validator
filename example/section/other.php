@@ -150,47 +150,6 @@ if (resetForm($other_form, 'other_form')) {
         <th>バリデーションのカスタムイベント</th>
         <td>
             <?= $other_form->input('validated') ?>
-            <script>
-                $(function () {
-                    var $validated = $('[data-vinput-id=validated]');
-                    $validated.change(function (e) {
-                        console.log(e)
-                    });
-                    // validated で検証完了イベントがフックできる。
-                    // （イベント順にもよるが） stopPropagation すればエラーをキャンセルできるので、警告表示などにも使える
-                    $validated.on('validated', function (e) {
-                        console.log(e);
-                        e.stopPropagation();
-                        if ($.isEmptyObject(e.detail.errorTypes)) {
-                            this.dispatchEvent(new CustomEvent('mild-validated', {
-                                bubbles: true,
-                                detail: {
-                                    errorTypes: ['これは警告です']
-                                }
-                            }));
-                        }
-                        else {
-                            alert('フックされたバリデーションイベント：エラー有り\n' + JSON.stringify(e.detail.errorTypes));
-                        }
-                    });
-                    document.querySelector('#other_form').chmonos.addCustomValidation(function () {
-                        var answer = prompt('これはカスタムバリデーションの before イベントです');
-                        if (answer === null) {
-                            return false;
-                        }
-                        document.querySelector('#cutom-input').value = answer;
-                    }, 'before');
-                    document.querySelector('#other_form').chmonos.addCustomValidation(function () {
-                        if (document.querySelector('#cutom-input').value !== 'hoge') {
-                            alert('これはカスタムバリデーションの before イベントです。ダイアログで "hoge" と入力してください');
-                            return false;
-                        }
-                    }, 'after');
-                    $(document).on('submit', '#other_form', function () {
-                        alert('これはフォーム自体に bind されたイベントです');
-                    });
-                });
-            </script>
         </td>
     </tr>
     <tr>
@@ -213,3 +172,46 @@ if (resetForm($other_form, 'other_form')) {
     js チェック有効
 </label>
 <?= $other_form->form() ?>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var $validated = document.querySelector('[data-vinput-id=validated]');
+        $validated.addEventListener('input', function (e) {
+            console.log(9);
+            console.log(e)
+        });
+        // validated で検証完了イベントがフックできる。
+        // （イベント順にもよるが） stopPropagation すればエラーをキャンセルできるので、警告表示などにも使える
+        $validated.addEventListener('validated', function (e) {
+            console.log(e);
+            e.stopPropagation();
+            if (!Object.keys(e.detail.errorTypes).length) {
+                e.target.dispatchEvent(new CustomEvent('mild-validated', {
+                    bubbles: true,
+                    detail: {
+                        errorTypes: ['これは警告です']
+                    }
+                }));
+            }
+            else {
+                alert('フックされたバリデーションイベント：エラー有り\n' + JSON.stringify(e.detail.errorTypes));
+            }
+        });
+        document.querySelector('#other_form').chmonos.addCustomValidation(function () {
+            var answer = prompt('これはカスタムバリデーションの before イベントです');
+            if (answer === null) {
+                return false;
+            }
+            document.querySelector('#cutom-input').value = answer;
+        }, 'before');
+        document.querySelector('#other_form').chmonos.addCustomValidation(function () {
+            if (document.querySelector('#cutom-input').value !== 'hoge') {
+                alert('これはカスタムバリデーションの before イベントです。ダイアログで "hoge" と入力してください');
+                return false;
+            }
+        }, 'after');
+        document.querySelector('#other_form').addEventListener('submit', function () {
+            alert('これはフォーム自体に bind されたイベントです');
+        });
+    });
+</script>

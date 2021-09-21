@@ -51,18 +51,21 @@
     </style>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script type="text/javascript" src="../script/polyfill.js"></script>
-    <script type="text/javascript" src="../script/validator-error.js"></script>
     <script type="text/javascript" src="./validator.js"></script>
+    <script type="text/javascript" src="../script/validator-error.js"></script>
     <script>
-        $(function () {
-            $('section>h2').each(function () {
-                var $this = $(this);
-                var a = $('<a></a>').attr('href', '#' + $this.attr('id')).text($this.text());
-                $('nav>ul').append($('<li></li>').append(a));
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('section>h2').forEach(function (e) {
+                var a = document.createElement('a');
+                a.setAttribute('href', '#' + e.id);
+                a.textContent = e.textContent;
+                var li = document.createElement('li');
+                li.appendChild(a);
+                document.querySelector('nav>ul').appendChild(li);
             });
-            $('.js-enable-switcher').on('change', function () {
-                var form = this.closest('form.validatable_form');
-                if (this.checked) {
+            document.querySelector('.js-enable-switcher').addEventListener('change', function (e) {
+                var form = e.closest('form.validatable_form');
+                if (e.checked) {
                     form.chmonos.validationDisabled = false;
                     form.chmonos.validate();
                 }
@@ -71,9 +74,9 @@
                     form.chmonos.clearErrors();
                 }
             });
-            $('#all_clear').on('click', function () {
-                $('form.validatable_form').each(function () {
-                    this.chmonos.clearErrors();
+            document.querySelector('#all_clear').addEventListener('click', function (e) {
+                document.querySelectorAll('form.validatable_form').forEach(function (e) {
+                    e.chmonos.clearErrors();
                 });
                 return false;
             });

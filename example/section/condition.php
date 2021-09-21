@@ -207,6 +207,12 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'Hostname' => [['', 4, 'cidr']]
         ]
     ],
+    'hostname_port'         => [
+        'title'     => 'ホスト名（IPv4+port）',
+        'condition' => [
+            'Hostname' => [['', 4], true]
+        ]
+    ],
     'inarray'               => [
         'title'     => 'InArray(1, 2, 3)',
         'condition' => [
@@ -500,9 +506,13 @@ resetForm($condition_form, 'condition_form');
         <td><?= $condition_form->input('image_type') ?><?= $condition_form->input('image_file', ['type' => 'file']) ?></td>
     </tr>
     <tr>
-        <th>ホスト名：ホスト名のみ | ホスト名、IPv4、cidrのみ</th>
-        <td><?= $condition_form->input('hostname') ?></td>
-        <td><?= $condition_form->input('hostname_v4') ?></td>
+        <th>ホスト名：ホスト名のみ | ホスト名、IPv4、cidrのみ | ホスト名、ポート必須</th>
+        <td>
+            <?= $condition_form->input('hostname') ?>
+            <?= $condition_form->input('hostname_v4') ?>
+            <?= $condition_form->input('hostname_port') ?>
+        </td>
+        <td></td>
     </tr>
     <tr>
         <th>Array：InArray(1, 2, 3) | NotInArray(1, 2, 3)</th>
