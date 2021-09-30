@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.10
+
+- [Input] pseudo で値を指定できるように修正
+- [Condition/Hostname] ポート対応
+
 ## 1.0.9
 
 - [change][Input] javascript を廃止して checkmode を新設
