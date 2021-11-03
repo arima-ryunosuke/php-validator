@@ -308,7 +308,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'options'   => [
                 1 => 'option.1'
             ],
-            'default'   => [2, 3],
+            'default'   => 2,
+            'pseudo'    => 3,
         ];
         $input = new Input($rule);
         $setAutoInArray = self::publishMethod($input, '_setAutoInArray');

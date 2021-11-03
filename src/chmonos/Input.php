@@ -418,6 +418,11 @@ class Input
             $options[$defval] = '';
         }
 
+        // pseudo 値を許容する
+        if ($this->pseudo !== false && count($this->options) === 1) {
+            $options[$this->pseudo === true ? '' : $this->pseudo] = true;
+        }
+
         $inarray = new Condition\InArray(array_keys($options));
         $this->rule['condition'][class_shorten($inarray)] = $inarray;
     }
