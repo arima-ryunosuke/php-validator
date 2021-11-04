@@ -572,6 +572,25 @@ class Input
     }
 
     /**
+     * ajax Condition の結果を返す
+     *
+     * 複数の Ajax があることはまずないだろうので最初の要素のみ。
+     * Ajax が無い場合は例外を投げる。
+     *
+     * @param array|null $fields 依存データ。未指定時はよしなに
+     * @return ?array メッセージ配列
+     */
+    public function getAjaxResponse($fields = null)
+    {
+        foreach ($this->condition as $condition) {
+            if ($condition instanceof Condition\Ajax) {
+                return $condition->response($fields);
+            }
+        }
+        throw new \UnexpectedValueException('AjaxCondition is not found.');
+    }
+
+    /**
      * 登録されている Condition 全てを回して検証
      *
      * @param array $values 値

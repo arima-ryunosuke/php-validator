@@ -82,7 +82,7 @@ class Form
      *
      * @see Context
      * @param string $name 要素名
-     * @return mixed input 要素
+     * @return Context|Input input 要素
      */
     public function __get($name)
     {

@@ -2,6 +2,7 @@
 /** @noinspection CssUnknownProperty */
 namespace ryunosuke\Test\UnitTest\chmonos;
 
+use ryunosuke\chmonos\Condition\Ajax;
 use ryunosuke\chmonos\Condition\Decimal;
 use ryunosuke\chmonos\Condition\InArray;
 use ryunosuke\chmonos\Condition\Requires;
@@ -437,6 +438,36 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // dependent を [] にすると自動蒐集は行われない
         $this->assertEquals([], $input->getDependent());
+    }
+
+    function test_getAjaxResponse()
+    {
+        $rule = [
+            'condition' => [
+                'Ajax' => ['url', [], function () { return 'hoge'; }],
+            ],
+        ];
+        $input = new Input($rule);
+        $this->assertEquals([
+            Ajax::INVALID => 'hoge',
+        ], $input->getAjaxResponse());
+
+        $rule = [
+            'condition' => [
+                'Ajax' => ['url', [], function () { return; }],
+            ],
+        ];
+        $input = new Input($rule);
+        $this->assertEquals(null, $input->getAjaxResponse());
+
+
+        $this->assertException('AjaxCondition is not found', function () {
+            $rule = [
+                'condition' => [],
+            ];
+            $input = new Input($rule);
+            $input->getAjaxResponse();
+        });
     }
 
     function test_validate()
