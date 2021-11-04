@@ -22,6 +22,17 @@
 </section>
 
 <script>
+    const $ = document.querySelectorAll.bind(document);
+    const $$ = document.querySelector.bind(document);
+    Node.prototype.on = function (type, listener) {
+        this.addEventListener(type, listener);
+        return this;
+    };
+    NodeList.prototype.on = function (type, listener) {
+        this.forEach(function (node) {
+            node.on(type, listener);
+        });
+    };
     document.addEventListener('DOMContentLoaded', function () {
         var chmonos = document.getElementById('context_form').chmonos;
 

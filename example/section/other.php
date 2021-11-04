@@ -175,14 +175,13 @@ if (resetForm($other_form, 'other_form')) {
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var $validated = document.querySelector('[data-vinput-id=validated]');
-        $validated.addEventListener('input', function (e) {
-            console.log(9);
+        var $validated = $$('[data-vinput-id=validated]');
+        $validated.on('input', function (e) {
             console.log(e)
         });
         // validated で検証完了イベントがフックできる。
         // （イベント順にもよるが） stopPropagation すればエラーをキャンセルできるので、警告表示などにも使える
-        $validated.addEventListener('validated', function (e) {
+        $validated.on('validated', function (e) {
             console.log(e);
             e.stopPropagation();
             if (!Object.keys(e.detail.errorTypes).length) {
@@ -197,20 +196,20 @@ if (resetForm($other_form, 'other_form')) {
                 alert('フックされたバリデーションイベント：エラー有り\n' + JSON.stringify(e.detail.errorTypes));
             }
         });
-        document.querySelector('#other_form').chmonos.addCustomValidation(function () {
+        $$('#other_form').chmonos.addCustomValidation(function () {
             var answer = prompt('これはカスタムバリデーションの before イベントです');
             if (answer === null) {
                 return false;
             }
-            document.querySelector('#cutom-input').value = answer;
+            $$('#cutom-input').value = answer;
         }, 'before');
-        document.querySelector('#other_form').chmonos.addCustomValidation(function () {
-            if (document.querySelector('#cutom-input').value !== 'hoge') {
+        $$('#other_form').chmonos.addCustomValidation(function () {
+            if ($$('#cutom-input').value !== 'hoge') {
                 alert('これはカスタムバリデーションの before イベントです。ダイアログで "hoge" と入力してください');
                 return false;
             }
         }, 'after');
-        document.querySelector('#other_form').addEventListener('submit', function () {
+        $$('#other_form').on('submit', function () {
             alert('これはフォーム自体に bind されたイベントです');
         });
     });

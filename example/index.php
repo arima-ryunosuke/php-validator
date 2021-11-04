@@ -54,18 +54,29 @@
     <script type="text/javascript" src="./validator.js"></script>
     <script type="text/javascript" src="../script/validator-error.js"></script>
     <script>
+        const $ = document.querySelectorAll.bind(document);
+        const $$ = document.querySelector.bind(document);
+        Node.prototype.on = function (type, listener) {
+            this.addEventListener(type, listener);
+            return this;
+        };
+        NodeList.prototype.on = function (type, listener) {
+            this.forEach(function (node) {
+                node.on(type, listener);
+            });
+        };
         document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('section>h2').forEach(function (e) {
+            $('section>h2').forEach(function (e) {
                 var a = document.createElement('a');
                 a.setAttribute('href', '#' + e.id);
                 a.textContent = e.textContent;
                 var li = document.createElement('li');
                 li.appendChild(a);
-                document.querySelector('nav>ul').appendChild(li);
+                $$('nav>ul').appendChild(li);
             });
-            document.querySelector('.js-enable-switcher').addEventListener('change', function (e) {
-                var form = e.closest('form.validatable_form');
-                if (e.checked) {
+            $('.js-enable-switcher').on('change', function (e) {
+                var form = e.target.closest('form.validatable_form');
+                if (e.target.checked) {
                     form.chmonos.validationDisabled = false;
                     form.chmonos.validate();
                 }
@@ -74,8 +85,8 @@
                     form.chmonos.clearErrors();
                 }
             });
-            document.querySelector('#all_clear').addEventListener('click', function (e) {
-                document.querySelectorAll('form.validatable_form').forEach(function (e) {
+            $$('#all_clear').on('click', function (e) {
+                $('form.validatable_form').forEach(function (e) {
                     e.chmonos.clearErrors();
                 });
                 return false;

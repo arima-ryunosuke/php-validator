@@ -110,6 +110,20 @@ $basic_form = new \ryunosuke\chmonos\Form([
         ],
         'checkmode' => ['client' => false, 'server' => true],
     ],
+    'ignore_require'             => [
+        'title'     => '最終結果に含まれない',
+        'condition' => [],
+        'options'   => [
+            1 => 'チェックを入れると必須',
+        ],
+        'ignore'    => true,
+    ],
+    'ignore'             => [
+        'title'     => 'チェックを入れると必須',
+        'condition' => [
+            'Requires' => 'ignore_require',
+        ],
+    ],
 ], [
     'tokenName' => 'csrf_token',
 ]);
@@ -147,6 +161,12 @@ resetForm($basic_form, 'basic_form');
 
     option.class-3 {
         color: #00f;
+    }
+    #toggleInvisible ~ #invisible-wrapper {
+        display: none;
+    }
+    #toggleInvisible:checked ~ #invisible-wrapper {
+        display: block;
     }
 </style>
 <?= $basic_form->form(['id' => 'basic_form'/* ファイル要素を持つ Form は自動で POST,multipart/form-data になる */]) ?>
@@ -203,9 +223,9 @@ resetForm($basic_form, 'basic_form');
     <tr>
         <th>不可視要素</th>
         <td>
-            <span id="invisible-wrapper" style="display:none"><?= $basic_form->input('invisible') ?><br></span>
             ここに不可視要素があります：
-            <label><input type="checkbox" name="toggleInvisible" value="1" onchange="$('#invisible-wrapper').toggle()">表示する</label>
+            <input type="checkbox" id="toggleInvisible" name="toggleInvisible" value="1"><label for="toggleInvisible">表示する</label>
+            <div id="invisible-wrapper"><?= $basic_form->input('invisible') ?></div>
         </td>
     </tr>
     <tr>
@@ -215,6 +235,13 @@ resetForm($basic_form, 'basic_form');
     <tr>
         <th>phpのみ</th>
         <td><?= $basic_form->input('server') ?></td>
+    </tr>
+    <tr>
+        <th>最終結果に含まれない</th>
+        <td>
+            <?= $basic_form->input('ignore_require') ?>
+            <?= $basic_form->input('ignore') ?>
+        </td>
     </tr>
 </table>
 <input type="submit" id="basic_form_submit" class="btn btn-primary" value="post">
