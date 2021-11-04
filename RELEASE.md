@@ -24,10 +24,16 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.11
+
+- [feature][Context] 値のフィルタ処理を実装
+- [feature][Input] getAjaxResponse を実装
+- [fixbug][Input] pseudo 指定時に setAutoInArray でコケる不具合を修正
+
 ## 1.0.10
 
-- [Input] pseudo で値を指定できるように修正
-- [Condition/Hostname] ポート対応
+- [feature][Input] pseudo で値を指定できるように修正
+- [feature][Condition/Hostname] ポート対応
 
 ## 1.0.9
 
