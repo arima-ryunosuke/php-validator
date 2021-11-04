@@ -171,7 +171,9 @@ class Form
         }
 
         $values = $this->setValues($values);
-        return $this->context->validate($values);
+        $result = $this->context->validate($values);
+        $values = $this->context->filter($values);
+        return $result;
     }
 
     /**

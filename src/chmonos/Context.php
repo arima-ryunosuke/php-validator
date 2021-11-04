@@ -27,11 +27,17 @@ class Context implements \IteratorAggregate
         assert(is_a($inputClass, Input::class, true));
 
         foreach ($rules as $name => $rule) {
+            $ignore = false;
+            if (substr($name, 0, 1) === '@') {
+                $ignore = true;
+                $name = substr($name, 1);
+            }
             assert(!array_key_exists('id', $rule), 'id key is only internal set.');
             assert(!array_key_exists('name', $rule), 'name key is only internal set.');
             $initial = [
-                'id'   => $id,
-                'name' => $name,
+                'id'     => $id,
+                'name'   => $name,
+                'ignore' => $ignore,
             ];
             /** @see Input::__construct() */
             $this->inputs[$name] = new $inputClass($rule + $initial, $parent);
@@ -141,6 +147,30 @@ class Context implements \IteratorAggregate
         }
 
         return $isvalid && count($this->messages) === 0;
+    }
+
+    /**
+     * フィルタ
+     *
+     * @param array $values 値が入った連想配列
+     * @return array フィルタされた連想配列
+     */
+    public function filter(array $values)
+    {
+        foreach ($this->inputs as $name => $input) {
+            if ($input->ignore) {
+                unset($values[$name]);
+            }
+            foreach ($input->context->inputs ?? [] as $name2 => $input2) {
+                if ($input2->ignore) {
+                    foreach ($values[$name] as $key => $value) {
+                        unset($values[$name][$key][$name2]);
+                    }
+                }
+            }
+        }
+
+        return $values;
     }
 
     /**

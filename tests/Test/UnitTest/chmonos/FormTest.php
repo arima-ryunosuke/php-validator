@@ -145,6 +145,47 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertArrayNotHasKey('foo', $values);
     }
 
+    function test_validate_ignore()
+    {
+        $form = new Form([
+            'parent'         => [],
+            '@parent_ignore' => [],
+            'children'       => [
+                'inputs' => [
+                    'child'         => [],
+                    '@child_ignore' => [],
+                ],
+            ]
+        ]);
+
+        $values = [
+            'parent'        => 'hoge',
+            'parent_ignore' => 'hoge',
+            'children'      => [
+                [
+                    'child'        => 'fuga1',
+                    'child_ignore' => 'fuga1',
+                ],
+                [
+                    'child'        => 'fuga2',
+                    'child_ignore' => 'fuga2',
+                ],
+            ],
+        ];
+        $form->validate($values);
+        $this->assertEquals([
+            'parent'   => 'hoge',
+            'children' => [
+                [
+                    'child' => 'fuga1',
+                ],
+                [
+                    'child' => 'fuga2',
+                ],
+            ],
+        ], $values);
+    }
+
     function test_validate_csrf()
     {
         $form = new Form([], [

@@ -34,6 +34,7 @@ class Input
         'checkmode' => ['server' => true, 'client' => true],
         'wrapper'   => null,
         'invisible' => false,
+        'ignore'    => false,
         'trimming'  => true,
         'ime-mode'  => true,
         'autocond'  => true,
