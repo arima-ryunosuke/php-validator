@@ -307,6 +307,89 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertEquals('', $posts['file']);
     }
 
+    function test_validateOrFilter()
+    {
+        $form = new Form([
+            'parent'   => [
+                'condition' => [
+                    'Requires' => null
+                ]
+            ],
+            'children1' => [
+                'condition' => [
+                    'Requires' => null
+                ],
+                'inputs'  => [
+                    'child1' => [
+                        'condition' => [
+                            'Requires' => null
+                        ]
+                    ],
+                    'child2' => [
+                        'condition' => [
+                            'Requires' => null
+                        ]
+                    ]
+                ]
+            ],
+            'children2' => [
+                'inputs'  => [
+                    'child1' => [
+                        'condition' => [
+                            'Requires' => null
+                        ]
+                    ],
+                    'child2' => [
+                        'condition' => [
+                            'Requires' => null
+                        ]
+                    ]
+                ]
+            ]
+        ]);
+
+        $this->assertEquals(['children2' => []], $form->filter([
+            'parent'    => '',
+            'children1' => [],
+            'children2' => [
+                [
+                    'child1' => '',
+                    'child2' => '',
+                ]
+            ]
+        ]));
+        $this->assertEmpty($form->getMessages());
+
+        $this->assertEquals([
+            'parent'    => 'val',
+            'children1' => [
+                [
+                    'child1' => 'val',
+                ]
+            ],
+            'children2' => [
+                [
+                    'child1' => 'val',
+                ]
+            ]
+        ], $form->filter([
+            'parent'    => 'val',
+            'children1' => [
+                [
+                    'child1' => 'val',
+                    'child2' => '',
+                ]
+            ],
+            'children2' => [
+                [
+                    'child1' => 'val',
+                    'child2' => '',
+                ]
+            ]
+        ]));
+        $this->assertEmpty($form->getMessages());
+    }
+
     function test_validateOrThrow_ng()
     {
         $form = new Form([

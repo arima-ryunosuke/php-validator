@@ -153,9 +153,10 @@ class Context implements \IteratorAggregate
      * フィルタ
      *
      * @param array $values 値が入った連想配列
+     * @param bool $error エラー項目も伏せるか
      * @return array フィルタされた連想配列
      */
-    public function filter(array $values)
+    public function filter(array $values, $error = false)
     {
         foreach ($this->inputs as $name => $input) {
             if ($input->ignore) {
@@ -166,6 +167,25 @@ class Context implements \IteratorAggregate
                     foreach ($values[$name] as $key => $value) {
                         unset($values[$name][$key][$name2]);
                     }
+                }
+            }
+        }
+
+        if ($error) {
+            $messages = $this->getMessages();
+            foreach ($messages as $name => $message) {
+                if (array_depth($message, 3) > 2) {
+                    foreach ($message as $n => $msgs) {
+                        foreach ($msgs as $name2 => $msg) {
+                            unset($values[$name][$n][$name2]);
+                        }
+                    }
+                    if (!$values[$name][$n]) {
+                        unset($values[$name][$n]);
+                    }
+                }
+                else {
+                    unset($values[$name]);
                 }
             }
         }

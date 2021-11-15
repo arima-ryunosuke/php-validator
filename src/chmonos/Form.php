@@ -158,6 +158,26 @@ class Form
     }
 
     /**
+     * 値を検証せずフィルタだけ行う
+     *
+     * 返り値としてフィルタされた値を返す。
+     *
+     * @see Form::validate
+     * @param array $values 検証する値
+     * @return array 検証・フィルタされた値
+     */
+    public function filter(array $values)
+    {
+        $values = $this->setValues($values);
+        $result = $this->context->validate($values);
+        $values = $this->context->filter($values, true);
+        if (!$result) {
+            $this->context->clear();
+        }
+        return $values;
+    }
+
+    /**
      * 値を検証して bool を返す
      *
      * @see Context::validate
@@ -172,7 +192,7 @@ class Form
 
         $values = $this->setValues($values);
         $result = $this->context->validate($values);
-        $values = $this->context->filter($values);
+        $values = $this->context->filter($values, false);
         return $result;
     }
 
