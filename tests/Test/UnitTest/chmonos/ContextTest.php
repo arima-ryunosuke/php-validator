@@ -287,6 +287,27 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         }
     }
 
+    function test_clear()
+    {
+        $context = new Context($this->_getRules());
+
+        $values = $this->_getValues('invalid_parent');
+        $context->validate($values);
+
+        $this->assertCount(1, $context->getMessages());
+        $context->clear();
+        $this->assertCount(0, $context->getMessages());
+
+        //-----------------------------------------------
+
+        $values = $this->_getValues('invalid_child');
+        $context->validate($values);
+
+        $this->assertCount(1, $context->getMessages());
+        $context->clear();
+        $this->assertCount(0, $context->getMessages());
+    }
+
     function test_getFlatMessages()
     {
         $context = new Context($this->_getRules());

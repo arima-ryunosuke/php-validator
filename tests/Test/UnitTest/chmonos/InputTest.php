@@ -552,6 +552,26 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ], $input->getMessages());
     }
 
+    function test_clear()
+    {
+        $rule = [
+            'name'      => 'input',
+            'condition' => [
+                'Requires' => null,
+            ],
+        ];
+        $input = new Input($rule);
+
+        $values = [
+            'input' => '',
+        ];
+
+        $this->assertFalse($input->validate($values, $values));
+        $this->assertCount(1, $input->getMessages());
+        $input->clear();
+        $this->assertCount(0, $input->getMessages());
+    }
+
     function test_getValidationParams_class()
     {
         $input = new Input([

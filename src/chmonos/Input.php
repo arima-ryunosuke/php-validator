@@ -650,6 +650,14 @@ class Input
     }
 
     /**
+     * バリデーション結果をクリアする
+     */
+    public function clear()
+    {
+        $this->messages = [];
+    }
+
+    /**
      * UI ラベル描画
      *
      * @param array $attrs 属性連想配列

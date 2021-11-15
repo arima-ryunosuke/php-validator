@@ -194,6 +194,20 @@ class Context implements \IteratorAggregate
     }
 
     /**
+     * バリデーション結果をクリアする
+     */
+    public function clear()
+    {
+        $this->messages = [];
+        foreach ($this->inputs as $input) {
+            $input->clear();
+            if ($input->context) {
+                $input->context->clear();
+            }
+        }
+    }
+
+    /**
      * 検証メッセージを array で返す
      *
      * @return array 検証メッセージ
