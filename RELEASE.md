@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.12
+
+- [feature][Form] フィルタだけを行う filter メソッドを実装
+- [feature][Context] エラーをクリアする clear メソッドを実装
+
 ## 1.0.11
 
 - [feature][Context] 値のフィルタ処理を実装
