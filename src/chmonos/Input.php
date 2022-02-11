@@ -993,9 +993,10 @@ class Input
     protected function _pseudoHidden($name)
     {
         $hiddenAttr = $this->createHtmlAttr([
-            'type'  => 'hidden',
-            'name'  => $name,
-            'value' => '',
+            'type'               => 'hidden',
+            'name'               => $name,
+            'value'              => '',
+            'data-vinput-pseudo' => 'true',
         ]);
         return "<input $hiddenAttr>";
     }

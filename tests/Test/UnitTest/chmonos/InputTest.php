@@ -996,9 +996,10 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertAttribute([
             'input' => [
                 [
-                    'type'  => 'hidden',
-                    'name'  => 'name',
-                    'value' => '',
+                    'type'               => 'hidden',
+                    'name'               => 'name',
+                    'value'              => '',
+                    'data-vinput-pseudo' => 'true',
                 ],
                 [
                     'type'                  => 'checkbox',
@@ -1471,9 +1472,10 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertAttribute([
             'input'  => [
                 [
-                    'type'  => 'hidden',
-                    'name'  => 'name',
-                    'value' => '',
+                    'type'               => 'hidden',
+                    'name'               => 'name',
+                    'value'              => '',
+                    'data-vinput-pseudo' => 'true',
                 ]
             ],
             'select' => [
