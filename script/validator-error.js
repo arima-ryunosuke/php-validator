@@ -535,28 +535,9 @@
         $this.on('animationend', function () {
             $this.removeClass('validatable_blink');
         });
-
-        var top = $this.offset().top;
-        var height = $this.outerHeight();
-
-        var scrollElement = $('scrollingElement' in document ? document.scrollingElement : document.documentElement);
-        var windowTop = scrollElement.scrollTop();
-        var windowHeight = window.innerHeight;
-
-        if (windowTop <= top && (top + height) <= (windowTop + windowHeight)) {
-            return;
-        }
-
-        var offset = 64;
-        if (windowTop <= top) {
-            top += -windowHeight + offset + height;
-        }
-        else {
-            top += -offset;
-        }
-
-        scrollElement.animate({
-            scrollTop: top
+        $this[0].scrollIntoView({
+            behavior: "smooth",
+            block: "center",
         });
     }
 
