@@ -411,20 +411,24 @@ function Chmonos(form, options) {
      * @param index 追加するインデックス
      */
     chmonos.birth = function (template, values, index) {
-        var parent;
+        var rootTag;
         var fragment;
         if ('content' in template) {
             fragment = template.content.cloneNode(true);
+            rootTag = fragment.firstElementChild.tagName;
         }
         else {
+            var parent;
             fragment = document.createDocumentFragment();
             if (typeof (template) === 'string') {
                 parent = document.createElement('div');
                 parent.innerHTML = template;
+                rootTag = template.match(/<([a-z0-9_-]+)/i)[1];
             }
             else {
                 parent = document.createElement(template.parentNode.tagName);
                 parent.innerHTML = template.textContent;
+                rootTag = template.textContent.match(/<([a-z0-9_-]+)/i)[1];
             }
             while (parent.firstChild) {
                 fragment.appendChild(parent.firstChild);
@@ -491,10 +495,7 @@ function Chmonos(form, options) {
             });
         }
 
-        if (parent === undefined) {
-            return fragment.firstElementChild;
-        }
-        return fragment.firstElementChild.firstElementChild;
+        return fragment.querySelector(rootTag);
     };
 
     /**
