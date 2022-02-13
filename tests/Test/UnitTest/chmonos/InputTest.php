@@ -1769,4 +1769,39 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'type' => 'textarea'
         ]));
     }
+
+    function test_inputCombobox()
+    {
+        $input = new Input([
+            'name'    => 'name',
+            'options' => [
+                'option.1',
+                'option.2',
+            ]
+        ]);
+
+        $this->assertAttribute([
+            'input'    => [
+                [
+                    'data-validation-title' => '',
+                    'data-vinput-id'        => 'name',
+                    'data-vinput-class'     => 'name',
+                    'data-vinput-index'     => '',
+                    'name'                  => 'name',
+                    'id'                    => 'name',
+                    'class'                 => 'validatable',
+                    'type'                  => 'combobox',
+                    'list'                  => 'name-datalist',
+                    'value'                 => '0',
+                ],
+            ],
+            'datalist' => [
+                [
+                    'id' => 'name-datalist',
+                ]
+            ]
+        ], $input->input([
+            'type' => 'combobox'
+        ]));
+    }
 }

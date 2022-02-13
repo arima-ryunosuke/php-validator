@@ -39,7 +39,9 @@ abstract class AbstractUnitTestCase extends \PHPUnit\Framework\TestCase
     public static function assertAttribute($expected, $actual)
     {
         $dom = new \DOMDocument();
+        libxml_use_internal_errors(true);
         $dom->loadHTML($actual);
+        libxml_clear_errors();
         $attributes = [];
         foreach ($dom->getElementsByTagName('*') as $tag) {
             if (isset($expected[$tag->tagName])) {

@@ -352,6 +352,10 @@ class Input
             if (array_key_exists('', $this->options)) {
                 return 'select';
             }
+            // options が通常配列なら combobox の場合が*多い*
+            if (!is_hasharray($this->options)) {
+                return 'combobox';
+            }
             // options が 1つなら単 checkbox
             if (count($this->options) === 1) {
                 return 'checkbox';
@@ -405,6 +409,10 @@ class Input
      */
     protected function _setAutoInArray()
     {
+        if ($this->type === 'combobox') {
+            return;
+        }
+
         foreach ($this->condition as $condition) {
             if ($condition instanceof Condition\InArray) {
                 return;
@@ -860,6 +868,23 @@ class Input
         $wrapper = array_unset($attrs, 'wrapper');
         $attr = $this->createHtmlAttr($attrs);
         return $hidden . $this->_wrapInput($wrapper, 'select', "<select $attr>" . implode('', $result) . "</select>");
+    }
+
+    protected function _inputCombobox($attrs)
+    {
+        $wrapper = array_unset($attrs, 'wrapper');
+
+        $attrs['list'] = $attrs['id'] . '-datalist';
+        $input = $this->_inputText($attrs);
+
+        $option_attrs = (array) array_unset($attrs, 'option_attrs', []);
+        $options = [];
+        foreach ((array) array_unset($attrs, 'options', $this->options) as $key => $text) {
+            $options[] = $this->_inputOption([], is_int($key) ? $text : $key, $text, $option_attrs);
+        }
+        $datalist = "<datalist id='{$this->escapeHtml($attrs['list'])}'>" . implode('', $options) . "</datalist>";
+
+        return $this->_wrapInput($wrapper, $attrs['type'], $input . $datalist);
     }
 
     protected function _inputText($attrs)
