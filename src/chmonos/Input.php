@@ -163,7 +163,6 @@ class Input
         $this->id = $rule['id'] ?? '';
         $this->name = $rule['name'] ?? '';
         $this->type = $this->_detectType();
-        $this->value = $this->default;
         $this->parent = $parent;
 
         // see https://qiita.com/ArimaRyunosuke/items/bd474ece6f2a5a79c5a9
@@ -181,6 +180,8 @@ class Input
                 $this->$method();
             }
         }
+
+        $this->setValue($this->default);
     }
 
     /**
@@ -295,6 +296,13 @@ class Input
             }
             // ↑で設定されてしまっているので戻す
             $this->context->normalize([]);
+        }
+
+        // Condition から値を変換できるならそれを(最後を優先するので reverse してる)
+        foreach (array_reverse($this->condition) as $condition) {
+            if ($condition instanceof Condition\Interfaces\ConvertibleValue) {
+                $value = $condition->getValue($value);
+            }
         }
 
         return $this->value = $value;

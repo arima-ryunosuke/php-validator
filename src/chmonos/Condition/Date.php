@@ -12,7 +12,7 @@ use ryunosuke\chmonos\Condition\Interfaces;
  * - format: string
  *   - 許容する日付フォーマット
  */
-class Date extends AbstractCondition implements Interfaces\MaxLength, Interfaces\ImeMode
+class Date extends AbstractCondition implements Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\ConvertibleValue
 {
     public const INVALID      = 'dateInvalid';
     public const INVALID_DATE = 'dateInvalidDate';
@@ -66,5 +66,19 @@ class Date extends AbstractCondition implements Interfaces\MaxLength, Interfaces
         // @task InferableType を implement してないので有効になっていない
         // type=date,datetime は format をパースしなければならないし、そもそもブラウザ対応状況が劣悪なので text
         return 'text';
+    }
+
+    public function getValue($value)
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format($this->_format);
+        }
+        if (ctype_digit("$value")) {
+            return date($this->_format, $value);
+        }
+        if (is_string($value) && date_create_from_format($this->_format, $value) === false) {
+            return date($this->_format, strtotime($value));
+        }
+        return $value;
     }
 }

@@ -49,17 +49,25 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'condition' => [
                     'Requires' => null
                 ]
-            ]
+            ],
+            'dt'  => [
+                'condition' => [
+                    'Date' => 'Y-m-d\TH:i'
+                ]
+            ],
         ]);
 
         $values = $form->setValues([
             'req' => '  hoge  ',
+            'dt'  => '2009-02-14 08:31:30',
             'foo' => 'bar',
         ]);
 
         $this->assertIsArray($values);
         $this->assertArrayHasKey('req', $values);
         $this->assertEquals('hoge', $values['req']);
+        $this->assertArrayHasKey('dt', $values);
+        $this->assertEquals('2009-02-14T08:31', $values['dt']);
         $this->assertArrayNotHasKey('foo', $values);
     }
 
