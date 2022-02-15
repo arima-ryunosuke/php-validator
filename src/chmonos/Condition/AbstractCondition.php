@@ -307,44 +307,44 @@ JS;
 
     public function __construct()
     {
-        self::$cache['context'] = self::$cache['context'] ?? [
-                'lang'       => 'php',
-                'chmonos'    => new class() implements \ArrayAccess {
-                    public function offsetExists($offset) { }
+        self::$cache['context'] ??= [
+            'lang'       => 'php',
+            'chmonos'    => new class() implements \ArrayAccess {
+                public function offsetExists($offset) { }
 
-                    public function offsetGet($offset) { return $offset; }
+                public function offsetGet($offset) { return $offset; }
 
-                    public function offsetSet($offset, $value) { }
+                public function offsetSet($offset, $value) { }
 
-                    public function offsetUnset($offset) { }
-                },
-                'function'   => static function ($callback) {
-                    $args = array_slice(func_get_args(), 1);
-                    return function () use ($callback, $args) {
-                        return $callback(...array_merge(func_get_args(), $args));
-                    };
-                },
-                'foreach'    => static function ($array, $callback) {
-                    $args = func_get_args();
-                    foreach ($array as $k => $v) {
-                        $args[0] = $k;
-                        $args[1] = $v;
-                        if ($callback(...$args) === false) {
-                            return false;
-                        }
+                public function offsetUnset($offset) { }
+            },
+            'function'   => static function ($callback) {
+                $args = array_slice(func_get_args(), 1);
+                return function () use ($callback, $args) {
+                    return $callback(...array_merge(func_get_args(), $args));
+                };
+            },
+            'foreach'    => static function ($array, $callback) {
+                $args = func_get_args();
+                foreach ($array as $k => $v) {
+                    $args[0] = $k;
+                    $args[1] = $v;
+                    if ($callback(...$args) === false) {
+                        return false;
                     }
-                    return true;
-                },
-                'cast'       => static function ($type, $value) {
-                    if ($type === 'array') {
-                        return (array) $value;
-                    }
-                    throw new \InvalidArgumentException('invalid cast type');
-                },
-                'str_concat' => static function () {
-                    return implode('', func_get_args());
-                },
-            ];
+                }
+                return true;
+            },
+            'cast'       => static function ($type, $value) {
+                if ($type === 'array') {
+                    return (array) $value;
+                }
+                throw new \InvalidArgumentException('invalid cast type');
+            },
+            'str_concat' => static function () {
+                return implode('', func_get_args());
+            },
+        ];
     }
 
     /**
@@ -362,12 +362,12 @@ JS;
             return true;
         }
 
-        static $constants;
-        $constants = $constants ?? get_class_constants($this);
+        static $constants = [];
+        $constants[static::class] = $constants[static::class] ?? get_class_constants($this);
 
         $params = $this->getValidationParam();
         $error = function ($messageKey, $message = null) use ($constants) {
-            if (!in_array($messageKey, $constants, true)) {
+            if (!in_array($messageKey, $constants[static::class], true)) {
                 $message = $messageKey;
                 $messageKey = static::INVALID;
             }
@@ -375,7 +375,7 @@ JS;
         };
 
         $context = self::$cache['context'] + static::prevalidate($value, $fields, $params);
-        static::validate($value, $fields, $params, $constants, $error, $context);
+        static::validate($value, $fields, $params, $constants[static::class], $error, $context);
 
         return !count($this->messages);
     }
