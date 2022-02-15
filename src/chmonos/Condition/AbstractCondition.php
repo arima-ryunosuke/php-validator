@@ -91,7 +91,6 @@ abstract class AbstractCondition
             else {
                 foreach ($classes as $class) {
                     if (isset($class::$messageTemplates[$key])) {
-                        /** @noinspection PhpUndefinedVariableInspection */
                         $class::$messageTemplates[$key] = $message;
                         break;
                     }
@@ -179,13 +178,11 @@ abstract class AbstractCondition
                 }
             }
 
-            /** @noinspection PhpUnusedLocalVariableInspection */
             $echo_function = function ($array) {
                 foreach ($array as $key => $value) {
                     echo "*/\nvar $key = this.$key = (function(){\n" . self::encodeJson($value) . "\nreturn module.exports;\n})();\n/*";
                 }
             };
-            /** @noinspection PhpUnusedLocalVariableInspection */
             $echo_keyvalue = function ($key, $value) {
                 echo "*/\nthis.$key = " . self::encodeJson($value) . ";/*\n";
             };

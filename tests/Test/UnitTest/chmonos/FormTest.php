@@ -318,7 +318,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_validateOrFilter()
     {
         $form = new Form([
-            'parent'   => [
+            'parent'    => [
                 'condition' => [
                     'Requires' => null
                 ]
@@ -327,7 +327,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'condition' => [
                     'Requires' => null
                 ],
-                'inputs'  => [
+                'inputs'    => [
                     'child1' => [
                         'condition' => [
                             'Requires' => null
@@ -341,7 +341,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                 ]
             ],
             'children2' => [
-                'inputs'  => [
+                'inputs' => [
                     'child1' => [
                         'condition' => [
                             'Requires' => null

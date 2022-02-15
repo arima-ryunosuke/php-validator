@@ -37,9 +37,7 @@ class Step extends AbstractCondition implements Interfaces\ImeMode, Interfaces\I
 
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
-        $match = [];
-
-        if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value, $match)) {
+        if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value)) {
             return $error($consts['INVALID']);
         }
         if (abs(round($value / $params['step']) * $params['step'] - $value) > pow(2, -52)) {

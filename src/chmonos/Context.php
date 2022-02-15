@@ -180,7 +180,7 @@ class Context implements \IteratorAggregate
                             unset($values[$name][$n][$name2]);
                         }
                     }
-                    if (!$values[$name][$n]) {
+                    if (isset($n) && !$values[$name][$n]) {
                         unset($values[$name][$n]);
                     }
                 }
