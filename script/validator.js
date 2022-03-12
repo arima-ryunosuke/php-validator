@@ -2328,6 +2328,192 @@ module.exports = function time() {
 return module.exports;
 })();
 /**/
+var pathinfo = this.pathinfo = (function(){
+'use strict';
+
+module.exports = function pathinfo(path, options) {
+  //  discuss at: http://locutus.io/php/pathinfo/
+  // original by: Nate
+  //  revised by: Kevin van Zonneveld (http://kvz.io)
+  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Dmitry Gorelenkov
+  //    input by: Timo
+  //      note 1: Inspired by actual PHP source: php5-5.2.6/ext/standard/string.c line #1559
+  //      note 1: The way the bitwise arguments are handled allows for greater flexibility
+  //      note 1: & compatability. We might even standardize this
+  //      note 1: code and use a similar approach for
+  //      note 1: other bitwise PHP functions
+  //      note 1: Locutus tries very hard to stay away from a core.js
+  //      note 1: file with global dependencies, because we like
+  //      note 1: that you can just take a couple of functions and be on your way.
+  //      note 1: But by way we implemented this function,
+  //      note 1: if you want you can still declare the PATHINFO_*
+  //      note 1: yourself, and then you can use:
+  //      note 1: pathinfo('/www/index.html', PATHINFO_BASENAME | PATHINFO_EXTENSION);
+  //      note 1: which makes it fully compliant with PHP syntax.
+  //   example 1: pathinfo('/www/htdocs/index.html', 1)
+  //   returns 1: '/www/htdocs'
+  //   example 2: pathinfo('/www/htdocs/index.html', 'PATHINFO_BASENAME')
+  //   returns 2: 'index.html'
+  //   example 3: pathinfo('/www/htdocs/index.html', 'PATHINFO_EXTENSION')
+  //   returns 3: 'html'
+  //   example 4: pathinfo('/www/htdocs/index.html', 'PATHINFO_FILENAME')
+  //   returns 4: 'index'
+  //   example 5: pathinfo('/www/htdocs/index.html', 2 | 4)
+  //   returns 5: {basename: 'index.html', extension: 'html'}
+  //   example 6: pathinfo('/www/htdocs/index.html', 'PATHINFO_ALL')
+  //   returns 6: {dirname: '/www/htdocs', basename: 'index.html', extension: 'html', filename: 'index'}
+  //   example 7: pathinfo('/www/htdocs/index.html')
+  //   returns 7: {dirname: '/www/htdocs', basename: 'index.html', extension: 'html', filename: 'index'}
+
+  var basename = require('../filesystem/basename');
+  var opt = '';
+  var realOpt = '';
+  var optName = '';
+  var optTemp = 0;
+  var tmpArr = {};
+  var cnt = 0;
+  var i = 0;
+  var haveBasename = false;
+  var haveExtension = false;
+  var haveFilename = false;
+
+  // Input defaulting & sanitation
+  if (!path) {
+    return false;
+  }
+  if (!options) {
+    options = 'PATHINFO_ALL';
+  }
+
+  // Initialize binary arguments. Both the string & integer (constant) input is
+  // allowed
+  var OPTS = {
+    'PATHINFO_DIRNAME': 1,
+    'PATHINFO_BASENAME': 2,
+    'PATHINFO_EXTENSION': 4,
+    'PATHINFO_FILENAME': 8,
+    'PATHINFO_ALL': 0
+  };
+  // PATHINFO_ALL sums up all previously defined PATHINFOs (could just pre-calculate)
+  for (optName in OPTS) {
+    if (OPTS.hasOwnProperty(optName)) {
+      OPTS.PATHINFO_ALL = OPTS.PATHINFO_ALL | OPTS[optName];
+    }
+  }
+  if (typeof options !== 'number') {
+    // Allow for a single string or an array of string flags
+    options = [].concat(options);
+    for (i = 0; i < options.length; i++) {
+      // Resolve string input to bitwise e.g. 'PATHINFO_EXTENSION' becomes 4
+      if (OPTS[options[i]]) {
+        optTemp = optTemp | OPTS[options[i]];
+      }
+    }
+    options = optTemp;
+  }
+
+  // Internal Functions
+  var _getExt = function _getExt(path) {
+    var str = path + '';
+    var dotP = str.lastIndexOf('.') + 1;
+    return !dotP ? false : dotP !== str.length ? str.substr(dotP) : '';
+  };
+
+  // Gather path infos
+  if (options & OPTS.PATHINFO_DIRNAME) {
+    var dirName = path.replace(/\\/g, '/').replace(/\/[^/]*\/?$/, ''); // dirname
+    tmpArr.dirname = dirName === path ? '.' : dirName;
+  }
+
+  if (options & OPTS.PATHINFO_BASENAME) {
+    if (haveBasename === false) {
+      haveBasename = basename(path);
+    }
+    tmpArr.basename = haveBasename;
+  }
+
+  if (options & OPTS.PATHINFO_EXTENSION) {
+    if (haveBasename === false) {
+      haveBasename = basename(path);
+    }
+    if (haveExtension === false) {
+      haveExtension = _getExt(haveBasename);
+    }
+    if (haveExtension !== false) {
+      tmpArr.extension = haveExtension;
+    }
+  }
+
+  if (options & OPTS.PATHINFO_FILENAME) {
+    if (haveBasename === false) {
+      haveBasename = basename(path);
+    }
+    if (haveExtension === false) {
+      haveExtension = _getExt(haveBasename);
+    }
+    if (haveFilename === false) {
+      haveFilename = haveBasename.slice(0, haveBasename.length - (haveExtension ? haveExtension.length + 1 : haveExtension === false ? 0 : 1));
+    }
+
+    tmpArr.filename = haveFilename;
+  }
+
+  // If array contains only 1 element: return string
+  cnt = 0;
+  for (opt in tmpArr) {
+    if (tmpArr.hasOwnProperty(opt)) {
+      cnt++;
+      realOpt = opt;
+    }
+  }
+  if (cnt === 1) {
+    return tmpArr[realOpt];
+  }
+
+  // Return full-blown array
+  return tmpArr;
+};
+return module.exports;
+})();
+/**/
+var basename = this.basename = (function(){
+'use strict';
+
+module.exports = function basename(path, suffix) {
+  //  discuss at: http://locutus.io/php/basename/
+  // original by: Kevin van Zonneveld (http://kvz.io)
+  // improved by: Ash Searle (http://hexmen.com/blog/)
+  // improved by: Lincoln Ramsay
+  // improved by: djmix
+  // improved by: Dmitry Gorelenkov
+  //   example 1: basename('/www/site/home.htm', '.htm')
+  //   returns 1: 'home'
+  //   example 2: basename('ecra.php?p=1')
+  //   returns 2: 'ecra.php?p=1'
+  //   example 3: basename('/some/path/')
+  //   returns 3: 'path'
+  //   example 4: basename('/some/path_ext.ext/','.ext')
+  //   returns 4: 'path_ext'
+
+  var b = path;
+  var lastChar = b.charAt(b.length - 1);
+
+  if (lastChar === '/' || lastChar === '\\') {
+    b = b.slice(0, -1);
+  }
+
+  b = b.replace(/^.*[/\\]/g, '');
+
+  if (typeof suffix === 'string' && b.substr(b.length - suffix.length) === suffix) {
+    b = b.substr(0, b.length - suffix.length);
+  }
+
+  return b;
+};
+return module.exports;
+})();
+/**/
 var json_decode = this.json_decode = (function(){
 'use strict';
 
@@ -3120,6 +3306,21 @@ module.exports = function strtolower(str) {
 return module.exports;
 })();
 /**/
+var strtoupper = this.strtoupper = (function(){
+'use strict';
+
+module.exports = function strtoupper(str) {
+  //  discuss at: http://locutus.io/php/strtoupper/
+  // original by: Kevin van Zonneveld (http://kvz.io)
+  // improved by: Onno Marsman (https://twitter.com/onnomarsman)
+  //   example 1: strtoupper('Kevin van Zonneveld')
+  //   returns 1: 'KEVIN VAN ZONNEVELD'
+
+  return (str + '').toUpperCase();
+};
+return module.exports;
+})();
+/**/
 var trim = this.trim = (function(){
 'use strict';
 
@@ -3651,6 +3852,77 @@ module.exports = function mb_strlen(str) {
 return module.exports;
 })();
 /**/
+var mb_strwidth = this.mb_strwidth = (function(){
+/**
+ * mb_strwidth
+ *
+ * unicode 環境のみ。
+ */
+module.exports = function mb_strwidth(str) {
+    // https://www.php.net/manual/ja/function.mb-strwidth.php
+    var fullwidth_points = [
+        [0x1100, 0x115F],
+        [0x11A3, 0x11A7],
+        [0x11FA, 0x11FF],
+        [0x2329, 0x232A],
+        [0x2E80, 0x2E99],
+        [0x2E9B, 0x2EF3],
+        [0x2F00, 0x2FD5],
+        [0x2FF0, 0x2FFB],
+        [0x3000, 0x303E],
+        [0x3041, 0x3096],
+        [0x3099, 0x30FF],
+        [0x3105, 0x312D],
+        [0x3131, 0x318E],
+        [0x3190, 0x31BA],
+        [0x31C0, 0x31E3],
+        [0x31F0, 0x321E],
+        [0x3220, 0x3247],
+        [0x3250, 0x32FE],
+        [0x3300, 0x4DBF],
+        [0x4E00, 0xA48C],
+        [0xA490, 0xA4C6],
+        [0xA960, 0xA97C],
+        [0xAC00, 0xD7A3],
+        [0xD7B0, 0xD7C6],
+        [0xD7CB, 0xD7FB],
+        [0xF900, 0xFAFF],
+        [0xFE10, 0xFE19],
+        [0xFE30, 0xFE52],
+        [0xFE54, 0xFE66],
+        [0xFE68, 0xFE6B],
+        [0xFF01, 0xFF60],
+        [0xFFE0, 0xFFE6],
+        [0x1B000, 0x1B001],
+        [0x1F200, 0x1F202],
+        [0x1F210, 0x1F23A],
+        [0x1F240, 0x1F248],
+        [0x1F250, 0x1F251],
+        [0x20000, 0x2FFFD],
+        [0x30000, 0x3FFFD],
+    ];
+
+    var str_width = 0;
+    for (var i = 0; i < str.length; i++) {
+        var char_code = str.charCodeAt(i);
+        if (0xD800 <= char_code && char_code <= 0xDBFF) {
+            char_code = ((char_code - 0xD800) * 0x400) + (str.charCodeAt(++i) - 0xDC00) + 0x10000;
+        }
+
+        str_width++;
+        for (var n = 0; n < fullwidth_points.length; n++) {
+            if (fullwidth_points[n][0] <= char_code && char_code <= fullwidth_points[n][1]) {
+                str_width++;
+                break;
+            }
+        }
+    }
+
+    return str_width;
+};
+return module.exports;
+})();
+/**/
 var mime_content_type = this.mime_content_type = (function(){
 /**
  * mime_content_type
@@ -3871,6 +4143,26 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
 
         if (!preg_match($params['regex'], $value)) {
             $error($consts['INVALID_FORMAT']);
+        }},"FileName":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $pathinfo;
+// 
+
+        if (!preg_match($params['regex'], $value)) {
+            $error($consts['INVALID_FILENAME_STR']);
+            return;
+        }
+
+        $pathinfo = pathinfo($value);
+        $pathinfo['extension'] = isset($pathinfo['extension']) ? $pathinfo['extension'] : '';
+        $pathinfo['filename'] = isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
+
+        if (count($params['extensions']) && !in_array($pathinfo['extension'], $params['extensions'])) {
+            $error($consts['INVALID_FILENAME_EXT']);
+            return;
+        }
+
+        if (count($params['reserved']) && in_array(strtoupper($pathinfo['filename']), $params['reserved'])) {
+            $error($consts['INVALID_FILENAME_RESERVED']);
+            return;
         }},"FileSize":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $size;
 // 
 
@@ -4103,12 +4395,9 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
             }, $statement, $getDepend, $context), true);
         }, $getDepend, $context), false)) {
             $nofify($value, $error, $consts);
-        }},"Step":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $match;
-// 
+        }},"Step":function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
 
-        $match = [];
-
-        if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value, $match)) {
+        if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value)) {
             return $error($consts['INVALID']);
         }
         if (abs(round($value / $params['step']) * $params['step'] - $value) > pow(2, -52)) {
@@ -4117,6 +4406,24 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
 // 
 
         $length = mb_strlen($value);
+
+        if (!is_null($params['max']) && !is_null($params['min']) && ($length > $params['max'] || $length < $params['min'])) {
+            if ($params['min'] === $params['max']) {
+                $error($consts['DIFFERENT']);
+            }
+            else {
+                $error($consts['SHORTLONG']);
+            }
+        }
+        else if (is_null($params['max']) && !is_null($params['min']) && $length < $params['min']) {
+            $error($consts['TOO_SHORT']);
+        }
+        else if (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
+            $error($consts['TOO_LONG']);
+        }},"StringWidth":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $length;
+// 
+
+        $length = mb_strwidth($value);
 
         if (!is_null($params['max']) && !is_null($params['min']) && ($length > $params['max'] || $length < $params['min'])) {
             if ($params['min'] === $params['max']) {
@@ -4188,12 +4495,12 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
 
     /// エラー定数のインポート
     /**/
-this.constants = {"Ajax":{"INVALID":"AjaxInvalid"},"ArrayLength":{"INVALID":"ArrayLengthInvalidLength","TOO_SHORT":"ArrayLengthInvalidMin","TOO_LONG":"ArrayLengthInvalidMax","SHORTLONG":"ArrayLengthInvalidMinMax"},"Aruiha":{"INVALID":"AruihaInvalid"},"Callback":{"INVALID":"CallbackInvalid"},"Compare":{"INVALID":"compareInvalid","EQUAL":"compareEqual","NOT_EQUAL":"compareNotEqual","LESS_THAN":"compareLessThan","GREATER_THAN":"compareGreaterThan","SIMILAR":"compareSimilar"},"Date":{"INVALID":"dateInvalid","INVALID_DATE":"dateInvalidDate","FALSEFORMAT":"dateFalseFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Decimal":{"INVALID":"DecimalInvalid","INVALID_INT":"DecimalInvalidInt","INVALID_DEC":"DecimalInvalidDec","INVALID_INTDEC":"DecimalInvalidIntDec","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Digits":{"INVALID":"notDigits","NOT_DIGITS":"digitsInvalid","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"EmailAddress":{"INVALID":"emailAddressInvalid","INVALID_FORMAT":"emailAddressInvalidFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileSize":{"INVALID":"FileSizeInvalid","INVALID_OVER":"FileSizeInvalidOver"},"FileType":{"INVALID":"FileTypeInvalid","INVALID_TYPE":"FileTypeInvalidType"},"Hostname":{"INVALID":"InvalidHostname","INVALID_PORT":"InvalidHostnamePort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"ImageSize":{"INVALID":"ImageFileInvalid","INVALID_WIDTH":"ImageFileInvalidWidth","INVALID_HEIGHT":"ImageFileInvalidHeight"},"InArray":{"INVALID":"InvalidInArray","NOT_IN_ARRAY":"notInArray"},"Json":{"INVALID":"JsonInvalid","INVALID_INVALID_SCHEMA":"JsonInvalidSchema"},"NotInArray":{"INVALID":"InvalidNotInArray","VALUE_IN_ARRAY":"valueInArray"},"Password":{"INVALID":"InvalidPassword","INVALID_PASSWORD_LESS":"InvalidPasswordLess","INVALID_PASSWORD_WEAK":"InvalidPasswordWeak","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Range":{"INVALID":"RangeInvalid","INVALID_MIN":"RangeInvalidMin","INVALID_MAX":"RangeInvalidMax","INVALID_MINMAX":"RangeInvalidMinMax","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Regex":{"INVALID":"regexInvalid","ERROROUS":"regexErrorous","NOT_MATCH":"regexNotMatch","NEGATION":"regexNegation"},"Requires":{"INVALID":"RequireInvalid","INVALID_TEXT":"RequireInvalidText","INVALID_MULTIPLE":"RequireInvalidSelectSingle"},"Step":{"INVALID":"StepInvalid","INVALID_STEP":"StepInvalidInt","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"StringLength":{"INVALID":"StringLengthInvalidLength","TOO_SHORT":"StringLengthInvalidMin","TOO_LONG":"StringLengthInvalidMax","SHORTLONG":"StringLengthInvalidMinMax","DIFFERENT":"StringLengthInvalidDifferenr"},"Telephone":{"INVALID":"InvalidTelephone","INVALID_TELEPHONE":"InvalidTelephoneNumber","INVALID_WITH_HYPHEN":"InvalidTelephoneWithHyphen","INVALID_NONE_HYPHEN":"InvalidTelephoneNoneHyphen","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Unique":{"INVALID":"UniqueInvalid","NO_UNIQUE":"UniqueNoUnique"},"Uri":{"INVALID":"UriInvalid","INVALID_SCHEME":"UriInvalidScheme","INVALID_HOST":"UriInvalidHost","INVALID_PORT":"UriInvalidPort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4}};/*
+this.constants = {"Ajax":{"INVALID":"AjaxInvalid"},"ArrayLength":{"INVALID":"ArrayLengthInvalidLength","TOO_SHORT":"ArrayLengthInvalidMin","TOO_LONG":"ArrayLengthInvalidMax","SHORTLONG":"ArrayLengthInvalidMinMax"},"Aruiha":{"INVALID":"AruihaInvalid"},"Callback":{"INVALID":"CallbackInvalid"},"Compare":{"INVALID":"compareInvalid","EQUAL":"compareEqual","NOT_EQUAL":"compareNotEqual","LESS_THAN":"compareLessThan","GREATER_THAN":"compareGreaterThan","SIMILAR":"compareSimilar"},"Date":{"INVALID":"dateInvalid","INVALID_DATE":"dateInvalidDate","FALSEFORMAT":"dateFalseFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Decimal":{"INVALID":"DecimalInvalid","INVALID_INT":"DecimalInvalidInt","INVALID_DEC":"DecimalInvalidDec","INVALID_INTDEC":"DecimalInvalidIntDec","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Digits":{"INVALID":"notDigits","NOT_DIGITS":"digitsInvalid","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"EmailAddress":{"INVALID":"emailAddressInvalid","INVALID_FORMAT":"emailAddressInvalidFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileName":{"INVALID":"InvalidFileName","INVALID_FILENAME_STR":"InvalidFileNameStr","INVALID_FILENAME_EXT":"InvalidFileNameExt","INVALID_FILENAME_RESERVED":"InvalidFileNameReserved","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileSize":{"INVALID":"FileSizeInvalid","INVALID_OVER":"FileSizeInvalidOver"},"FileType":{"INVALID":"FileTypeInvalid","INVALID_TYPE":"FileTypeInvalidType"},"Hostname":{"INVALID":"InvalidHostname","INVALID_PORT":"InvalidHostnamePort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"ImageSize":{"INVALID":"ImageFileInvalid","INVALID_WIDTH":"ImageFileInvalidWidth","INVALID_HEIGHT":"ImageFileInvalidHeight"},"InArray":{"INVALID":"InvalidInArray","NOT_IN_ARRAY":"notInArray"},"Json":{"INVALID":"JsonInvalid","INVALID_INVALID_SCHEMA":"JsonInvalidSchema"},"NotInArray":{"INVALID":"InvalidNotInArray","VALUE_IN_ARRAY":"valueInArray"},"Password":{"INVALID":"InvalidPassword","INVALID_PASSWORD_LESS":"InvalidPasswordLess","INVALID_PASSWORD_WEAK":"InvalidPasswordWeak","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Range":{"INVALID":"RangeInvalid","INVALID_MIN":"RangeInvalidMin","INVALID_MAX":"RangeInvalidMax","INVALID_MINMAX":"RangeInvalidMinMax","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Regex":{"INVALID":"regexInvalid","ERROROUS":"regexErrorous","NOT_MATCH":"regexNotMatch","NEGATION":"regexNegation"},"Requires":{"INVALID":"RequireInvalid","INVALID_TEXT":"RequireInvalidText","INVALID_MULTIPLE":"RequireInvalidSelectSingle"},"Step":{"INVALID":"StepInvalid","INVALID_STEP":"StepInvalidInt","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"StringLength":{"INVALID":"StringLengthInvalidLength","TOO_SHORT":"StringLengthInvalidMin","TOO_LONG":"StringLengthInvalidMax","SHORTLONG":"StringLengthInvalidMinMax","DIFFERENT":"StringLengthInvalidDifferenr"},"StringWidth":{"INVALID":"StringWidthInvalidLength","TOO_SHORT":"StringWidthInvalidMin","TOO_LONG":"StringWidthInvalidMax","SHORTLONG":"StringWidthInvalidMinMax","DIFFERENT":"StringWidthInvalidDifferenr"},"Telephone":{"INVALID":"InvalidTelephone","INVALID_TELEPHONE":"InvalidTelephoneNumber","INVALID_WITH_HYPHEN":"InvalidTelephoneWithHyphen","INVALID_NONE_HYPHEN":"InvalidTelephoneNoneHyphen","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Unique":{"INVALID":"UniqueInvalid","NO_UNIQUE":"UniqueNoUnique"},"Uri":{"INVALID":"UriInvalid","INVALID_SCHEME":"UriInvalidScheme","INVALID_HOST":"UriInvalidHost","INVALID_PORT":"UriInvalidPort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4}};/*
 */
 
     /// エラー文言のインポート
     /**/
-this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid value given","ArrayLengthInvalidMin":"%min%件以上は入力してください","ArrayLengthInvalidMax":"%max%件以下で入力して下さい","ArrayLengthInvalidMinMax":"%min%件～%max%件を入力して下さい"},"Aruiha":{"AruihaInvalid":"必ず呼び出し元で再宣言する"},"Callback":{"CallbackInvalid":"クロージャの戻り値で上書きされる"},"Compare":{"compareInvalid":"Invalid value given","compareEqual":"%operand%と同じ値を入力してください","compareNotEqual":"%operand%と異なる値を入力してください","compareLessThan":"%operand%より小さい値を入力してください","compareGreaterThan":"%operand%より大きい値を入力してください"},"Date":{"dateInvalid":"Invalid value given","dateInvalidDate":"有効な日付を入力してください","dateFalseFormat":"%format%形式で入力してください"},"Decimal":{"DecimalInvalid":"小数値を入力してください","DecimalInvalidInt":"整数部分を%int%桁以下で入力してください","DecimalInvalidDec":"小数部分を%dec%桁以下で入力してください","DecimalInvalidIntDec":"整数部分を%int%桁、小数部分を%dec%桁以下で入力してください"},"Digits":{"notDigits":"Invalid value given","digitsInvalid":"整数を入力してください"},"EmailAddress":{"emailAddressInvalid":"Invalid value given","emailAddressInvalidFormat":"メールアドレスを正しく入力してください"},"FileSize":{"FileSizeInvalid":"入力ファイルが不正です","FileSizeInvalidOver":"ファイルサイズが大きすぎます。%message%以下のファイルを選択してください"},"FileType":{"FileTypeInvalid":"入力ファイルが不正です","FileTypeInvalidType":"%type%形式のファイルを選択して下さい"},"Hostname":{"InvalidHostname":"ホスト名を正しく入力してください","InvalidHostnamePort":"ポート番号を正しく入力してください"},"ImageSize":{"ImageFileInvalid":"画像ファイルを入力してください","ImageFileInvalidWidth":"横サイズは%width%ピクセル以下で選択してください","ImageFileInvalidHeight":"縦サイズは%height%ピクセル以下で選択してください"},"InArray":{"InvalidInArray":"Invalid value given","notInArray":"選択値が不正です"},"Json":{"JsonInvalid":"JSON文字列が不正です","JsonInvalidSchema":"キーが不正です"},"NotInArray":{"InvalidNotInArray":"Invalid value given","valueInArray":"選択値が不正です"},"Password":{"InvalidPassword":"Invalid value given","InvalidPasswordLess":"%char_types%を含めてください","InvalidPasswordWeak":"%char_types%のいずれかを%repeat%文字以上含めてください"},"Range":{"RangeInvalid":"Invalid value given","RangeInvalidMin":"%min%以上で入力して下さい","RangeInvalidMax":"%max%以下で入力して下さい","RangeInvalidMinMax":"%min%以上%max%以下で入力して下さい"},"Regex":{"regexInvalid":"Invalid value given","regexErrorous":"There was%pattern%'","regexNotMatch":"パターンに一致しません","regexNegation":"使用できない文字が含まれています"},"Requires":{"RequireInvalid":"Invalid value given","RequireInvalidText":"入力必須です","RequireInvalidSelectSingle":"選択してください"},"Step":{"StepInvalid":"Invalid value given","StepInvalidInt":"%step%の倍数で入力してください"},"StringLength":{"StringLengthInvalidLength":"Invalid value given","StringLengthInvalidMin":"%min%文字以上で入力して下さい","StringLengthInvalidMax":"%max%文字以下で入力して下さい","StringLengthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringLengthInvalidDifferenr":"%min%文字で入力して下さい"},"Telephone":{"InvalidTelephone":"電話番号を正しく入力してください","InvalidTelephoneNumber":"電話番号を入力してください","InvalidTelephoneWithHyphen":"ハイフン付きで電話番号を入力してください","InvalidTelephoneNoneHyphen":"ハイフン無しで電話番号を入力してください"},"Unique":{"UniqueInvalid":"Invalid value given","UniqueNoUnique":"値が重複しています"},"Uri":{"UriInvalid":"URLをスキームから正しく入力してください","UriInvalidScheme":"スキームが不正です(%schemes%のみ)","UriInvalidHost":"ホスト名が不正です","UriInvalidPort":"ポート番号が不正です"}};/*
+this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid value given","ArrayLengthInvalidMin":"%min%件以上は入力してください","ArrayLengthInvalidMax":"%max%件以下で入力して下さい","ArrayLengthInvalidMinMax":"%min%件～%max%件を入力して下さい"},"Aruiha":{"AruihaInvalid":"必ず呼び出し元で再宣言する"},"Callback":{"CallbackInvalid":"クロージャの戻り値で上書きされる"},"Compare":{"compareInvalid":"Invalid value given","compareEqual":"%operand%と同じ値を入力してください","compareNotEqual":"%operand%と異なる値を入力してください","compareLessThan":"%operand%より小さい値を入力してください","compareGreaterThan":"%operand%より大きい値を入力してください"},"Date":{"dateInvalid":"Invalid value given","dateInvalidDate":"有効な日付を入力してください","dateFalseFormat":"%format%形式で入力してください"},"Decimal":{"DecimalInvalid":"小数値を入力してください","DecimalInvalidInt":"整数部分を%int%桁以下で入力してください","DecimalInvalidDec":"小数部分を%dec%桁以下で入力してください","DecimalInvalidIntDec":"整数部分を%int%桁、小数部分を%dec%桁以下で入力してください"},"Digits":{"notDigits":"Invalid value given","digitsInvalid":"整数を入力してください"},"EmailAddress":{"emailAddressInvalid":"Invalid value given","emailAddressInvalidFormat":"メールアドレスを正しく入力してください"},"FileName":{"InvalidFileName":"Invalid value given","InvalidFileNameStr":"有効なファイル名を入力してください","InvalidFileNameExt":"%extensions%ファイル名を入力してください","InvalidFileNameReserved":"使用できないファイル名です"},"FileSize":{"FileSizeInvalid":"入力ファイルが不正です","FileSizeInvalidOver":"ファイルサイズが大きすぎます。%message%以下のファイルを選択してください"},"FileType":{"FileTypeInvalid":"入力ファイルが不正です","FileTypeInvalidType":"%type%形式のファイルを選択して下さい"},"Hostname":{"InvalidHostname":"ホスト名を正しく入力してください","InvalidHostnamePort":"ポート番号を正しく入力してください"},"ImageSize":{"ImageFileInvalid":"画像ファイルを入力してください","ImageFileInvalidWidth":"横サイズは%width%ピクセル以下で選択してください","ImageFileInvalidHeight":"縦サイズは%height%ピクセル以下で選択してください"},"InArray":{"InvalidInArray":"Invalid value given","notInArray":"選択値が不正です"},"Json":{"JsonInvalid":"JSON文字列が不正です","JsonInvalidSchema":"キーが不正です"},"NotInArray":{"InvalidNotInArray":"Invalid value given","valueInArray":"選択値が不正です"},"Password":{"InvalidPassword":"Invalid value given","InvalidPasswordLess":"%char_types%を含めてください","InvalidPasswordWeak":"%char_types%のいずれかを%repeat%文字以上含めてください"},"Range":{"RangeInvalid":"Invalid value given","RangeInvalidMin":"%min%以上で入力して下さい","RangeInvalidMax":"%max%以下で入力して下さい","RangeInvalidMinMax":"%min%以上%max%以下で入力して下さい"},"Regex":{"regexInvalid":"Invalid value given","regexErrorous":"There was%pattern%'","regexNotMatch":"パターンに一致しません","regexNegation":"使用できない文字が含まれています"},"Requires":{"RequireInvalid":"Invalid value given","RequireInvalidText":"入力必須です","RequireInvalidSelectSingle":"選択してください"},"Step":{"StepInvalid":"Invalid value given","StepInvalidInt":"%step%の倍数で入力してください"},"StringLength":{"StringLengthInvalidLength":"Invalid value given","StringLengthInvalidMin":"%min%文字以上で入力して下さい","StringLengthInvalidMax":"%max%文字以下で入力して下さい","StringLengthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringLengthInvalidDifferenr":"%min%文字で入力して下さい"},"StringWidth":{"StringWidthInvalidLength":"Invalid value given","StringWidthInvalidMin":"%min%文字以上で入力して下さい","StringWidthInvalidMax":"%max%文字以下で入力して下さい","StringWidthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringWidthInvalidDifferenr":"%min%文字で入力して下さい"},"Telephone":{"InvalidTelephone":"電話番号を正しく入力してください","InvalidTelephoneNumber":"電話番号を入力してください","InvalidTelephoneWithHyphen":"ハイフン付きで電話番号を入力してください","InvalidTelephoneNoneHyphen":"ハイフン無しで電話番号を入力してください"},"Unique":{"UniqueInvalid":"Invalid value given","UniqueNoUnique":"値が重複しています"},"Uri":{"UriInvalid":"URLをスキームから正しく入力してください","UriInvalidScheme":"スキームが不正です(%schemes%のみ)","UriInvalidHost":"ホスト名が不正です","UriInvalidPort":"ポート番号が不正です"}};/*
 */
 
     /// 初期化（コンストラクション）
@@ -4558,20 +4865,24 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
      * @param index 追加するインデックス
      */
     chmonos.birth = function (template, values, index) {
-        var parent;
+        var rootTag;
         var fragment;
         if ('content' in template) {
             fragment = template.content.cloneNode(true);
+            rootTag = fragment.firstElementChild.tagName;
         }
         else {
+            var parent;
             fragment = document.createDocumentFragment();
             if (typeof (template) === 'string') {
                 parent = document.createElement('div');
                 parent.innerHTML = template;
+                rootTag = template.match(/<([a-z0-9_-]+)/i)[1];
             }
             else {
                 parent = document.createElement(template.parentNode.tagName);
                 parent.innerHTML = template.textContent;
+                rootTag = template.textContent.match(/<([a-z0-9_-]+)/i)[1];
             }
             while (parent.firstChild) {
                 fragment.appendChild(parent.firstChild);
@@ -4638,10 +4949,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
             });
         }
 
-        if (parent === undefined) {
-            return fragment.firstElementChild;
-        }
-        return fragment.firstElementChild.firstElementChild;
+        return fragment.querySelector(rootTag);
     };
 
     /**
