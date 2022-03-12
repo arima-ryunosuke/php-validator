@@ -347,6 +347,19 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_filename(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('filename', '/directory/file.csv');
+        $this->assertCount(1, $driver->getErrors());
+        $driver->setValue('filename', '/directory/file.json');
+        $this->assertCount(0, $driver->getErrors());
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_step(WebDriver $driver)
     {
         $driver->path('/example/index.php');
@@ -475,6 +488,32 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $this->assertCount(1, $driver->getErrors());
         $driver->setValue('require_array[]', ['1', '2', '3']);
         $this->assertCount(2, $driver->getErrors());
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
+    function test_stringlength(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('stringlength', 'x');
+        $this->assertCount(1, $driver->getErrors());
+        $driver->setValue('stringlength', 'xxx');
+        $this->assertCount(0, $driver->getErrors());
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
+    function test_stringwidth(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('stringwidth', 'x');
+        $this->assertCount(1, $driver->getErrors());
+        $driver->setValue('stringwidth', 'あ');
+        $this->assertCount(0, $driver->getErrors());
     }
 
     /**

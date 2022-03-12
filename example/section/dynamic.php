@@ -96,27 +96,37 @@ $dynamic_rule = [
     <?= $template_form->input('parent-mail') ?>
     <?= $template_form->input('require-address') ?>
 
+    <style>
+        .template-holder {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .template-item {
+            display: grid;
+            grid-template-columns: max-content 260px;
+        }
+    </style>
     <br>
     <input class="append_row1 btn btn-success" type="button" value="追加">
     <?= $template_form->input('rows') ?>
-    <table class="table">
+    <div class="template-holder">
         <!-- $template_form->template('hoge') すると script.hoge-template なタグが生成される -->
         <?= $template_form->template('rows') ?>
-        <tr>
-            <th><?= $template_form->label('title') ?></th>
-            <td><?= $template_form->input('title') ?></td>
-            <th>選択肢</th>
-            <td><?= $template_form->input('checkbox', ['type' => 'checkbox']) ?><?= $template_form->input('multiple', ['type' => 'select']) ?></td>
-            <th>兄弟内の重複禁止</th>
-            <td><?= $template_form->input('unique_require') ?> <?= $template_form->input('unique') ?></td>
-            <th>ファイル要素</th>
-            <td><?= $template_form->input('array_file') ?></td>
-            <td>
+        <dl class="template-item">
+            <dt><?= $template_form->label('title') ?></dt>
+            <dd><?= $template_form->input('title') ?></dd>
+            <dt>選択肢</dt>
+            <dd><?= $template_form->input('checkbox', ['type' => 'checkbox']) ?><br><?= $template_form->input('multiple', ['type' => 'select']) ?></dd>
+            <dt>兄弟内の重複禁止</dt>
+            <dd><?= $template_form->input('unique_require') ?> <?= $template_form->input('unique') ?></dd>
+            <dt>ファイル要素</dt>
+            <dd><?= $template_form->input('array_file') ?></dd>
+            <dd>
                 <input class="delete_row1 btn btn-danger" type="button" value="削除">
-            </td>
-        </tr>
+            </dd>
+        </dl>
         <?= $template_form->template() ?>
-    </table>
+    </div>
 
     <input type="submit" id="template_form_submit" class="btn btn-primary" value="post">
     <label class='btn btn-warning'>
@@ -159,7 +169,7 @@ $dynamic_rule = [
                 if (e.target.matches('.delete_row1')) {
                     // cull を呼ぶとそのノードが削除される
                     // cull を使わず単純にノード削除でも特に問題はない
-                    chmonos.cull('rows', e.target.closest('tr'));
+                    chmonos.cull('rows', e.target.closest('dl'));
                 }
             });
         });

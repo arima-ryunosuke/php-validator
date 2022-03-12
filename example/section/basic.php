@@ -11,6 +11,20 @@ $basic_form = new \ryunosuke\chmonos\Form([
         'title'   => 'textarea要素',
         'default' => "</textarea><script>alert('XSS!!');</script>"
     ],
+    'datetime'              => [
+        'default' => time(),
+        'condition' => [
+            'Date' => 'Y-m-d\TH:i'
+        ],
+    ],
+    'combobox'              => [
+        'title'   => 'combobox要素',
+        'options' => [
+            '選択肢1',
+            '選択肢2',
+            '選択肢3'
+        ],
+    ],
     'checkbox'              => [
         'title'   => 'checkbox要素',
         'options' => [
@@ -96,21 +110,21 @@ $basic_form = new \ryunosuke\chmonos\Form([
         ],
         'invisible' => true,
     ],
-    'client'             => [
+    'client'                => [
         'title'     => 'jsのみ',
         'condition' => [
             'Requires' => null,
         ],
         'checkmode' => ['client' => true, 'server' => false],
     ],
-    'server'             => [
+    'server'                => [
         'title'     => 'phpのみ',
         'condition' => [
             'Requires' => null,
         ],
         'checkmode' => ['client' => false, 'server' => true],
     ],
-    'ignore_require'             => [
+    'ignore_require'        => [
         'title'     => '最終結果に含まれない',
         'condition' => [],
         'options'   => [
@@ -118,7 +132,7 @@ $basic_form = new \ryunosuke\chmonos\Form([
         ],
         'ignore'    => true,
     ],
-    'ignore'             => [
+    'ignore'                => [
         'title'     => 'チェックを入れると必須',
         'condition' => [
             'Requires' => 'ignore_require',
@@ -183,6 +197,14 @@ resetForm($basic_form, 'basic_form');
     <tr>
         <th>textarea要素</th>
         <td><?= $basic_form->input('textarea', ['type' => 'textarea']) ?></td>
+    </tr>
+    <tr>
+        <th>datetime要素</th>
+        <td><?= $basic_form->input('datetime', ['type' => 'datetime-local']) ?></td>
+    </tr>
+    <tr>
+        <th>combobox要素</th>
+        <td><?= $basic_form->input('combobox', ['type' => 'combobox']) ?></td>
     </tr>
     <tr>
         <th>checkbox要素</th>

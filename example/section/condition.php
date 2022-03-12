@@ -242,6 +242,12 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'Password' => null
         ]
     ],
+    'filename'              => [
+        'title'     => 'ファイル名',
+        'condition' => [
+            'FileName' => [['json', 'yaml'], null, true]
+        ]
+    ],
     'step'                  => [
         'title'     => '倍数',
         'condition' => [
@@ -408,6 +414,12 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'StringLength' => [2, 6]
         ]
     ],
+    'stringwidth'          => [
+        'title'     => '文字幅',
+        'condition' => [
+            'StringWidth' => [2, 6]
+        ]
+    ],
     'telephone'             => [
         'title'     => '電話番号（ハイフン不問）',
         'condition' => [
@@ -535,6 +547,11 @@ resetForm($condition_form, 'condition_form');
         <td></td>
     </tr>
     <tr>
+        <th>ファイル名(json, yaml)</th>
+        <td><?= $condition_form->input('filename') ?></td>
+        <td></td>
+    </tr>
+    <tr>
         <th>倍数(0.5)</th>
         <td><?= $condition_form->input('step') ?></td>
         <td></td>
@@ -588,6 +605,11 @@ resetForm($condition_form, 'condition_form');
     <tr>
         <th>文字長</th>
         <td><?= $condition_form->input('stringlength') ?></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>文字幅</th>
+        <td><?= $condition_form->input('stringwidth') ?></td>
         <td></td>
     </tr>
     <tr>
