@@ -63,5 +63,7 @@ class DateTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertEquals('2009-02-14T08:31:30', $validate->getValue(new \DateTime('2009-02-14 08:31:30')));
         $this->assertEquals('2009-02-14T08:31:30', $validate->getValue("1234567890"));
         $this->assertEquals('2009-02-14T08:31:30', $validate->getValue('2009-02-14 08:31:30'));
+        $this->assertEquals('', $validate->getValue(""));
+        $this->assertEquals('invalid', $validate->getValue("invalid"));
     }
 }

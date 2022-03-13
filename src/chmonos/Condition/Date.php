@@ -76,8 +76,8 @@ class Date extends AbstractCondition implements Interfaces\MaxLength, Interfaces
         if (ctype_digit("$value")) {
             return date($this->_format, $value);
         }
-        if (is_string($value) && date_create_from_format($this->_format, $value) === false) {
-            return date($this->_format, strtotime($value));
+        if (is_string($value) && ($time = strtotime($value)) !== false && date_create_from_format($this->_format, $value) === false) {
+            return date($this->_format, $time);
         }
         return $value;
     }
