@@ -24,6 +24,17 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.13
+
+- [change][all] php 7.4 対象と php8.1 の暫定対応
+- [change][script] クリック時のスクロールを組み込みに変更
+- [fixbug][template] テンプレートの root 要素はスキップされる不具合を修正
+- [change][Input] pseudo Hidden に目印属性を追加
+- [feature][Input] combobox の実装
+- [feature][Condition] ConvertibleValue インターフェースを導入
+- [feature][Condition/FileName] ファイル名バリデータを追加
+- [feature][Condition/StringWidth] 文字幅バリデータを追加
+
 ## 1.0.12
 
 - [feature][Form] フィルタだけを行う filter メソッドを実装
