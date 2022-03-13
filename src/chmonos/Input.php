@@ -699,7 +699,8 @@ class Input
         $attrs['for'] = $attrs['for'] ?? $this->id . $name;
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable_label';
         $attr = $this->createHtmlAttr($attrs);
-        return "<label $attr>{$this->title}</label>";
+        $label = $attrs['label'] ?? $this->title;
+        return "<label $attr>{$label}</label>";
     }
 
     /**

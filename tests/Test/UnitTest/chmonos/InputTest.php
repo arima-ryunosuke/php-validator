@@ -645,6 +645,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ], $input->label());
 
         $this->assertStringContainsString('for="input-id"', $input->label(['for' => 'input-id']));
+        $this->assertStringContainsString('specified-label', $input->label(['label' => 'specified-label']));
     }
 
     function test_label_context()
