@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.14
+
+- [feature][Input] label でラベル文字列を指定できるように修正
+- [fixbug][Condition/Date] 不正日時文字列を渡すと 1970-01-01 になってしまう不具合を修正
+
 ## 1.0.13
 
 - [change][all] php 7.4 対象と php8.1 の暫定対応
