@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.15
+
+- [feature][template] event の発火タイミングを指定可能にした
+- [feature][Input] 現在の値を尊重する suboptions/subposition を実装
+- [fixbug][Input] message 指定が setAutoCondition には効いていなかった不具合を修正
+
 ## 1.0.14
 
 - [feature][Input] label でラベル文字列を指定できるように修正
