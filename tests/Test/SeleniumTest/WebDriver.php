@@ -93,10 +93,12 @@ class WebDriver extends RemoteWebDriver
         }
     }
 
-    public function getErrors($sleep = null, $displayed = true)
+    public function getErrors($sleep = null, $displayed = true, $blur = true)
     {
         // デフォルトが change なのでフォーカスを移さないと検証が走らないので代替
-        $this->findElement(WebDriverBy::id('dummy-focus'))->click();
+        if ($blur) {
+            $this->findElement(WebDriverBy::id('dummy-focus'))->click();
+        }
         if ($sleep) {
             sleep($sleep);
         }

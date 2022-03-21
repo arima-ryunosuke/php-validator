@@ -247,6 +247,20 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_email_noerror(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('email_noerror', 'test@@hostname');
+        $this->assertCount(0, $driver->getErrors(null, true, false));
+        $this->assertCount(1, $driver->getErrors(null, true, true));
+        $driver->setValue('email_noerror', 'test@hostname');
+        $this->assertCount(0, $driver->getErrors(null, true, false));
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_require_file(WebDriver $driver)
     {
         $driver->path('/example/index.php');

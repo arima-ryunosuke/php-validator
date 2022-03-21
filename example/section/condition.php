@@ -164,7 +164,15 @@ $condition_form = new \ryunosuke\chmonos\Form([
         'title'     => 'メールアドレス',
         'condition' => [
             'EmailAddress' => null
-        ]
+        ],
+        'event'     => ['input'],
+    ],
+    'email_noerror'         => [
+        'title'     => 'メールアドレス（change エラー）',
+        'condition' => [
+            'EmailAddress' => null
+        ],
+        'event'     => ['input.noerror', 'change'],
     ],
     'image_file_require'    => [
         'default' => '',
@@ -229,6 +237,20 @@ $condition_form = new \ryunosuke\chmonos\Form([
         'condition' => [
             'InArray' => [["1", 2, 3], true,]
         ]
+    ],
+    'inarray_invalid'       => [
+        'options'    => [
+            'x' => 'hoge',
+            'z' => 'piyo',
+        ],
+        'suboptions' => [
+            'y' => 'invalid',
+        ],
+        'subposition' => function ($options, $invalids) {
+            $result = $options + $invalids;
+            ksort($result);
+            return $result;
+        },
     ],
     'json'                  => [
         'title'     => 'JSON文字列',
@@ -414,7 +436,7 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'StringLength' => [2, 6]
         ]
     ],
-    'stringwidth'          => [
+    'stringwidth'           => [
         'title'     => '文字幅',
         'condition' => [
             'StringWidth' => [2, 6]
@@ -508,8 +530,13 @@ resetForm($condition_form, 'condition_form');
         <td></td>
     </tr>
     <tr>
-        <th>メールアドレス</th>
+        <th>メールアドレス（input でエラー）</th>
         <td><?= $condition_form->input('email') ?></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>メールアドレス（input でエラーなし、chage でエラー）</th>
+        <td><?= $condition_form->input('email_noerror') ?></td>
         <td></td>
     </tr>
     <tr>
@@ -534,6 +561,11 @@ resetForm($condition_form, 'condition_form');
     <tr>
         <th>Array：InArrayStrict("1", 2, 3)</th>
         <td><?= $condition_form->input('inarray_strict') ?></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>Array：InArrayInvalid("x", "z", current "y")</th>
+        <td><?= $condition_form->input('inarray_invalid', ['value' => 'y']) ?></td>
         <td></td>
     </tr>
     <tr>
