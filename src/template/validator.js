@@ -56,7 +56,7 @@ function Chmonos(form, options) {
 
     /// 内部用
 
-    function core_validate(input, validation_id, e) {
+    function core_validate(input, validation_id, evt) {
         var result = [];
 
         if (chmonos.validationDisabled) {
@@ -110,41 +110,45 @@ function Chmonos(form, options) {
         for (var k = 0; k < keys.length; k++) {
             let cond = condition[keys[k]];
             let cname = cond.cname;
-            var error = function (e) {
-                if (e === undefined) {
+            var error = function (err) {
+                if (evt.chmonosSubtype === 'noerror') {
+                    return;
+                }
+
+                if (err === undefined) {
                     if (input.validationErrors && input.validationErrors[cname]) {
                         errorTypes[cname] = input.validationErrors[cname];
                     }
                 }
-                else if (e === null) {
+                else if (err === null) {
                     delete errorTypes[cname];
                 }
-                else if (e instanceof Promise) {
-                    asyncs.push(e);
+                else if (err instanceof Promise) {
+                    asyncs.push(err);
                 }
-                else if (isPlainObject(e)) {
+                else if (isPlainObject(err)) {
                     if (errorTypes[cname] === undefined) {
                         errorTypes[cname] = {};
                     }
-                    Object.keys(e).forEach(function (mk) {
-                        errorTypes[cname][mk] = e[mk];
+                    Object.keys(err).forEach(function (mk) {
+                        errorTypes[cname][mk] = err[mk];
                     });
                 }
                 else {
                     var ret;
-                    if (cond['message'][e] !== undefined) {
-                        ret = cond['message'][e];
+                    if (cond['message'][err] !== undefined) {
+                        ret = cond['message'][err];
                     }
-                    else if (chmonos.messages[cname][e] !== undefined) {
-                        ret = chmonos.messages[cname][e];
+                    else if (chmonos.messages[cname][err] !== undefined) {
+                        ret = chmonos.messages[cname][err];
                     }
                     else {
-                        ret = e;
+                        ret = err;
                     }
                     if (errorTypes[cname] === undefined) {
                         errorTypes[cname] = {};
                     }
-                    errorTypes[cname][e] = ret.replace(/%(.+?)%/g, function (p0, p1) {
+                    errorTypes[cname][err] = ret.replace(/%(.+?)%/g, function (p0, p1) {
                         if (cond['param'][p1] !== undefined) {
                             return cond['param'][p1];
                         }
@@ -157,7 +161,7 @@ function Chmonos(form, options) {
             if (value.length > 0 || cname === 'Requires') {
                 var values = cond['arrayable'] ? [value] : chmonos.context.cast('array', value);
                 Object.keys(values).forEach(function (v) {
-                    chmonos.condition[cname](input, values[v], fields, cond['param'], chmonos.constants[cname], error, chmonos.context, e);
+                    chmonos.condition[cname](input, values[v], fields, cond['param'], chmonos.constants[cname], error, chmonos.context, evt);
                 });
             }
         }
@@ -180,7 +184,7 @@ function Chmonos(form, options) {
         // 伝播先へ伝播
         rule['propagate'].forEach(function (propagate) {
             chmonos.brother(input, propagate).forEach(function (elm) {
-                result.push.apply(result, core_validate(elm, validation_id, e));
+                result.push.apply(result, core_validate(elm, validation_id, evt));
             });
         });
 
@@ -294,19 +298,24 @@ function Chmonos(form, options) {
 
         // イベントをバインド
         var handler = function (e) {
-            var elemName = e.target.dataset.vinputClass;
-            if (options.allrules[elemName] === undefined) {
-                return;
-            }
-            if (options.allrules[elemName]['event'].indexOf(e.type) === -1) {
-                return;
-            }
             // keyup における Tab はすでに項目が遷移している
             if (e.type === 'keyup' && e.keyCode === 9) {
                 return;
             }
-            form.validationValues = undefined;
-            core_validate(e.target, new Date().getTime(), e);
+            var elemName = e.target.dataset.vinputClass;
+            if (options.allrules[elemName] === undefined) {
+                return;
+            }
+            for (var i = 0; i < options.allrules[elemName]['event'].length; i++) {
+                var eventName = options.allrules[elemName]['event'][i];
+                var parts = eventName.split('.');
+                if (e.type === parts[0]) {
+                    e.chmonosSubtype = parts[1];
+                    form.validationValues = undefined;
+                    core_validate(e.target, new Date().getTime(), e);
+                    break;
+                }
+            }
         };
         // ありそうなイベントを全て listen して呼び出し時に要素単位でチェックする。この候補は割と気軽に追加して良い
         ['change', 'keyup', 'keydown', 'input', 'click', 'focusin', 'focusout'].forEach(function (event) {
