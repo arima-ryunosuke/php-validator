@@ -95,24 +95,6 @@ class Input
             $rule['condition'][$name]->setCheckMode($rule['checkmode']);
         }
 
-        // 検証メッセージ設定
-        /** @var AbstractCondition $condition */
-        foreach ($rule['message'] as $key => $message) {
-            // 配列ならその要素のみの設定となる
-            if (is_array($message)) {
-                foreach ($message as $name => $msg) {
-                    $condition = $rule['condition'][$key];
-                    $condition->setMessageTemplate("$msg", $name);
-                }
-            }
-            // 文字列なら共通で設定
-            elseif (is_string($message)) {
-                foreach ($rule['condition'] as $condition) {
-                    $condition->setMessageTemplate("$message", $key);
-                }
-            }
-        }
-
         // 属性の正規化
         foreach ($rule['attribute'] as $name => $attribute) {
             if (is_int($name)) {
@@ -178,6 +160,24 @@ class Input
         foreach ($automethods[static::class] as $name => $method) {
             if ($rule['autocond'] === true || (is_array($rule['autocond']) && $rule['autocond'][$name])) {
                 $this->$method();
+            }
+        }
+
+        // 検証メッセージ設定
+        /** @var AbstractCondition $condition */
+        foreach ($rule['message'] as $key => $message) {
+            // 配列ならその要素のみの設定となる
+            if (is_array($message)) {
+                foreach ($message as $name => $msg) {
+                    $condition = $this->rule['condition'][$key];
+                    $condition->setMessageTemplate("$msg", $name);
+                }
+            }
+            // 文字列なら共通で設定
+            elseif (is_string($message)) {
+                foreach ($this->rule['condition'] as $condition) {
+                    $condition->setMessageTemplate("$message", $key);
+                }
             }
         }
 

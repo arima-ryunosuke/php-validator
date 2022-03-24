@@ -185,23 +185,27 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'name'      => 'input',
             'title'     => '項目名',
             'condition' => [
-                'Requires'     => null,
                 'StringLength' => [2, 6]
             ],
+            'options'   => [
+                1 => 'hoge',
+                2 => 'fuga',
+            ],
             'message'   => [
-                Requires::INVALID_TEXT  => 'm_INVALID_TEXT',
-                StringLength::SHORTLONG => 'm_SHORTLONG'
+                StringLength::SHORTLONG => 'm_SHORTLONG',
+                InArray::NOT_IN_ARRAY   => 'm_NOT_IN_ARRAY'
             ]
         ];
         $input = new Input($rule);
 
         $values = [
-            'input' => ''
+            'input' => 'x'
         ];
 
         $input->validate($values, $values);
         $messages = $input->getMessages();
-        $this->assertContains('m_INVALID_TEXT', $messages['Requires']);
+        $this->assertContains('m_SHORTLONG', $messages['StringLength']);
+        $this->assertContains('m_NOT_IN_ARRAY', $messages['InArray']);
     }
 
     function test_autocond()
