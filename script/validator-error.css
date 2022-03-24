@@ -34,6 +34,12 @@
     background-color: #cfc;
 }
 
+option.validation_invalid,
+.validatable.validation_invalid,
+.validatable.validation_invalid + label {
+    color: #ff4500;
+}
+
 /* for toast */
 #chmonos-toast-container .toast-title {
     font-weight: bold;

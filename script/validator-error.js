@@ -600,7 +600,9 @@
         // name 単位で toast を共用する（radio や checkbox でその分表示されても嬉しくない）
         var $input = $(this);
         if ($input.attr('name')) {
-            $input = $input.closest('form').find('[name="' + $input.attr('name') + '"]').eq(0);
+            var $inputs = $input.closest('form').find('[name="' + $input.attr('name') + '"]');
+            var $invalids = $inputs.filter('.validation_invalid');
+            $input = $invalids.length ? $invalids.eq(0) : $inputs.eq(0);
         }
 
         var TOAST_NAME = 'vinput-toastr-' + type;
