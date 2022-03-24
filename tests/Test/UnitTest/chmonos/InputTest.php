@@ -10,6 +10,7 @@ use ryunosuke\chmonos\Condition\StringLength;
 use ryunosuke\chmonos\Context;
 use ryunosuke\chmonos\Exception\ValidationException;
 use ryunosuke\chmonos\Input;
+use function ryunosuke\chmonos\kvsort;
 
 class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
@@ -783,6 +784,31 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertStringContainsString('name="hoge[]" id="hoge_2" value="3"', $input->input());
     }
 
+    function test_input_subposition()
+    {
+        $rules = [
+            'name'       => 'hoge',
+            'options'    => [
+                'x' => 'X',
+                'z' => 'Z',
+            ],
+            'suboptions' => [
+                'y' => 'Y'
+            ],
+        ];
+
+        $input = new Input($rules + ['subposition' => 'append']);
+        $this->assertStringContainsString('</option><option class=" validation_invalid" selected="selected" value="y">Y</option></select', $input->input(['type' => 'select', 'value' => 'y']));
+
+        $input = new Input($rules + ['subposition' => 'prepend']);
+        $this->assertStringContainsString('"validatable"><option class=" validation_invalid" selected="selected" value="y">Y</option><option', $input->input(['type' => 'select', 'value' => 'y']));
+
+        $input = new Input($rules + [
+                'subposition' => fn($options, $invalids) => kvsort($options + $invalids, fn($av, $bv, $ak, $bk) => $ak <=> $bk)
+            ]);
+        $this->assertStringContainsString('</option><option class=" validation_invalid" selected="selected" value="y">Y</option><option', $input->input(['type' => 'select', 'value' => 'y']));
+    }
+
     function test_input_wrapper()
     {
         $input = new Input([
@@ -984,6 +1010,74 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 '2' => 'fuga-data',
             ],
             'data-string' => 'string',
+        ]));
+    }
+
+    function test_inputCheckbox_suboptions()
+    {
+        $input = new Input([
+            'name'       => 'name',
+            'options'    => [
+                0  => 'option.1',
+                '' => 'option.2'
+            ],
+            'suboptions' => [
+                'invalid' => 'option.3'
+            ],
+            'pseudo'     => false,
+        ]);
+
+        $this->assertAttribute([
+            'input' => [
+                [
+                    'type'                  => 'checkbox',
+                    'data-validation-title' => '',
+                    'data-vinput-id'        => 'name',
+                    'data-vinput-class'     => 'name',
+                    'data-vinput-index'     => '',
+                    'name'                  => 'name[]',
+                    'id'                    => 'name-invalid',
+                    'class'                 => 'validatable validation_invalid',
+                    'value'                 => 'invalid',
+                    'checked'               => 'checked',
+                ],
+                [
+                    'type'                  => 'checkbox',
+                    'data-validation-title' => '',
+                    'data-vinput-id'        => 'name',
+                    'data-vinput-class'     => 'name',
+                    'data-vinput-index'     => '',
+                    'name'                  => 'name[]',
+                    'id'                    => 'name-0',
+                    'class'                 => 'validatable',
+                    'value'                 => '0',
+                ],
+                [
+                    'type'                  => 'checkbox',
+                    'data-validation-title' => '',
+                    'data-vinput-id'        => 'name',
+                    'data-vinput-class'     => 'name',
+                    'data-vinput-index'     => '',
+                    'name'                  => 'name[]',
+                    'id'                    => 'name-',
+                    'class'                 => 'validatable',
+                    'value'                 => '',
+                ]
+            ],
+            'label' => [
+                [
+                    'for' => 'name-invalid',
+                ],
+                [
+                    'for' => 'name-0',
+                ],
+                [
+                    'for' => 'name-',
+                ]
+            ]
+        ], $input->input([
+            'type'  => 'checkbox',
+            'value' => 'invalid',
         ]));
     }
 
@@ -1460,6 +1554,47 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'options' => [
                 '99' => 'hoge'
             ]
+        ]));
+    }
+
+    function test_inputSelect_suboptions()
+    {
+        $input = new Input([
+            'name'       => 'name',
+            'options'    => [
+                1       => 'option.1',
+                'group' => [
+                    'invalid' => 'group.1'
+                ]
+            ],
+            'suboptions' => [],
+        ]);
+
+        $this->assertAttribute([
+            'select' => [
+                [
+                    'data-validation-title' => '',
+                    'data-vinput-id'        => 'name',
+                    'data-vinput-class'     => 'name',
+                    'data-vinput-index'     => '',
+                    'name'                  => 'name',
+                    'id'                    => 'name',
+                    'class'                 => 'validatable',
+                ],
+            ],
+            'option' => [
+                [
+                    'value'    => 'invalid',
+                    'selected' => 'selected',
+                    'class'    => ' validation_invalid'
+                ],
+                [
+                    'value' => '1',
+                ],
+            ],
+        ], $input->input([
+            'type'  => 'select',
+            'value' => 'invalid',
         ]));
     }
 

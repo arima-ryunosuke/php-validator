@@ -21,25 +21,27 @@ class Input
 
     /** @var array 生成時のデフォルト値 */
     protected static $defaultRule = [
-        'title'     => '',
-        'condition' => [],
-        'options'   => [],
-        'event'     => ['change'],
-        'propagate' => [],
-        'dependent' => true,
-        'message'   => [],
-        'phantom'   => [],
-        'attribute' => [],
-        'inputs'    => [],
-        'checkmode' => ['server' => true, 'client' => true],
-        'wrapper'   => null,
-        'invisible' => false,
-        'ignore'    => false,
-        'trimming'  => true,
-        'ime-mode'  => true,
-        'autocond'  => true,
-        'multiple'  => null,
-        'pseudo'    => true,
+        'title'       => '',
+        'condition'   => [],
+        'options'     => [],
+        'suboptions'  => null,
+        'subposition' => 'prepend',
+        'event'       => ['change'],
+        'propagate'   => [],
+        'dependent'   => true,
+        'message'     => [],
+        'phantom'     => [],
+        'attribute'   => [],
+        'inputs'      => [],
+        'checkmode'   => ['server' => true, 'client' => true],
+        'wrapper'     => null,
+        'invisible'   => false,
+        'ignore'      => false,
+        'trimming'    => true,
+        'ime-mode'    => true,
+        'autocond'    => true,
+        'multiple'    => null,
+        'pseudo'      => true,
         // 'default'    => null, // あるかないかでデフォルト値を決めるのでコメントアウト
     ];
 
@@ -847,17 +849,24 @@ class Input
         $value = (array) array_unset($attrs, 'value', $this->getValue());
         $flipped_value = array_flip($value);
 
-        $options = (array) array_unset($attrs, 'options', $this->options);
         $option_attrs = (array) array_unset($attrs, 'option_attrs', []);
+        $options = (array) array_unset($attrs, 'options', $this->options);
+        $invalids = $this->_completeOptions($options, $value);
 
         $result = [];
         foreach ($options as $key => $text) {
             // option
             if (!is_array($text)) {
-                $result[] = $this->_inputOption($flipped_value, $key, $text, $option_attrs);
+                // 不正値の class 付け
+                $option_attrs2 = $option_attrs;
+                if (isset($invalids[$key])) {
+                    $option_attrs2['class'] = ($option_attrs2['class'] ?? '') . " validation_invalid";
+                }
+                $result[] = $this->_inputOption($flipped_value, $key, $text, $option_attrs2);
             }
             // optgroup
             else {
+                // optgroup 不正値の class 付けは対応しない（シチュエーションがまずありえない）
                 $optgroup = '';
                 foreach ($text as $key2 => $text2) {
                     $optgroup .= $this->_inputOption($flipped_value, $key2, $text2, $option_attrs);
@@ -958,6 +967,7 @@ class Input
         $separator = array_unset($attrs, 'separator');
 
         $options = (array) array_unset($attrs, 'options', $this->options);
+        $invalids = $this->_completeOptions($options, $value);
 
         $wrapper = array_unset($attrs, 'wrapper');
 
@@ -977,6 +987,11 @@ class Input
             // 値が一致するなら checked
             if (isset($flipped_value[$key])) {
                 $params['checked'] = "checked";
+            }
+
+            // 不正値の class 付け
+            if (isset($invalids[$key])) {
+                $params['class'] .= " validation_invalid";
             }
 
             // for id のペア
@@ -1014,6 +1029,32 @@ class Input
         $oattrs = $this->createHtmlAttr($option_attrs, $key);
 
         return "<option $oattrs>{$this->escapeHtml($text)}</option>";
+    }
+
+    protected function _completeOptions(&$options, $values)
+    {
+        if ($this->suboptions === null) {
+            return [];
+        }
+
+        $option_values = array_flatten($options, fn($keys) => end($keys));
+
+        $invalids = [];
+        foreach ($values as $value) {
+            $invalids[$value] = $option_values[$value] ?? $this->suboptions[$value] ?? $value;
+        }
+        switch ($this->subposition) {
+            case 'append':
+                $options = array_replace($options, $invalids);
+                break;
+            case 'prepend':
+                $options = array_replace($invalids, $options);
+                break;
+            default:
+                $options = ($this->subposition)($options, $invalids);
+                break;
+        }
+        return $invalids;
     }
 
     protected function _pseudoHidden($name)
