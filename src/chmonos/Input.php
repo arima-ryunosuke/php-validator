@@ -1041,7 +1041,9 @@ class Input
 
         $invalids = [];
         foreach ($values as $value) {
-            $invalids[$value] = $option_values[$value] ?? $this->suboptions[$value] ?? $value;
+            if (!array_key_exists($value, $option_values)) {
+                $invalids[$value] = $this->suboptions[$value] ?? $value;
+            }
         }
         switch ($this->subposition) {
             case 'append':
