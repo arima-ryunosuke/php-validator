@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.17
+
+- [fixbug][Input] Condition 自身が setCheckMode しても Input の checkmode 指定で上書かれていた不具合を修正
+
 ## 1.0.16
 
 - [fixbug][Input] 現在値がすべて invalid になっていた不具合を修正
