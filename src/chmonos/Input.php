@@ -33,7 +33,7 @@ class Input
         'phantom'     => [],
         'attribute'   => [],
         'inputs'      => [],
-        'checkmode'   => ['server' => true, 'client' => true],
+        'checkmode'   => ['server' => true, 'client' => true], // delete or empty in future scope
         'wrapper'     => null,
         'invisible'   => false,
         'ignore'      => false,
@@ -94,7 +94,9 @@ class Input
             if (!($condition instanceof AbstractCondition)) {
                 $rule['condition'][$name] = AbstractCondition::create($name, $condition);
             }
-            $rule['condition'][$name]->setCheckMode($rule['checkmode']);
+            if ($rule['checkmode'] !== null && $rule['checkmode'] !== []) {
+                $rule['condition'][$name]->setCheckMode($rule['checkmode']);
+            }
         }
 
         // 属性の正規化

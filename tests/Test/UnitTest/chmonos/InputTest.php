@@ -36,8 +36,21 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $this->assertEquals(1, $input->default);
     }
 
-    function test___construct_js()
+    function test___construct_checkmode()
     {
+        $input = new Input([
+            'condition' => [
+                $c1 = (new Decimal(3, 6))->setCheckMode(['server' => true, 'client' => false]),
+                $c2 = new StringLength(3, 6),
+            ],
+            'checkmode' => [],
+        ]);
+        $this->assertEquals([], $input->checkmode);
+        $this->assertEquals(['server' => true, 'client' => false], self::publishField($c1, 'checkmode'));
+        $this->assertEquals(['server' => true, 'client' => true], self::publishField($c2, 'checkmode'));
+
+        # for compatible
+
         $input = new Input(['javascript' => true]);
         $this->assertEquals(['server' => true, 'client' => true], $input->checkmode);
 

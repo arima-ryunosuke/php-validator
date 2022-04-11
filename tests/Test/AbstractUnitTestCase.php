@@ -62,7 +62,21 @@ abstract class AbstractUnitTestCase extends \PHPUnit\Framework\TestCase
 
     public static function publishField($class, $field, $value = null)
     {
-        $ref = new \ReflectionProperty($class, $field);
+        $current = $class;
+        while (true) {
+            try {
+                $ref = new \ReflectionProperty($current, $field);
+                if ($ref) {
+                    break;
+                }
+            }
+            catch (\ReflectionException $ex) {
+                $current = get_parent_class($current);
+                if ($current === false) {
+                    throw $ex;
+                }
+            }
+        }
         $ref->setAccessible(true);
         if (func_num_args() === 2) {
             if ($ref->isStatic()) {
