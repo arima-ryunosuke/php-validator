@@ -35,6 +35,7 @@ class Input
         'inputs'      => [],
         'checkmode'   => ['server' => true, 'client' => true], // delete or empty in future scope
         'wrapper'     => null,
+        'grouper'     => null,
         'invisible'   => false,
         'ignore'      => false,
         'trimming'    => true,
@@ -760,6 +761,7 @@ class Input
         }
 
         $attrs['wrapper'] = $attrs['wrapper'] ?? $this->wrapper;
+        $attrs['grouper'] = $attrs['grouper'] ?? $this->grouper;
 
         // multiple 属性はその数生成する
         if ($this->multiple) {
@@ -776,7 +778,8 @@ class Input
                     $attrs2['value'] = $v;
                     $result[] = sprintf($format, $this->$method($attrs2));
                 }
-                return implode('', $result);
+                $grouper = array_unset($attrs, 'grouper');
+                return $this->_wrapInput('group', $grouper, $type, implode('', $result));
             }
         }
 
@@ -813,7 +816,8 @@ class Input
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable';
         $attrs['type'] = 'checkbox';
 
-        return $hidden . $this->_inputChoice($attrs);
+        $grouper = array_unset($attrs, 'grouper');
+        return $this->_wrapInput('group', $grouper, $attrs['type'], $hidden . $this->_inputChoice($attrs));
     }
 
     protected function _inputFile($attrs)
@@ -833,8 +837,9 @@ class Input
         }
 
         $wrapper = array_unset($attrs, 'wrapper');
+        array_unset($attrs, 'grouper');
         $attr = $this->createHtmlAttr($attrs);
-        return $this->_wrapInput($wrapper, $attrs['type'], "<input $attr>");
+        return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], "<input $attr>");
     }
 
     protected function _inputRadio($attrs)
@@ -842,7 +847,8 @@ class Input
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable';
         $attrs['type'] = 'radio';
 
-        return $this->_inputChoice($attrs);
+        $grouper = array_unset($attrs, 'grouper');
+        return $this->_wrapInput('group', $grouper, $attrs['type'], $this->_inputChoice($attrs));
     }
 
     protected function _inputSelect($attrs)
@@ -886,13 +892,15 @@ class Input
         }
 
         $wrapper = array_unset($attrs, 'wrapper');
+        array_unset($attrs, 'grouper');
         $attr = $this->createHtmlAttr($attrs);
-        return $hidden . $this->_wrapInput($wrapper, 'select', "<select $attr>" . implode('', $result) . "</select>");
+        return $hidden . $this->_wrapInput('wrapper', $wrapper, 'select', "<select $attr>" . implode('', $result) . "</select>");
     }
 
     protected function _inputCombobox($attrs)
     {
         $wrapper = array_unset($attrs, 'wrapper');
+        array_unset($attrs, 'grouper');
 
         $attrs['list'] = $attrs['id'] . '-datalist';
         $input = $this->_inputText($attrs);
@@ -904,7 +912,7 @@ class Input
         }
         $datalist = "<datalist id='{$this->escapeHtml($attrs['list'])}'>" . implode('', $options) . "</datalist>";
 
-        return $this->_wrapInput($wrapper, $attrs['type'], $input . $datalist);
+        return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $input . $datalist);
     }
 
     protected function _inputText($attrs)
@@ -943,8 +951,9 @@ class Input
         }
 
         $wrapper = array_unset($attrs, 'wrapper');
+        array_unset($attrs, 'grouper');
         $attr = $this->createHtmlAttr($attrs);
-        return $this->_wrapInput($wrapper, $attrs['type'], "<input $attr>");
+        return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], "<input $attr>");
     }
 
     protected function _inputTextarea($attrs)
@@ -961,8 +970,9 @@ class Input
         }
 
         $wrapper = array_unset($attrs, 'wrapper');
+        array_unset($attrs, 'grouper');
         $attr = $this->createHtmlAttr($attrs);
-        return $this->_wrapInput($wrapper, 'textarea', '<textarea ' . $attr . ">\n{$this->escapeHtml($value)}</textarea>");
+        return $this->_wrapInput('wrapper', $wrapper, 'textarea', '<textarea ' . $attr . ">\n{$this->escapeHtml($value)}</textarea>");
     }
 
     protected function _inputChoice($attrs)
@@ -1017,7 +1027,7 @@ class Input
                 $lattrs = $this->createHtmlAttr($label_attrs, $key);
                 $html = $html . "<label $lattrs>{$this->escapeHtml($text)}</label>";
             }
-            $html = $this->_wrapInput($wrapper, $attrs['type'], $html);
+            $html = $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $html);
 
             // フォーマットが指定されているなら sprintf を通す
             if (strlen($format) > 0) {
@@ -1080,14 +1090,14 @@ class Input
         return "<input $hiddenAttr>";
     }
 
-    protected function _wrapInput($wrapper, $type, $html)
+    protected function _wrapInput($mode, $class, $type, $html)
     {
-        if (!strlen($wrapper)) {
+        if (!strlen($class)) {
             return $html;
         }
-        $wrapper = $this->escapeHtml($wrapper);
+        $class = $this->escapeHtml($class);
         $type = $this->escapeHtml($type);
-        return "<span class=\"$wrapper input-$type\">$html</span>";
+        return "<span data-vinput-$mode=\"true\" class=\"$class input-$type\">$html</span>";
     }
 
     protected function _createDataAttrs($index)

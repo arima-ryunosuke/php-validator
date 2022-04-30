@@ -842,8 +842,25 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'wrapper' => 'input-class',
         ]);
 
-        $this->assertStringContainsString('<span class="input-class input-text">', $input->input());
-        $this->assertStringContainsString('<span class="hogera input-text">', $input->input(['wrapper' => 'hogera']));
+        $this->assertStringContainsString('<span data-vinput-wrapper="true" class="input-class input-text">', $input->input());
+        $this->assertStringContainsString('<span data-vinput-wrapper="true" class="hogera input-text">', $input->input(['wrapper' => 'hogera']));
+    }
+
+    function test_input_grouper()
+    {
+        $input = new Input([
+            'name'     => 'hoge',
+            'grouper'  => 'input-group',
+            'multiple' => true,
+            'options'  => [
+                1 => 'foo',
+                2 => 'bar',
+            ],
+        ]);
+
+        $this->assertStringContainsString('<span data-vinput-group="true" class="input-group input-text"><input', $input->input(['type' => 'text']));
+        $this->assertStringContainsString('<span data-vinput-group="true" class="input-group input-checkbox"><input', $input->input(['type' => 'checkbox']));
+        $this->assertStringContainsString('<span data-vinput-group="true" class="input-group input-radio"><input', $input->input(['type' => 'radio']));
     }
 
     function test_inputArrays()
