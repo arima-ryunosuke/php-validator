@@ -14,6 +14,19 @@ use function ryunosuke\chmonos\kvsort;
 
 class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
+    function test_setDefaultRule()
+    {
+        $default = Input::setDefaultRule([
+            'wrapper'     => 'hoge',
+            'subposition' => 'append',
+        ]);
+        $input = new Input([]);
+        $this->assertEquals('hoge', $input->wrapper);
+        $this->assertEquals('append', $input->subposition);
+
+        Input::setDefaultRule($default);
+    }
+
     function test___construct()
     {
         $rule = [

@@ -69,6 +69,13 @@ class Input
     /** @var array */
     protected $messages = [];
 
+    public static function setDefaultRule($rule)
+    {
+        $return = static::$defaultRule;
+        static::$defaultRule = array_replace(static::$defaultRule, $rule);
+        return $return;
+    }
+
     /**
      * コンストラクタ
      *
