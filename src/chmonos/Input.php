@@ -16,7 +16,9 @@ use ryunosuke\chmonos\Exception\ValidationException;
  */
 class Input
 {
-    use Mixin\Htmlable;
+    use Mixin\Htmlable {
+        createHtmlAttr as _createHtmlAttr;
+    }
     use Mixin\Jsonable;
 
     /** @var array 生成時のデフォルト値 */
@@ -69,6 +71,9 @@ class Input
 
     /** @var array */
     protected $messages = [];
+
+    /** @var bool */
+    protected $vuemode = false;
 
     public static function setDefaultRule($rule)
     {
@@ -693,6 +698,8 @@ class Input
      */
     public function label($attrs = [])
     {
+        $this->vuemode = array_unset($attrs, 'vuejs') ?? false;
+
         $name = $this->name;
         $index = '';
 
@@ -701,14 +708,16 @@ class Input
             $subname = $this->name;
 
             $index = array_unset($attrs, 'index') ?? '__index';
-            $name = "{$mainname}[{$index}][{$subname}]";
-            $attrs['for'] = $attrs['for'] ?? $this->id . "$mainname-$index-$subname";
+            $name = $this->_concatString("{$mainname}[", [$index], "]{$subname}");
+            $attrs['for'] = $attrs['for'] ?? $this->_concatString("{$this->id}{$mainname}-", [$index], "-{$subname}");
         }
 
         foreach ($this->_createDataAttrs($index) as $key => $val) {
             $attrs["data-vlabel-$key"] = $val;
         }
-        $attrs['for'] = $attrs['for'] ?? $this->id . $name;
+
+        array_unset($attrs, 'child');
+        $attrs['for'] = $attrs['for'] ?? $this->_concatString("{$this->id}{$name}");
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable_label';
         $attr = $this->createHtmlAttr($attrs);
         $label = $attrs['label'] ?? $this->title;
@@ -723,7 +732,9 @@ class Input
      */
     public function input($attrs = [])
     {
-        $name = $this->name;
+        $this->vuemode = array_unset($attrs, 'vuejs') ?? false;
+
+        $name = $this->_concatString($this->name);
         $index = '';
         $attrs += $this->attribute;
 
@@ -737,8 +748,8 @@ class Input
             }
 
             $index = array_unset($attrs, 'index') ?? '__index';
-            $name = "{$parent_name}[{$index}][{$subname}]";
-            $attrs['id'] = $attrs['id'] ?? $this->id . "$parent_name-$index-$subname";
+            $name = $this->_concatString("{$parent_name}[", [$index], "][{$subname}]");
+            $attrs['id'] = $attrs['id'] ?? $this->_concatString("{$this->id}{$parent_name}-", [$index], "-{$subname}");
             $attrs['value'] = $attrs['value'] ?? $this->getValue($index);
         }
 
@@ -763,28 +774,38 @@ class Input
         $attrs['wrapper'] = $attrs['wrapper'] ?? $this->wrapper;
         $attrs['grouper'] = $attrs['grouper'] ?? $this->grouper;
 
+        $child = array_unset($attrs, 'child');
+        if ($this->vuemode && $type !== 'file') {
+            $modifier = (array) array_unset($attrs, 'v-model.modifier', []);
+            if ($type === 'number') {
+                $modifier[] = 'number';
+            }
+            $modifier = array_map(fn($v) => ".$v", array_unique($modifier));
+            $attrs['v-model' . implode('', $modifier)] = $attrs['v-model'] ?? concat($child, '.') . $this->name;
+        }
+
         // multiple 属性はその数生成する
         if ($this->multiple) {
             // ただしいくつかの input は html レベルで複数入力に対応しているのでそっちを使う
             // radio だけは特別扱いで除外している（複数入力可能な radio はもはや radio ではない）
             if (!in_array($type, ['arrays', 'file', 'checkbox', 'select', 'radio'])) {
-                $attrs['name'] = $name . '[]';
+                $attrs['name'] = $this->_concatString([$name], '[]');
                 $vs = strpos($name, '[__index]') === false ? $this->getValue() : $this->default;
                 $format = array_unset($attrs, 'format', '%s');
                 $result = [];
                 foreach ((array) $vs as $n => $v) {
                     $attrs2 = $attrs;
-                    $attrs2['id'] = $this->id . $name . '_' . $n;
+                    $attrs2['id'] = $this->_concatString($this->id, [$name], "_$n");
                     $attrs2['value'] = $v;
                     $result[] = sprintf($format, $this->$method($attrs2));
                 }
                 $grouper = array_unset($attrs, 'grouper');
-                return $this->_wrapInput('group', $grouper, $type, implode('', $result));
+                return $this->_wrapInput('group', $grouper, $type, $attrs['name'], '', implode('', $result));
             }
         }
 
         $attrs['name'] = $name;
-        $attrs['id'] = $attrs['id'] ?? $this->id . $name;
+        $attrs['id'] = $attrs['id'] ?? $this->_concatString($this->id, [$name]);
         return $this->$method($attrs);
     }
 
@@ -812,18 +833,18 @@ class Input
         $options = array_get($attrs, 'options', $this->options);
         $multiple_mode = $this->multiple || count($options) > 1;
 
-        $attrs['name'] = $multiple_mode ? $attrs['name'] . '[]' : $attrs['name'];
+        $attrs['name'] = $multiple_mode ? $this->_concatString([$attrs['name']], '[]') : $attrs['name'];
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable';
         $attrs['type'] = 'checkbox';
 
         $grouper = array_unset($attrs, 'grouper');
-        return $this->_wrapInput('group', $grouper, $attrs['type'], $hidden . $this->_inputChoice($attrs));
+        return $this->_wrapInput('group', $grouper, $attrs['type'], $attrs['name'], '', $hidden . $this->_inputChoice($attrs));
     }
 
     protected function _inputFile($attrs)
     {
         $attrs['multiple'] = $this->multiple;
-        $attrs['name'] = $attrs['multiple'] ? $attrs['name'] . '[]' : $attrs['name'];
+        $attrs['name'] = $attrs['multiple'] ? $this->_concatString([$attrs['name']], '[]') : $attrs['name'];
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable';
         $attrs['type'] = 'file';
 
@@ -839,7 +860,7 @@ class Input
         $wrapper = array_unset($attrs, 'wrapper');
         array_unset($attrs, 'grouper');
         $attr = $this->createHtmlAttr($attrs);
-        return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], "<input $attr>");
+        return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $attrs['name'], '', "<input $attr>");
     }
 
     protected function _inputRadio($attrs)
@@ -848,7 +869,7 @@ class Input
         $attrs['type'] = 'radio';
 
         $grouper = array_unset($attrs, 'grouper');
-        return $this->_wrapInput('group', $grouper, $attrs['type'], $this->_inputChoice($attrs));
+        return $this->_wrapInput('group', $grouper, $attrs['type'], $attrs['name'], '', $this->_inputChoice($attrs));
     }
 
     protected function _inputSelect($attrs)
@@ -859,7 +880,7 @@ class Input
         }
 
         $attrs['multiple'] = $this->multiple;
-        $attrs['name'] = $attrs['multiple'] ? $attrs['name'] . '[]' : $attrs['name'];
+        $attrs['name'] = $attrs['multiple'] ? $this->_concatString([$attrs['name']], '[]') : $attrs['name'];
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable';
 
         $value = (array) array_unset($attrs, 'value', $this->getValue());
@@ -894,7 +915,7 @@ class Input
         $wrapper = array_unset($attrs, 'wrapper');
         array_unset($attrs, 'grouper');
         $attr = $this->createHtmlAttr($attrs);
-        return $hidden . $this->_wrapInput('wrapper', $wrapper, 'select', "<select $attr>" . implode('', $result) . "</select>");
+        return $hidden . $this->_wrapInput('wrapper', $wrapper, 'select', $attrs['name'], $value, "<select $attr>" . implode('', $result) . "</select>");
     }
 
     protected function _inputCombobox($attrs)
@@ -902,6 +923,7 @@ class Input
         $wrapper = array_unset($attrs, 'wrapper');
         array_unset($attrs, 'grouper');
 
+        $attrs['value'] = $attrs['value'] ?? $this->getValue();
         $attrs['list'] = $attrs['id'] . '-datalist';
         $input = $this->_inputText($attrs);
 
@@ -912,7 +934,7 @@ class Input
         }
         $datalist = "<datalist id='{$this->escapeHtml($attrs['list'])}'>" . implode('', $options) . "</datalist>";
 
-        return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $input . $datalist);
+        return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $attrs['name'], $attrs['value'], $input . $datalist);
     }
 
     protected function _inputText($attrs)
@@ -953,7 +975,7 @@ class Input
         $wrapper = array_unset($attrs, 'wrapper');
         array_unset($attrs, 'grouper');
         $attr = $this->createHtmlAttr($attrs);
-        return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], "<input $attr>");
+        return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $attrs['name'], $attrs['value'], "<input $attr>");
     }
 
     protected function _inputTextarea($attrs)
@@ -972,7 +994,7 @@ class Input
         $wrapper = array_unset($attrs, 'wrapper');
         array_unset($attrs, 'grouper');
         $attr = $this->createHtmlAttr($attrs);
-        return $this->_wrapInput('wrapper', $wrapper, 'textarea', '<textarea ' . $attr . ">\n{$this->escapeHtml($value)}</textarea>");
+        return $this->_wrapInput('wrapper', $wrapper, 'textarea', $attrs['name'], $value, '<textarea ' . $attr . ">\n{$this->escapeHtml($value)}</textarea>");
     }
 
     protected function _inputChoice($attrs)
@@ -1015,7 +1037,7 @@ class Input
             }
 
             // for id のペア
-            $params['id'] .= '-' . $key;
+            $params['id'] = $this->_concatString([$params['id']], "-$key");
             $label_attrs['for'] = $params['id'];
 
             // 属性値を生成（input と label）
@@ -1027,7 +1049,7 @@ class Input
                 $lattrs = $this->createHtmlAttr($label_attrs, $key);
                 $html = $html . "<label $lattrs>{$this->escapeHtml($text)}</label>";
             }
-            $html = $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $html);
+            $html = $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $attrs['name'], $key, $html);
 
             // フォーマットが指定されているなら sprintf を通す
             if (strlen($format) > 0) {
@@ -1090,14 +1112,21 @@ class Input
         return "<input $hiddenAttr>";
     }
 
-    protected function _wrapInput($mode, $class, $type, $html)
+    protected function _wrapInput($mode, $class, $type, $name, $value, $html)
     {
         if (!strlen($class)) {
             return $html;
         }
+        if (!in_array($type, ['checkbox', 'radio'])) {
+            $value = '';
+        }
         $class = $this->escapeHtml($class);
         $type = $this->escapeHtml($type);
-        return "<span data-vinput-$mode=\"true\" class=\"$class input-$type\">$html</span>";
+        $name = $this->escapeHtml($name, ' ', ENT_COMPAT);
+        $value = $this->escapeHtml($value);
+        $vuemark = $this->vuemode ? ':' : '';
+        $data_value = $mode === 'wrapper' ? "data-value=\"$value\" " : '';
+        return "<span {$vuemark}data-vinput-$mode=\"$name\" {$data_value}class=\"$class input-$type\">$html</span>";
     }
 
     protected function _createDataAttrs($index)
@@ -1106,9 +1135,51 @@ class Input
         $name = $this->name;
 
         return [
-            'id'    => concat($parent_name, '/') . concat($index, '/') . $name,
-            'class' => concat($parent_name, '/') . $name,
-            'index' => $index,
+            'id'    => $this->_concatString($parent_name, strlen($parent_name) ? '/' : '', [$index], strlen($index) ? '/' : '', $name),
+            'class' => $this->_concatString($parent_name, strlen($parent_name) ? '/' : '', $name),
+            'index' => $this->_concatString([$index]),
         ];
+    }
+
+    protected function _concatString(...$values)
+    {
+        if (!$this->vuemode) {
+            return implode('', array_flatten($values));
+        }
+
+        $expression = [];
+        foreach ($values as $value) {
+            if (is_array($value)) {
+                if ($value) {
+                    $expression[] = implode('+', $value);
+                }
+            }
+            else {
+                if (strlen($value)) {
+                    // JSON ではなく js の式なのでシングルクオートで問題ない（Htmlable::createHtmlAttr も参照）
+                    $expression[] = preg_replace('#^"|"$#u', "'", json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+                }
+            }
+        }
+        $expression = array_filter($expression, 'strlen');
+        if (!$expression) {
+            return "''";
+        }
+        return implode('+', $expression);
+    }
+
+    public function createHtmlAttr($attrs, $arg = null)
+    {
+        if ($this->vuemode) {
+            $vueattrs = ['^id$', '^for$', '^name$', '^data-vlabel-', '^data-vinput-'];
+            foreach ($attrs as $k => $v) {
+                if (preg_match("#" . implode('|', $vueattrs) . "#u", $k)) {
+                    $attrs[":$k"] = $v;
+                    unset($attrs[$k]);
+                }
+            }
+        }
+
+        return $this->_createHtmlAttr($attrs, $arg);
     }
 }

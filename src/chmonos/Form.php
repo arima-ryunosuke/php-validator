@@ -54,6 +54,7 @@ class Form
             'nonce'             => '',
             'inputClass'        => Input::class,
             'alternativeSubmit' => true,
+            'vuejs'             => false,
         ];
         $this->options = $options;
 
@@ -225,6 +226,8 @@ class Form
      */
     public function form($attrs = [])
     {
+        $E = fn($v) => $v;
+
         $scriptAttrs = [];
         if (strlen($this->options['nonce'])) {
             $scriptAttrs['nonce'] = $this->options['nonce'];
@@ -260,21 +263,23 @@ class Form
                 'alternativeSubmit' => $this->options['alternativeSubmit'],
             ]);
 
-            $script = "
-document.addEventListener('DOMContentLoaded', function() {
-    var thisform = document.getElementById({$this->encodeJson($this->id)});
-    thisform.chmonos = new Chmonos(thisform, $jsoption);
-});";
+            $script = <<<JAVASCRIPT
+            document.addEventListener('DOMContentLoaded', function() {
+                var thisform = document.getElementById({$this->encodeJson($this->id)});
+                thisform.chmonos = new Chmonos(thisform, $jsoption);
+            });
+            JAVASCRIPT;
 
             return "<form {$this->createHtmlAttr($attrs)}><script {$this->createHtmlAttr($scriptAttrs)}>$script</script>$csrf_input";
         }
         // 閉じタグ
         else {
-            $script = "
-document.addEventListener('DOMContentLoaded', function() {
-    var thisform = document.getElementById({$this->encodeJson($this->id)});
-    thisform.chmonos.initialize({$this->encodeJson($this->templateValues)});
-});";
+            $script = <<<JAVASCRIPT
+            document.addEventListener('DOMContentLoaded', function() {
+                var thisform = document.getElementById({$this->encodeJson($this->id)});
+                {$E($this->options['vuejs'] ? '//' : '')}thisform.chmonos.initialize({$this->encodeJson($this->templateValues)});
+            });
+            JAVASCRIPT;
 
             return "<script {$this->createHtmlAttr($scriptAttrs)}>$script</script></form>";
         }
@@ -293,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
     public function context($name = null, $index = null)
     {
         if (func_num_args() > 0) {
-            $this->currents[$name] = $index;
+            $this->currents[] = [$name, $index];
         }
         else {
             array_pop($this->currents);
@@ -303,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
     public function template($name = null)
     {
         if (func_num_args() > 0) {
-            $this->currents[$name] = null;
+            $this->currents[] = [$name];
 
             $attrs = [
                 'type'                => 'text/x-template',
@@ -315,12 +320,24 @@ document.addEventListener('DOMContentLoaded', function() {
             return "<script {$this->createHtmlAttr($attrs)}>\n";
         }
         else {
-            $name = last_key($this->currents);
-            array_pop($this->currents);
+            [$name] = array_pop($this->currents);
 
             $this->templateValues[$name] = $this->$name->getValue();
 
             return "</script>";
+        }
+    }
+
+    public function vuefor($name = null, $child = null, $index = null)
+    {
+        if (!$this->options['vuejs']) {
+            throw new \UnexpectedValueException('vuejs flag is false');
+        }
+        if (func_num_args() > 0) {
+            $this->currents[] = [$name, $index, $child];
+        }
+        else {
+            array_pop($this->currents);
         }
     }
 
@@ -334,11 +351,13 @@ document.addEventListener('DOMContentLoaded', function() {
     public function label($name, $attrs = [])
     {
         $attrs = $this->convertHtmlAttrs($attrs);
+        $attrs['vuejs'] ??= $this->options['vuejs'];
 
         if ($this->currents) {
-            [$cname, $cindex] = last_keyvalue($this->currents);
+            [$cname, $cindex, $child] = last_value($this->currents) + [null, null, null];
             $name = "$cname/$name";
             $attrs['index'] = $cindex;
+            $attrs['child'] = $child;
         }
         /** @var Input $input */
         $input = $this;
@@ -358,11 +377,13 @@ document.addEventListener('DOMContentLoaded', function() {
     public function input($name, $attrs = [])
     {
         $attrs = $this->convertHtmlAttrs($attrs);
+        $attrs['vuejs'] ??= $this->options['vuejs'];
 
         if ($this->currents) {
-            [$cname, $cindex] = last_keyvalue($this->currents);
+            [$cname, $cindex, $child] = last_value($this->currents) + [null, null, null];
             $name = "$cname/$name";
             $attrs['index'] = $cindex;
+            $attrs['child'] = $child;
         }
         /** @var Input $input */
         $input = $this;

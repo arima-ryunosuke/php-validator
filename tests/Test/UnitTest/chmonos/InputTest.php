@@ -840,10 +840,14 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'name'    => 'hoge',
             'wrapper' => 'input-class',
+            'options'  => [
+                1 => 'foo',
+            ],
         ]);
 
-        $this->assertStringContainsString('<span data-vinput-wrapper="true" class="input-class input-text">', $input->input());
-        $this->assertStringContainsString('<span data-vinput-wrapper="true" class="hogera input-text">', $input->input(['wrapper' => 'hogera']));
+        $this->assertStringContainsString('<span data-vinput-wrapper="hoge" data-value="" class="input-class input-text">', $input->input(['type' => 'text']));
+        $this->assertStringContainsString('<span data-vinput-wrapper="hoge" data-value="1" class="hogera input-checkbox">', $input->input(['wrapper' => 'hogera']));
+        $this->assertStringContainsString('<span data-vinput-wrapper="hoge" data-value="1" class="input-class input-radio"><input', $input->input(['type' => 'radio']));
     }
 
     function test_input_grouper()
@@ -858,9 +862,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ]);
 
-        $this->assertStringContainsString('<span data-vinput-group="true" class="input-group input-text"><input', $input->input(['type' => 'text']));
-        $this->assertStringContainsString('<span data-vinput-group="true" class="input-group input-checkbox"><input', $input->input(['type' => 'checkbox']));
-        $this->assertStringContainsString('<span data-vinput-group="true" class="input-group input-radio"><input', $input->input(['type' => 'radio']));
+        $this->assertStringContainsString('<span data-vinput-group="hoge[]" class="input-group input-text"><input', $input->input(['type' => 'text']));
+        $this->assertStringContainsString('<span data-vinput-group="hoge[]" class="input-group input-checkbox"><input', $input->input(['type' => 'checkbox']));
+        $this->assertStringContainsString('<span data-vinput-group="hoge" class="input-group input-radio"><input', $input->input(['type' => 'radio']));
     }
 
     function test_inputArrays()

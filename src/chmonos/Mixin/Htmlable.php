@@ -31,7 +31,7 @@ trait Htmlable
             if ($arg !== null && strtolower($k) !== 'value') {
                 $v = sprintf($v, $arg);
             }
-            return self::escapeHtml($k) . '="' . self::escapeHtml($v) . '"';
+            return self::escapeHtml($k) . '="' . self::escapeHtml($v, ' ', ENT_COMPAT) . '"';
         }, ' ');
     }
 
@@ -42,7 +42,7 @@ trait Htmlable
         }, ';');
     }
 
-    public static function escapeHtml($value, $glue = ' ')
+    public static function escapeHtml($value, $glue = ' ', $flags = ENT_QUOTES)
     {
         if (is_array($value)) {
             $value = array_map(function ($v) use ($glue) { return self::escapeHtml($v, $glue); }, $value);
@@ -51,6 +51,6 @@ trait Htmlable
             }
             return implode($glue, $value);
         }
-        return htmlspecialchars($value, ENT_QUOTES);
+        return htmlspecialchars($value, $flags);
     }
 }
