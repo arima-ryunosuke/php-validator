@@ -757,7 +757,8 @@ class Input
         // multiple 属性はその数生成する
         if ($this->multiple) {
             // ただしいくつかの input は html レベルで複数入力に対応しているのでそっちを使う
-            if (!in_array($type, ['arrays', 'file', 'checkbox', 'select'])) {
+            // radio だけは特別扱いで除外している（複数入力可能な radio はもはや radio ではない）
+            if (!in_array($type, ['arrays', 'file', 'checkbox', 'select', 'radio'])) {
                 $attrs['name'] = $name . '[]';
                 $vs = strpos($name, '[__index]') === false ? $this->getValue() : $this->default;
                 $format = array_unset($attrs, 'format', '%s');
