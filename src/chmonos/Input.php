@@ -631,8 +631,8 @@ class Input
         $this->messages = [];
         $isvalid = true;
         foreach ($this->condition as $cname => $condition) {
-            // 空文字、あるいは空配列の時に「空」と定義し、「空」の場合は Requires 以後の検証をしない
-            if (!$condition instanceof Condition\Requires && ($value === '' || $value === [])) {
+            // null, 空文字, あるいは空配列の時に「空」と定義し、「空」の場合は Requires 以後の検証をしない
+            if (!$condition instanceof Condition\Requires && ($value === null || $value === '' || $value === [])) {
                 break;
             }
             $vs = $condition->isArrayableValidation() ? [$value] : arrayize($value);
