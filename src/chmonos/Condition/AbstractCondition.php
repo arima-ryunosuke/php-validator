@@ -118,10 +118,13 @@ abstract class AbstractCondition
             throw new \UnexpectedValueException("'$outdir' is not writable.");
         }
 
-        $dirtime = dirmtime($outdir);
+        $out_dir = "$outdir/phpjs";
+        $template_dir = __DIR__ . '/../../template';
+        $condition_dirs = array_values(self::$namespaces);
+        $src_dirs = array_merge([$out_dir], [$template_dir], $condition_dirs);
 
         $v_path = "$outdir/validator.js";
-        if ($force_flg || (!is_file($v_path) || $dirtime > filemtime($v_path))) {
+        if ($force_flg || (!is_file($v_path) || max(array_map(fn($dir) => dirmtime($dir), $src_dirs)) > filemtime($v_path))) {
             // Condition クラスからメタ情報を収集
             $contents = $condition = $constants = $messages = [];
             foreach (array_reverse(self::$namespaces, true) as $ns => $dir) {
@@ -158,15 +161,14 @@ abstract class AbstractCondition
             }
 
             // locutus, override, phpjs から全関数名を引っ張って・・・
-            $phpjs_dir = __DIR__ . '/../../template/phpjs';
-            $jsfiles = array_merge(glob("$phpjs_dir/locutus/*/*.js"), glob("$phpjs_dir/override/*.js"), glob("$outdir/phpjs/*.js"));
+            $jsfiles = array_merge(glob("$template_dir/phpjs/locutus/*/*.js"), glob("$template_dir/phpjs/override/*.js"), glob("$outdir/phpjs/*.js"));
             $jsfiles = array_each($jsfiles, function (&$carry, $fn) {
                 $carry[basename($fn, '.js')] = preg_replace('@\R//# sourceMappingURL=.+\.map$@u', '', trim(file_get_contents($fn)));
             }, []);
 
             // $allcode 内に含まれていたら「使っている」とみなす
             $jsfuncs = [];
-            $allcode = implode(';', $contents) . file_get_contents(__DIR__ . "/../../template/validator.js");
+            $allcode = implode(';', $contents) . file_get_contents("$template_dir/validator.js");
             foreach ($jsfiles as $funcname => $jscontent) {
                 if (preg_match('#' . $funcname . '\(#ms', $allcode)) {
                     $jsfuncs[$funcname] = self::literalJson($jscontent);
@@ -188,7 +190,7 @@ abstract class AbstractCondition
             };
 
             ob_start();
-            include __DIR__ . "/../../template/validator.js";
+            include "$template_dir/validator.js";
             file_put_contents($v_path, ob_get_clean());
 
             return true;

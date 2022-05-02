@@ -133,16 +133,21 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
 
     function test_outputJavascript()
     {
-        $tmp_dir = sys_get_temp_dir() . '/validator-test';
-        @mkdir($tmp_dir);
-        rm_rf($tmp_dir, false);
-        $this->assertTrue(AbstractCondition::outputJavascript($tmp_dir, true));
+        $out_dir = sys_get_temp_dir() . '/validator-test';
+        @mkdir($out_dir);
+        rm_rf($out_dir, false);
+        @mkdir("$out_dir/phpjs");
+        $this->assertTrue(AbstractCondition::outputJavascript($out_dir, true));
 
-        $this->assertStringContainsString('core_validate', file_get_contents("$tmp_dir/validator.js"));
-        $this->assertStringContainsString('"CustomCondition":', file_get_contents("$tmp_dir/validator.js"));
+        $this->assertStringContainsString('core_validate', file_get_contents("$out_dir/validator.js"));
+        $this->assertStringContainsString('"CustomCondition":', file_get_contents("$out_dir/validator.js"));
 
         // 出したばかりなので false になるはず
-        $this->assertFalse(AbstractCondition::outputJavascript($tmp_dir));
+        $this->assertFalse(AbstractCondition::outputJavascript($out_dir));
+
+        // ファイルが増えれば再び生成されるはず
+        touch("$out_dir/phpjs/dummy.js", time() + 1);
+        $this->assertTrue(AbstractCondition::outputJavascript($out_dir));
 
         $this->assertException("is not writable", function () {
             AbstractCondition::outputJavascript('notfound dir');
