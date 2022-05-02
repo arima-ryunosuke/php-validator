@@ -4524,18 +4524,9 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         }
         input.validationId = validation_id;
 
-        if (input.disabled) {
-            return result;
-        }
-
         var elemName = input.dataset.vinputClass;
         var rule = options.allrules[elemName];
         if (rule === undefined) {
-            return result;
-        }
-
-        if (!rule['invisible'] && input.type !== 'hidden' && input.offsetParent === null) {
-            fireError(input, {}, true);
             return result;
         }
 
@@ -4555,9 +4546,20 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
             input.value = flag ? vsprintf(phantom[0], brothers) : '';
         }
 
+        var fields = chmonos.fields(input);
+        chmonos.required(input, fields);
+
+        if (!rule['invisible'] && input.type !== 'hidden' && input.offsetParent === null) {
+            fireError(input, {}, true);
+            return result;
+        }
+
+        if (input.disabled) {
+            return result;
+        }
+
         var condition = rule['condition'];
         var value = chmonos.value(input);
-        var fields = chmonos.fields(input);
         var errorTypes = {};
         var asyncs = [];
         var keys = Object.keys(condition);
@@ -4565,8 +4567,13 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
             let cond = condition[keys[k]];
             let cname = cond.cname;
             var error = function (err) {
-                if (evt.chmonosSubtype === 'noerror') {
-                    return;
+                if (evt.chmonosSubtypes) {
+                    if (evt.chmonosSubtypes.includes('noerror')) {
+                        return;
+                    }
+                    if (evt.chmonosSubtypes.includes('norequire') && input !== evt.target && evt.target.tagName !== 'FORM') {
+                        return;
+                    }
                 }
 
                 if (err === undefined) {
@@ -4620,8 +4627,6 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
             }
         }
 
-        chmonos.required(input, fields);
-
         result.push(new Promise(function (resolve) {
             Promise.all(asyncs).then(function () {
                 resolve(fireError(input, errorTypes, value.length > 0));
@@ -4660,6 +4665,27 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         else {
             input = [input];
         }
+
+        if (!errorTypes.hasOwnProperty('toArray')) {
+            Object.defineProperty(errorTypes, 'toArray', {
+                value: function () {
+                    var collectMessage = function (errors) {
+                        var message = [];
+                        Object.keys(errors).forEach(function (e) {
+                            if (typeof (errors[e]) === 'string') {
+                                message.push(errors[e]);
+                            }
+                            else {
+                                message = message.concat(collectMessage(errors[e]));
+                            }
+                        });
+                        return message;
+                    };
+                    return collectMessage(this);
+                },
+            });
+        }
+
         input.forEach(function (e) {
             if (isError) {
                 e.classList.add('validation_error');
@@ -4743,7 +4769,9 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         });
 
         // サーバー側の結果を表示
-        chmonos.setErrors(options.errors);
+        if (Object.keys(options.errors).length) {
+            chmonos.setErrors(options.errors);
+        }
 
         // 必須マーク
         form.querySelectorAll('.validatable:enabled').forEach(function (input) {
@@ -4764,7 +4792,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
                 var eventName = options.allrules[elemName]['event'][i];
                 var parts = eventName.split('.');
                 if (e.type === parts[0]) {
-                    e.chmonosSubtype = parts[1];
+                    e.chmonosSubtypes = parts.slice(1);
                     form.validationValues = undefined;
                     core_validate(e.target, new Date().getTime(), e);
                     break;
@@ -4924,8 +4952,10 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
             resetIndex(e, 'data-vinput-index', index);
             e.disabled = false;
         });
-        Array.from(fragment.querySelectorAll('.validatable:enabled')).forEach(function (e) {
-            chmonos.required(e, undefined, fragment);
+        Array.from(fragment.querySelectorAll('[data-vinput-wrapper],[data-vinput-group]')).forEach(function (e) {
+            resetIndex(e, 'data-vinput-wrapper', index);
+            resetIndex(e, 'data-vinput-group', index);
+            e.disabled = false;
         });
         if (values) {
             Object.keys(values).forEach(function (key) {
@@ -4957,6 +4987,9 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
                 }
             });
         }
+        Array.from(fragment.querySelectorAll('.validatable:enabled')).forEach(function (e) {
+            chmonos.required(e, undefined, fragment);
+        });
 
         return fragment.querySelector(rootTag);
     };

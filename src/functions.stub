@@ -219,34 +219,34 @@ if (function_exists("ryunosuke\\chmonos\\first_keyvalue") && !defined("ryunosuke
     define("ryunosuke\\chmonos\\first_keyvalue", "ryunosuke\\chmonos\\first_keyvalue");
 }
 
-if (!isset($excluded_functions["last_key"]) && (!function_exists("ryunosuke\\chmonos\\last_key") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\last_key"))->isInternal()))) {
+if (!isset($excluded_functions["last_value"]) && (!function_exists("ryunosuke\\chmonos\\last_value") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\last_value"))->isInternal()))) {
     /**
-     * 配列の最後のキーを返す
+     * 配列の最後の値を返す
      *
      * 空の場合は $default を返す。
      *
      * Example:
      * ```php
-     * that(last_key(['a', 'b', 'c']))->isSame(2);
-     * that(last_key([], 999))->isSame(999);
+     * that(last_value(['a', 'b', 'c']))->isSame('c');
+     * that(last_value([], 999))->isSame(999);
      * ```
      *
      * @param iterable $array 対象配列
      * @param mixed $default 無かった場合のデフォルト値
-     * @return mixed 最後のキー
+     * @return mixed 最後の値
      */
-    function last_key($array, $default = null)
+    function last_value($array, $default = null)
     {
         if (is_empty($array)) {
             return $default;
         }
         /** @noinspection PhpUnusedLocalVariableInspection */
         [$k, $v] = last_keyvalue($array);
-        return $k;
+        return $v;
     }
 }
-if (function_exists("ryunosuke\\chmonos\\last_key") && !defined("ryunosuke\\chmonos\\last_key")) {
-    define("ryunosuke\\chmonos\\last_key", "ryunosuke\\chmonos\\last_key");
+if (function_exists("ryunosuke\\chmonos\\last_value") && !defined("ryunosuke\\chmonos\\last_value")) {
+    define("ryunosuke\\chmonos\\last_value", "ryunosuke\\chmonos\\last_value");
 }
 
 if (!isset($excluded_functions["last_keyvalue"]) && (!function_exists("ryunosuke\\chmonos\\last_keyvalue") || (!false && (new \ReflectionFunction("ryunosuke\\chmonos\\last_keyvalue"))->isInternal()))) {
