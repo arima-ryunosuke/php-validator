@@ -3,7 +3,7 @@
 use ryunosuke\chmonos\Form;
 
 $dynamic_rule = [
-    'parent-mail'     => [
+    'parent_mail'     => [
         'title'     => 'メールアドレス',
         'condition' => [
             'Requires'     => null,
@@ -11,7 +11,7 @@ $dynamic_rule = [
         ],
         'default'   => 'mail@example.com',
     ],
-    'require-address' => [
+    'require_address' => [
         'title'     => '',
         'condition' => [],
         'options'   => [
@@ -29,8 +29,8 @@ $dynamic_rule = [
             'title'          => [
                 'title'     => 'メールアドレス',
                 'condition' => [
-                    'Requires' => '/require-address', // "/" を付けると親を辿れる
-                    'Compare'  => ['!=', '/parent-mail'], // Compare も同じ
+                    'Requires' => '/require_address', // "/" を付けると親を辿れる
+                    'Compare'  => ['!=', '/parent_mail'], // Compare も同じ
                 ]
             ],
             'checkbox'       => [
@@ -92,15 +92,16 @@ $dynamic_rule = [
     ?>
     <?= $template_form->form(['id' => 'template_form', 'method' => 'post']) ?>
     <input type="hidden" name="formid" value="template_form">
-    <?= $template_form->label('parent-mail') ?>
-    <?= $template_form->input('parent-mail') ?>
-    <?= $template_form->input('require-address') ?>
+    <?= $template_form->label('parent_mail') ?>
+    <?= $template_form->input('parent_mail') ?>
+    <?= $template_form->input('require_address') ?>
 
     <style>
         .template-holder {
             display: flex;
             flex-wrap: wrap;
         }
+
         .template-item {
             display: grid;
             grid-template-columns: max-content 260px;
@@ -136,7 +137,7 @@ $dynamic_rule = [
     <?= $template_form->form() ?>
 
     <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var chmonos = document.getElementById('template_form').chmonos;
             // 画面構築時の初期生成開始時に spawnBegin イベントが呼ばれる
             $$('[data-vtemplate-name=rows]').on('spawnBegin', function (e) {
@@ -184,9 +185,9 @@ $dynamic_rule = [
     ?>
     <?= $context_form->form(['id' => 'context_form', 'method' => 'post']) ?>
     <input type="hidden" name="formid" value="context_form">
-    <?= $context_form->label('parent-mail') ?>
-    <?= $context_form->input('parent-mail') ?>
-    <?= $context_form->input('require-address') ?>
+    <?= $context_form->label('parent_mail') ?>
+    <?= $context_form->input('parent_mail') ?>
+    <?= $context_form->input('require_address') ?>
 
     <br>
     <input class="append_row2 btn btn-success" type="button" value="追加">
@@ -238,7 +239,7 @@ $dynamic_rule = [
     <?= $context_form->form() ?>
 
     <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var chmonos = document.getElementById('context_form').chmonos;
             // 追加ボタン
             $$('.append_row2').on('click', function (e) {
@@ -252,6 +253,91 @@ $dynamic_rule = [
                     // cull を使わず単純にノード削除でも特に問題はない
                     chmonos.cull('rows', e.target.closest('tr'));
                 }
+            });
+        });
+    </script>
+</section>
+
+
+<section>
+    <h3>vue.js</h3>
+    <?php
+    $vuejs_form = new Form($dynamic_rule, [
+        'vuejs' => true,
+    ]);
+    resetForm($vuejs_form, 'vuejs_form');
+    ?>
+    <?= $vuejs_form->form(['id' => 'vuejs_form', 'method' => 'post']) ?>
+    <div id="application">
+        <input type="hidden" name="formid" value="vuejs_form">
+        <?= $vuejs_form->label('parent_mail') ?>
+        <?= $vuejs_form->input('parent_mail', [
+            'v-model.modifier' => 'trim',
+        ]) ?>
+        <?= $vuejs_form->input('require_address') ?>
+
+        <br>
+        <input class="append_row3 btn btn-success" v-on:click="append" type="button" value="追加">
+        <table id="vuejs-table" class="table">
+            <tbody>
+            <template>
+                <tr class="item" v-for="(row, index) in rows">
+                    <?= $vuejs_form->vuefor('rows', 'row', 'index') ?>
+                    <th><?= $vuejs_form->label('title') ?></th>
+                    <td><?= $vuejs_form->input('title') ?></td>
+                    <th>選択肢</th>
+                    <td><?= $vuejs_form->input('checkbox', ['type' => 'checkbox']) ?><?= $vuejs_form->input('multiple', ['type' => 'select']) ?></td>
+                    <th>兄弟内の重複禁止</th>
+                    <td><?= $vuejs_form->input('unique_require') ?> <?= $vuejs_form->input('unique') ?></td>
+                    <th>ファイル要素</th>
+                    <td><?= $vuejs_form->input('array_file') ?></td>
+                    <td>
+                        <input class="delete_row3 btn btn-danger" v-on:click="remove(index)" type="button" value="削除">
+                    </td>
+                    <?= $vuejs_form->vuefor() ?>
+                </tr>
+            </template>
+            </tbody>
+        </table>
+
+        <pre>{{JSON.stringify(this.$data, null, 2)}}</pre>
+
+        <input type="submit" id="vuejs_form_submit" class="btn btn-primary" value="post">
+        <label class='btn btn-warning'>
+            <input type='checkbox' class="js-enable-switcher" checked>
+            js チェック有効
+        </label>
+    </div>
+    <?= $vuejs_form->form() ?>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const app = new Vue({
+                el: '#application',
+                data: function () {
+                    return {
+                        parent_mail: '',
+                        require_address: '',
+                        rows: [],
+                    };
+                },
+                methods: {
+                    append: function () {
+                        this.rows.push({
+                            title: "",
+                            checkbox: ["1", "3"],
+                            multiple: ["2"],
+                        });
+                    },
+                    remove: function (index) {
+                        this.rows.splice(index, 1);
+                    },
+                },
+                mounted: function () {
+                    this.$nextTick(function () {
+                        document.getElementById('vuejs_form').chmonos.initialize();
+                    });
+                },
             });
         });
     </script>

@@ -1,4 +1,14 @@
-<?php require_once __DIR__ . '/+include.php' ?>
+<?php
+require_once __DIR__ . '/+include.php';
+$appendmtime = function ($filename) {
+    $fullname = __DIR__ . '/' . $filename;
+    $mtime = '';
+    if (file_exists($fullname)) {
+        $mtime = '?v=' . filemtime($fullname);
+    }
+    return $filename . $mtime;
+};
+?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -7,7 +17,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <title>Validator サンプル</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../script/validator-error.css"/>
+    <link rel="stylesheet" href="<?= $appendmtime('../script/validator-error.css') ?>"/>
     <style>
         body {
             font-size: 16px;
@@ -31,6 +41,10 @@
             text-align: right;
         }
 
+        .wrapper {
+            white-space: nowrap;
+        }
+
         .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
             vertical-align: middle;
         }
@@ -44,15 +58,15 @@
         #manipulator {
             position: fixed;
             background: #ddd;
-            top: 0;
-            left: 0;
+            bottom: 0;
+            right: 0;
             padding: 3px;
+            z-index: 9999999;
         }
     </style>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script type="text/javascript" src="../script/polyfill.js"></script>
-    <script type="text/javascript" src="./validator.js"></script>
-    <script type="text/javascript" src="../script/validator-error.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script type="text/javascript" src="<?= $appendmtime('./validator.js') ?>"></script>
+    <script type="text/javascript" src="<?= $appendmtime('../script/validator-error.js') ?>"></script>
     <script>
         const $ = document.querySelectorAll.bind(document);
         const $$ = document.querySelector.bind(document);

@@ -49,7 +49,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('ajax1', '1');
         $driver->setValue('ajax2', '2');
         $driver->setValue('ajax_sum', '5');
-        $this->assertCount(1, $driver->getErrors());
+        $this->assertCount(1, $driver->getErrors(1));
     }
 
     /**
@@ -590,7 +590,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('rows[-1][title]', '');
         $driver->setValue('rows[-2][title]', '');
-        $driver->setValue('require-address', '1');
+        $driver->setValue('require_address', '1');
         $this->assertCount(2, $driver->getErrors());
     }
 
@@ -623,6 +623,22 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('rows[-1][unique_require]', '1');
         $driver->setValue('rows[-2][unique_require]', '1');
         $this->assertCount(2, $driver->getErrors());
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
+    function test_dynamic_vuejs(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->click('.append_row3');
+        $driver->click('.append_row3');
+
+        $driver->setValue('require_address', '1', '#vuejs_form');
+        $driver->setValue('rows[0][checkbox][]', [1], '#vuejs_form');
+        $driver->setValue('rows[1][checkbox][]', [2], '#vuejs_form');
+        $this->assertCount(8, $driver->getErrors());
     }
 
     /**

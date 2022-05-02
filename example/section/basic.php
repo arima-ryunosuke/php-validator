@@ -145,40 +145,58 @@ resetForm($basic_form, 'basic_form');
 ?>
 
 <style>
-    label.common-checkbox-class, label.common-radio-class {
+    [data-vinput-wrapper="checkboxes-labelclass[]"] label {
         background-color: #cde;
     }
 
-    option.common-option-class {
+    [data-vinput-wrapper="checkboxes-labelclass[]"][data-value="1"] label {
+        color: #f00;
+    }
+
+    [data-vinput-wrapper="checkboxes-labelclass[]"][data-value="2"] label {
+        color: #0f0;
+    }
+
+    [data-vinput-wrapper="checkboxes-labelclass[]"][data-value="3"] label {
+        color: #00f;
+    }
+
+    [data-vinput-wrapper="radio-labelclass"] label {
         background-color: #cde;
     }
 
-    label.class-1 {
+    [data-vinput-wrapper="radio-labelclass"][data-value="1"] label {
         color: #f00;
     }
 
-    label.class-2 {
+    [data-vinput-wrapper="radio-labelclass"][data-value="2"] label {
         color: #0f0;
     }
 
-    label.class-3 {
+    [data-vinput-wrapper="radio-labelclass"][data-value="3"] label {
         color: #00f;
     }
 
-    option.class-1 {
+    [data-vinput-wrapper="select-misc"] option {
+        background-color: #cde;
+    }
+
+    [data-vinput-wrapper="select-misc"] option[value="1"] {
         color: #f00;
     }
 
-    option.class-2 {
+    [data-vinput-wrapper="select-misc"] option[value="2"] {
         color: #0f0;
     }
 
-    option.class-3 {
+    [data-vinput-wrapper="select-misc"] option[value="3"] {
         color: #00f;
     }
+
     #toggleInvisible ~ #invisible-wrapper {
         display: none;
     }
+
     #toggleInvisible:checked ~ #invisible-wrapper {
         display: block;
     }
@@ -220,7 +238,7 @@ resetForm($basic_form, 'basic_form');
     </tr>
     <tr>
         <th>checkbox要素(複数でlabelにclass指定)</th>
-        <td><?= $basic_form->input('checkboxes-labelclass', ['type' => 'checkbox', 'label_attrs' => ['class' => 'common-checkbox-class class-%s', 'data-value' => '%s']]) ?></td>
+        <td><?= $basic_form->input('checkboxes-labelclass', ['type' => 'checkbox']) ?></td>
     </tr>
     <tr>
         <th>radio要素</th>
@@ -228,11 +246,11 @@ resetForm($basic_form, 'basic_form');
     </tr>
     <tr>
         <th>radio要素(labelにclass指定)</th>
-        <td><?= $basic_form->input('radio-labelclass', ['label_attrs' => ['class' => 'common-radio-class class-%s', 'data-value' => '%s']]) ?></td>
+        <td><?= $basic_form->input('radio-labelclass') ?></td>
     </tr>
     <tr>
         <th>select要素(optionごとの属性の設定等)</th>
-        <td><?= $basic_form->input('select-misc', ['option_attrs' => ['class' => 'common-option-class class-%s', 'data-value' => '%s']]) ?></td>
+        <td><?= $basic_form->input('select-misc') ?></td>
     </tr>
     <tr>
         <th>file要素</th>

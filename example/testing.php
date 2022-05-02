@@ -12,7 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.4.0/boot.js"></script>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
-    <script type="text/javascript" src="../script/polyfill.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script type="text/javascript" src="./validator.js"></script>
 </head>
 <body>
@@ -213,9 +213,9 @@
                 });
             });
             it('value_s', function () {
-                expect(chmonos.value('parent-mail')).toEqual('mail@example.com');
+                expect(chmonos.value('parent_mail')).toEqual('mail@example.com');
                 expect(chmonos.values()).toEqualLoosely({
-                    "/parent-mail": "mail@example.com",
+                    "/parent_mail": "mail@example.com",
                     "/rows": [
                         {
                             "title": "title1",
@@ -248,8 +248,8 @@
                     "/rows/2/array_file": "",
                 });
                 expect(chmonos.fields('rows/2/title')).toEqualLoosely({
-                    "/require-address": "",
-                    "/parent-mail": "mail@example.com",
+                    "/require_address": "",
+                    "/parent_mail": "mail@example.com",
                 });
             });
         });

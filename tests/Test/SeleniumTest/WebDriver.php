@@ -26,11 +26,12 @@ class WebDriver extends RemoteWebDriver
         }
     }
 
-    public function setValue($name, $value, $clearable = true)
+    public function setValue($name, $value, $parent = '')
     {
         $values = (array) $value;
+        $clearable = true;
 
-        $es = $this->findElements(WebDriverBy::cssSelector("[name='$name']:not([type=hidden])"));
+        $es = $this->findElements(WebDriverBy::cssSelector("$parent [name='$name']:not([type=hidden])"));
         $e = reset($es);
 
         switch ($e->getTagName()) {
@@ -47,7 +48,7 @@ class WebDriver extends RemoteWebDriver
             /** @noinspection PhpMissingBreakStatementInspection */
             case 'input':
                 if (in_array($e->getAttribute('type'), ['checkbox', 'radio'])) {
-                    $inputs = $this->findElements(WebDriverBy::cssSelector("[name='$name']:not([type=hidden])"));
+                    $inputs = $this->findElements(WebDriverBy::cssSelector("$parent [name='$name']:not([type=hidden])"));
                     foreach ($inputs as $input) {
                         if ($clearable && $input->isSelected()) {
                             $input->click();

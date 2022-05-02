@@ -630,7 +630,9 @@ resetForm($condition_form, 'condition_form');
         <th>必須：配列チェックボックス</th>
         <td><?= $condition_form->input('require_array', ['type' => 'checkbox', 'separator' => '<br>']) ?></td>
         <td>
+            <?= $condition_form->label('require_any') ?>
             <?= $condition_form->input('require_any') ?>
+            <?= $condition_form->label('require_in') ?>
             <?= $condition_form->input('require_in') ?>
         </td>
     </tr>

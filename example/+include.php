@@ -2,6 +2,7 @@
 
 use ryunosuke\chmonos\Condition\AbstractCondition;
 use ryunosuke\chmonos\Form;
+use ryunosuke\chmonos\Input;
 use function ryunosuke\chmonos\var_pretty;
 
 $loader = require __DIR__ . '/../vendor/autoload.php';
@@ -11,6 +12,12 @@ AbstractCondition::setNamespace(['ryunosuke\\chmonos\\CustomCondition' => __DIR_
 
 // サンプル兼テストなのでスーパーリロードで強制出力
 AbstractCondition::outputJavascript(__DIR__, ($_SERVER['HTTP_CACHE_CONTROL'] ?? '') === 'no-cache');
+
+Input::setDefaultRule([
+    'wrapper' => 'wrapper',
+    'grouper' => 'grouper',
+    //'event'   => ['change.norequire'],
+]);
 
 session_start();
 
