@@ -31,16 +31,12 @@ composer example
 
 js チェックを行うのでいくつかの静的ファイルが必要です。 `script` ディレクトリ以下が該当します。
 
-- `polyfill.js`: IE11 用のポリフィルです
 - `validator.js`: js チェックのコア js ファイルです
+- `validator-error.js`: エラー表示用の js ファイルです
 - `validator-error.css`: エラー表示用の css ファイルです
-- `validator-error.js`: エラー表示用 js ファイルです
 
 なお、 js チェックのエラー表示は完全に分離しているので比較的容易にすげ替えることが可能です。
-上記の下2つのファイルがエラー表示を担当します（この組み込みでは toast を使っています）。これらのファイルを変更することでエラー表示をカスタムできます。
-
-`polyfill.js` はオマケです。一応 IE11 でも動作させたいので検証用として置いています。 IE11 に対応しないなら不要です。
-対応する場合でも polyfill.io などの別調達でも大丈夫です（冒頭に必要な機能を列挙してあります）。
+上記の下2つのファイルがエラー表示を担当します。これらのファイルを変更することでエラー表示をカスタムできます。
 
 php 側では下記に続くようなルールを配列で宣言的に記述して Form インスタンスを作成し、レンダリングすれば `<form>` タグが得られます。
 その form で submit して validate メソッドで入力値の検証を行います（js バリデーションは原則として画面内で自動的に行われます）。
@@ -54,6 +50,7 @@ $form = new Form([/* ルールについては後述 */], [
     'nonce'             => '',           // 生成される script タグの nonce 属性を指定します（CSP 用です。不要なら指定不要です）
     'inputClass'        => Input::class, // UI 要素の検証やレンダリングに使用する Input クラス名を指定します。基本的には指定不要です
     'alternativeSubmit' => true,         // submit 時に サブミットボタンの name や formaction などの属性が有効になります
+    'vuejs'             => false,        // レンダリングが vuejs に適した形になります
 ]);
 
 // POST でバリデーション
@@ -94,6 +91,7 @@ $form = new Form([
             'client' => true,        // client を true にするとクライアントサイドで検証が行われます
         ], 
         'wrapper'     => null,       // input 要素をラップする span class を指定します。未指定だとラップしません
+        'grouper'     => null,       // input 要素郡（同じ名前の radio/checkbox）をラップする span class を指定します。未指定だとラップしません
         'invisible'   => false,      // 不可視状態で検証を行うかを指定します
         'ignore'      => false,      // 検証や依存関係の値としては全て有効ですが最終的な結果から除くかを指定します（後述）
         'trimming'    => true,       // 値のトリミングを行うかを指定します
@@ -238,8 +236,12 @@ options に存在しない選択肢要素は `validation_invalid` クラスが�
 ##### event
 
 js バリデーションが走るイベント名を指定します。基本的には change か input の2択でしょう。
-特殊な仕様として jQuery の名前空間のように `change.noerror` とドット区切りで noerror を指定するとそのイベントは「エラーになるときには発火しない」という動作になります。
-逆に言えば noerror をつけると「エラーが解除されるときのみ発火する」となります。
+特殊な仕様として jQuery の名前空間のように `change.modifier` とドット区切りで修飾子をつけるとそのイベントに対して特殊な属性をつけることができます。
+
+**noerror**
+
+`event.noerror` とすると「エラーになるときには発火しない」という動作になります。
+逆に言うと「エラーが解除されるときのみ発火する」となります。
 
 例えば `['change', 'input.noerror']` とすると「変更時にはエラーになるが入力時にはエラーにならない」という動作になります。
 これは入力途中にエラーになると画面がうるさい or 邪魔になる、というよくある動作を回避するためのものです。
@@ -248,8 +250,17 @@ js バリデーションが走るイベント名を指定します。基本的�
 一方、 `hogera@example..com` の入力ミスを修正するときは `.` を消した時点でエラーが消えるほうが親切でしょう。つまり input をつける必要があります。
 そんなとき `['change', 'input.noerror']` とすると望ましい動作を実現することが出来ます。
 
-jQuery の名前空間ライクで意図的に汎用的にしていますが、現在のところ `noerror` のみが対応されています。
-ここの識別子は将来的に増える可能性があります。
+**norequire**
+
+`event.norequire` とすると「依存関係（propagate, dependent も参照）起因での検証のときに必須エラーを出さない」という動作になります。
+
+例えば `希望連絡方法： ○電話 ○FAX ／ 電話番号[　　　　　　], FAX[　　　　　　]` という UI で○電話にチェックを入れた瞬間に電話番号が必須エラーとなるのは時期尚早です。ユーザはまだ入力しておらず電話番号という項目があることすら認識していないためです。
+かと言って propagate, dependent で依存関係を解除すると普通の検証イベントも伝播しなくなります。
+この修飾子で抑制するのはあくまで必須エラー（Requires）だけです。
+
+かなりニッチな用途でかつ破壊的変更の予定があります。
+具体的には「DOM 順、座標が後方なら検証しない」という動作への変更予定があります。
+作者が必要に迫られて新設された修飾子であり、一般向けではないので原則として使用は非推奨です。
 
 ##### propagate
 
@@ -290,7 +301,7 @@ $rule = [
 
 このようにすると input 要素があたかも階層構造を持つような html が生成されます。
 「画面内でボタンを押すと要素セットが追加される」ような状況で使用します。
-ただし、かなり複雑になる上 context/template の使用がほぼ必須になります。
+ただし、かなり複雑になる上 context/template/vuefor の使用がほぼ必須になります。
 
 なお、ネストできるのは2階層までです。それ以上ネストした場合の動作は未定義です。
 
@@ -359,7 +370,7 @@ true 単値でも `['elemname', true]` のような配列でも指定できま�
 
 - select: multiple 属性が付きます
 - file: multiple 属性が付きます
-- 上記も含めて全てのタイプの名前が `name[]` になる
+- 上記も含めて radio 以外の全てのタイプの名前が `name[]` になります
 
 デフォルトは `null` で、ある程度自動設定されます（デフォルト値が配列の場合など）。
 
@@ -416,6 +427,9 @@ $form->input('element_name', [/* input の属性 */]);
 $form->form();
 ```
 
+vuejs の機能を使うなら `/* form の属性*/` に `['vuejs' => true]` を与える必要があります。
+これで v-model や :data-vinput-id などが出力され、 vuejs でもそれなりに動くようになります。
+
 属性は基本的に name=value の連想配列を与えるだけです。
 特殊な処理として「値が false の場合はその属性はなくなる」というものがあります。
 これは `readonly` などの論理属性を想定しています。
@@ -431,8 +445,12 @@ input タグの属性はいくつか特殊な属性があります（カッコ�
     - id: 指定しなかった場合、自動で設定されます id <=> for 関連で使用されます
     - type: html における input type 属性です。textarea や select なども統一して使用できます。指定しなかった場合、ルールに応じて自動で推測します
     - class: 指定したとおりになりますが、 `validatable` は必ず付与されます
+- type=select の場合
+    - option_attrs([]): 各 option の属性連想配列を指定します
 - type=checkbox の場合
     - multiple(false): ルール配列の multiple と同じ効果があり、name 属性に `[]` が付与されます
+    - wrapper(null): ルール配列の wrapper と同じ効果があり、input タグが span でラップされます
+    - grouper(null): ルール配列の grouper と同じ効果があり、同名 input タグが span でグルーピングされます
     - labeled(true): 弟要素として label タグを生成します
     - label_attrs([]): labeled が有効な場合の label 側の属性連想配列を指定します
     - format(null): 最終的な html を sprintf します。例えば `<div>%s</div>` として div で囲めます
@@ -485,11 +503,11 @@ validate を通した後の form のレンダリングにエラー表示や値�
 
 明示的にエラーが得たい場合は `getMessages` `getFlatMessages` などのメソッドを使います。
 
-### context と template
+### context と template と vuefor
 
 ルールの `inputs` 指定を行うとネスト構造が表現できます。
 `inputs` を設定すると `element[-1][subelement]` のような name 属性で生成され、「ある特定のフィールドに紐づくフィールドセット」が定義できます。
-これをレンダリングするには下記の context/template メソッドを使用する必要があります。
+これをレンダリングするには下記の context/template/vuefor メソッドを使用する必要があります。
 
 なお、下記の記述では断りのない限り
 
@@ -611,15 +629,90 @@ name や index, イベントなどは birth で設定されるため、上記が
 
 あまり複雑なことは出来ませんが、単純に動的要素を追加したいだけなら template の方が便利です。
 
-#### どちらを使うべきか
+#### vuefor
 
-まず context と template の挙動を一言で述べると
+基本的には context と同じです。
+context で index を指定していた箇所に js の変数名を渡します。
+
+```php
+<?= $form->form(['vuejs' => true]) ?>
+    <div v-for="(row, index) in rows">
+    <?= $form->vuefor('parent', 'row', 'index') ?>
+    <?= $form->input('child1') ?>
+    <?= $form->input('child2') ?>
+    <?= $form->vuefor() ?>
+    </div>
+<?= $form->form() ?>
+```
+
+上記で本ライブラリが使用する特殊な属性が `:` (v-bind) 付きで出力されます。
+v-model も出力されるので vuejs における data を変更すれば適切な DOM が生成されるようになります。
+v-model の修飾子を渡すには `v-model.modifier` 属性を指定します。
+
+もっと具体的な実際の使い方は下記のようになるでしょう。
+
+```php
+<ul id="application">
+    <input v-on:click="append" type="button" value="追加">
+    <?= $form->form(['id' => 'vuejs_form', 'vuejs' => true]) ?>
+        <template>
+            <div v-for="(child, index) in parent">
+                <?= $form->vuefor('parent', 'child', 'index') ?>
+                <?= $form->input('child1') ?>
+                <?= $form->input('child2', ['v-model.modifier' => 'number']) ?>
+                <?= $form->vuefor() ?>
+            </div>
+            <input v-on:click="remove(index)" type="button" value="削除">
+        </template>
+    <?= $form->form() ?>
+</ul>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const app = new Vue({
+            el: '#application',
+            data: function () {
+                return {
+                    parent: [],
+                };
+            },
+            methods: {
+                append: function () {
+                    this.parent.push({
+                        child1: "",
+                        child2: "",
+                    });
+                },
+                remove: function (index) {
+                    this.parent.splice(index, 1);
+                },
+            },
+            mounted: function () {
+                this.$nextTick(function () {
+                    document.getElementById('vuejs_form').chmonos.initialize();
+                });
+            },
+        });
+    });
+</script>
+```
+
+要するに「本ライブラリが動くに足る属性」を自動で吐き出すだけです。
+context/template では初期化が自動で行われますが、 vuefor の場合は呼ばれないので mounted で明示的に呼ぶ必要があります。
+この辺は example を参照するようにしてください。
+
+ただし、あくまで補助的な機能です。vuejs をガッツリ使いたい場合には全く向いていません。
+また、（必要に迫られての）実験的な機能でもあり、互換性保持の対象外です。この機能は破壊的変更が施される可能性があります。
+
+#### どれを使うべきか
+
+まず context と template と vuefor の挙動を一言で述べると
 
 - context: **php でレンダリング**（故に template も吐き出せるので使う側でうまくハンドリングする必要がある）
 - template: **js でレンダリング**（故に php サイドでの小回りは効かない）
+- vuefor: **vuejs でレンダリング**（特殊な属性を吐き出すだけ）
 
 となります。
-適しているシチュエーションとしては「動的追加がない（今あるデータだけでレンダリングしてポコポコ増えない）」場合は context、その逆の場合は template が適しています。
+適しているシチュエーションとしては「動的追加がない（今あるデータだけでレンダリングしてポコポコ増えない）」場合は context、ある場合は template、vuejs を使用するなら vuefor が適しています。
 
 ### エラーハンドリング
 

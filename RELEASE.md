@@ -24,6 +24,17 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.18
+
+- [change][script] jQuery 依存の排除と IE の切り捨て
+- [change][template] 気になったところを修正
+- [feature][Input] vuejs に暫定対応
+- [feature][Input] input をまとめる grouper ルールを追加
+- [feature][Input] Input を継承せずともデフォルトルールを上書きできる機能
+- [fixbug][Input] multiple 対応 type から radio を除外
+- [fixbug][Input] ファイルが飛んできていない時に notice が出る不具合を修正
+- [fixbug][Condition] outputJavascript の最新判定に誤りがあり出力されないことがある不具合を修正
+
 ## 1.0.17
 
 - [fixbug][Input] Condition 自身が setCheckMode しても Input の checkmode 指定で上書かれていた不具合を修正
