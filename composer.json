@@ -19,9 +19,10 @@
     "php": ">=7.4"
   },
   "require-dev": {
-    "ryunosuke/functions": "1.4.19",
-    "phpunit/phpunit": "8.*",
-    "facebook/webdriver": "1.*"
+    "ryunosuke/functions": "1.5.*",
+    "phpunit/phpunit": "9.*",
+    "ryunosuke/phpunit-extension": "3.*",
+    "php-webdriver/webdriver": "1.*"
   },
   "autoload": {
     "psr-4": {
