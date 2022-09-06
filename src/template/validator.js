@@ -805,4 +805,51 @@ function Chmonos(form, options) {
 
         return form.validationValues = values;
     };
+
+    /**
+     * フォームデータを返す
+     */
+    chmonos.data = function () {
+        return new FormData(form);
+    };
+
+    /**
+     * パラメータを返す
+     */
+    chmonos.params = async function (filemanage) {
+        filemanage = (function (filemanage) {
+            if (filemanage === 'string') {
+                return async file => file.text();
+            }
+            if (filemanage === 'binary') {
+                return async file => String.fromCharCode(...new Uint8Array(await file.arrayBuffer()));
+            }
+            if (filemanage === 'base64') {
+                return async file => btoa(String.fromCharCode(...new Uint8Array(await file.arrayBuffer())));
+            }
+            return filemanage(file);
+        })(filemanage ?? 'base64');
+
+        var params = new URLSearchParams();
+        for (var [name, value] of this.data().entries()) {
+            if (value instanceof File) {
+                params.append(name, await filemanage(value));
+            }
+            else {
+                params.append(name, value);
+            }
+        }
+        return params;
+    };
+
+    /**
+     * フォームの値をオブジェクトで返す
+     *
+     * @param filemanage file 要素をどう扱うか？ string|binary|base64
+     */
+    chmonos.object = async function (filemanage) {
+        var result = {};
+        chmonos.parse_str((await chmonos.params(filemanage)).toString(), result);
+        return result;
+    };
 }
