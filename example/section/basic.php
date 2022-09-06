@@ -284,6 +284,7 @@ resetForm($basic_form, 'basic_form');
         </td>
     </tr>
 </table>
+<input type="button" class="btn btn-info object-button" value="object">
 <input type="submit" id="basic_form_submit" class="btn btn-primary" value="post">
 <label class='btn btn-warning'>
     <input type='checkbox' class="js-enable-switcher" checked>

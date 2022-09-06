@@ -88,6 +88,10 @@ $appendmtime = function ($filename) {
                 li.appendChild(a);
                 $$('nav>ul').appendChild(li);
             });
+            $('.object-button').on('click', async function (e) {
+                var form = e.target.closest('form.validatable_form');
+                console.log(await form.chmonos.object('string'));
+            });
             $('.js-enable-switcher').on('change', function (e) {
                 var form = e.target.closest('form.validatable_form');
                 if (e.target.checked) {

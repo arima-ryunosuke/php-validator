@@ -165,6 +165,7 @@ if (resetForm($other_form, 'other_form')) {
         </td>
     </tr>
 </table>
+<input type="button" class="btn btn-info object-button" value="object">
 <input type="submit" id="other_form_submit" class="btn btn-primary" value="post">
 <input type="submit" class="btn btn-primary" value="submit ボタンの属性が活きます" formaction="?action=hoge" formmethod="post" formtarget="_blank">
 <label class='btn btn-warning'>

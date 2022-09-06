@@ -129,6 +129,7 @@ $dynamic_rule = [
         <?= $template_form->template() ?>
     </div>
 
+    <input type="button" class="btn btn-info object-button" value="object">
     <input type="submit" id="template_form_submit" class="btn btn-primary" value="post">
     <label class='btn btn-warning'>
         <input type='checkbox' class="js-enable-switcher" checked>
@@ -231,6 +232,7 @@ $dynamic_rule = [
         </tbody>
     </table>
 
+    <input type="button" class="btn btn-info object-button" value="object">
     <input type="submit" id="context_form_submit" class="btn btn-primary" value="post">
     <label class='btn btn-warning'>
         <input type='checkbox' class="js-enable-switcher" checked>

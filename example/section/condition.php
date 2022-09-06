@@ -657,6 +657,7 @@ resetForm($condition_form, 'condition_form');
         <td><?= $condition_form->input('url-http') ?></td>
     </tr>
 </table>
+<input type="button" class="btn btn-info object-button" value="object">
 <input type="submit" id="condition_form_submit" class="btn btn-primary" value="post">
 <label class='btn btn-warning'>
     <input type='checkbox' class="js-enable-switcher" checked>
