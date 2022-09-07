@@ -322,7 +322,7 @@ class Context implements \IteratorAggregate
     /**
      * @return \Generator|\Traversable|Input[]
      */
-    public function getIterator()
+    public function getIterator(): \Generator
     {
         foreach ($this->inputs as $name => $input) {
             yield $name => $input;

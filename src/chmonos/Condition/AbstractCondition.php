@@ -309,13 +309,14 @@ JS;
         self::$cache['context'] ??= [
             'lang'       => 'php',
             'chmonos'    => new class() implements \ArrayAccess {
-                public function offsetExists($offset) { }
+                public function offsetExists($offset): bool { }
 
+                #[\ReturnTypeWillChange]
                 public function offsetGet($offset) { return $offset; }
 
-                public function offsetSet($offset, $value) { }
+                public function offsetSet($offset, $value): void { }
 
-                public function offsetUnset($offset) { }
+                public function offsetUnset($offset): void { }
             },
             'function'   => static function ($callback) {
                 $args = array_slice(func_get_args(), 1);

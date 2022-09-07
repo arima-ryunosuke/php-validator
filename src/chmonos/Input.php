@@ -1005,8 +1005,8 @@ class Input
         $labeled = array_unset($attrs, 'labeled', true);
         $label_attrs = (array) array_unset($attrs, 'label_attrs', []);
 
-        $format = array_unset($attrs, 'format');
-        $separator = array_unset($attrs, 'separator');
+        $format = array_unset($attrs, 'format', '');
+        $separator = array_unset($attrs, 'separator', '');
 
         $options = (array) array_unset($attrs, 'options', $this->options);
         $invalids = $this->_completeOptions($options, $value);
@@ -1114,7 +1114,7 @@ class Input
 
     protected function _wrapInput($mode, $class, $type, $name, $value, $html)
     {
-        if (!strlen($class)) {
+        if ("$class" === "") {
             return $html;
         }
         if (!in_array($type, ['checkbox', 'radio'])) {

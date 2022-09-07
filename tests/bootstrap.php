@@ -1,8 +1,6 @@
 <?php
 namespace ryunosuke\Test;
 
-error_reporting(~E_DEPRECATED);
-
 require_once __DIR__ . '/../vendor/autoload.php';
 
 defined('TESTWEB_URL') or define('TESTWEB_URL', 'http://localhost:9999');

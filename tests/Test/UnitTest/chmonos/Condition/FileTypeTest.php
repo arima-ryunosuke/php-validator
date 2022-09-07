@@ -24,7 +24,7 @@ class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
         ];
         $validate = new FileType($types);
         $this->assertEquals(false, $validate->isValid($dir . 'png.jpg')); // 明らかにダメ
-        $this->assertEquals(PHP_VERSION_ID >= 80100, $validate->isValid($dir . 'csv.csv')); // csv と plain の判別は難しいのでダメになる
+        $this->assertEquals(PHP_VERSION_ID >= 80000, $validate->isValid($dir . 'csv.csv')); // csv と plain の判別は難しいのでダメになる
         $this->assertEquals(false, $validate->isValid($dir . 'dmesg'));   // 判別不能はダメ
 
         // csv、あるいはよくわからないものを受け付ける

@@ -27,6 +27,7 @@ class FileType extends AbstractCondition implements Interfaces\InferableType
     ];
 
     protected static $mimeTypes = [
+        'application/csv'         => ['csv'],
         'application/dicom'       => ['dcm'],
         'application/dvcs'        => ['dvc'],
         'application/fastinfoset' => ['finf'],

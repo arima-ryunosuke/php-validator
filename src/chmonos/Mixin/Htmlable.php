@@ -51,6 +51,6 @@ trait Htmlable
             }
             return implode($glue, $value);
         }
-        return htmlspecialchars($value, $flags);
+        return htmlspecialchars((string) $value, $flags);
     }
 }
