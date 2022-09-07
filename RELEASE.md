@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.19
+
+- [feature][template] js 側での値の取得の強化
+- [feature] php 8.1 対応
+
 ## 1.0.18
 
 - [change][script] jQuery 依存の排除と IE の切り捨て
