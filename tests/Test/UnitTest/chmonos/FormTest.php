@@ -17,8 +17,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             'inputClass' => CustomInput::class
         ]);
 
-        $this->assertInstanceOf(Input::class, $form->hoge_input);
-        $this->assertInstanceOf(Context::class, $form->context);
+        that($form)->hoge_input->isInstanceOf(Input::class);
+        that($form)->context->isInstanceOf(Context::class);
     }
 
     function test___isset()
@@ -27,9 +27,9 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             'hoge_input' => []
         ]);
 
-        $this->assertTrue(isset($form->hoge_input));
-        $this->assertFalse(isset($form->context));
-        $this->assertFalse(isset($form->undefined));
+        that(isset($form->hoge_input))->isTrue();
+        that(isset($form->context))->isFalse();
+        that(isset($form->undefined))->isFalse();
     }
 
     function test___get()
@@ -38,8 +38,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             'hoge_input' => []
         ]);
 
-        $this->assertInstanceOf(Input::class, $form->hoge_input);
-        $this->assertInstanceOf(Context::class, $form->context);
+        that($form)->hoge_input->isInstanceOf(Input::class);
+        that($form)->context->isInstanceOf(Context::class);
     }
 
     function test_setValues()
@@ -63,12 +63,9 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             'foo' => 'bar',
         ]);
 
-        $this->assertIsArray($values);
-        $this->assertArrayHasKey('req', $values);
-        $this->assertEquals('hoge', $values['req']);
-        $this->assertArrayHasKey('dt', $values);
-        $this->assertEquals('2009-02-14T08:31', $values['dt']);
-        $this->assertArrayNotHasKey('foo', $values);
+        that($values)->isArray()->hasKey('req')->hasKey('dt')->notHasKey('foo');
+        that($values)['req']->is('hoge');
+        that($values)['dt']->is('2009-02-14T08:31');
     }
 
     function test_setValues_file()
@@ -90,28 +87,22 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         $_FILES = [];
-        $this->assertEquals('nofile', $form->setValues(['file' => 'specified'])['file']);
+        that($form)->setValues(['file' => 'specified'])['file']->is("nofile");
 
         $_FILES = ['file' => ['error' => UPLOAD_ERR_OK] + $default];
-        $this->assertEquals(__FILE__, $form->setValues(['file' => 'specified'])['file']);
+        that($form)->setValues(['file' => 'specified'])['file']->is(__FILE__);
 
         $_FILES = ['file' => ['error' => UPLOAD_ERR_OK] + $default];
-        $this->assertEquals(__FILE__, $form->setValues([])['file']);
+        that($form)->setValues([])['file']->is(__FILE__);
 
         $_FILES = ['file' => ['error' => UPLOAD_ERR_NO_FILE] + $default];
-        $this->assertEquals('nofile', $form->setValues([])['file']);
+        that($form)->setValues([])['file']->is("nofile");
 
-        $ex = new \UnexpectedValueException('file size too large', UPLOAD_ERR_INI_SIZE);
-        $this->assertException($ex, function () use ($form, $default) {
-            $_FILES = ['file' => ['error' => UPLOAD_ERR_INI_SIZE] + $default];
-            $this->assertEquals('nofile', $form->setValues([])['file']);
-        });
+        $_FILES = ['file' => ['error' => UPLOAD_ERR_INI_SIZE] + $default];
+        that($form)->setValues([])->wasThrown(new \UnexpectedValueException('file size too large', UPLOAD_ERR_INI_SIZE));
 
-        $ex = new \UnexpectedValueException('upload error', 999);
-        $this->assertException($ex, function () use ($form, $default) {
-            $_FILES = ['file' => ['error' => 999] + $default];
-            $this->assertEquals('nofile', $form->setValues([])['file']);
-        });
+        $_FILES = ['file' => ['error' => 999] + $default];
+        that($form)->setValues([])->wasThrown(new \UnexpectedValueException('upload error', 999));
     }
 
     function test_withFile()
@@ -127,8 +118,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $form_tag = $form->form([]) . 'dummy' . $form->form();
 
         // multipart/form-data な post になるはず
-        $this->assertStringContainsString('method="post"', $form_tag);
-        $this->assertStringContainsString('enctype="multipart/form-data"', $form_tag);
+        that($form_tag)->contains('method="post"');
+        that($form_tag)->contains('enctype="multipart/form-data"');
     }
 
     function test_validate()
@@ -147,10 +138,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         ];
         $form->validate($values);
 
-        $this->assertIsArray($values);
-        $this->assertArrayHasKey('req', $values);
-        $this->assertEquals('hoge', $values['req']);
-        $this->assertArrayNotHasKey('foo', $values);
+        that($values)->isArray()->hasKey('req')->notHasKey('foo');
+        that($values)['req']->is("hoge");
     }
 
     function test_validate_ignore()
@@ -181,17 +170,17 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ];
         $form->validate($values);
-        $this->assertEquals([
-            'parent'   => 'hoge',
-            'children' => [
+        that($values)->is([
+            "parent"   => "hoge",
+            "children" => [
                 [
-                    'child' => 'fuga1',
+                    "child" => "fuga1",
                 ],
                 [
-                    'child' => 'fuga2',
+                    "child" => "fuga2",
                 ],
             ],
-        ], $values);
+        ]);
     }
 
     function test_validate_csrf()
@@ -203,10 +192,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST['hoge'] = 'invalid';
 
-        $this->assertException('token is invalid', function () use ($form) {
-            $values = [];
-            $form->validate($values);
-        });
+        that($form)->validate([])->wasThrown('token is invalid');
     }
 
     function test_validate_files()
@@ -287,16 +273,16 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         ];
         @$form->validate($posts);
 
-        $this->assertEquals('parent_text', $posts['parent_text']);
-        $this->assertEquals('remote/parent_file', $posts['parent_file']);
+        that($posts)['parent_text']->is("parent_text");
+        that($posts)['parent_file']->is("remote/parent_file");
 
-        $this->assertEquals('remote/multiple1_file', $posts['multiple_file'][0]);
-        $this->assertEquals('remote/multiple2_file', $posts['multiple_file'][1]);
+        that($posts)['multiple_file'][0]->is("remote/multiple1_file");
+        that($posts)['multiple_file'][1]->is("remote/multiple2_file");
 
-        $this->assertEquals('child_text0', $posts['children'][0]['child_text']);
-        $this->assertEquals('remote/child_file0', $posts['children'][0]['child_file']);
-        $this->assertEquals('child_text1', $posts['children'][1]['child_text']);
-        $this->assertEquals('remote/child_file1', $posts['children'][1]['child_file']);
+        that($posts)['children'][0]['child_text']->is("child_text0");
+        that($posts)['children'][0]['child_file']->is("remote/child_file0");
+        that($posts)['children'][1]['child_text']->is("child_text1");
+        that($posts)['children'][1]['child_file']->is("remote/child_file1");
     }
 
     function test_validate_files_missing()
@@ -312,7 +298,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $posts = ['text' => 'text',];
         $form->validate($posts);
 
-        $this->assertEquals('', $posts['file']);
+        that($posts)['file']->is("");
     }
 
     function test_validateOrFilter()
@@ -356,7 +342,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertEquals(['children2' => []], $form->filter([
+        that($form)->filter([
             'parent'    => '',
             'children1' => [],
             'children2' => [
@@ -365,22 +351,12 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'child2' => '',
                 ]
             ]
-        ]));
-        $this->assertEmpty($form->getMessages());
+        ])->is([
+            "children2" => [],
+        ]);
+        that($form)->getMessages()->isEmpty();
 
-        $this->assertEquals([
-            'parent'    => 'val',
-            'children1' => [
-                [
-                    'child1' => 'val',
-                ]
-            ],
-            'children2' => [
-                [
-                    'child1' => 'val',
-                ]
-            ]
-        ], $form->filter([
+        that($form)->filter([
             'parent'    => 'val',
             'children1' => [
                 [
@@ -394,8 +370,20 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'child2' => '',
                 ]
             ]
-        ]));
-        $this->assertEmpty($form->getMessages());
+        ])->is([
+            "parent"    => "val",
+            "children1" => [
+                [
+                    "child1" => "val",
+                ],
+            ],
+            "children2" => [
+                [
+                    "child1" => "val",
+                ],
+            ],
+        ]);
+        that($form)->getMessages()->isEmpty();
     }
 
     function test_validateOrThrow_ng()
@@ -412,8 +400,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             $form->validateOrThrow([]);
         }
         catch (ValidationException $ex) {
-            $this->assertSame($ex->getForm(), $form);
-            $this->assertContains('入力必須です', $ex->getForm()->getFlatMessages('%s%s', ''));
+            that($ex)->getForm()->isSame($form);
+            that($ex)->getForm()->getFlatMessages('%s%s', '')->contains('入力必須です');
         }
     }
 
@@ -436,11 +424,11 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         // req はトリミングされているはずだし
-        $this->assertEquals('hoge', $values['req']);
+        that($values)['req']->is("hoge");
         // dmy はデフォルト値が設定されているはずだし
-        $this->assertEquals('dmy', $values['dmy']);
+        that($values)['dmy']->is("dmy");
         // foo はフィルタリングされて存在しないはず
-        $this->assertArrayNotHasKey('foo', $values);
+        that($values)->notHasKey("foo");
     }
 
     function test_form()
@@ -484,11 +472,11 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             $content = $form->open(['id' => 'hoge']);
 
             // form 開始タグから始まる
-            $this->assertStringStartsWith('<form', $content);
+            that($content)->stringStartsWith('<form');
             // id が設定されている
-            $this->assertStringContainsString('id="hoge"', $content);
+            that($content)->stringContains('id="hoge"');
             // nonce がある
-            $this->assertStringContainsString('nonce="fuga"', $content);
+            that($content)->stringContains('nonce="fuga"');
         }
 
         $prefix = spl_object_id($form->context);
@@ -496,65 +484,57 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         // 通常 input
         {
             // label が描画できる
-            $this->assertAttribute([
+            that($form)->label('parent')->htmlMatchesArray([
                 'label' => [
-                    [
-                        'for'               => "cx{$prefix}_parent",
-                        'data-vlabel-id'    => 'parent',
-                        'data-vlabel-class' => 'parent',
-                        'data-vlabel-index' => '',
-                        'class'             => 'validatable_label',
-                    ]
+                    'for'               => "cx{$prefix}_parent",
+                    'data-vlabel-id'    => 'parent',
+                    'data-vlabel-class' => 'parent',
+                    'data-vlabel-index' => '',
+                    'class'             => 'validatable_label',
                 ],
-            ], $form->label('parent'));
+            ]);
 
             // input が描画できる
-            $this->assertAttribute([
+            that($form)->input('parent')->htmlMatchesArray([
                 'input' => [
-                    [
-                        'id'                    => "cx{$prefix}_parent",
-                        'data-validation-title' => 'parent-title',
-                        'data-vinput-id'        => 'parent',
-                        'data-vinput-class'     => 'parent',
-                        'data-vinput-index'     => '',
-                        'name'                  => 'parent',
-                        'type'                  => 'text',
-                        'class'                 => 'validatable',
-                        'value'                 => 'hoge',
-                    ]
+                    'id'                    => "cx{$prefix}_parent",
+                    'data-validation-title' => 'parent-title',
+                    'data-vinput-id'        => 'parent',
+                    'data-vinput-class'     => 'parent',
+                    'data-vinput-index'     => '',
+                    'name'                  => 'parent',
+                    'type'                  => 'text',
+                    'class'                 => 'validatable',
+                    'value'                 => 'hoge',
                 ],
-            ], $form->input('parent'));
+            ]);
 
             // label が描画できる
-            $this->assertAttribute([
+            that($form)->label('parent', ['vuejs' => true])->htmlMatchesArray([
                 'label' => [
-                    [
-                        ':for'               => "'cx{$prefix}_parent'",
-                        ':data-vlabel-id'    => "'parent'",
-                        ':data-vlabel-class' => "'parent'",
-                        ':data-vlabel-index' => "''",
-                        'class'              => 'validatable_label',
-                    ]
+                    ':for'               => "'cx{$prefix}_parent'",
+                    ':data-vlabel-id'    => "'parent'",
+                    ':data-vlabel-class' => "'parent'",
+                    ':data-vlabel-index' => "''",
+                    'class'              => 'validatable_label',
                 ],
-            ], $form->label('parent', ['vuejs' => true]));
+            ]);
 
             // input が描画できる
-            $this->assertAttribute([
+            that($form)->input('parent', ['type' => 'number', 'vuejs' => true])->htmlMatchesArray([
                 'input' => [
-                    [
-                        ':id'                   => "'cx{$prefix}_'+'parent'",
-                        ':data-vinput-id'       => "'parent'",
-                        ':data-vinput-class'    => "'parent'",
-                        ':data-vinput-index'    => "''",
-                        ':name'                 => "'parent'",
-                        'v-model.number'        => 'parent',
-                        'data-validation-title' => 'parent-title',
-                        'type'                  => 'number',
-                        'class'                 => 'validatable',
-                        'value'                 => 'hoge',
-                    ]
+                    ':id'                   => "'cx{$prefix}_'+'parent'",
+                    ':data-vinput-id'       => "'parent'",
+                    ':data-vinput-class'    => "'parent'",
+                    ':data-vinput-index'    => "''",
+                    ':name'                 => "'parent'",
+                    'v-model.number'        => 'parent',
+                    'data-validation-title' => 'parent-title',
+                    'type'                  => 'number',
+                    'class'                 => 'validatable',
+                    'value'                 => 'hoge',
                 ],
-            ], $form->input('parent', ['type' => 'number', 'vuejs' => true]));
+            ]);
         }
 
         $prefix = spl_object_id($form->children->context);
@@ -562,66 +542,58 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         // context
         {
             // context は何もしないので空
-            $this->assertEmpty($form->context('children', 1));
+            that($form)->context('children', 1)->isEmpty();
 
             // label が描画できる
-            $this->assertAttribute([
+            that($form)->label('child1')->htmlMatchesArray([
                 'label' => [
-                    [
-                        'for'               => "cx{$prefix}_children-1-child1",
-                        'data-vlabel-id'    => 'children/1/child1',
-                        'data-vlabel-class' => 'children/child1',
-                        'data-vlabel-index' => '1',
-                        'class'             => 'validatable_label',
-                    ]
+                    'for'               => "cx{$prefix}_children-1-child1",
+                    'data-vlabel-id'    => 'children/1/child1',
+                    'data-vlabel-class' => 'children/child1',
+                    'data-vlabel-index' => '1',
+                    'class'             => 'validatable_label',
                 ],
-            ], $form->label('child1'));
-            $this->assertAttribute([
+            ]);
+            that($form)->label('child2')->htmlMatchesArray([
                 'label' => [
-                    [
-                        'for'               => "cx{$prefix}_children-1-child2",
-                        'data-vlabel-id'    => 'children/1/child2',
-                        'data-vlabel-class' => 'children/child2',
-                        'data-vlabel-index' => '1',
-                        'class'             => 'validatable_label',
-                    ]
+                    'for'               => "cx{$prefix}_children-1-child2",
+                    'data-vlabel-id'    => 'children/1/child2',
+                    'data-vlabel-class' => 'children/child2',
+                    'data-vlabel-index' => '1',
+                    'class'             => 'validatable_label',
                 ],
-            ], $form->label('child2'));
+            ]);
 
             // input が含まれる
-            $this->assertAttribute([
+            that($form)->input('child1')->htmlMatchesArray([
                 'input' => [
-                    [
-                        'id'                    => "cx{$prefix}_children-1-child1",
-                        'value'                 => 'child1_fuga',
-                        'data-validation-title' => '',
-                        'data-vinput-id'        => 'children/1/child1',
-                        'data-vinput-class'     => 'children/child1',
-                        'data-vinput-index'     => '1',
-                        'name'                  => 'children[1][child1]',
-                        'type'                  => 'text',
-                        'class'                 => 'validatable',
-                    ]
+                    'id'                    => "cx{$prefix}_children-1-child1",
+                    'value'                 => 'child1_fuga',
+                    'data-validation-title' => '',
+                    'data-vinput-id'        => 'children/1/child1',
+                    'data-vinput-class'     => 'children/child1',
+                    'data-vinput-index'     => '1',
+                    'name'                  => 'children[1][child1]',
+                    'type'                  => 'text',
+                    'class'                 => 'validatable',
                 ],
-            ], $form->input('child1'));
-            $this->assertAttribute([
+            ]);
+            that($form)->input('child2')->htmlMatchesArray([
                 'input' => [
-                    [
-                        'id'                    => "cx{$prefix}_children[1][child2]_0",
-                        'value'                 => 'def2',
-                        'data-validation-title' => '',
-                        'data-vinput-id'        => 'children/1/child2',
-                        'data-vinput-class'     => 'children/child2',
-                        'data-vinput-index'     => '1',
-                        'name'                  => 'children[1][child2][]',
-                        'type'                  => 'text',
-                        'class'                 => 'validatable',
-                    ]
+                    'id'                    => "cx{$prefix}_children[1][child2]_0",
+                    'value'                 => 'def2',
+                    'data-validation-title' => '',
+                    'data-vinput-id'        => 'children/1/child2',
+                    'data-vinput-class'     => 'children/child2',
+                    'data-vinput-index'     => '1',
+                    'name'                  => 'children[1][child2][]',
+                    'type'                  => 'text',
+                    'class'                 => 'validatable',
                 ],
-            ], $form->input('child2'));
+            ]);
 
             // context は何もしないので空
-            $this->assertEmpty($form->context());
+            that($form)->context()->isEmpty();
         }
 
         // template
@@ -629,145 +601,131 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             $content = $form->template('children');
 
             // <script から始まる
-            $this->assertStringStartsWith('<script', $content);
+            that($content)->stringStartsWith('<script');
             // type=text/x-template
-            $this->assertStringContainsString('type="text/x-template"', $content);
+            that($content)->stringContains('type="text/x-template"');
             // nonce がある
-            $this->assertStringContainsString('nonce="fuga"', $content);
+            that($content)->stringContains('nonce="fuga"');
 
             // label が描画できる
-            $this->assertAttribute([
+            that($form)->label('child1')->htmlMatchesArray([
                 'label' => [
-                    [
-                        'for'               => "cx{$prefix}_children-__index-child1",
-                        'data-vlabel-id'    => 'children/__index/child1',
-                        'data-vlabel-class' => 'children/child1',
-                        'data-vlabel-index' => '__index',
-                        'class'             => 'validatable_label',
-                    ]
+                    'for'               => "cx{$prefix}_children-__index-child1",
+                    'data-vlabel-id'    => 'children/__index/child1',
+                    'data-vlabel-class' => 'children/child1',
+                    'data-vlabel-index' => '__index',
+                    'class'             => 'validatable_label',
                 ],
-            ], $form->label('child1'));
-            $this->assertAttribute([
+            ]);
+            that($form)->label('child2')->htmlMatchesArray([
                 'label' => [
-                    [
-                        'for'               => "cx{$prefix}_children-__index-child2",
-                        'data-vlabel-id'    => 'children/__index/child2',
-                        'data-vlabel-class' => 'children/child2',
-                        'data-vlabel-index' => '__index',
-                        'class'             => 'validatable_label',
-                    ]
+                    'for'               => "cx{$prefix}_children-__index-child2",
+                    'data-vlabel-id'    => 'children/__index/child2',
+                    'data-vlabel-class' => 'children/child2',
+                    'data-vlabel-index' => '__index',
+                    'class'             => 'validatable_label',
                 ],
-            ], $form->label('child2'));
+            ]);
 
             // input が含まれる
-            $this->assertAttribute([
+            that($form)->input('child1')->htmlMatchesArray([
                 'input' => [
-                    [
-                        'id'                    => "cx{$prefix}_children-__index-child1",
-                        'value'                 => 'def1',
-                        'data-validation-title' => '',
-                        'data-vinput-id'        => 'children/__index/child1',
-                        'data-vinput-class'     => 'children/child1',
-                        'data-vinput-index'     => '__index',
-                        'disabled'              => 'disabled',
-                        'name'                  => 'children[__index][child1]',
-                        'type'                  => 'text',
-                        'class'                 => 'validatable',
-                    ]
+                    'id'                    => "cx{$prefix}_children-__index-child1",
+                    'value'                 => 'def1',
+                    'data-validation-title' => '',
+                    'data-vinput-id'        => 'children/__index/child1',
+                    'data-vinput-class'     => 'children/child1',
+                    'data-vinput-index'     => '__index',
+                    'disabled'              => 'disabled',
+                    'name'                  => 'children[__index][child1]',
+                    'type'                  => 'text',
+                    'class'                 => 'validatable',
                 ],
-            ], $form->input('child1'));
-            $this->assertAttribute([
+            ]);
+            that($form)->input('child2')->htmlMatchesArray([
                 'input' => [
-                    [
-                        'id'                    => "cx{$prefix}_children[__index][child2]_0",
-                        'value'                 => 'def2',
-                        'data-validation-title' => '',
-                        'data-vinput-id'        => 'children/__index/child2',
-                        'data-vinput-class'     => 'children/child2',
-                        'data-vinput-index'     => '__index',
-                        'disabled'              => 'disabled',
-                        'name'                  => 'children[__index][child2][]',
-                        'type'                  => 'text',
-                        'class'                 => 'validatable',
-                    ]
+                    'id'                    => "cx{$prefix}_children[__index][child2]_0",
+                    'value'                 => 'def2',
+                    'data-validation-title' => '',
+                    'data-vinput-id'        => 'children/__index/child2',
+                    'data-vinput-class'     => 'children/child2',
+                    'data-vinput-index'     => '__index',
+                    'disabled'              => 'disabled',
+                    'name'                  => 'children[__index][child2][]',
+                    'type'                  => 'text',
+                    'class'                 => 'validatable',
                 ],
-            ], $form->input('child2'));
+            ]);
 
             $content = $form->template();
 
             // </script から始まる
-            $this->assertStringStartsWith("</script>", $content);
+            that($content)->stringStartsWith("</script>");
         }
 
         // vuefor
         {
-            $options = self::publishField($form, 'options');
-            $options['vuejs'] = true;
-            self::publishField($form, 'options', $options);
+            /** @noinspection PhpUnusedLocalVariableInspection */
+            $options = $this->rewriteProperty($form, 'options', function ($options) {
+                $options['vuejs'] = true;
+                return $options;
+            });
 
             // vuefor は何もしないので空
-            $this->assertEmpty($form->vuefor('children', 'item', 'i'));
+            that($form)->vuefor('children', 'item', 'i')->isEmpty();
 
             // label が描画できる
-            $this->assertAttribute([
+            that($form)->label('child1')->htmlMatchesArray([
                 'label' => [
-                    [
-                        ':for'               => "'cx{$prefix}_children-'+i+'-child1'",
-                        ':data-vlabel-id'    => "'children'+'/'+i+'/'+'child1'",
-                        ':data-vlabel-class' => "'children'+'/'+'child1'",
-                        ':data-vlabel-index' => "i",
-                        'class'              => 'validatable_label',
-                    ]
+                    ':for'               => "'cx{$prefix}_children-'+i+'-child1'",
+                    ':data-vlabel-id'    => "'children'+'/'+i+'/'+'child1'",
+                    ':data-vlabel-class' => "'children'+'/'+'child1'",
+                    ':data-vlabel-index' => "i",
+                    'class'              => 'validatable_label',
                 ],
-            ], $form->label('child1'));
-            $this->assertAttribute([
+            ]);
+            that($form)->label('child2')->htmlMatchesArray([
                 'label' => [
-                    [
-                        ':for'               => "'cx{$prefix}_children-'+i+'-child2'",
-                        ':data-vlabel-id'    => "'children'+'/'+i+'/'+'child2'",
-                        ':data-vlabel-class' => "'children'+'/'+'child2'",
-                        ':data-vlabel-index' => "i",
-                        'class'              => 'validatable_label',
-                    ]
+                    ':for'               => "'cx{$prefix}_children-'+i+'-child2'",
+                    ':data-vlabel-id'    => "'children'+'/'+i+'/'+'child2'",
+                    ':data-vlabel-class' => "'children'+'/'+'child2'",
+                    ':data-vlabel-index' => "i",
+                    'class'              => 'validatable_label',
                 ],
-            ], $form->label('child2'));
+            ]);
 
             // input が含まれる
-            $this->assertAttribute([
+            that($form)->input('child1')->htmlMatchesArray([
                 'input' => [
-                    [
-                        ':id'                   => "'cx{$prefix}_children-'+i+'-child1'",
-                        'value'                 => 'def1',
-                        'data-validation-title' => '',
-                        ':data-vinput-id'       => "'children'+'/'+i+'/'+'child1'",
-                        ':data-vinput-class'    => "'children'+'/'+'child1'",
-                        ':data-vinput-index'    => "i",
-                        ':name'                 => "'children['+i+'][child1]'",
-                        'type'                  => 'text',
-                        'class'                 => 'validatable',
-                        'v-model'               => 'item.child1',
-                    ]
+                    ':id'                   => "'cx{$prefix}_children-'+i+'-child1'",
+                    'value'                 => 'def1',
+                    'data-validation-title' => '',
+                    ':data-vinput-id'       => "'children'+'/'+i+'/'+'child1'",
+                    ':data-vinput-class'    => "'children'+'/'+'child1'",
+                    ':data-vinput-index'    => "i",
+                    ':name'                 => "'children['+i+'][child1]'",
+                    'type'                  => 'text',
+                    'class'                 => 'validatable',
+                    'v-model'               => 'item.child1',
                 ],
-            ], $form->input('child1'));
-            $this->assertAttribute([
+            ]);
+            that($form)->input('child2')->htmlMatchesArray([
                 'input' => [
-                    [
-                        ':id'                   => "'cx{$prefix}_'+'children['+i+'][child2]'+'_0'",
-                        'value'                 => 'def2',
-                        'data-validation-title' => '',
-                        ':data-vinput-id'       => "'children'+'/'+i+'/'+'child2'",
-                        ':data-vinput-class'    => "'children'+'/'+'child2'",
-                        ':data-vinput-index'    => "i",
-                        ':name'                 => "'children['+i+'][child2]'+'[]'",
-                        'type'                  => 'text',
-                        'class'                 => 'validatable',
-                        'v-model'               => 'item.child2',
-                    ]
+                    ':id'                   => "'cx{$prefix}_'+'children['+i+'][child2]'+'_0'",
+                    'value'                 => 'def2',
+                    'data-validation-title' => '',
+                    ':data-vinput-id'       => "'children'+'/'+i+'/'+'child2'",
+                    ':data-vinput-class'    => "'children'+'/'+'child2'",
+                    ':data-vinput-index'    => "i",
+                    ':name'                 => "'children['+i+'][child2]'+'[]'",
+                    'type'                  => 'text',
+                    'class'                 => 'validatable',
+                    'v-model'               => 'item.child2',
                 ],
-            ], $form->input('child2'));
+            ]);
 
             // vuefor は何もしないので空
-            $this->assertEmpty($form->vuefor());
+            that($form)->vuefor()->isEmpty();
         }
 
         // 終了タグ
@@ -775,11 +733,11 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             $content = $form->close();
 
             // <script> タグから始まる
-            $this->assertStringStartsWith('<script nonce="fuga">', $content);
+            that($content)->stringStartsWith('<script nonce="fuga">');
             // </form> で終わる
-            $this->assertStringEndsWith('</form>', $content);
+            that($content)->stringEndsWith('</form>');
             // initialize の呼び出しがある
-            $this->assertStringContainsString('chmonos.initialize', $content);
+            that($content)->stringContains('chmonos.initialize');
         }
     }
 
@@ -787,9 +745,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $form = new Form([]);
 
-        $this->assertException('vuejs flag is false', function () use ($form) {
-            $form->vuefor('children', 'child', 'i');
-        });
+        that($form)->vuefor('children', 'child', 'i')->wasThrown('vuejs flag is false');
     }
 
     function test_form_csrf()
@@ -798,8 +754,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             'tokenName' => 'hoge',
         ]);
         // method=post 時のみ含まれる
-        $this->assertStringNotContainsString("<input type='hidden' name='hoge'", $form->form(['method' => 'get']));
-        $this->assertStringContainsString("<input type='hidden' name='hoge'", $form->form(['method' => 'post']));
-
+        that($form)->form(['method' => 'get'])->stringNotContains("<input type='hidden' name='hoge'");
+        that($form)->form(['method' => 'post'])->stringContains("<input type='hidden' name='hoge'");
     }
 }

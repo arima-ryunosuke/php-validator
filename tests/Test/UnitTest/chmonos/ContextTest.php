@@ -97,32 +97,29 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ], null, CustomInput::class);
 
-        $this->assertInstanceOf(CustomInput::class, $context->parent);
-        $this->assertInstanceOf(CustomInput::class, $context->parent->context->child);
+        that($context)->parent->isInstanceOf(CustomInput::class);
+        that($context)->parent->context->child->isInstanceOf(CustomInput::class);
     }
 
     function test___isset()
     {
         $context = new Context($this->_getRules());
-        $this->assertTrue(isset($context->parent));
-        $this->assertTrue(isset($context->children));
-        $this->assertFalse(isset($context->undefined));
-        $this->assertTrue(isset($context->{"children/child1"}));
-        $this->assertTrue(isset($context->{"children/child2"}));
-        $this->assertFalse(isset($context->{"children/child3"}));
+        that(isset($context->parent))->isTrue();
+        that(isset($context->children))->isTrue();
+        that(isset($context->undefined))->isFalse();
+        that(isset($context->{"children/child1"}))->isTrue();
+        that(isset($context->{"children/child2"}))->isTrue();
+        that(isset($context->{"children/child3"}))->isFalse();
     }
 
     function test___get()
     {
         $context = new Context($this->_getRules());
-        $this->assertInstanceOf(Input::class, $context->parent);
-        $this->assertInstanceOf(Input::class, $context->children);
-        $this->assertInstanceOf(Input::class, $context->{"children/child1"});
-        $this->assertInstanceOf(Input::class, $context->{"children/child2"});
-
-        $this->expectException(\InvalidArgumentException::class);
-        /** @noinspection PhpExpressionResultUnusedInspection */
-        $context->undefinedProperty;
+        that($context)->parent->isInstanceOf(Input::class);
+        that($context)->children->isInstanceOf(Input::class);
+        that($context)->{"children/child1"}->isInstanceOf(Input::class);
+        that($context)->{"children/child2"}->isInstanceOf(Input::class);
+        that($context)->undefinedProperty->isThrowable(\InvalidArgumentException::class);
     }
 
     function test_initialize()
@@ -158,22 +155,22 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         $context->initialize();
 
         // source は target に伝播する
-        $this->assertEquals(['target'], $context->source->propagate);
+        that($context)->source->propagate->is(['target']);
 
         // target は誰にも伝播しない
-        $this->assertEquals([], $context->target->propagate);
+        that($context)->target->propagate->is([]);
 
         // flag は values/elem3 values/elem1 に伝播する
-        $this->assertEquals(['values/elem3', 'values/elem1'], $context->flag->propagate);
+        that($context)->flag->propagate->is(['values/elem3', 'values/elem1']);
 
         // values/elem1 は兄弟の elem2 に伝播する
-        $this->assertEquals(['elem2'], $context->{"values/elem1"}->propagate);
+        that($context)->{"values/elem1"}->propagate->is(['elem2']);
 
         // values/elem2 は誰にも伝播しない
-        $this->assertEquals([], $context->{"values/elem2"}->propagate);
+        that($context)->{"values/elem2"}->propagate->is([]);
 
-        // values/elem3 は誰にも伝播しない
-        $this->assertEquals(['elem2'], $context->{"values/elem3"}->propagate);
+        // values/elem3 は elem2 に伝播する
+        that($context)->{"values/elem3"}->propagate->is(['elem2']);
     }
 
     function test_normalize()
@@ -227,23 +224,23 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         // default
-        $this->assertEquals('path/to/dummy', $values['dummy_file']);
+        that($values)['dummy_file']->is('path/to/dummy');
 
         // phantomX: vsprintf になっているはず
-        $this->assertEquals('hoge-fuga-piyo', $values['phantomX']);
+        that($values)['phantomX']->is("hoge-fuga-piyo");
         // phantomY: 一つでも空なら全体として空になるはず
-        $this->assertEquals('', $values['phantomY']);
+        that($values)['phantomY']->isNull();
 
         // children
-        $this->assertEquals([
+        that($values)['children']->is([
             [
-                'child1' => 'test@example.com',
-                'child2' => 'cvalue2',
-            ]
-        ], $values['children']);
+                "child1" => "test@example.com",
+                "child2" => "cvalue2",
+            ],
+        ]);
 
         // filter
-        $this->assertArrayNotHasKey('undef', $values);
+        that($values)->notHasKey('undef');
     }
 
     function test_error()
@@ -255,12 +252,12 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // この時点ではエラーはないはず
         $messages = $context->getMessages();
-        $this->assertArrayNotHasKey('parent', $messages);
+        that($messages)->notHasKey('parent');
 
         // 親項目にユーザエラーを追加するとエラーになるはず
         $context->error('parent', 'ユーザエラー');
         $messages = $context->getMessages();
-        $this->assertArrayHasKey('parent', $messages);
+        that($messages)->hasKey('parent');
     }
 
     function test_getMessages()
@@ -272,7 +269,7 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // 文字長エラーになっているはず
         $messages = $context->getMessages();
-        $this->assertContains('2文字～6文字で入力して下さい', reset($messages['parent']));
+        that(reset($messages['parent']))->contains('2文字～6文字で入力して下さい');
 
         //-----------------------------------------------
 
@@ -282,8 +279,8 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         // それぞれエラーになっているはず
         $messages = $context->getMessages();
         foreach ($messages as $array) {
-            $this->assertContains('メールアドレスを正しく入力してください', reset($array[0]['child1']));
-            $this->assertContains('小数部分を3桁以下で入力してください', reset($array[1]['child2']));
+            that(reset($array[0]['child1']))->contains('メールアドレスを正しく入力してください');
+            that(reset($array[1]['child2']))->contains('小数部分を3桁以下で入力してください');
         }
     }
 
@@ -294,18 +291,18 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         $values = $this->_getValues('invalid_parent');
         $context->validate($values);
 
-        $this->assertCount(1, $context->getMessages());
+        that($context)->getMessages()->count(1);
         $context->clear();
-        $this->assertCount(0, $context->getMessages());
+        that($context)->getMessages()->count(0);
 
         //-----------------------------------------------
 
         $values = $this->_getValues('invalid_child');
         $context->validate($values);
 
-        $this->assertCount(1, $context->getMessages());
+        that($context)->getMessages()->count(1);
         $context->clear();
-        $this->assertCount(0, $context->getMessages());
+        that($context)->getMessages()->count(0);
     }
 
     function test_getFlatMessages()
@@ -317,11 +314,11 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // フォーマット未指定
         $messages = $context->getFlatMessages();
-        $this->assertStringContainsString('[親項目] 2文字～6文字で入力して下さい', $messages[0]);
+        that($messages)[0]->contains('[親項目] 2文字～6文字で入力して下さい');
 
         // フォーマット指定
         $messages = $context->getFlatMessages('【%s】 %s');
-        $this->assertStringContainsString('【親項目】 2文字～6文字で入力して下さい', $messages[0]);
+        that($messages)[0]->contains('【親項目】 2文字～6文字で入力して下さい');
 
         //-----------------------------------------------
 
@@ -331,13 +328,13 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // フォーマット未指定
         $messages = $context->getFlatMessages();
-        $this->assertStringContainsString('[子項目配列 1行目 - 子項目1] メールアドレスを正しく入力してください', $messages[0]);
-        $this->assertStringContainsString('[子項目配列 2行目 - 子項目2] 小数部分を3桁以下で入力してください', $messages[1]);
+        that($messages)[0]->contains('[子項目配列 1行目 - 子項目1] メールアドレスを正しく入力してください');
+        that($messages)[1]->contains('[子項目配列 2行目 - 子項目2] 小数部分を3桁以下で入力してください');
 
         // フォーマット指定
         $messages = $context->getFlatMessages('【%s】 %s', '%sの%d個目：%s');
-        $this->assertStringContainsString('【子項目配列の1個目：子項目1】 メールアドレスを正しく入力してください', $messages[0]);
-        $this->assertStringContainsString('【子項目配列の2個目：子項目2】 小数部分を3桁以下で入力してください', $messages[1]);
+        that($messages)[0]->contains('【子項目配列の1個目：子項目1】 メールアドレスを正しく入力してください');
+        that($messages)[1]->contains('【子項目配列の2個目：子項目2】 小数部分を3桁以下で入力してください');
     }
 
     function test_getFlatMessages_withArrays()
@@ -371,11 +368,11 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ];
         $form->validate($values);
-        $this->assertEquals([
+        that($form)->getFlatMessages()->is([
             "[配列要素] 2件以上は入力してください",
             "[配列要素 1行目 - 配下要素A] 入力必須です",
             "[配列要素 1行目 - 配下要素B] 入力必須です",
-        ], $form->getFlatMessages());
+        ]);
     }
 
     function test_getRules()
@@ -417,28 +414,28 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $rule = $context->getRules();
 
-        $this->assertEquals('Decimal', $rule['parent/child']['condition']['Decimal']['cname']);
-        $this->assertEquals('Decimal', $rule['parent/child']['condition']['num']['cname']);
-        $this->assertEquals('Decimal', $rule['parent/child']['condition']['Decimal(int:3,dec:3)']['cname']);
-        $this->assertEquals('Decimal', $rule['parent/child']['condition']['0']['cname']);
+        that($rule)['parent/child']['condition']['Decimal']['cname']->is("Decimal");
+        that($rule)['parent/child']['condition']['num']['cname']->is("Decimal");
+        that($rule)['parent/child']['condition']['Decimal(int:3,dec:3)']['cname']->is("Decimal");
+        that($rule)['parent/child']['condition']['0']['cname']->is("Decimal");
 
-        $this->assertEquals('1', $rule['parent/child']['condition']['Decimal']['param']['int']);
-        $this->assertEquals('2', $rule['parent/child']['condition']['num']['param']['int']);
-        $this->assertEquals('3', $rule['parent/child']['condition']['Decimal(int:3,dec:3)']['param']['int']);
-        $this->assertEquals('4', $rule['parent/child']['condition']['0']['param']['int']);
+        that($rule)['parent/child']['condition']['Decimal']['param']['int']->is(1);
+        that($rule)['parent/child']['condition']['num']['param']['int']->is(2);
+        that($rule)['parent/child']['condition']['Decimal(int:3,dec:3)']['param']['int']->is(3);
+        that($rule)['parent/child']['condition']['0']['param']['int']->is(4);
 
-        $this->assertEquals('hoge', $rule['parent/child']['condition']['Decimal']['message'][Decimal::INVALID]);
-        $this->assertEquals('fuga', $rule['parent/child']['condition']['num']['message'][Decimal::INVALID]);
-        $this->assertEquals('foo', $rule['parent/child']['condition']['Decimal(int:3,dec:3)']['message'][Decimal::INVALID]);
-        $this->assertEquals('bar', $rule['parent/child']['condition']['Decimal(int:3,dec:3)']['message'][Decimal::INVALID_INT]);
-        $this->assertEquals('piyo', $rule['parent/child']['condition']['0']['message'][Decimal::INVALID]);
+        that($rule)['parent/child']['condition']['Decimal']['message'][Decimal::INVALID]->is("hoge");
+        that($rule)['parent/child']['condition']['num']['message'][Decimal::INVALID]->is("fuga");
+        that($rule)['parent/child']['condition']['Decimal(int:3,dec:3)']['message'][Decimal::INVALID]->is("foo");
+        that($rule)['parent/child']['condition']['Decimal(int:3,dec:3)']['message'][Decimal::INVALID_INT]->is("bar");
+        that($rule)['parent/child']['condition']['0']['message'][Decimal::INVALID]->is("piyo");
     }
 
     function test_hasInputFile()
     {
         // 持っていない
         $context = new Context($this->_getRules());
-        $this->assertFalse($context->hasInputFile());
+        that($context)->hasInputFile()->isFalse();
 
         // 持っている
         $rules = [
@@ -449,7 +446,7 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ];
         $context = new Context($rules);
-        $this->assertTrue($context->hasInputFile());
+        that($context)->hasInputFile()->isTrue();
 
         // 子が持っている
         $rules = [
@@ -464,13 +461,13 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ];
         $context = new Context($rules);
-        $this->assertTrue($context->hasInputFile());
+        that($context)->hasInputFile()->isTrue();
     }
 
     function test_getIterator()
     {
         $context = new Context(['inputA' => [], 'inputB' => []]);
-        $this->assertEquals(['inputA', 'inputB'], array_keys(iterator_to_array($context)));
+        that(array_keys(iterator_to_array($context)))->is(['inputA', 'inputB']);
     }
 
     function test_noform()
@@ -507,7 +504,7 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                 ],
             ],
         ]);
-        $this->assertFalse($context->validate([
+        that($context)->validate([
             'plain'  => 'x',
             'file'   => __FILE__,
             'inputs' => [
@@ -520,50 +517,50 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'file'  => __FILE__,
                 ],
             ],
-        ]));
-        $this->assertEquals([
-            'plain'  => [
-                'StringLength' => [
-                    'StringLengthInvalidMinMax' => '3文字～5文字で入力して下さい',
+        ])->isFalse();
+        that($context)->getMessages()->is([
+            "plain"  => [
+                "StringLength" => [
+                    "StringLengthInvalidMinMax" => "3文字～5文字で入力して下さい",
                 ],
             ],
-            'file'   => [
-                'FileType' => [
-                    'FileTypeInvalidType' => 'txt形式のファイルを選択して下さい',
+            "file"   => [
+                "FileType" => [
+                    "FileTypeInvalidType" => "txt形式のファイルを選択して下さい",
                 ],
             ],
-            'inputs' => [
-                'ArrayLength' => [
-                    'ArrayLengthInvalidMinMax' => '3件～5件を入力して下さい',
+            "inputs" => [
+                "ArrayLength" => [
+                    "ArrayLengthInvalidMinMax" => "3件～5件を入力して下さい",
                 ],
                 0             => [
-                    'plain' => [
-                        'StringLength' => [
-                            'StringLengthInvalidMinMax' => '3文字～5文字で入力して下さい',
+                    "plain" => [
+                        "StringLength" => [
+                            "StringLengthInvalidMinMax" => "3文字～5文字で入力して下さい",
                         ],
                     ],
-                    'file'  => [
-                        'FileType' => [
-                            'FileTypeInvalidType' => 'txt形式のファイルを選択して下さい',
+                    "file"  => [
+                        "FileType" => [
+                            "FileTypeInvalidType" => "txt形式のファイルを選択して下さい",
                         ],
                     ],
                 ],
                 1             => [
-                    'plain' => [
-                        'StringLength' => [
-                            'StringLengthInvalidMinMax' => '3文字～5文字で入力して下さい',
+                    "plain" => [
+                        "StringLength" => [
+                            "StringLengthInvalidMinMax" => "3文字～5文字で入力して下さい",
                         ],
                     ],
-                    'file'  => [
-                        'FileType' => [
-                            'FileTypeInvalidType' => 'txt形式のファイルを選択して下さい',
+                    "file"  => [
+                        "FileType" => [
+                            "FileTypeInvalidType" => "txt形式のファイルを選択して下さい",
                         ],
                     ],
                 ],
             ],
-        ], $context->getMessages());
+        ]);
 
-        $this->assertTrue($context->validate([
+        that($context)->validate([
             'plain'  => 'xyz',
             'file'   => $tmpfile,
             'inputs' => [
@@ -580,7 +577,7 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'file'  => $tmpfile,
                 ],
             ],
-        ]));
-        $this->assertEmpty($context->getMessages());
+        ])->isTrue();
+        that($context)->getMessages()->isEmpty();
     }
 }

@@ -9,21 +9,21 @@ class RegexTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         //一致しないとダメ
         $validate = new Regex('/decimal:\d{3}\.\d{3}/', false);
-        $this->assertEquals(true, $validate->isValid('decimal:123.456'));
-        $this->assertEquals(false, $validate->isValid('hoge'));
+        that($validate)->isValid('decimal:123.456')->isTrue();
+        that($validate)->isValid('hoge')->isFalse();
 
         //一致したらダメ
         $validate = new Regex('/[<>]/', true);
-        $this->assertEquals(false, $validate->isValid('<tag></tag>'));
-        $this->assertEquals(true, $validate->isValid('plain'));
-        $this->assertEquals(true, $validate->isValid('&lt;&gt;'));
+        that($validate)->isValid('<tag></tag>')->isFalse();
+        that($validate)->isValid('plain')->isTrue();
+        that($validate)->isValid('&lt;&gt;')->isTrue();
 
         // 文字列的な物以外はダメ
         $validate = new Regex('/.*/');
-        $this->assertEquals(false, $validate->isValid([null]));
+        that($validate)->isValid([null])->isFalse();
 
         // マッチング自体が失敗
         $validate = new Regex('/(?:\D+|<\d+>)*[!?]/');
-        $this->assertEquals(false, $validate->isValid('foobar foobar foobar'));
+        that($validate)->isValid('foobar foobar foobar')->isFalse();
     }
 }

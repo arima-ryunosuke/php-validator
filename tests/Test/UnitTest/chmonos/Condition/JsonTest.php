@@ -8,18 +8,18 @@ class JsonTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_isValid()
     {
         $validate = new Json();
-        $this->assertEquals(true, $validate->isValid('null'));
-        $this->assertEquals(true, $validate->isValid('false'));
-        $this->assertEquals(true, $validate->isValid('true'));
-        $this->assertEquals(true, $validate->isValid('123'));
-        $this->assertEquals(true, $validate->isValid('"hoge"'));
-        $this->assertEquals(true, $validate->isValid('[1,2,3]'));
-        $this->assertEquals(true, $validate->isValid('{"a": "A"}'));
-        $this->assertEquals(true, $validate->isValid('{"a": "A", "x": [{},{},{}]}'));
+        that($validate)->isValid('null')->isTrue();
+        that($validate)->isValid('false')->isTrue();
+        that($validate)->isValid('true')->isTrue();
+        that($validate)->isValid('123')->isTrue();
+        that($validate)->isValid('"hoge"')->isTrue();
+        that($validate)->isValid('[1,2,3]')->isTrue();
+        that($validate)->isValid('{"a": "A"}')->isTrue();
+        that($validate)->isValid('{"a": "A", "x": [{},{},{}]}')->isTrue();
 
-        $this->assertEquals(false, $validate->isValid('hoge'));
-        $this->assertEquals(false, $validate->isValid('1.2.3'));
-        $this->assertEquals(false, $validate->isValid('[1,2,3'));
-        $this->assertEquals(false, $validate->isValid('{"a": "A"'));
+        that($validate)->isValid('hoge')->isFalse();
+        that($validate)->isValid('1.2.3')->isFalse();
+        that($validate)->isValid('[1,2,3')->isFalse();
+        that($validate)->isValid('{"a": "A"')->isFalse();
     }
 }

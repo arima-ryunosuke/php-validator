@@ -9,30 +9,30 @@ class StringWidthTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new StringWidth(2, null);
 
-        $this->assertEquals(false, $validate->isValid(''));
-        $this->assertEquals(false, $validate->isValid('x'));
-        $this->assertEquals(true, $validate->isValid('xx'));
-        $this->assertEquals(true, $validate->isValid('ｘ'));
+        that($validate)->isValid('')->isFalse();
+        that($validate)->isValid('x')->isFalse();
+        that($validate)->isValid('xx')->isTrue();
+        that($validate)->isValid('ｘ')->isTrue();
     }
 
     function test_max()
     {
         $validate = new StringWidth(null, 5);
 
-        $this->assertEquals(true, $validate->isValid('xxxxx'));
-        $this->assertEquals(true, $validate->isValid('xxxｘ'));
-        $this->assertEquals(false, $validate->isValid('xxxxxx'));
-        $this->assertEquals(false, $validate->isValid('xxxxｘ'));
+        that($validate)->isValid('xxxxx')->isTrue();
+        that($validate)->isValid('xxxｘ')->isTrue();
+        that($validate)->isValid('xxxxxx')->isFalse();
+        that($validate)->isValid('xxxxｘ')->isFalse();
     }
 
     function test_minmax()
     {
         $validate = new StringWidth(2, 5);
 
-        $this->assertEquals(false, $validate->isValid("x"));
-        $this->assertEquals(true, $validate->isValid("ｘ"));
-        $this->assertEquals(true, $validate->isValid("xｘｘ"));
-        $this->assertEquals(false, $validate->isValid("xxｘｘ"));
+        that($validate)->isValid("x")->isFalse();
+        that($validate)->isValid("ｘ")->isTrue();
+        that($validate)->isValid("xｘｘ")->isTrue();
+        that($validate)->isValid("xxｘｘ")->isFalse();
     }
 
     function test_different()
@@ -41,14 +41,14 @@ class StringWidthTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $validate->isValid(str_repeat('ｘｘ', 0));
         $messages = $validate->getMessages();
-        $this->assertStringContainsString('3文字で', $messages[StringWidth::DIFFERENT]);
+        that($messages)[StringWidth::DIFFERENT]->contains('3文字で');
     }
 
     function test_getMaxLength()
     {
         $validate = new StringWidth(3, 4);
-        $this->assertEquals(4, $validate->getMaxLength());
+        that($validate)->getMaxLength()->is(4);
         $validate = new StringWidth(3);
-        $this->assertEquals(null, $validate->getMaxLength());
+        that($validate)->getMaxLength()->isNull();
     }
 }

@@ -9,29 +9,29 @@ class StringLengthTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new StringLength(1, null);
 
-        $this->assertEquals(false, $validate->isValid(str_repeat('x', 0)));
-        $this->assertEquals(true, $validate->isValid(str_repeat('x', 1)));
-        $this->assertEquals(true, $validate->isValid(str_repeat('x', 65535)));
+        that($validate)->isValid(str_repeat('x', 0))->isFalse();
+        that($validate)->isValid(str_repeat('x', 1))->isTrue();
+        that($validate)->isValid(str_repeat('x', 65535))->isTrue();
     }
 
     function test_max()
     {
         $validate = new StringLength(null, 10);
 
-        $this->assertEquals(true, $validate->isValid(str_repeat('x', 0)));
-        $this->assertEquals(true, $validate->isValid(str_repeat('x', 1)));
-        $this->assertEquals(true, $validate->isValid(str_repeat('x', 10)));
-        $this->assertEquals(false, $validate->isValid(str_repeat('x', 11)));
+        that($validate)->isValid(str_repeat('x', 0))->isTrue();
+        that($validate)->isValid(str_repeat('x', 1))->isTrue();
+        that($validate)->isValid(str_repeat('x', 10))->isTrue();
+        that($validate)->isValid(str_repeat('x', 11))->isFalse();
     }
 
     function test_minmax()
     {
         $validate = new StringLength(1, 10);
 
-        $this->assertEquals(false, $validate->isValid(str_repeat('x', 0)));
-        $this->assertEquals(true, $validate->isValid(str_repeat('x', 1)));
-        $this->assertEquals(true, $validate->isValid(str_repeat('x', 10)));
-        $this->assertEquals(false, $validate->isValid(str_repeat('x', 11)));
+        that($validate)->isValid(str_repeat('x', 0))->isFalse();
+        that($validate)->isValid(str_repeat('x', 1))->isTrue();
+        that($validate)->isValid(str_repeat('x', 10))->isTrue();
+        that($validate)->isValid(str_repeat('x', 11))->isFalse();
     }
 
     function test_different()
@@ -40,6 +40,6 @@ class StringLengthTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $validate->isValid(str_repeat('x', 0));
         $messages = $validate->getMessages();
-        $this->assertStringContainsString('3文字で', $messages[StringLength::DIFFERENT]);
+        that($messages)[StringLength::DIFFERENT]->contains('3文字で');
     }
 }

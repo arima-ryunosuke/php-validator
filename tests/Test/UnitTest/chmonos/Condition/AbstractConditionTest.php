@@ -15,22 +15,20 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
         require_once $file;
 
         $current = AbstractCondition::setNamespace(['hogera' => dirname($file)]);
-        $this->assertInstanceOf(\hogera\Date::class, AbstractCondition::create('Date'));
-        $this->assertInstanceOf(Callback::class, AbstractCondition::create('Callback', [function () { }]));
+        that(AbstractCondition::class)::create('Date')->isInstanceOf(\hogera\Date::class);
+        that(AbstractCondition::class)::create('Callback', [function () { }])->isInstanceOf(Callback::class);
 
         AbstractCondition::setNamespace(['hogera' => dirname($file)], false);
-        $this->assertInstanceOf(\hogera\Date::class, AbstractCondition::create('Date'));
-        $this->assertException('is not found', function () {
-            AbstractCondition::create('Callback', [function () { }]);
-        });
+        that(AbstractCondition::class)::create('Date')->isInstanceOf(\hogera\Date::class);
+        that(AbstractCondition::class)::create('Callback', [function () { }])->wasThrown('is not found');
 
         AbstractCondition::setNamespace($current);
     }
 
     function test_setMessages()
     {
-        // バックアップしておかないと後段のテストに影響が出る
-        $messageTemplates = self::publishField(Decimal::class, 'messageTemplates');
+        /** @noinspection PhpUnusedLocalVariableInspection */
+        $messageTemplates = $this->rewriteProperty(Decimal::class, 'messageTemplates');
 
         AbstractCondition::setMessages([
             // クラス => メッセージ指定
@@ -48,41 +46,43 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
         $condition = new Decimal(1, 2);
 
         $condition->isValid('hoge');
-        $this->assertEquals([
+        that($condition)->getMessages()->is([
             Decimal::INVALID => 'custom1',
-        ], $condition->getMessages());
+        ]);
 
         $condition->isValid(999.9);
-        $this->assertEquals([
+        that($condition)->getMessages()->is([
             Decimal::INVALID_INT => 'custom2',
-        ], $condition->getMessages());
+        ]);
 
         $condition->isValid(9.999);
-        $this->assertEquals([
+        that($condition)->getMessages()->is([
             Decimal::INVALID_DEC => 'custom3',
-        ], $condition->getMessages());
-
-        self::publishField(Decimal::class, 'messageTemplates', $messageTemplates);
+        ]);
     }
 
     function test_create_direct()
     {
-        $this->assertInstanceOf(AbstractCondition::class, AbstractCondition::create(\custom\Condition\CustomCondition::class));
+        that(AbstractCondition::class)::create(\custom\Condition\CustomCondition::class)->isInstanceOf(AbstractCondition::class);
 
-        $this->assertException("is not found", function () {
-            AbstractCondition::create(\custom\Condition\CustomCondition::class . 'Dummy');
-        });
+        that(AbstractCondition::class)::create(\custom\Condition\CustomCondition::class . 'Dummy')->wasThrown('is not found');
     }
 
     function test_create_paml()
     {
         $expected = ['min' => 1, 'max' => 3];
-        $this->assertEquals($expected, AbstractCondition::create(null, 'Range(1, 3)')->getValidationParam());
-        $this->assertEquals($expected, AbstractCondition::create(null, 'Range(max:3, min:1)')->getValidationParam());
-        $this->assertEquals($expected, AbstractCondition::create(null, 'Range(max:3, min:1)')->getValidationParam());
+        that(AbstractCondition::class)::create(null, 'Range(1, 3)')->getValidationParam()->is($expected);
+        that(AbstractCondition::class)::create(null, 'Range(max:3, min:1)')->getValidationParam()->is($expected);
+        that(AbstractCondition::class)::create(null, 'Range(max:3, min:1)')->getValidationParam()->is($expected);
 
-        $this->assertEquals(['min' => 1, 'max' => null], AbstractCondition::create(null, 'Range(min:1)')->getValidationParam());
-        $this->assertEquals(['min' => null, 'max' => 3], AbstractCondition::create(null, 'Range(max:3)')->getValidationParam());
+        that(AbstractCondition::class)::create(null, 'Range(min:1)')->getValidationParam()->is([
+            "min" => 1,
+            "max" => null,
+        ]);
+        that(AbstractCondition::class)::create(null, 'Range(max:3)')->getValidationParam()->is([
+            "min" => null,
+            "max" => 3,
+        ]);
     }
 
     function test_create_paml_key()
@@ -90,25 +90,35 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
         $condition = AbstractCondition::create('Range(min:1,max:3)', [
             Range::INVALID => 'hoge',
         ]);
-        $this->assertEquals(['min' => 1, 'max' => 3], $condition->getValidationParam());
-        $this->assertEquals([
+        that($condition)->getValidationParam()->is([
+            "min" => 1,
+            "max" => 3,
+        ]);
+        that($condition)->getMessageTemplates()->is([
             Range::INVALID => 'hoge',
-        ], $condition->getMessageTemplates());
+        ]);
     }
 
     function test_create_arg()
     {
         $expected = ['min' => 1, 'max' => 3];
-        $this->assertEquals($expected, AbstractCondition::create('Range', [1, 3])->getValidationParam());
-        $this->assertEquals($expected, AbstractCondition::create('Range', ['max' => 3, 1])->getValidationParam());
-        $this->assertEquals($expected, AbstractCondition::create('Range', [1, 'max' => 3])->getValidationParam());
-        $this->assertEquals($expected, AbstractCondition::create('Range', ['min' => 1, 'max' => 3])->getValidationParam());
-        $this->assertEquals($expected, AbstractCondition::create('Range', ['max' => 3, 'min' => 1])->getValidationParam());
+        that(AbstractCondition::class)::create('Range', [1, 3])->getValidationParam()->is($expected);
+        that(AbstractCondition::class)::create('Range', ['max' => 3, 1])->getValidationParam()->is($expected);
+        that(AbstractCondition::class)::create('Range', [1, 'max' => 3])->getValidationParam()->is($expected);
+        that(AbstractCondition::class)::create('Range', ['min' => 1, 'max' => 3])->getValidationParam()->is($expected);
+        that(AbstractCondition::class)::create('Range', ['max' => 3, 'min' => 1])->getValidationParam()->is($expected);
 
-        $this->assertEquals(['min' => 1, 'max' => null], AbstractCondition::create('Range', ['min' => 1])->getValidationParam());
-        $this->assertEquals(['min' => null, 'max' => 3], AbstractCondition::create('Range', ['max' => 3])->getValidationParam());
+        that(AbstractCondition::class)::create('Range', ['min' => 1])->getValidationParam()->is(['min' => 1, 'max' => null]);
+        that(AbstractCondition::class)::create('Range', ['max' => 3])->getValidationParam()->is(['min' => null, 'max' => 3]);
 
-        $this->assertEquals([
+        that(AbstractCondition::class)::create('Requires', [
+            'hoge',
+            ['fuga' => ['==', 'X']],
+            [
+                'piyo1' => ['>=', 'Y'],
+                'piyo2' => ['<=', 'Z'],
+            ],
+        ])->getValidationParam()->is([
             'statements' => [
                 ['hoge' => ['!=', '']],
                 ['fuga' => ['==', 'X']],
@@ -117,41 +127,29 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'piyo2' => ['<=', 'Z'],
                 ],
             ]
-        ], AbstractCondition::create('Requires', [
-            'hoge',
-            ['fuga' => ['==', 'X']],
-            [
-                'piyo1' => ['>=', 'Y'],
-                'piyo2' => ['<=', 'Z'],
-            ],
-        ])->getValidationParam());
+        ]);
 
-        $this->assertException("is required parameter", function () {
-            AbstractCondition::create('Regex');
-        });
+        that(AbstractCondition::class)::create('Regex')->wasThrown('is required parameter');
     }
 
     function test_outputJavascript()
     {
-        $out_dir = sys_get_temp_dir() . '/validator-test';
-        @mkdir($out_dir);
-        rm_rf($out_dir, false);
-        @mkdir("$out_dir/phpjs");
-        $this->assertTrue(AbstractCondition::outputJavascript($out_dir, true));
+        $out_dir = $this->emptyDirectory();
+        mkdir("$out_dir/phpjs");
 
-        $this->assertStringContainsString('core_validate', file_get_contents("$out_dir/validator.js"));
-        $this->assertStringContainsString('"CustomCondition":', file_get_contents("$out_dir/validator.js"));
+        that(AbstractCondition::class)::outputJavascript($out_dir, true)->isTrue();
+
+        that("$out_dir/validator.js")->fileContains('core_validate');
+        that("$out_dir/validator.js")->fileContains('"CustomCondition":');
 
         // 出したばかりなので false になるはず
-        $this->assertFalse(AbstractCondition::outputJavascript($out_dir));
+        that(AbstractCondition::class)::outputJavascript($out_dir)->isFalse();
 
         // ファイルが増えれば再び生成されるはず
         touch("$out_dir/phpjs/dummy.js", time() + 1);
-        $this->assertTrue(AbstractCondition::outputJavascript($out_dir));
+        that(AbstractCondition::class)::outputJavascript($out_dir)->isTrue();
 
-        $this->assertException("is not writable", function () {
-            AbstractCondition::outputJavascript('notfound dir');
-        });
+        that(AbstractCondition::class)::outputJavascript('notfound dir')->wasThrown('is not writable');
     }
 
     function test_context_syntax()
@@ -161,34 +159,32 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
             $f = $context['function'](function ($arg1, $arg2, $use) {
                 return $arg1 . $arg2 . $use;
             }, 'hoge');
-            $this->assertEquals('arg1arg2hoge', $f('arg1', 'arg2'));
+            that($f('arg1', 'arg2'))->is('arg1arg2hoge');
 
             // foreach(配列の key,value と use を渡してループ処理を回す)
             $all = '';
             $t = $context['foreach']($userdata, function ($k, $v, $use) use (&$all) {
                 $all .= $k . $v . $use;
             }, 'hoge');
-            $this->assertTrue($t);
-            $this->assertEquals('0ahoge1bhoge2choge', $all);
+            that($t)->isTrue();
+            that($all)->is('0ahoge1bhoge2choge');
 
             // ループが完遂できなかったら false になる
             $t = $context['foreach']([1, 2, 3], function ($k, $v) {
                 return false;
             });
-            $this->assertFalse($t);
+            that($t)->isFalse();
 
             // cast(指定の型で指定の値をキャスト)
             $v = $context['cast']('array', 'hoge');
-            $this->assertEquals(['hoge'], $v);
+            that($v)->is(['hoge']);
 
             // いまのところ array しか対応していない
-            $this->assertException(new \InvalidArgumentException('invalid cast type'), function () use ($context) {
-                $context['cast']('stdclass', 'hoge');
-            });
+            that($context['cast'])('stdclass', 'hoge')->wasThrown('invalid cast type');
 
             // str_concat(文字列結合)
             $v = $context['str_concat'](1, 's');
-            $this->assertEquals('1s', $v);
+            that($v)->is('1s');
 
         }, [], ['a', 'b', 'c']);
         $callback->isValid(null);
@@ -197,68 +193,75 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_isValid()
     {
         $condition = new Callback(function ($value, $error) { $error('this is error'); }, [], 'userdata');
-        $this->assertEquals(false, $condition->isValid(null));
-        $this->assertEquals([Callback::INVALID => 'this is error'], $condition->getMessages());
+        that($condition)->isValid(null)->isFalse();
+        that($condition)->getMessages()->is([Callback::INVALID => 'this is error']);
 
         $condition->setCheckMode(false);
-        $this->assertEquals(true, $condition->isValid(null));
-        $this->assertEquals([], $condition->getMessages());
+        that($condition)->isValid(null)->isTrue();
+        that($condition)->getMessages()->is([]);
     }
 
     function test_isArrayableValidation()
     {
-        $validate = new Decimal(1, 10);
-
-        $this->assertEquals(false, $validate->isArrayableValidation());
+        $condition = new Decimal(1, 10);
+        that($condition)->isArrayableValidation()->isFalse();
     }
 
     function test_getValidationParam()
     {
         $condition = new Decimal(1, 2);
-        $this->assertEquals(['int' => 1, 'dec' => 2], $condition->getValidationParam());
+        that($condition)->getValidationParam()->is(['int' => 1, 'dec' => 2]);
     }
 
     function test_getFields()
     {
         $condition = new Decimal(1, 2);
-        $this->assertEquals([], $condition->getFields());
+        that($condition)->getFields()->is([]);
     }
 
     function test_getMessageTemplates()
     {
         $condition = new Callback(function () { });
-        $this->assertEquals([], $condition->getMessageTemplates());
+        that($condition)->getMessageTemplates()->is([]);
 
         $condition->setMessageTemplate('test', 'undefined');
-        $this->assertEquals([], $condition->getMessageTemplates());
+        that($condition)->getMessageTemplates()->is([]);
 
         $condition->setMessageTemplate('test', Callback::INVALID);
-        $this->assertEquals(['CallbackInvalid' => 'test'], $condition->getMessageTemplates());
+        that($condition)->getMessageTemplates()->is(['CallbackInvalid' => 'test']);
     }
 
     function test_getRule()
     {
         $condition = new Callback(function () { });
-        $this->assertEquals(['cname', 'param', 'arrayable', 'message', 'fields'], array_keys($condition->getRule()));
+        that($condition)->getRule()->hasKeyAll(['cname', 'param', 'arrayable', 'message', 'fields']);
 
         $condition->setCheckMode(false);
-        $this->assertNull($condition->getRule());
+        that($condition)->getRule()->isNull();
     }
 
     function test_setCheckMode()
     {
         $condition = new Callback(function () { });
         $checkmode = \Closure::bind(function () {
-            /** @noinspection PhpUndefinedFieldInspection */
             return $this->checkmode;
         }, $condition, AbstractCondition::class);
 
         $condition->setCheckMode(false);
-        $this->assertEquals(['server' => false, 'client' => false], $checkmode());
+        that($checkmode)()->is([
+            "server" => false,
+            "client" => false,
+        ]);
         $condition->setCheckMode(true);
-        $this->assertEquals(['server' => true, 'client' => true], $checkmode());
+        that($checkmode)()->is([
+            "server" => true,
+            "client" => true,
+        ]);
         $condition->setCheckMode(['server' => false, 'hogera' => 123]);
-        $this->assertEquals(['server' => false, 'client' => true], $checkmode());
+        that($checkmode)()->is([
+            "server" => false,
+            "client" => true,
+        ]);
     }
 
     function test_addMessage()
@@ -267,12 +270,12 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
         $condition->setMessageTemplate('this is %userdata% message', Callback::INVALID);
 
         $condition->addMessage(Callback::INVALID, 'hogera');
-        $this->assertEquals([Callback::INVALID => 'hogera'], $condition->getMessages());
+        that($condition)->getMessages()->is([Callback::INVALID => 'hogera']);
 
         $condition->addMessage(Callback::INVALID, '%notfund%');
-        $this->assertEquals([Callback::INVALID => '%notfund%'], $condition->getMessages());
+        that($condition)->getMessages()->is([Callback::INVALID => '%notfund%']);
 
         $condition->addMessage(Callback::INVALID);
-        $this->assertEquals([Callback::INVALID => 'this is userdata message'], $condition->getMessages());
+        that($condition)->getMessages()->is([Callback::INVALID => 'this is userdata message']);
     }
 }

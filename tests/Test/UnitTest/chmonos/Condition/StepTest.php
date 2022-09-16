@@ -7,156 +7,152 @@ class StepTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
     function test___construct()
     {
-        $this->assertException(new \InvalidArgumentException("positive number"), function () {
-            new Step(0);
-        });
-        $this->assertException(new \InvalidArgumentException("positive number"), function () {
-            new Step(-0.1);
-        });
+        that(Step::class)->new(0)->wasThrown(new \InvalidArgumentException('positive number'));
+        that(Step::class)->new(-0.1)->wasThrown(new \InvalidArgumentException('positive number'));
     }
 
     function test_valid()
     {
         $validate = new Step(5);
-        $this->assertEquals(false, $validate->isValid('invalid'));
-        $this->assertEquals(true, $validate->isValid(15));
-        $this->assertEquals(true, $validate->isValid(10));
-        $this->assertEquals(false, $validate->isValid(6));
-        $this->assertEquals(true, $validate->isValid(5));
-        $this->assertEquals(false, $validate->isValid(4));
-        $this->assertEquals(false, $validate->isValid(3));
-        $this->assertEquals(false, $validate->isValid(2));
-        $this->assertEquals(false, $validate->isValid(1));
-        $this->assertEquals(true, $validate->isValid(0.0));
-        $this->assertEquals(true, $validate->isValid(0));
-        $this->assertEquals(true, $validate->isValid(-0));
-        $this->assertEquals(true, $validate->isValid(-0.0));
-        $this->assertEquals(false, $validate->isValid(-1));
-        $this->assertEquals(false, $validate->isValid(-2));
-        $this->assertEquals(false, $validate->isValid(-3));
-        $this->assertEquals(false, $validate->isValid(-4));
-        $this->assertEquals(true, $validate->isValid(-5));
-        $this->assertEquals(false, $validate->isValid(-6));
-        $this->assertEquals(true, $validate->isValid(-10));
-        $this->assertEquals(true, $validate->isValid(-15));
+        that($validate)->isValid('invalid')->isFalse();
+        that($validate)->isValid(15)->isTrue();
+        that($validate)->isValid(10)->isTrue();
+        that($validate)->isValid(6)->isFalse();
+        that($validate)->isValid(5)->isTrue();
+        that($validate)->isValid(4)->isFalse();
+        that($validate)->isValid(3)->isFalse();
+        that($validate)->isValid(2)->isFalse();
+        that($validate)->isValid(1)->isFalse();
+        that($validate)->isValid(0.0)->isTrue();
+        that($validate)->isValid(0)->isTrue();
+        that($validate)->isValid(-0)->isTrue();
+        that($validate)->isValid(-0.0)->isTrue();
+        that($validate)->isValid(-1)->isFalse();
+        that($validate)->isValid(-2)->isFalse();
+        that($validate)->isValid(-3)->isFalse();
+        that($validate)->isValid(-4)->isFalse();
+        that($validate)->isValid(-5)->isTrue();
+        that($validate)->isValid(-6)->isFalse();
+        that($validate)->isValid(-10)->isTrue();
+        that($validate)->isValid(-15)->isTrue();
 
         $validate = new Step(0.5);
-        $this->assertEquals(false, $validate->isValid('invalid'));
-        $this->assertEquals(true, $validate->isValid(1.5));
-        $this->assertEquals(true, $validate->isValid(1.0));
-        $this->assertEquals(false, $validate->isValid(0.6));
-        $this->assertEquals(true, $validate->isValid(0.5));
-        $this->assertEquals(false, $validate->isValid(0.4));
-        $this->assertEquals(false, $validate->isValid(0.3));
-        $this->assertEquals(false, $validate->isValid(0.2));
-        $this->assertEquals(false, $validate->isValid(0.1));
-        $this->assertEquals(true, $validate->isValid(0.0));
-        $this->assertEquals(true, $validate->isValid(0));
-        $this->assertEquals(true, $validate->isValid(-0));
-        $this->assertEquals(true, $validate->isValid(-0.0));
-        $this->assertEquals(false, $validate->isValid(-0.1));
-        $this->assertEquals(false, $validate->isValid(-0.2));
-        $this->assertEquals(false, $validate->isValid(-0.3));
-        $this->assertEquals(false, $validate->isValid(-0.4));
-        $this->assertEquals(true, $validate->isValid(-0.5));
-        $this->assertEquals(false, $validate->isValid(-0.6));
-        $this->assertEquals(true, $validate->isValid(-1.0));
-        $this->assertEquals(true, $validate->isValid(-1.5));
-        $this->assertEquals(true, $validate->isValid(5));
-        $this->assertEquals(true, $validate->isValid(4));
-        $this->assertEquals(true, $validate->isValid(3));
-        $this->assertEquals(true, $validate->isValid(2));
-        $this->assertEquals(true, $validate->isValid(1));
-        $this->assertEquals(true, $validate->isValid(-1));
-        $this->assertEquals(true, $validate->isValid(-2));
-        $this->assertEquals(true, $validate->isValid(-3));
-        $this->assertEquals(true, $validate->isValid(-4));
-        $this->assertEquals(true, $validate->isValid(-5));
+        that($validate)->isValid('invalid')->isFalse();
+        that($validate)->isValid(1.5)->isTrue();
+        that($validate)->isValid(1.0)->isTrue();
+        that($validate)->isValid(0.6)->isFalse();
+        that($validate)->isValid(0.5)->isTrue();
+        that($validate)->isValid(0.4)->isFalse();
+        that($validate)->isValid(0.3)->isFalse();
+        that($validate)->isValid(0.2)->isFalse();
+        that($validate)->isValid(0.1)->isFalse();
+        that($validate)->isValid(0.0)->isTrue();
+        that($validate)->isValid(0)->isTrue();
+        that($validate)->isValid(-0)->isTrue();
+        that($validate)->isValid(-0.0)->isTrue();
+        that($validate)->isValid(-0.1)->isFalse();
+        that($validate)->isValid(-0.2)->isFalse();
+        that($validate)->isValid(-0.3)->isFalse();
+        that($validate)->isValid(-0.4)->isFalse();
+        that($validate)->isValid(-0.5)->isTrue();
+        that($validate)->isValid(-0.6)->isFalse();
+        that($validate)->isValid(-1.0)->isTrue();
+        that($validate)->isValid(-1.5)->isTrue();
+        that($validate)->isValid(5)->isTrue();
+        that($validate)->isValid(4)->isTrue();
+        that($validate)->isValid(3)->isTrue();
+        that($validate)->isValid(2)->isTrue();
+        that($validate)->isValid(1)->isTrue();
+        that($validate)->isValid(-1)->isTrue();
+        that($validate)->isValid(-2)->isTrue();
+        that($validate)->isValid(-3)->isTrue();
+        that($validate)->isValid(-4)->isTrue();
+        that($validate)->isValid(-5)->isTrue();
 
         $validate = new Step(0.005);
-        $this->assertEquals(false, $validate->isValid('invalid'));
-        $this->assertEquals(true, $validate->isValid(0.015));
-        $this->assertEquals(true, $validate->isValid(0.010));
-        $this->assertEquals(false, $validate->isValid(0.006));
-        $this->assertEquals(true, $validate->isValid(0.005));
-        $this->assertEquals(false, $validate->isValid(0.004));
-        $this->assertEquals(false, $validate->isValid(0.003));
-        $this->assertEquals(false, $validate->isValid(0.002));
-        $this->assertEquals(false, $validate->isValid(0.001));
-        $this->assertEquals(true, $validate->isValid(0.0));
-        $this->assertEquals(true, $validate->isValid(0));
-        $this->assertEquals(true, $validate->isValid(-0));
-        $this->assertEquals(true, $validate->isValid(-0.0));
-        $this->assertEquals(false, $validate->isValid(-0.001));
-        $this->assertEquals(false, $validate->isValid(-0.002));
-        $this->assertEquals(false, $validate->isValid(-0.003));
-        $this->assertEquals(false, $validate->isValid(-0.004));
-        $this->assertEquals(true, $validate->isValid(-0.005));
-        $this->assertEquals(false, $validate->isValid(-0.006));
-        $this->assertEquals(true, $validate->isValid(-0.010));
-        $this->assertEquals(true, $validate->isValid(-0.015));
-        $this->assertEquals(true, $validate->isValid(5));
-        $this->assertEquals(true, $validate->isValid(4));
-        $this->assertEquals(true, $validate->isValid(3));
-        $this->assertEquals(true, $validate->isValid(2));
-        $this->assertEquals(true, $validate->isValid(1));
-        $this->assertEquals(true, $validate->isValid(-1));
-        $this->assertEquals(true, $validate->isValid(-2));
-        $this->assertEquals(true, $validate->isValid(-3));
-        $this->assertEquals(true, $validate->isValid(-4));
-        $this->assertEquals(true, $validate->isValid(-5));
+        that($validate)->isValid('invalid')->isFalse();
+        that($validate)->isValid(0.015)->isTrue();
+        that($validate)->isValid(0.010)->isTrue();
+        that($validate)->isValid(0.006)->isFalse();
+        that($validate)->isValid(0.005)->isTrue();
+        that($validate)->isValid(0.004)->isFalse();
+        that($validate)->isValid(0.003)->isFalse();
+        that($validate)->isValid(0.002)->isFalse();
+        that($validate)->isValid(0.001)->isFalse();
+        that($validate)->isValid(0.0)->isTrue();
+        that($validate)->isValid(0)->isTrue();
+        that($validate)->isValid(-0)->isTrue();
+        that($validate)->isValid(-0.0)->isTrue();
+        that($validate)->isValid(-0.001)->isFalse();
+        that($validate)->isValid(-0.002)->isFalse();
+        that($validate)->isValid(-0.003)->isFalse();
+        that($validate)->isValid(-0.004)->isFalse();
+        that($validate)->isValid(-0.005)->isTrue();
+        that($validate)->isValid(-0.006)->isFalse();
+        that($validate)->isValid(-0.010)->isTrue();
+        that($validate)->isValid(-0.015)->isTrue();
+        that($validate)->isValid(5)->isTrue();
+        that($validate)->isValid(4)->isTrue();
+        that($validate)->isValid(3)->isTrue();
+        that($validate)->isValid(2)->isTrue();
+        that($validate)->isValid(1)->isTrue();
+        that($validate)->isValid(-1)->isTrue();
+        that($validate)->isValid(-2)->isTrue();
+        that($validate)->isValid(-3)->isTrue();
+        that($validate)->isValid(-4)->isTrue();
+        that($validate)->isValid(-5)->isTrue();
 
         $validate = new Step(0.4);
-        $this->assertEquals(false, $validate->isValid('invalid'));
-        $this->assertEquals(true, $validate->isValid(1.2));
-        $this->assertEquals(true, $validate->isValid(0.8));
-        $this->assertEquals(false, $validate->isValid(0.6));
-        $this->assertEquals(false, $validate->isValid(0.5));
-        $this->assertEquals(true, $validate->isValid(0.4));
-        $this->assertEquals(false, $validate->isValid(0.3));
-        $this->assertEquals(false, $validate->isValid(0.2));
-        $this->assertEquals(false, $validate->isValid(0.1));
-        $this->assertEquals(true, $validate->isValid(0.0));
-        $this->assertEquals(true, $validate->isValid(0));
-        $this->assertEquals(true, $validate->isValid(-0));
-        $this->assertEquals(true, $validate->isValid(-0.0));
-        $this->assertEquals(false, $validate->isValid(-0.1));
-        $this->assertEquals(false, $validate->isValid(-0.2));
-        $this->assertEquals(false, $validate->isValid(-0.3));
-        $this->assertEquals(true, $validate->isValid(-0.4));
-        $this->assertEquals(false, $validate->isValid(-0.5));
-        $this->assertEquals(false, $validate->isValid(-0.6));
-        $this->assertEquals(true, $validate->isValid(-0.8));
-        $this->assertEquals(true, $validate->isValid(-1.2));
-        $this->assertEquals(false, $validate->isValid(5));
-        $this->assertEquals(true, $validate->isValid(4));
-        $this->assertEquals(false, $validate->isValid(3));
-        $this->assertEquals(true, $validate->isValid(2));
-        $this->assertEquals(false, $validate->isValid(1));
-        $this->assertEquals(false, $validate->isValid(-1));
-        $this->assertEquals(true, $validate->isValid(-2));
-        $this->assertEquals(false, $validate->isValid(-3));
-        $this->assertEquals(true, $validate->isValid(-4));
-        $this->assertEquals(false, $validate->isValid(-5));
+        that($validate)->isValid('invalid')->isFalse();
+        that($validate)->isValid(1.2)->isTrue();
+        that($validate)->isValid(0.8)->isTrue();
+        that($validate)->isValid(0.6)->isFalse();
+        that($validate)->isValid(0.5)->isFalse();
+        that($validate)->isValid(0.4)->isTrue();
+        that($validate)->isValid(0.3)->isFalse();
+        that($validate)->isValid(0.2)->isFalse();
+        that($validate)->isValid(0.1)->isFalse();
+        that($validate)->isValid(0.0)->isTrue();
+        that($validate)->isValid(0)->isTrue();
+        that($validate)->isValid(-0)->isTrue();
+        that($validate)->isValid(-0.0)->isTrue();
+        that($validate)->isValid(-0.1)->isFalse();
+        that($validate)->isValid(-0.2)->isFalse();
+        that($validate)->isValid(-0.3)->isFalse();
+        that($validate)->isValid(-0.4)->isTrue();
+        that($validate)->isValid(-0.5)->isFalse();
+        that($validate)->isValid(-0.6)->isFalse();
+        that($validate)->isValid(-0.8)->isTrue();
+        that($validate)->isValid(-1.2)->isTrue();
+        that($validate)->isValid(5)->isFalse();
+        that($validate)->isValid(4)->isTrue();
+        that($validate)->isValid(3)->isFalse();
+        that($validate)->isValid(2)->isTrue();
+        that($validate)->isValid(1)->isFalse();
+        that($validate)->isValid(-1)->isFalse();
+        that($validate)->isValid(-2)->isTrue();
+        that($validate)->isValid(-3)->isFalse();
+        that($validate)->isValid(-4)->isTrue();
+        that($validate)->isValid(-5)->isFalse();
     }
 
     function test_getRange()
     {
         $validate = new Step(0.05);
-        $this->assertEquals(null, $validate->getMin());
-        $this->assertEquals(null, $validate->getMax());
-        $this->assertEquals('0.05', $validate->getStep());
+        that($validate)->getMin()->isNull();
+        that($validate)->getMax()->isNull();
+        that($validate)->getStep()->is('0.05');
     }
 
     function test_getImeMode()
     {
         $validate = new Step(1);
-        $this->assertEquals(Step::DISABLED, $validate->getImeMode());
+        that($validate)->getImeMode()->is(Step::DISABLED);
     }
 
     function test_getType()
     {
         $validate = new Step(1);
-        $this->assertEquals('number', $validate->getType());
+        that($validate)->getType()->is("number");
     }
 }

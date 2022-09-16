@@ -1,7 +1,6 @@
 <?php
 namespace ryunosuke\Test\UnitTest\chmonos\Condition;
 
-use ryunosuke\chmonos\Condition\Interfaces;
 use ryunosuke\chmonos\Condition\Uri;
 
 class UriTest extends \ryunosuke\Test\AbstractUnitTestCase
@@ -10,48 +9,48 @@ class UriTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Uri();
 
-        $this->assertEquals(true, $validate->isValid('http://hostname'));
-        $this->assertEquals(false, $validate->isValid('hoge:///hostname'));
-        $this->assertEquals(false, $validate->isValid('fuga:/hostname'));
-        $this->assertEquals(false, $validate->isValid('fuga:hostname'));
-        $this->assertEquals(false, $validate->isValid('hostname'));
+        that($validate)->isValid('http://hostname')->isTrue();
+        that($validate)->isValid('hoge:///hostname')->isFalse();
+        that($validate)->isValid('fuga:/hostname')->isFalse();
+        that($validate)->isValid('fuga:hostname')->isFalse();
+        that($validate)->isValid('hostname')->isFalse();
     }
 
     function test_scheme()
     {
         // 指定なし（全許可）
         $validate = new Uri([]);
-        $this->assertEquals(true, $validate->isValid('http://hostname'));
-        $this->assertEquals(true, $validate->isValid('https://hostname'));
-        $this->assertEquals(true, $validate->isValid('ftp://hostname'));
+        that($validate)->isValid('http://hostname')->isTrue();
+        that($validate)->isValid('https://hostname')->isTrue();
+        that($validate)->isValid('ftp://hostname')->isTrue();
 
         // http, https のみ
         $validate = new Uri([
             'http',
             'https'
         ]);
-        $this->assertEquals(true, $validate->isValid('http://hostname'));
-        $this->assertEquals(true, $validate->isValid('https://hostname'));
-        $this->assertEquals(false, $validate->isValid('ftp://hostname'));
+        that($validate)->isValid('http://hostname')->isTrue();
+        that($validate)->isValid('https://hostname')->isTrue();
+        that($validate)->isValid('ftp://hostname')->isFalse();
 
         // ftpのみ
         $validate = new Uri([
             'ftp'
         ]);
-        $this->assertEquals(false, $validate->isValid('http://hostname'));
-        $this->assertEquals(false, $validate->isValid('https://hostname'));
-        $this->assertEquals(true, $validate->isValid('ftp://hostname'));
+        that($validate)->isValid('http://hostname')->isFalse();
+        that($validate)->isValid('https://hostname')->isFalse();
+        that($validate)->isValid('ftp://hostname')->isTrue();
     }
 
     function test_getImeMode()
     {
         $validate = new Uri();
-        $this->assertEquals(Interfaces\ImeMode::DISABLED, $validate->getImeMode());
+        that($validate)->getImeMode()->is(Uri::DISABLED);
     }
 
     function test_getType()
     {
         $validate = new Uri();
-        $this->assertEquals('url', $validate->getType());
+        that($validate)->getType()->is("url");
     }
 }

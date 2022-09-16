@@ -11,23 +11,23 @@ class CallbackTest extends \ryunosuke\Test\AbstractUnitTestCase
             $error($context['str_concat']('$value is ', $value, ', $another is ', $depends['another'], ', $userdata is ', $userdata));
         }, ['another'], 'userdata');
 
-        $this->assertEquals(false, $validate->isValid('hoge', [
+        that($validate)->isValid('hoge', [
             'another' => 'fuga'
-        ]));
-        $this->assertEquals([
-            'CallbackInvalid' => '$value is hoge, $another is fuga, $userdata is userdata'
-        ], $validate->getMessages());
+        ])->isFalse();
+        that($validate)->getMessages()->is([
+            "CallbackInvalid" => '$value is hoge, $another is fuga, $userdata is userdata',
+        ]);
     }
 
     function test_getField()
     {
         $validate = new Callback(function () { }, ['another']);
-        $this->assertEquals(['another'], $validate->getFields());
+        that($validate)->getFields()->is(["another"]);
     }
 
     function test_getPropagation()
     {
         $validate = new Callback(function () { }, ['another']);
-        $this->assertEquals(['another'], $validate->getPropagation());
+        that($validate)->getPropagation()->is(["another"]);
     }
 }

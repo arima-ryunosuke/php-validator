@@ -10,30 +10,30 @@ class ImageSizeTest extends \ryunosuke\Test\AbstractUnitTestCase
         $dir = __DIR__ . '/_files/';
 
         $validate = new ImageSize(200, 200);
-        $this->assertEquals(true, $validate->isValid($dir . 'jpg.jpg'));
+        that($validate)->isValid($dir . 'jpg.jpg')->isTrue();
 
         $validate = new ImageSize(1, 999);
-        $this->assertEquals(false, $validate->isValid($dir . 'gif.gif'));
-        $this->assertStringContainsString('横サイズ', $validate->getMessages()[ImageSize::INVALID_WIDTH]);
+        that($validate)->isValid($dir . 'gif.gif')->isFalse();
+        that($validate)->getMessages()[ImageSize::INVALID_WIDTH]->contains('横サイズ');
 
         $validate = new ImageSize(999, 1);
-        $this->assertEquals(false, $validate->isValid($dir . 'gif.gif'));
-        $this->assertStringContainsString('縦サイズ', $validate->getMessages()[ImageSize::INVALID_HEIGHT]);
+        that($validate)->isValid($dir . 'gif.gif')->isFalse();
+        that($validate)->getMessages()[ImageSize::INVALID_HEIGHT]->contains('縦サイズ');
 
         $validate = new ImageSize(360, 270);
-        $this->assertEquals(true, $validate->isValid($dir . 'gif.gif'));
+        that($validate)->isValid($dir . 'gif.gif')->isTrue();
         $validate = new ImageSize(359, 270);
-        $this->assertEquals(false, $validate->isValid($dir . 'gif.gif'));
+        that($validate)->isValid($dir . 'gif.gif')->isFalse();
         $validate = new ImageSize(360, 269);
-        $this->assertEquals(false, $validate->isValid($dir . 'gif.gif'));
+        that($validate)->isValid($dir . 'gif.gif')->isFalse();
 
-        $this->assertEquals(false, $validate->isValid($dir . 'csv.txt'));
-        $this->assertEquals(false, @$validate->isValid($dir . 'notfound'));
+        that($validate)->isValid($dir . 'csv.txt')->isFalse();
+        @that($validate)->isValid($dir . 'notfound')->isFalse();
     }
 
     function test_getType()
     {
         $validate = new ImageSize(200, 200);
-        $this->assertEquals('file', $validate->getType());
+        that($validate)->getType()->is("file");
     }
 }

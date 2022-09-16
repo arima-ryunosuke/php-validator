@@ -2,124 +2,123 @@
 namespace ryunosuke\Test\UnitTest\chmonos\Condition;
 
 use ryunosuke\chmonos\Condition\Hostname;
-use ryunosuke\chmonos\Condition\Interfaces;
 
 class HostnameTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
     function test_regular()
     {
         $validate = new Hostname(['']);
-        $this->assertEquals(false, $validate->isValid('127.0.0.1'));
-        $this->assertEquals(false, $validate->isValid('::'));
-        $this->assertEquals(true, $validate->isValid('example.com'));
-        $this->assertEquals(true, $validate->isValid('localhost'));
-        $this->assertEquals(false, $validate->isValid('example.com.'));
-        $this->assertEquals(false, $validate->isValid('.localhost'));
-        $this->assertEquals(false, $validate->isValid('.localhost.'));
-        $this->assertEquals(false, $validate->isValid('exa_mple.com'));
-        $this->assertEquals(true, $validate->isValid('1localhost'));
-        $this->assertEquals(true, $validate->isValid('1example.com'));
-        $this->assertEquals(false, $validate->isValid('example.1com'));
-        $this->assertEquals(true, $validate->isValid('example.com.com.com'));
-        $this->assertEquals(false, $validate->isValid('example.com.com.com.'));
+        that($validate)->isValid('127.0.0.1')->isFalse();
+        that($validate)->isValid('::')->isFalse();
+        that($validate)->isValid('example.com')->isTrue();
+        that($validate)->isValid('localhost')->isTrue();
+        that($validate)->isValid('example.com.')->isFalse();
+        that($validate)->isValid('.localhost')->isFalse();
+        that($validate)->isValid('.localhost.')->isFalse();
+        that($validate)->isValid('exa_mple.com')->isFalse();
+        that($validate)->isValid('1localhost')->isTrue();
+        that($validate)->isValid('1example.com')->isTrue();
+        that($validate)->isValid('example.1com')->isFalse();
+        that($validate)->isValid('example.com.com.com')->isTrue();
+        that($validate)->isValid('example.com.com.com.')->isFalse();
 
-        $this->assertEquals(true, $validate->isValid('a.b.c'));
-        $this->assertEquals(true, $validate->isValid('1.2.c'));
-        $this->assertEquals(true, $validate->isValid('2nd.example.com'));
-        $this->assertEquals(true, $validate->isValid('999.example.com'));
-        $this->assertEquals(true, $validate->isValid('1.2.0.192.in-addr.arpa'));
+        that($validate)->isValid('a.b.c')->isTrue();
+        that($validate)->isValid('1.2.c')->isTrue();
+        that($validate)->isValid('2nd.example.com')->isTrue();
+        that($validate)->isValid('999.example.com')->isTrue();
+        that($validate)->isValid('1.2.0.192.in-addr.arpa')->isTrue();
 
         $validate = new Hostname(['', 'cidr', 4, 6]);
-        $this->assertEquals(true, $validate->isValid('127.0.0.1'));
-        $this->assertEquals(true, $validate->isValid('127.0.0.1/24'));
-        $this->assertEquals(true, $validate->isValid('::'));
-        $this->assertEquals(true, $validate->isValid('example.com'));
-        $this->assertEquals(true, $validate->isValid('localhost'));
+        that($validate)->isValid('127.0.0.1')->isTrue();
+        that($validate)->isValid('127.0.0.1/24')->isTrue();
+        that($validate)->isValid('::')->isTrue();
+        that($validate)->isValid('example.com')->isTrue();
+        that($validate)->isValid('localhost')->isTrue();
 
         $validate = new Hostname(['', 'cidr', 4, 6], null);
-        $this->assertEquals(true, $validate->isValid('127.0.0.1'));
-        $this->assertEquals(true, $validate->isValid('127.0.0.1/24'));
-        $this->assertEquals(true, $validate->isValid('example.com'));
-        $this->assertEquals(true, $validate->isValid('localhost'));
-        $this->assertEquals(true, $validate->isValid('127.0.0.1:80'));
-        $this->assertEquals(true, $validate->isValid('127.0.0.1/24:80'));
-        $this->assertEquals(true, $validate->isValid('example.com:80'));
-        $this->assertEquals(true, $validate->isValid('localhost:80'));
+        that($validate)->isValid('127.0.0.1')->isTrue();
+        that($validate)->isValid('127.0.0.1/24')->isTrue();
+        that($validate)->isValid('example.com')->isTrue();
+        that($validate)->isValid('localhost')->isTrue();
+        that($validate)->isValid('127.0.0.1:80')->isTrue();
+        that($validate)->isValid('127.0.0.1/24:80')->isTrue();
+        that($validate)->isValid('example.com:80')->isTrue();
+        that($validate)->isValid('localhost:80')->isTrue();
     }
 
     function test_cidr()
     {
         $validate = new Hostname(['cidr']);
         // 下記は false のはず
-        $this->assertEquals(false, $validate->isValid('127.0.0.1/'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1/a'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1/33'));
+        that($validate)->isValid('127.0.0.1/')->isFalse();
+        that($validate)->isValid('127.0.0.1/a')->isFalse();
+        that($validate)->isValid('127.0.0.1/33')->isFalse();
         // 普通の ipv4 nocidr も受け付けない（受け付けたい場合は 4 を明示的に指定する）
-        $this->assertEquals(false, $validate->isValid('127.0.0.1'));
+        that($validate)->isValid('127.0.0.1')->isFalse();
 
         // 全サブネットでテスト
         foreach (range(0, 32) as $s) {
-            $this->assertEquals(true, $validate->isValid('127.0.0.1/' . $s));
+            that($validate)->isValid('127.0.0.1/' . $s)->isTrue();
         }
 
         $validate = new Hostname(['cidr'], true);
-        $this->assertEquals(true, $validate->isValid('127.0.0.1/16:80'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:65536'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:009'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1/16'));
+        that($validate)->isValid('127.0.0.1/16:80')->isTrue();
+        that($validate)->isValid('127.0.0.1/16:65536')->isFalse();
+        that($validate)->isValid('127.0.0.1/16:009')->isFalse();
+        that($validate)->isValid('127.0.0.1/16')->isFalse();
 
         $validate = new Hostname(['cidr'], false);
-        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:80'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:65536'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:009'));
-        $this->assertEquals(true, $validate->isValid('127.0.0.1/16'));
+        that($validate)->isValid('127.0.0.1/16:80')->isFalse();
+        that($validate)->isValid('127.0.0.1/16:65536')->isFalse();
+        that($validate)->isValid('127.0.0.1/16:009')->isFalse();
+        that($validate)->isValid('127.0.0.1/16')->isTrue();
 
         $validate = new Hostname(['cidr'], null);
-        $this->assertEquals(true, $validate->isValid('127.0.0.1/16:80'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:65536'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1/16:009'));
-        $this->assertEquals(true, $validate->isValid('127.0.0.1/16'));
+        that($validate)->isValid('127.0.0.1/16:80')->isTrue();
+        that($validate)->isValid('127.0.0.1/16:65536')->isFalse();
+        that($validate)->isValid('127.0.0.1/16:009')->isFalse();
+        that($validate)->isValid('127.0.0.1/16')->isTrue();
     }
 
     function test_ipv4()
     {
         $validate = new Hostname([4]);
-        $this->assertEquals(true, $validate->isValid('127.0.0.1'));
-        $this->assertEquals(false, $validate->isValid('::'));
-        $this->assertEquals(false, $validate->isValid('example.com'));
-        $this->assertEquals(false, $validate->isValid('localhost'));
+        that($validate)->isValid('127.0.0.1')->isTrue();
+        that($validate)->isValid('::')->isFalse();
+        that($validate)->isValid('example.com')->isFalse();
+        that($validate)->isValid('localhost')->isFalse();
 
         $validate = new Hostname([4], true);
-        $this->assertEquals(true, $validate->isValid('127.0.0.1:80'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1:65536'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1:009'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1'));
+        that($validate)->isValid('127.0.0.1:80')->isTrue();
+        that($validate)->isValid('127.0.0.1:65536')->isFalse();
+        that($validate)->isValid('127.0.0.1:009')->isFalse();
+        that($validate)->isValid('127.0.0.1')->isFalse();
 
         $validate = new Hostname([4], false);
-        $this->assertEquals(false, $validate->isValid('127.0.0.1:80'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1:65536'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1:009'));
-        $this->assertEquals(true, $validate->isValid('127.0.0.1'));
+        that($validate)->isValid('127.0.0.1:80')->isFalse();
+        that($validate)->isValid('127.0.0.1:65536')->isFalse();
+        that($validate)->isValid('127.0.0.1:009')->isFalse();
+        that($validate)->isValid('127.0.0.1')->isTrue();
 
         $validate = new Hostname([4], null);
-        $this->assertEquals(true, $validate->isValid('127.0.0.1:80'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1:65536'));
-        $this->assertEquals(false, $validate->isValid('127.0.0.1:009'));
-        $this->assertEquals(true, $validate->isValid('127.0.0.1'));
+        that($validate)->isValid('127.0.0.1:80')->isTrue();
+        that($validate)->isValid('127.0.0.1:65536')->isFalse();
+        that($validate)->isValid('127.0.0.1:009')->isFalse();
+        that($validate)->isValid('127.0.0.1')->isTrue();
     }
 
     function test_ipv6()
     {
         $validate = new Hostname([6]);
-        $this->assertEquals(false, $validate->isValid('127.0.0.1'));
-        $this->assertEquals(true, $validate->isValid('::'));
-        $this->assertEquals(false, $validate->isValid('example.com'));
-        $this->assertEquals(false, $validate->isValid('localhost'));
+        that($validate)->isValid('127.0.0.1')  ->isFalse();
+        that($validate)->isValid('::')         ->isTrue();
+        that($validate)->isValid('example.com')->isFalse();
+        that($validate)->isValid('localhost')  ->isFalse();
     }
 
     function test_getImeMode()
     {
         $validate = new Hostname();
-        $this->assertEquals(Interfaces\ImeMode::DISABLED, $validate->getImeMode());
+        that($validate)->getImeMode()->is(Hostname::DISABLED);
     }
 }

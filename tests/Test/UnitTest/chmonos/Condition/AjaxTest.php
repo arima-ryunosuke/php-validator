@@ -15,13 +15,13 @@ class AjaxTest extends \ryunosuke\Test\AbstractUnitTestCase
             return 'false';
         };
         $validate = new Ajax('hoge', [], $method);
-        $this->assertEquals(true, $validate->isValid('trust'));
-        $this->assertEquals(false, $validate->isValid('false'));
+        that($validate)->isValid('trust')->isTrue();
+        that($validate)->isValid('false')->isFalse();
 
         // callable形式
         $validate = new Ajax('hoge', [], [$this, '_method']);
-        $this->assertEquals(true, $validate->isValid('trust'));
-        $this->assertEquals(false, $validate->isValid('false'));
+        that($validate)->isValid('trust')->isTrue();
+        that($validate)->isValid('false')->isFalse();
 
         // 複数フィールド
         $method = function ($value, $params) {
@@ -31,16 +31,16 @@ class AjaxTest extends \ryunosuke\Test\AbstractUnitTestCase
             return 'false';
         };
         $validate = new Ajax('hoge', ['hoge'], $method);
-        $this->assertEquals(true, $validate->isValid('hoge', ['hoge']));
-        $this->assertEquals(false, $validate->isValid('hoge', ['fuga']));
+        that($validate)->isValid('hoge', ['hoge'])->isTrue();
+        that($validate)->isValid('hoge', ['fuga'])->isFalse();
     }
 
     function test_nomethod()
     {
         $validate = new Ajax('hoge');
 
-        $this->assertEquals(true, $validate->isValid(''));
-        $this->assertEquals(null, $validate->response());
+        that($validate)->isValid('')->isTrue();
+        that($validate)->response()->isNull();
     }
 
     function test_response()
@@ -48,13 +48,15 @@ class AjaxTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Ajax('hoge', [], [$this, '_method']);
 
         $_POST = ['key' => 'trust'];
-        $this->assertEquals(null, $validate->response());
+        that($validate)->response()->isNull();
 
         $_POST = ['key' => 'trust', 'other' => 'hoge'];
-        $this->assertEquals(null, $validate->response());
+        that($validate)->response()->isNull();
 
         $_POST = ['key' => 'dummy'];
-        $this->assertEquals(['AjaxInvalid' => 'false'], $validate->response());
+        that($validate)->response()->is([
+            "AjaxInvalid" => "false",
+        ]);
     }
 
     function test_response_method()
@@ -66,29 +68,33 @@ class AjaxTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $_GET = ['key' => 'trust'];
         $_POST = [];
-        $this->assertEquals(null, $validate->response());
+        that($validate)->response()->isNull();
 
         $_GET = [];
         $_POST = ['key' => 'trust'];
-        $this->assertEquals(['AjaxInvalid' => 'false'], $validate->response());
+        that($validate)->response()->is([
+            "AjaxInvalid" => "false",
+        ]);
     }
 
     function test_response_data()
     {
         $validate = new Ajax('hoge', [], [$this, '_method']);
 
-        $this->assertEquals(null, $validate->response(['key' => 'trust']));
+        that($validate)->response(['key' => 'trust'])->isNull();
 
-        $this->assertEquals(null, $validate->response(['key' => 'trust', 'other' => 'hoge']));
+        that($validate)->response(['key' => 'trust', 'other' => 'hoge'])->isNull();
 
-        $this->assertEquals(['AjaxInvalid' => 'false'], $validate->response(['key' => 'dummy']));
+        that($validate)->response(['key' => 'dummy'])->is([
+            "AjaxInvalid" => "false",
+        ]);
     }
 
     function test_response_file()
     {
         $validate = new Ajax('hoge', [], [$this, '_method']);
 
-        $this->assertEquals(null, $validate->response([
+        that($validate)->response([
             'f' => [
                 'name'     => 'dummy',
                 'type'     => 'dummy',
@@ -96,9 +102,9 @@ class AjaxTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'error'    => 'dummy',
                 'size'     => 'dummy',
             ],
-        ]));
+        ])->isNull();
 
-        $this->assertEquals(['AjaxInvalid' => 'false'], $validate->response([
+        that($validate)->response([
             'f' => [
                 'name'     => 'dummy',
                 'type'     => 'dummy',
@@ -106,13 +112,15 @@ class AjaxTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'error'    => 'dummy',
                 'size'     => 'dummy',
             ],
-        ]));
+        ])->is([
+            "AjaxInvalid" => "false",
+        ]);
     }
 
     function test_getField()
     {
         $validate = new Ajax('hoge', ['another'], [$this, '_method']);
-        $this->assertEquals(['another'], $validate->getFields());
+        that($validate)->getFields()->is(["another"]);
     }
 
     public function _method($value)

@@ -8,36 +8,36 @@ class EmailAddressTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid()
     {
         $validate = new EmailAddress();
-        $this->assertEquals(true, $validate->isValid('test@test.com'));
-        $this->assertEquals(true, $validate->isValid('test@test'));
-        $this->assertEquals(false, $validate->isValid('test@test,com'));
-        $this->assertEquals(true, $validate->isValid('test.@test.com'));
-        $this->assertEquals(false, $validate->isValid('test@.test.com'));
-        $this->assertEquals(false, $validate->isValid('test.@.test.com'));
+        that($validate)->isValid('test@test.com')->isTrue();
+        that($validate)->isValid('test@test')->isTrue();
+        that($validate)->isValid('test@test,com')->isFalse();
+        that($validate)->isValid('test.@test.com')->isTrue();
+        that($validate)->isValid('test@.test.com')->isFalse();
+        that($validate)->isValid('test.@.test.com')->isFalse();
 
-        $this->assertEquals(true, $validate->isValid('test@test.ne.jp'));
-        $this->assertEquals(false, $validate->isValid('test@test,ne.jp'));
-        $this->assertEquals(true, $validate->isValid('test.@test.ne.jp'));
-        $this->assertEquals(false, $validate->isValid('test@.test.ne.jp'));
-        $this->assertEquals(false, $validate->isValid('test.@.test.ne.jp'));
+        that($validate)->isValid('test@test.ne.jp')->isTrue();
+        that($validate)->isValid('test@test,ne.jp')->isFalse();
+        that($validate)->isValid('test.@test.ne.jp')->isTrue();
+        that($validate)->isValid('test@.test.ne.jp')->isFalse();
+        that($validate)->isValid('test.@.test.ne.jp')->isFalse();
 
-        $this->assertEquals(false, $validate->isValid('<test>@test.ne.jp'));
+        that($validate)->isValid('<test>@test.ne.jp')->isFalse();
 
         $validate = new EmailAddress('#^aaa@bbb$#ui');
-        $this->assertEquals(true, $validate->isValid('aaa@bbb'));
-        $this->assertEquals(true, $validate->isValid('AAA@BBB'));
-        $this->assertEquals(false, $validate->isValid('Xaaa@bbbX'));
+        that($validate)->isValid('aaa@bbb')->isTrue();
+        that($validate)->isValid('AAA@BBB')->isTrue();
+        that($validate)->isValid('Xaaa@bbbX')->isFalse();
     }
 
     function test_getImeMode()
     {
         $validate = new EmailAddress();
-        $this->assertEquals(EmailAddress::DISABLED, $validate->getImeMode());
+        that($validate)->getImeMode()->is(EmailAddress::DISABLED);
     }
 
     function test_getType()
     {
         $validate = new EmailAddress();
-        $this->assertEquals('text', $validate->getType());
+        that($validate)->getType()->is("text");
     }
 }

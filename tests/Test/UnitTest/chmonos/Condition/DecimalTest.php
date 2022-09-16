@@ -8,63 +8,63 @@ class DecimalTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid()
     {
         $validate = new Decimal(3, 3);
-        $this->assertEquals(false, $validate->isValid('invalid'));
-        $this->assertEquals(false, $validate->isValid(12345.12345));
+        that($validate)->isValid('invalid')->isFalse();
+        that($validate)->isValid(12345.12345)->isFalse();
 
         $validate = new Decimal(5, 3);
-        $this->assertEquals(true, $validate->isValid(1.1));
-        $this->assertEquals(true, $validate->isValid(12345.123));
-        $this->assertEquals(false, $validate->isValid(123456.123));
-        $this->assertEquals(false, $validate->isValid(12345.1234));
-        $this->assertEquals(true, $validate->isValid(0.123));
-        $this->assertEquals(false, $validate->isValid(0.1234));
-        $this->assertEquals(true, $validate->isValid(12));
-        $this->assertEquals(false, $validate->isValid(123456));
+        that($validate)->isValid(1.1)->isTrue();
+        that($validate)->isValid(12345.123)->isTrue();
+        that($validate)->isValid(123456.123)->isFalse();
+        that($validate)->isValid(12345.1234)->isFalse();
+        that($validate)->isValid(0.123)->isTrue();
+        that($validate)->isValid(0.1234)->isFalse();
+        that($validate)->isValid(12)->isTrue();
+        that($validate)->isValid(123456)->isFalse();
 
         $validate = new Decimal(5, 0);
-        $this->assertEquals(true, $validate->isValid(0));
-        $this->assertEquals(true, $validate->isValid(1));
-        $this->assertEquals(true, $validate->isValid(12345));
-        $this->assertEquals(false, $validate->isValid(12345.1));
-        $this->assertEquals(false, $validate->isValid(12345.12));
-        $this->assertEquals(false, $validate->isValid(12345.123));
-        $this->assertEquals(false, $validate->isValid(12345.1234));
-        $this->assertEquals(false, $validate->isValid(1.1));
-        $this->assertEquals(false, $validate->isValid(1.12));
-        $this->assertEquals(false, $validate->isValid(1.123));
-        $this->assertEquals(false, $validate->isValid(1.1234));
+        that($validate)->isValid(0)->isTrue();
+        that($validate)->isValid(1)->isTrue();
+        that($validate)->isValid(12345)->isTrue();
+        that($validate)->isValid(12345.1)->isFalse();
+        that($validate)->isValid(12345.12)->isFalse();
+        that($validate)->isValid(12345.123)->isFalse();
+        that($validate)->isValid(12345.1234)->isFalse();
+        that($validate)->isValid(1.1)->isFalse();
+        that($validate)->isValid(1.12)->isFalse();
+        that($validate)->isValid(1.123)->isFalse();
+        that($validate)->isValid(1.1234)->isFalse();
     }
 
     function test_getRange()
     {
         $validate = new Decimal(3, 4);
-        $this->assertEquals('-999.9999', $validate->getMin());
-        $this->assertEquals('999.9999', $validate->getMax());
-        $this->assertEquals('0.0001', $validate->getStep());
+        that($validate)->getMin()->is("-999.9999");
+        that($validate)->getMax()->is("999.9999");
+        that($validate)->getStep()->is("0.0001");
 
         $validate = new Decimal(3, 0);
-        $this->assertEquals('-999', $validate->getMin());
-        $this->assertEquals('999', $validate->getMax());
-        $this->assertEquals('1', $validate->getStep());
+        that($validate)->getMin()->is("-999");
+        that($validate)->getMax()->is("999");
+        that($validate)->getStep()->is(1);
     }
 
     function test_getImeMode()
     {
         $validate = new Decimal(3, 4);
-        $this->assertEquals(Decimal::DISABLED, $validate->getImeMode());
+        that($validate)->getImeMode()->is(Decimal::DISABLED);
     }
 
     function test_getMaxLength()
     {
         $validate = new Decimal(3, 4);
-        $this->assertEquals(9, $validate->getMaxLength());
+        that($validate)->getMaxLength()->is(9);
         $validate = new Decimal(5, 6);
-        $this->assertEquals(13, $validate->getMaxLength());
+        that($validate)->getMaxLength()->is(13);
     }
 
     function test_getType()
     {
         $validate = new Decimal(1, 2);
-        $this->assertEquals('number', $validate->getType());
+        that($validate)->getType()->is("number");
     }
 }

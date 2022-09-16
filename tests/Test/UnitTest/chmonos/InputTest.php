@@ -2,7 +2,6 @@
 /** @noinspection CssUnknownProperty */
 namespace ryunosuke\Test\UnitTest\chmonos;
 
-use ryunosuke\chmonos\Condition\Ajax;
 use ryunosuke\chmonos\Condition\Decimal;
 use ryunosuke\chmonos\Condition\InArray;
 use ryunosuke\chmonos\Condition\Requires;
@@ -21,8 +20,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'subposition' => 'append',
         ]);
         $input = new Input([]);
-        $this->assertEquals('hoge', $input->wrapper);
-        $this->assertEquals('append', $input->subposition);
+        that($input)->wrapper->is('hoge');
+        that($input)->subposition->is('append');
 
         Input::setDefaultRule($default);
     }
@@ -34,8 +33,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'propagate' => 'other'
         ];
         $input = new Input($rule);
-        $this->assertTrue(is_array($input->condition));
-        $this->assertTrue(is_array($input->propagate));
+        that($input)->condition->isArray();
+        that($input)->propagate->isArray();
 
         $rule = [
             'options' => [
@@ -46,7 +45,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ];
         $input = new Input($rule);
-        $this->assertEquals(1, $input->default);
+        that($input)->default->is(1);
     }
 
     function test___construct_checkmode()
@@ -58,42 +57,40 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
             'checkmode' => [],
         ]);
-        $this->assertEquals([], $input->checkmode);
-        $this->assertEquals(['server' => true, 'client' => false], self::publishField($c1, 'checkmode'));
-        $this->assertEquals(['server' => true, 'client' => true], self::publishField($c2, 'checkmode'));
+        that($input)->checkmode->is([]);
+        that($c1)->checkmode->is(['server' => true, 'client' => false]);
+        that($c2)->checkmode->is(['server' => true, 'client' => true]);
 
         # for compatible
 
         $input = new Input(['javascript' => true]);
-        $this->assertEquals(['server' => true, 'client' => true], $input->checkmode);
+        that($input)->checkmode->is(['server' => true, 'client' => true]);
 
         $input = new Input(['javascript' => false]);
-        $this->assertEquals(['server' => true, 'client' => false], $input->checkmode);
+        that($input)->checkmode->is(['server' => true, 'client' => false]);
     }
 
     function test___isset()
     {
         $input = new Input([]);
-        $this->assertFalse(isset($input->context));
-        $this->assertTrue(isset($input->condition));
-        $this->assertFalse(isset($input->hogera));
+        that(isset($input->context))->isFalse();
+        that(isset($input->condition))->isTrue();
+        that(isset($input->hogera))->isFalse();
 
         $input = new Input([
             'inputs' => [
                 'child' => [],
             ]
         ]);
-        $this->assertTrue(isset($input->context));
+        that(isset($input->context))->isTrue();
     }
 
     function test___get()
     {
         $input = new Input([]);
-        $this->assertTrue(is_array($input->propagate));
+        that($input)->propagate->isArray();
 
-        $this->assertException(new \InvalidArgumentException('undefined property'), function () use ($input) {
-            return $input->hogera;
-        });
+        that($input)->hogera->isThrowable(new \InvalidArgumentException('undefined property'));
     }
 
     function test_initialize()
@@ -120,11 +117,11 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
         $context->initialize();
 
-        $this->assertEquals([
-            'root'   => 'values',
-            'name'   => 'elem2',
-            'strict' => true,
-        ], $context->values->context->elem2->condition['Unique']->getValidationParam());
+        that($context)->values->context->elem2->condition['Unique']->getValidationParam()->is([
+            "root"   => "values",
+            "name"   => "elem2",
+            "strict" => true,
+        ]);
     }
 
     function test_normalize()
@@ -138,13 +135,13 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         // 無いならデフォルト
-        $this->assertEquals('DDD', $input->normalize([]));
+        that($input)->normalize([])->is('DDD');
         // あるならその値
-        $this->assertEquals('hogera', $input->normalize(['hoge' => 'hogera']));
+        that($input)->normalize(['hoge' => 'hogera'])->is('hogera');
         // trim される
-        $this->assertEquals('hogera', $input->normalize(['hoge' => ' hogera ']));
+        that($input)->normalize(['hoge' => ' hogera '])->is('hogera');
         // pseudo:true で multiple で空文字なら配列になる
-        $this->assertEquals([], $input->normalize(['hoge' => '']));
+        that($input)->normalize(['hoge' => ''])->is([]);
 
         $input = new Input([
             'name'     => 'hoge',
@@ -155,9 +152,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         // trim されない
-        $this->assertEquals(' hogera ', $input->normalize(['hoge' => ' hogera ']));
+        that($input)->normalize(['hoge' => ' hogera '])->is(' hogera ');
         // pseudo:値指定で multiple で空文字ならその値になる
-        $this->assertEquals('hoge', $input->normalize(['hoge' => '']));
+        that($input)->normalize(['hoge' => ''])->is('hoge');
 
         $input = new Input([
             'name'    => 'hoge',
@@ -165,9 +162,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         // phantom 値が入る
-        $this->assertEquals('FUGA-PIYO', $input->normalize(['fuga' => 'FUGA', 'piyo' => 'PIYO']));
+        that($input)->normalize(['fuga' => 'FUGA', 'piyo' => 'PIYO'])->is('FUGA-PIYO');
         // 一つでも空なら入らない
-        $this->assertEquals('', $input->normalize(['fuga' => 'FUGA']));
+        that($input)->normalize(['fuga' => 'FUGA'])->is('');
     }
 
     function test_value_array()
@@ -188,22 +185,34 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ['fuga' => 'fuga2'],
         ]);
 
-        $this->assertEquals([
-            ['hoge' => 'hoge1', 'fuga' => 'def'],
-            ['hoge' => 'def', 'fuga' => 'fuga2'],
-        ], $value);
+        that($value)->is([
+            [
+                "hoge" => "hoge1",
+                "fuga" => "def",
+            ],
+            [
+                "fuga" => "fuga2",
+                "hoge" => "def",
+            ],
+        ]);
 
-        $this->assertEquals([
-            ['hoge' => 'hoge1', 'fuga' => 'def'],
-            ['hoge' => 'def', 'fuga' => 'fuga2'],
-        ], $input->getValue());
+        that($input)->getValue()->is([
+            [
+                "hoge" => "hoge1",
+                "fuga" => "def",
+            ],
+            [
+                "fuga" => "fuga2",
+                "hoge" => "def",
+            ],
+        ]);
 
-        $this->assertEquals('def', $input->context->hoge->getValue());
-        $this->assertEquals('hoge1', $input->context->hoge->getValue(0));
-        $this->assertEquals('def', $input->context->hoge->getValue(1));
-        $this->assertEquals('def', $input->context->fuga->getValue());
-        $this->assertEquals('def', $input->context->fuga->getValue(0));
-        $this->assertEquals('fuga2', $input->context->fuga->getValue(1));
+        that($input)->context->hoge->getValue()->is('def');
+        that($input)->context->hoge->getValue(0)->is('hoge1');
+        that($input)->context->hoge->getValue(1)->is('def');
+        that($input)->context->fuga->getValue()->is('def');
+        that($input)->context->fuga->getValue(0)->is('def');
+        that($input)->context->fuga->getValue(1)->is('fuga2');
     }
 
     function test_message()
@@ -231,8 +240,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $input->validate($values, $values);
         $messages = $input->getMessages();
-        $this->assertContains('m_SHORTLONG', $messages['StringLength']);
-        $this->assertContains('m_NOT_IN_ARRAY', $messages['InArray']);
+        that($messages)['StringLength']->contains('m_SHORTLONG');
+        that($messages)['InArray']->contains('m_NOT_IN_ARRAY');
     }
 
     function test_autocond()
@@ -242,7 +251,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'EmailAddress' => null,
             ]
         ]);
-        $this->assertContains('StringLength', array_keys($input->condition));
+        that($input)->condition->hasKey('StringLength');
 
         $input = new Input([
             'condition' => [
@@ -250,7 +259,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
             'autocond'  => false,
         ]);
-        $this->assertNotContains('StringLength', array_keys($input->condition));
+        that($input)->condition->notHasKey('StringLength');
 
         $input = new Input([
             'condition' => [
@@ -264,8 +273,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'StringLength' => false,
             ],
         ]);
-        $this->assertContains('InArray', array_keys($input->condition));
-        $this->assertNotContains('StringLength', array_keys($input->condition));
+        that($input)->condition->hasKey('InArray');
+        that($input)->condition->notHasKey('StringLength');
 
         $input = new class([
             'autocond' => true,
@@ -275,7 +284,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 $this->rule['condition']['hoge'] = 'called';
             }
         };
-        $this->assertContains('hoge', array_keys($input->condition));
+        that($input)->condition->hasKey('hoge');
     }
 
     function test_multiple()
@@ -290,16 +299,15 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // 普通にやれば普通に true のはず
         $values = ['hoge' => [1, 5]];
-        $this->assertTrue($input->validate($values, $values));
+        that($input)->validate($values, $values)->isTrue();
 
         // 1つでもダメなのがあれば false のはず
         $values = ['hoge' => [1, 6]];
-        $this->assertFalse($input->validate($values, $values));
+        that($input)->validate($values, $values)->isFalse();
 
         // 配列じゃないと例外が飛ぶはず
-        $this->expectException(ValidationException::class);
         $values = ['hoge' => 3];
-        $this->assertEquals(false, $input->validate($values, $values));
+        that($input)->validate($values, $values)->wasThrown(ValidationException::class);
     }
 
     function test_detectType()
@@ -310,8 +318,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input($rule);
 
         // 空キーを含む options 指定がされれば select になるはず
-        $detectType = self::publishMethod($input, '_detectType');
-        $this->assertEquals('select', $detectType());
+        that($input)->_detectType()->is('select');
 
         $rule = [
             'options' => ['' => '', 'group' => [1 => '1']]
@@ -319,8 +326,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input($rule);
 
         // 階層を含む options 指定がされれば select になるはず
-        $detectType = self::publishMethod($input, '_detectType');
-        $this->assertEquals('select', $detectType());
+        that($input)->_detectType()->is('select');
 
         $rule = [
             'options' => [1 => '1', 2 => '2'],
@@ -329,8 +335,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input($rule);
 
         // default が配列なら checkbox になるはず
-        $detectType = self::publishMethod($input, '_detectType');
-        $this->assertEquals('checkbox', $detectType());
+        that($input)->_detectType()->is('checkbox');
     }
 
     function test_setAutoInArray()
@@ -344,13 +349,16 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'pseudo'    => 3,
         ];
         $input = new Input($rule);
-        $setAutoInArray = self::publishMethod($input, '_setAutoInArray');
-        $setAutoInArray();
+        that($input)->_setAutoInArray()->isNull();
 
         // InArray が追加されているはず
-        $this->assertInstanceOf(InArray::class, $input->condition['InArray']);
+        that($input)->condition['InArray']->isInstanceOf(InArray::class);
         // default がマージされているはず
-        $this->assertEquals([1 => 0, 2 => 1, 3 => 2], $input->condition['InArray']->getValidationParam()['haystack']);
+        that($input)->condition['InArray']->getValidationParam()['haystack']->is([
+            1 => 0,
+            2 => 1,
+            3 => 2,
+        ]);
 
         $in_array = new InArray([1, 2, 3]);
         $rule = [
@@ -362,11 +370,10 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ];
         $input = new Input($rule);
-        $setAutoInArray = self::publishMethod($input, '_setAutoInArray');
-        $setAutoInArray();
+        that($input)->_setAutoInArray()->isNull();
 
         // 同じインスタンスのはず
-        $this->assertEquals(spl_object_hash($in_array), spl_object_hash($input->condition[0]));
+        that(spl_object_hash($input->condition[0]))->is(spl_object_hash($in_array));
     }
 
     function test_getRange()
@@ -380,11 +387,11 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ];
         $input = new Input($rule);
 
-        $getRange = self::publishMethod($input, '_getRange');
-        $range = $getRange();
-        $this->assertEquals("0", $range['min']); // min は Range の 0
-        $this->assertEquals("99.999", $range['max']); // max は Decimal の 99.999
-        $this->assertEquals("0.5", $range['step']); // step は Step の 0.5
+        that($input)->_getRange()->is([
+            'min'  => "0",      // min は Range の 0
+            'max'  => "99.999", // max は Decimal の 99.999
+            'step' => "0.5",    // step は Step の 0.5
+        ]);
     }
 
     function test_getMaxlength()
@@ -401,8 +408,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input($rule);
 
         // EmailAddress(256) に負けずに 20 になるはず
-        $getMaxlength = self::publishMethod($input, '_getMaxlength');
-        $this->assertEquals(20, $getMaxlength());
+        that($input)->_getMaxlength()->is(20);
 
         $rule = [
             'condition' => [
@@ -416,8 +422,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input($rule);
 
         // 指定順は影響しないはず
-        $getMaxlength = self::publishMethod($input, '_getMaxlength');
-        $this->assertEquals(20, $getMaxlength());
+        that($input)->_getMaxlength()->is(20);
     }
 
     function test_getImeMode()
@@ -426,22 +431,19 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'ime-mode' => false
         ]);
-        $getImeMode = self::publishMethod($input, '_getImeMode');
-        $this->assertNull($getImeMode());
+        that($input)->_getImeMode()->isNull();
 
         // Regex は ImeMode を実装しないので null
         $input = new Input([
             'condition' => ['Regex' => '']
         ]);
-        $getImeMode = self::publishMethod($input, '_getImeMode');
-        $this->assertNull($getImeMode());
+        that($input)->_getImeMode()->isNull();
 
         // EmailAddress は disabled
         $input = new Input([
             'condition' => ['EmailAddress' => null]
         ]);
-        $getImeMode = self::publishMethod($input, '_getImeMode');
-        $this->assertEquals('disabled', $getImeMode());
+        that($input)->_getImeMode()->is('disabled');
     }
 
     function test_getDependent()
@@ -456,7 +458,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input($rule);
 
         // Requires は依存性を持つし、phantom で指定したものも依存に追加される
-        $this->assertEquals(['hoge', 'depend1', 'depend2', 'depend3'], $input->getDependent());
+        that($input)->getDependent()->is(["hoge", "depend1", "depend2", "depend3"]);
 
         $rule = [
             'condition' => [
@@ -468,7 +470,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input($rule);
 
         // dependent を [] にすると自動蒐集は行われない
-        $this->assertEquals([], $input->getDependent());
+        that($input)->getDependent()->is([]);
     }
 
     function test_getAjaxResponse()
@@ -479,9 +481,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ];
         $input = new Input($rule);
-        $this->assertEquals([
-            Ajax::INVALID => 'hoge',
-        ], $input->getAjaxResponse());
+        that($input)->getAjaxResponse()->is([
+            "AjaxInvalid" => "hoge",
+        ]);
 
         $rule = [
             'condition' => [
@@ -489,16 +491,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ];
         $input = new Input($rule);
-        $this->assertEquals(null, $input->getAjaxResponse());
+        that($input)->getAjaxResponse()->is(null);
 
-
-        $this->assertException('AjaxCondition is not found', function () {
-            $rule = [
-                'condition' => [],
-            ];
-            $input = new Input($rule);
-            $input->getAjaxResponse();
-        });
+        that(Input::class)->new(['condition' => []])->getAjaxResponse()->wasThrown('AjaxCondition is not found');
     }
 
     function test_validate()
@@ -516,8 +511,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'input' => ''
         ];
 
-        $this->assertFalse($input->validate($values, $values));
-        $this->assertCount(1, $input->getMessages());
+        that($input)->validate($values, $values)->isFalse();
+        that($input)->getMessages()->count(1);
 
         //-----------------------------------------------
 
@@ -525,8 +520,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'input' => 'longlonglong'
         ];
 
-        $this->assertFalse($input->validate($values, $values));
-        $this->assertCount(1, $input->getMessages());
+        that($input)->validate($values, $values)->isFalse();
+        that($input)->getMessages()->count(1);
 
         //-----------------------------------------------
 
@@ -534,8 +529,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'input' => 'short'
         ];
 
-        $this->assertTrue($input->validate($values, $values));
-        $this->assertCount(0, $input->getMessages());
+        that($input)->validate($values, $values)->isTrue();
+        that($input)->getMessages()->count(0);
     }
 
     function test_validate_array()
@@ -564,23 +559,23 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ];
 
-        $this->assertFalse($input->validate($values, $values));
-        $this->assertEquals([
+        that($input)->validate($values, $values)->isFalse();
+        that($input)->getMessages()->is([
             [
-                'e1' => [
-                    'StringLength' => [
-                        'StringLengthInvalidMinMax' => '2文字～6文字で入力して下さい',
-                    ]
-                ]
+                "e1" => [
+                    "StringLength" => [
+                        "StringLengthInvalidMinMax" => "2文字～6文字で入力して下さい",
+                    ],
+                ],
             ],
             [
-                'e2' => [
-                    'StringLength' => [
-                        'StringLengthInvalidMinMax' => '1文字～7文字で入力して下さい',
-                    ]
-                ]
+                "e2" => [
+                    "StringLength" => [
+                        "StringLengthInvalidMinMax" => "1文字～7文字で入力して下さい",
+                    ],
+                ],
             ],
-        ], $input->getMessages());
+        ]);
     }
 
     function test_clear()
@@ -597,10 +592,10 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'input' => '',
         ];
 
-        $this->assertFalse($input->validate($values, $values));
-        $this->assertCount(1, $input->getMessages());
+        that($input)->validate($values, $values)->isFalse();
+        that($input)->getMessages()->count(1);
         $input->clear();
-        $this->assertCount(0, $input->getMessages());
+        that($input)->getMessages()->count(0);
     }
 
     function test_getValidationParams_class()
@@ -636,21 +631,21 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $rule = $input->getValidationRule();
 
-        $this->assertEquals('Decimal', $rule['condition']['Decimal']['cname']);
-        $this->assertEquals('Decimal', $rule['condition']['num']['cname']);
-        $this->assertEquals('Decimal', $rule['condition']['Decimal(int:3,dec:3)']['cname']);
-        $this->assertEquals('Decimal', $rule['condition']['0']['cname']);
+        that($rule)['condition']['Decimal']['cname']->is('Decimal');
+        that($rule)['condition']['num']['cname']->is('Decimal');
+        that($rule)['condition']['Decimal(int:3,dec:3)']['cname']->is('Decimal');
+        that($rule)['condition']['0']['cname']->is('Decimal');
 
-        $this->assertEquals('1', $rule['condition']['Decimal']['param']['int']);
-        $this->assertEquals('2', $rule['condition']['num']['param']['int']);
-        $this->assertEquals('3', $rule['condition']['Decimal(int:3,dec:3)']['param']['int']);
-        $this->assertEquals('4', $rule['condition']['0']['param']['int']);
+        that($rule)['condition']['Decimal']['param']['int']->is('1');
+        that($rule)['condition']['num']['param']['int']->is('2');
+        that($rule)['condition']['Decimal(int:3,dec:3)']['param']['int']->is('3');
+        that($rule)['condition']['0']['param']['int']->is('4');
 
-        $this->assertEquals('hoge', $rule['condition']['Decimal']['message'][Decimal::INVALID]);
-        $this->assertEquals('fuga', $rule['condition']['num']['message'][Decimal::INVALID]);
-        $this->assertEquals('foo', $rule['condition']['Decimal(int:3,dec:3)']['message'][Decimal::INVALID]);
-        $this->assertEquals('bar', $rule['condition']['Decimal(int:3,dec:3)']['message'][Decimal::INVALID_INT]);
-        $this->assertEquals('piyo', $rule['condition']['0']['message'][Decimal::INVALID]);
+        that($rule)['condition']['Decimal']['message'][Decimal::INVALID]->is('hoge');
+        that($rule)['condition']['num']['message'][Decimal::INVALID]->is('fuga');
+        that($rule)['condition']['Decimal(int:3,dec:3)']['message'][Decimal::INVALID]->is('foo');
+        that($rule)['condition']['Decimal(int:3,dec:3)']['message'][Decimal::INVALID_INT]->is('bar');
+        that($rule)['condition']['0']['message'][Decimal::INVALID]->is('piyo');
     }
 
     function test_label()
@@ -663,20 +658,18 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
+        that($input)->label()->htmlMatchesArray([
             'label' => [
-                [
-                    'data-vlabel-id'    => 'input',
-                    'data-vlabel-class' => 'input',
-                    'data-vlabel-index' => '',
-                    'for'               => 'input',
-                    'class'             => 'validatable_label',
-                ]
+                'data-vlabel-id'    => 'input',
+                'data-vlabel-class' => 'input',
+                'data-vlabel-index' => '',
+                'for'               => 'input',
+                'class'             => 'validatable_label',
             ],
-        ], $input->label());
+        ]);
 
-        $this->assertStringContainsString('for="input-id"', $input->label(['for' => 'input-id']));
-        $this->assertStringContainsString('specified-label', $input->label(['label' => 'specified-label']));
+        that($input)->label(['for' => 'input-id'])->contains('for="input-id"');
+        that($input)->label(['label' => 'specified-label'])->contains('specified-label');
     }
 
     function test_label_context()
@@ -692,19 +685,17 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         $prefix = spl_object_id($input->context);
-        $this->assertAttribute([
+        that($input)->context->child->label()->htmlMatchesArray([
             'label' => [
-                [
-                    'for'               => "cx{$prefix}_inputs-__index-child",
-                    'data-vlabel-id'    => 'inputs/__index/child',
-                    'data-vlabel-class' => 'inputs/child',
-                    'data-vlabel-index' => '__index',
-                    'class'             => 'validatable_label',
-                ]
-            ]
-        ], $input->context->child->label());
+                'for'               => "cx{$prefix}_inputs-__index-child",
+                'data-vlabel-id'    => 'inputs/__index/child',
+                'data-vlabel-class' => 'inputs/child',
+                'data-vlabel-index' => '__index',
+                'class'             => 'validatable_label',
+            ],
+        ]);
 
-        $this->assertStringContainsString('for="input-id"', $input->label(['for' => 'input-id']));
+        that($input)->label(['for' => 'input-id'])->contains('for="input-id"');
     }
 
     function test_input()
@@ -714,22 +705,20 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'title' => 'HOGE',
         ]);
 
-        $this->assertAttribute([
+        that($input)->input(['value' => 'new value', 'class' => 'klass1 klass2', 'style' => 'color:red'])->htmlMatchesArray([
             'input' => [
-                [
-                    'value'                 => 'new value',
-                    'class'                 => 'klass1 klass2 validatable',
-                    'style'                 => 'color:red',
-                    'data-validation-title' => 'HOGE',
-                    'data-vinput-id'        => 'hoge',
-                    'data-vinput-class'     => 'hoge',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'hoge',
-                    'id'                    => 'hoge',
-                    'type'                  => 'text',
-                ]
-            ]
-        ], $input->input(['value' => 'new value', 'class' => 'klass1 klass2', 'style' => 'color:red']));
+                'value'                 => 'new value',
+                'class'                 => 'klass1 klass2 validatable',
+                'style'                 => 'color:red',
+                'data-validation-title' => 'HOGE',
+                'data-vinput-id'        => 'hoge',
+                'data-vinput-class'     => 'hoge',
+                'data-vinput-index'     => '',
+                'name'                  => 'hoge',
+                'id'                    => 'hoge',
+                'type'                  => 'text',
+            ],
+        ]);
     }
 
     function test_input_attribute()
@@ -744,56 +733,48 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
+        that($input)->input([])->htmlMatchesArray([
             'input' => [
-                [
-                    'scalar'                => '123',
-                    'string'                => '"</script>',
-                    'array'                 => '[1,2,3]',
-                    'hash'                  => '{"a":"A","b":"B","c":"C"}',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'hoge',
-                    'data-vinput-class'     => 'hoge',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'hoge',
-                    'id'                    => 'hoge',
-                    'type'                  => 'text',
-                    'class'                 => 'validatable',
-                    'value'                 => '',
-                ]
-            ]
-        ], $input->input([]));
+                'scalar'                => '123',
+                'string'                => '"</script>',
+                'array'                 => '[1,2,3]',
+                'hash'                  => '{"a":"A","b":"B","c":"C"}',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'hoge',
+                'data-vinput-class'     => 'hoge',
+                'data-vinput-index'     => '',
+                'name'                  => 'hoge',
+                'id'                    => 'hoge',
+                'type'                  => 'text',
+                'class'                 => 'validatable',
+                'value'                 => '',
+            ],
+        ]);
 
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'scalar'                => '',
-                    'string'                => '',
-                    'array'                 => '',
-                    'hash'                  => '',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'hoge',
-                    'data-vinput-class'     => 'hoge',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'hoge',
-                    'id'                    => 'hoge',
-                    'type'                  => 'text',
-                    'class'                 => 'validatable',
-                    'value'                 => '',
-                ]
-            ]
-        ], $input->input([
+        that($input)->input([
             'scalar' => null,
             'string' => null,
             'array'  => null,
             'hash'   => null,
-        ]));
+        ])->htmlMatchesArray([
+            'input' => [
+                'scalar'                => '',
+                'string'                => '',
+                'array'                 => '',
+                'hash'                  => '',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'hoge',
+                'data-vinput-class'     => 'hoge',
+                'data-vinput-index'     => '',
+                'name'                  => 'hoge',
+                'id'                    => 'hoge',
+                'type'                  => 'text',
+                'class'                 => 'validatable',
+                'value'                 => '',
+            ],
+        ]);
 
-        $this->assertException(new \InvalidArgumentException('attribute requires hash array'), function () {
-            new Input([
-                'attribute' => ''
-            ]);
-        });
+        that(Input::class)->new(['attribute' => ''])->wasThrown(new \InvalidArgumentException('attribute requires hash array'));
     }
 
     function test_input_multiple()
@@ -805,9 +786,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $value = [1, 2, 3];
         $input->setValue($value);
 
-        $this->assertStringContainsString('name="hoge[]" id="hoge_0" value="1"', $input->input());
-        $this->assertStringContainsString('name="hoge[]" id="hoge_1" value="2"', $input->input());
-        $this->assertStringContainsString('name="hoge[]" id="hoge_2" value="3"', $input->input());
+        that($input)->input()->contains('name="hoge[]" id="hoge_0" value="1"');
+        that($input)->input()->contains('name="hoge[]" id="hoge_1" value="2"');
+        that($input)->input()->contains('name="hoge[]" id="hoge_2" value="3"');
     }
 
     function test_input_subposition()
@@ -824,15 +805,66 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ];
 
         $input = new Input($rules + ['subposition' => 'append']);
-        $this->assertStringContainsString('</option><option class=" validation_invalid" selected="selected" value="y">Y</option></select', $input->input(['type' => 'select', 'value' => 'y']));
+        that($input)->input(['type' => 'select', 'value' => 'y'])->htmlMatchesArray([
+            "select" => [
+                "option[1]" => [
+                    "value" => "x",
+                    0       => "X",
+                ],
+                "option[2]" => [
+                    "value" => "z",
+                    0       => "Z",
+                ],
+                "option[3]" => [
+                    "class"    => ["validation_invalid"],
+                    "selected" => "selected",
+                    "value"    => "y",
+                    0          => "Y",
+                ],
+            ],
+        ]);
 
         $input = new Input($rules + ['subposition' => 'prepend']);
-        $this->assertStringContainsString('"validatable"><option class=" validation_invalid" selected="selected" value="y">Y</option><option', $input->input(['type' => 'select', 'value' => 'y']));
+        that($input)->input(['type' => 'select', 'value' => 'y'])->htmlMatchesArray([
+            "select" => [
+                "option[1]" => [
+                    "class"    => ["validation_invalid"],
+                    "selected" => "selected",
+                    "value"    => "y",
+                    0          => "Y",
+                ],
+                "option[2]" => [
+                    "value" => "x",
+                    0       => "X",
+                ],
+                "option[3]" => [
+                    "value" => "z",
+                    0       => "Z",
+                ],
+            ],
+        ]);
 
         $input = new Input($rules + [
                 'subposition' => fn($options, $invalids) => kvsort($options + $invalids, fn($av, $bv, $ak, $bk) => $ak <=> $bk)
             ]);
-        $this->assertStringContainsString('</option><option class=" validation_invalid" selected="selected" value="y">Y</option><option', $input->input(['type' => 'select', 'value' => 'y']));
+        that($input)->input(['type' => 'select', 'value' => 'y'])->htmlMatchesArray([
+            "select" => [
+                "option[1]" => [
+                    "value" => "x",
+                    0       => "X",
+                ],
+                "option[2]" => [
+                    "class"    => ["validation_invalid"],
+                    "selected" => "selected",
+                    "value"    => "y",
+                    0          => "Y",
+                ],
+                "option[3]" => [
+                    "value" => "z",
+                    0       => "Z",
+                ],
+            ],
+        ]);
     }
 
     function test_input_wrapper()
@@ -840,14 +872,83 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'name'    => 'hoge',
             'wrapper' => 'input-class',
-            'options'  => [
+            'options' => [
                 1 => 'foo',
             ],
         ]);
 
-        $this->assertStringContainsString('<span data-vinput-wrapper="hoge" data-value="" class="input-class input-text">', $input->input(['type' => 'text']));
-        $this->assertStringContainsString('<span data-vinput-wrapper="hoge" data-value="1" class="hogera input-checkbox">', $input->input(['wrapper' => 'hogera']));
-        $this->assertStringContainsString('<span data-vinput-wrapper="hoge" data-value="1" class="input-class input-radio"><input', $input->input(['type' => 'radio']));
+        that($input)->input(['type' => 'text'])->htmlMatchesArray([
+            "span[1]" => [
+                "data-vinput-wrapper" => "hoge",
+                "data-value"          => "",
+                "class"               => ["input-class", "input-text"],
+                "input[1]"            => [
+                    "type"                  => "text",
+                    "data-validation-title" => "",
+                    "data-vinput-id"        => "hoge",
+                    "data-vinput-class"     => "hoge",
+                    "data-vinput-index"     => "",
+                    "name"                  => "hoge",
+                    "id"                    => "hoge",
+                    "class"                 => ["validatable"],
+                    "value"                 => "1",
+                ],
+            ],
+        ]);
+        that($input)->input(['wrapper' => 'hogera'])->htmlMatchesArray([
+            "body[1]" => [
+                "input[1]" => [
+                    "type"               => "hidden",
+                    "name"               => "hoge",
+                    "value"              => "",
+                    "data-vinput-pseudo" => "true",
+                ],
+                "span[1]"  => [
+                    "data-vinput-wrapper" => "hoge",
+                    "data-value"          => "1",
+                    "class"               => ["hogera", "input-checkbox"],
+                    "input[1]"            => [
+                        "data-validation-title" => "",
+                        "data-vinput-id"        => "hoge",
+                        "data-vinput-class"     => "hoge",
+                        "data-vinput-index"     => "",
+                        "name"                  => "hoge",
+                        "id"                    => "hoge-1",
+                        "class"                 => ["validatable"],
+                        "type"                  => "checkbox",
+                        "value"                 => "1",
+                        "checked"               => "checked",
+                    ],
+                    "label[1]"            => [
+                        "for" => "hoge-1",
+                        0     => "foo",
+                    ],
+                ],
+            ],
+        ]);
+        that($input)->input(['type' => 'radio'])->htmlMatchesArray([
+            "span[1]" => [
+                "data-vinput-wrapper" => "hoge",
+                "data-value"          => "1",
+                "class"               => ["input-class", "input-radio"],
+                "input[1]"            => [
+                    "type"                  => "radio",
+                    "data-validation-title" => "",
+                    "data-vinput-id"        => "hoge",
+                    "data-vinput-class"     => "hoge",
+                    "data-vinput-index"     => "",
+                    "name"                  => "hoge",
+                    "id"                    => "hoge-1",
+                    "class"                 => ["validatable"],
+                    "value"                 => "1",
+                    "checked"               => "checked",
+                ],
+                "label[1]"            => [
+                    "for" => "hoge-1",
+                    0     => "foo",
+                ],
+            ],
+        ]);
     }
 
     function test_input_grouper()
@@ -862,9 +963,103 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ]);
 
-        $this->assertStringContainsString('<span data-vinput-group="hoge[]" class="input-group input-text"><input', $input->input(['type' => 'text']));
-        $this->assertStringContainsString('<span data-vinput-group="hoge[]" class="input-group input-checkbox"><input', $input->input(['type' => 'checkbox']));
-        $this->assertStringContainsString('<span data-vinput-group="hoge" class="input-group input-radio"><input', $input->input(['type' => 'radio']));
+        that($input)->input(['type' => 'text'])->htmlMatchesArray([
+            "span[1]" => [
+                "data-vinput-group" => "hoge[]",
+                "class"             => ["input-group", "input-text"],
+                "input[1]"          => [
+                    "type"                  => "text",
+                    "data-validation-title" => "",
+                    "data-vinput-id"        => "hoge",
+                    "data-vinput-class"     => "hoge",
+                    "data-vinput-index"     => "",
+                    "name"                  => "hoge[]",
+                    "id"                    => "hoge_0",
+                    "value"                 => "1",
+                    "class"                 => ["validatable"],
+                ],
+            ],
+        ]);
+        that($input)->input(['type' => 'checkbox'])->htmlMatchesArray([
+            "span[1]" => [
+                "data-vinput-group" => "hoge[]",
+                "class"             => ["input-group", "input-checkbox"],
+                "input[1]"          => [
+                    "type"               => "hidden",
+                    "name"               => "hoge",
+                    "value"              => "",
+                    "data-vinput-pseudo" => "true",
+                ],
+                "input[2]"          => [
+                    "type"                  => "checkbox",
+                    "data-validation-title" => "",
+                    "data-vinput-id"        => "hoge",
+                    "data-vinput-class"     => "hoge",
+                    "data-vinput-index"     => "",
+                    "name"                  => "hoge[]",
+                    "id"                    => "hoge-1",
+                    "class"                 => ["validatable"],
+                    "value"                 => "1",
+                    "checked"               => "checked",
+                ],
+                "label[1]"          => [
+                    "for" => "hoge-1",
+                    0     => "foo",
+                ],
+                "input[3]"          => [
+                    "type"                  => "checkbox",
+                    "data-validation-title" => "",
+                    "data-vinput-id"        => "hoge",
+                    "data-vinput-class"     => "hoge",
+                    "data-vinput-index"     => "",
+                    "name"                  => "hoge[]",
+                    "id"                    => "hoge-2",
+                    "class"                 => ["validatable"],
+                    "value"                 => "2",
+                ],
+                "label[2]"          => [
+                    "for" => "hoge-2",
+                    0     => "bar",
+                ],
+            ],
+        ]);
+        that($input)->input(['type' => 'radio'])->htmlMatchesArray([
+            "span[1]" => [
+                "data-vinput-group" => "hoge",
+                "class"             => ["input-group", "input-radio"],
+                "input[1]"          => [
+                    "type"                  => "radio",
+                    "data-validation-title" => "",
+                    "data-vinput-id"        => "hoge",
+                    "data-vinput-class"     => "hoge",
+                    "data-vinput-index"     => "",
+                    "name"                  => "hoge",
+                    "id"                    => "hoge-1",
+                    "class"                 => ["validatable"],
+                    "value"                 => "1",
+                    "checked"               => "checked",
+                ],
+                "label[1]"          => [
+                    "for" => "hoge-1",
+                    0     => "foo",
+                ],
+                "input[2]"          => [
+                    "type"                  => "radio",
+                    "data-validation-title" => "",
+                    "data-vinput-id"        => "hoge",
+                    "data-vinput-class"     => "hoge",
+                    "data-vinput-index"     => "",
+                    "name"                  => "hoge",
+                    "id"                    => "hoge-2",
+                    "class"                 => ["validatable"],
+                    "value"                 => "2",
+                ],
+                "label[2]"          => [
+                    "for" => "hoge-2",
+                    0     => "bar",
+                ],
+            ],
+        ]);
     }
 
     function test_inputArrays()
@@ -876,77 +1071,65 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
+        that($input)->input()->htmlMatchesArray([
             'input' => [
-                [
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'inputs',
-                    'data-vinput-class'     => 'inputs',
-                    'data-vinput-index'     => '',
-                    'name'                  => '__inputs',
-                    'id'                    => 'inputs',
-                    'type'                  => 'dummy',
-                    'value'                 => 'dummy',
-                    'class'                 => 'validatable',
-                    'style'                 => 'border:0px;width:1px;height:1px;visibility:hidden',
-                ]
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'inputs',
+                'data-vinput-class'     => 'inputs',
+                'data-vinput-index'     => '',
+                'name'                  => '__inputs',
+                'id'                    => 'inputs',
+                'type'                  => 'dummy',
+                'value'                 => 'dummy',
+                'class'                 => 'validatable',
+                'style'                 => 'border:0px;width:1px;height:1px;visibility:hidden',
             ],
-        ], $input->input());
+        ]);
 
-        $this->assertAttribute([
+        that($input)->input(['index' => 1])->htmlMatchesArray([
             'input' => [
-                [
-                    'index'                 => '1',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'inputs',
-                    'data-vinput-class'     => 'inputs',
-                    'data-vinput-index'     => '',
-                    'name'                  => '__inputs',
-                    'id'                    => 'inputs',
-                    'type'                  => 'dummy',
-                    'value'                 => 'dummy',
-                    'class'                 => 'validatable',
-                    'style'                 => 'border:0px;width:1px;height:1px;visibility:hidden',
-                ]
+                'index'                 => '1',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'inputs',
+                'data-vinput-class'     => 'inputs',
+                'data-vinput-index'     => '',
+                'name'                  => '__inputs',
+                'id'                    => 'inputs',
+                'type'                  => 'dummy',
+                'value'                 => 'dummy',
+                'class'                 => 'validatable',
+                'style'                 => 'border:0px;width:1px;height:1px;visibility:hidden',
             ],
-        ], $input->input([
-            'index' => 1
-        ]));
+        ]);
 
         $cx = spl_object_id($input->context);
-        $this->assertAttribute([
+        that($input)->context->child->input()->htmlMatchesArray([
             'input' => [
-                [
-                    'value'                 => '',
-                    'id'                    => "cx{$cx}_inputs-__index-child",
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'inputs/__index/child',
-                    'data-vinput-class'     => 'inputs/child',
-                    'data-vinput-index'     => '__index',
-                    'disabled'              => 'disabled',
-                    'name'                  => 'inputs[__index][child]',
-                    'type'                  => 'text',
-                    'class'                 => 'validatable',
-                ]
+                'value'                 => '',
+                'id'                    => "cx{$cx}_inputs-__index-child",
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'inputs/__index/child',
+                'data-vinput-class'     => 'inputs/child',
+                'data-vinput-index'     => '__index',
+                'disabled'              => 'disabled',
+                'name'                  => 'inputs[__index][child]',
+                'type'                  => 'text',
+                'class'                 => 'validatable',
             ],
-        ], $input->context->child->input());
-        $this->assertAttribute([
+        ]);
+        that($input)->context->child->input(['index' => 1])->htmlMatchesArray([
             'input' => [
-                [
-                    'id'                    => "cx{$cx}_inputs-1-child",
-                    'value'                 => '',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'inputs/1/child',
-                    'data-vinput-class'     => 'inputs/child',
-                    'data-vinput-index'     => '1',
-                    'name'                  => 'inputs[1][child]',
-                    'type'                  => 'text',
-                    'class'                 => 'validatable',
-                ]
+                'id'                    => "cx{$cx}_inputs-1-child",
+                'value'                 => '',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'inputs/1/child',
+                'data-vinput-class'     => 'inputs/child',
+                'data-vinput-index'     => '1',
+                'name'                  => 'inputs[1][child]',
+                'type'                  => 'text',
+                'class'                 => 'validatable',
             ],
-        ], $input->context->child->input([
-            'index' => 1
-        ]));
+        ]);
     }
 
     function test_inputCheckbox()
@@ -959,95 +1142,49 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'pseudo'  => false
         ]);
 
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'class'                 => 'validatable',
-                    'value'                 => '1',
-                    'checked'               => 'checked',
-                    'id'                    => 'name-1',
-                ]
-            ],
-            'label' => [
-                [
-                    'for' => 'name-1',
-                ]
-            ]
-        ], $input->input([
+        that($input)->input([
             'type' => 'checkbox'
-        ]));
-
-        $this->assertAttribute([
+        ])->htmlMatchesArray([
             'input' => [
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'class'                 => 'validatable',
-                    'value'                 => '99',
-                    'id'                    => 'name-99',
-                ]
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'class'                 => 'validatable',
+                'value'                 => '1',
+                'checked'               => 'checked',
+                'id'                    => 'name-1',
             ],
             'label' => [
-                [
-                    'for' => 'name-99',
-                ]
+                'for' => 'name-1',
             ]
-        ], $input->input([
+        ]);
+
+        that($input)->input([
             'type'    => 'checkbox',
             'options' => [
                 '99' => 'hoge'
             ]
-        ]));
-
-        $this->assertAttribute([
+        ])->htmlMatchesArray([
             'input' => [
-                [
-                    'type'                  => 'checkbox',
-                    'data-array'            => '',
-                    'data-string'           => 'string',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-1',
-                    'class'                 => 'validatable',
-                    'value'                 => '1',
-                    'checked'               => 'checked',
-                ],
-                [
-                    'type'                  => 'checkbox',
-                    'data-array'            => 'fuga-data',
-                    'data-string'           => 'string',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'class'                 => 'validatable',
-                    'value'                 => '2',
-                    'id'                    => 'name-2',
-                ]
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'class'                 => 'validatable',
+                'value'                 => '99',
+                'id'                    => 'name-99',
             ],
             'label' => [
-                [
-                    'for' => 'name-1',
-                ],
-                [
-                    'for' => 'name-2',
-                ]
+                'for' => 'name-99',
             ]
-        ], $input->input([
+        ]);
+
+        that($input)->input([
             'type'        => 'checkbox',
             'options'     => [
                 '1' => 'hoge',
@@ -1057,7 +1194,41 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 '2' => 'fuga-data',
             ],
             'data-string' => 'string',
-        ]));
+        ])->htmlMatchesArray([
+            'input[1]' => [
+                'type'                  => 'checkbox',
+                'data-array'            => '',
+                'data-string'           => 'string',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-1',
+                'class'                 => 'validatable',
+                'value'                 => '1',
+                'checked'               => 'checked',
+            ],
+            'label[1]' => [
+                "for" => "name-1",
+            ],
+            'input[2]' => [
+                'type'                  => 'checkbox',
+                'data-array'            => 'fuga-data',
+                'data-string'           => 'string',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'class'                 => 'validatable',
+                'value'                 => '2',
+                'id'                    => 'name-2',
+            ],
+            'label[2]' => [
+                "for" => "name-2",
+            ],
+        ]);
     }
 
     function test_inputCheckbox_suboptions()
@@ -1074,58 +1245,54 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'pseudo'     => false,
         ]);
 
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-invalid',
-                    'class'                 => 'validatable validation_invalid',
-                    'value'                 => 'invalid',
-                    'checked'               => 'checked',
-                ],
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-0',
-                    'class'                 => 'validatable',
-                    'value'                 => '0',
-                ],
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-',
-                    'class'                 => 'validatable',
-                    'value'                 => '',
-                ]
-            ],
-            'label' => [
-                [
-                    'for' => 'name-invalid',
-                ],
-                [
-                    'for' => 'name-0',
-                ],
-                [
-                    'for' => 'name-',
-                ]
-            ]
-        ], $input->input([
+        that($input)->input([
             'type'  => 'checkbox',
             'value' => 'invalid',
-        ]));
+        ])->htmlMatchesArray([
+            'input[1]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-invalid',
+                'class'                 => 'validatable validation_invalid',
+                'value'                 => 'invalid',
+                'checked'               => 'checked',
+            ],
+            'label[1]' => [
+                'for' => 'name-invalid',
+            ],
+            'input[2]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-0',
+                'class'                 => 'validatable',
+                'value'                 => '0',
+            ],
+            'label[2]' => [
+                'for' => 'name-0',
+            ],
+            'input[3]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-',
+                'class'                 => 'validatable',
+                'value'                 => '',
+            ],
+            'label[3]' => [
+                'for' => 'name-',
+            ],
+        ]);
     }
 
     function test_inputCheckbox_pseudo()
@@ -1139,49 +1306,45 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'pseudo'  => true
         ]);
 
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'type'               => 'hidden',
-                    'name'               => 'name',
-                    'value'              => '',
-                    'data-vinput-pseudo' => 'true',
-                ],
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-0',
-                    'class'                 => 'validatable',
-                    'value'                 => '0',
-                    'checked'               => 'checked',
-                ],
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-',
-                    'class'                 => 'validatable',
-                    'value'                 => '',
-                ]
-            ],
-            'label' => [
-                [
-                    'for' => 'name-0',
-                ],
-                [
-                    'for' => 'name-',
-                ]
-            ]
-        ], $input->input([
+        that($input)->input([
             'type' => 'checkbox',
-        ]));
+        ])->htmlMatchesArray([
+            'input[1]' => [
+                'type'               => 'hidden',
+                'name'               => 'name',
+                'value'              => '',
+                'data-vinput-pseudo' => 'true',
+            ],
+            'input[2]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-0',
+                'class'                 => 'validatable',
+                'value'                 => '0',
+                'checked'               => 'checked',
+            ],
+            'label[1]' => [
+                'for' => 'name-0',
+            ],
+            'input[3]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-',
+                'class'                 => 'validatable',
+                'value'                 => '',
+            ],
+            'label[2]' => [
+                'for' => 'name-',
+            ],
+        ]);
     }
 
     function test_inputCheckbox_strict()
@@ -1195,83 +1358,75 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'pseudo'  => false
         ]);
 
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-0',
-                    'class'                 => 'validatable',
-                    'value'                 => '0',
-                    'checked'               => 'checked',
-                ],
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-',
-                    'class'                 => 'validatable',
-                    'value'                 => '',
-                ]
-            ],
-            'label' => [
-                [
-                    'for' => 'name-0',
-                ],
-                [
-                    'for' => 'name-',
-                ]
-            ]
-        ], $input->input([
+        that($input)->input([
             'type'  => 'checkbox',
             'value' => 0,
-        ]));
-
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-0',
-                    'class'                 => 'validatable',
-                    'value'                 => '0',
-                ],
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-',
-                    'class'                 => 'validatable',
-                    'value'                 => '',
-                    'checked'               => 'checked',
-                ]
+        ])->htmlMatchesArray([
+            'input[1]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-0',
+                'class'                 => 'validatable',
+                'value'                 => '0',
+                'checked'               => 'checked',
             ],
-            'label' => [
-                [
-                    'for' => 'name-0',
-                ],
-                [
-                    'for' => 'name-',
-                ]
-            ]
-        ], $input->input([
+            'label[1]' => [
+                'for' => 'name-0',
+            ],
+            'input[2]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-',
+                'class'                 => 'validatable',
+                'value'                 => '',
+            ],
+            'label[2]' => [
+                'for' => 'name-',
+            ],
+        ]);
+
+        that($input)->input([
             'type'  => 'checkbox',
             'value' => '',
-        ]));
+        ])->htmlMatchesArray([
+            'input[1]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-0',
+                'class'                 => 'validatable',
+                'value'                 => '0',
+            ],
+            'label[1]' => [
+                'for' => 'name-0',
+            ],
+            'input[2]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-',
+                'class'                 => 'validatable',
+                'value'                 => '',
+                'checked'               => 'checked',
+            ],
+            'label[2]' => [
+                'for' => 'name-',
+            ],
+        ]);
     }
 
     function test_inputCheckbox_multiple()
@@ -1286,85 +1441,77 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'pseudo'   => false
         ]);
 
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-1',
-                    'class'                 => 'validatable',
-                    'value'                 => '1',
-                ],
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-2',
-                    'class'                 => 'validatable',
-                    'value'                 => '2',
-                    'checked'               => 'checked',
-                ]
-            ],
-            'label' => [
-                [
-                    'for' => 'name-1',
-                ],
-                [
-                    'for' => 'name-2',
-                ]
-            ]
-        ], $input->input([
+        that($input)->input([
             'type'  => 'checkbox',
             'value' => '2'
-        ]));
-
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-98',
-                    'class'                 => 'validatable',
-                    'value'                 => '98',
-                ],
-                [
-                    'type'                  => 'checkbox',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name-99',
-                    'class'                 => 'validatable',
-                    'value'                 => '99',
-                ]
+        ])->htmlMatchesArray([
+            'input[1]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-1',
+                'class'                 => 'validatable',
+                'value'                 => '1',
             ],
-            'label' => [
-                [
-                    'for' => 'name-98',
-                ],
-                [
-                    'for' => 'name-99',
-                ]
-            ]
-        ], $input->input([
+            'label[1]' => [
+                'for' => 'name-1',
+            ],
+            'input[2]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-2',
+                'class'                 => 'validatable',
+                'value'                 => '2',
+                'checked'               => 'checked',
+            ],
+            'label[2]' => [
+                'for' => 'name-2',
+            ],
+        ]);
+
+        that($input)->input([
             'type'    => 'checkbox',
             'options' => [
                 '98' => 'hoge',
                 '99' => 'fuga',
             ]
-        ]));
+        ])->htmlMatchesArray([
+            'input[1]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-98',
+                'class'                 => 'validatable',
+                'value'                 => '98',
+            ],
+            'label[1]' => [
+                'for' => 'name-98',
+            ],
+            'input[2]' => [
+                'type'                  => 'checkbox',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name-99',
+                'class'                 => 'validatable',
+                'value'                 => '99',
+            ],
+            'label[2]' => [
+                'for' => 'name-99',
+            ],
+        ]);
     }
 
     function test_inputFile()
@@ -1373,22 +1520,20 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'name' => 'name',
         ]);
 
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'type'                  => 'file',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'class'                 => 'validatable',
-                ],
-            ],
-        ], $input->input([
+        that($input)->input([
             'type' => 'file'
-        ]));
+        ])->htmlMatchesArray([
+            'input' => [
+                'type'                  => 'file',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+            ],
+        ]);
 
         $input = new Input([
             'name'      => 'name',
@@ -1397,23 +1542,21 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'type'                  => 'file',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'class'                 => 'validatable',
-                    'accept'                => '.html,text/html',
-                ],
-            ],
-        ], $input->input([
+        that($input)->input([
             'type' => 'file'
-        ]));
+        ])->htmlMatchesArray([
+            'input' => [
+                'type'                  => 'file',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+                'accept'                => '.html,text/html',
+            ],
+        ]);
     }
 
     function test_inputFile_multiple()
@@ -1423,23 +1566,21 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'multiple' => true,
         ]);
 
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'type'                  => 'file',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name',
-                    'multiple'              => 'multiple',
-                    'class'                 => 'validatable',
-                ],
-            ],
-        ], $input->input([
+        that($input)->input([
             'type' => 'file'
-        ]));
+        ])->htmlMatchesArray([
+            'input' => [
+                'type'                  => 'file',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name',
+                'multiple'              => 'multiple',
+                'class'                 => 'validatable',
+            ],
+        ]);
     }
 
     function test_inputRadio()
@@ -1451,55 +1592,47 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'type'                  => 'radio',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'class'                 => 'validatable',
-                    'value'                 => '1',
-                    'checked'               => 'checked',
-                    'id'                    => 'name-1',
-                ],
-            ],
-            'label' => [
-                [
-                    'for' => 'name-1',
-                ]
-            ],
-        ], $input->input([
+        that($input)->input([
             'type' => 'radio'
-        ]));
-
-        $this->assertAttribute([
+        ])->htmlMatchesArray([
             'input' => [
-                [
-                    'type'                  => 'radio',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'class'                 => 'validatable',
-                    'value'                 => '99',
-                    'id'                    => 'name-99',
-                ],
+                'type'                  => 'radio',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'class'                 => 'validatable',
+                'value'                 => '1',
+                'checked'               => 'checked',
+                'id'                    => 'name-1',
             ],
             'label' => [
-                [
-                    'for' => 'name-99',
-                ]
+                'for' => 'name-1',
             ],
-        ], $input->input([
+        ]);
+
+        that($input)->input([
             'type'    => 'radio',
             'options' => [
                 '99' => 'hoge'
             ]
-        ]));
+        ])->htmlMatchesArray([
+            'input' => [
+                'type'                  => 'radio',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'class'                 => 'validatable',
+                'value'                 => '99',
+                'id'                    => 'name-99',
+            ],
+            'label' => [
+                'for' => 'name-99',
+            ],
+        ]);
     }
 
     function test_inputRadio_format()
@@ -1511,30 +1644,26 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'type'                  => 'radio',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'class'                 => 'validatable',
-                    'value'                 => '1',
-                    'checked'               => 'checked',
-                    'id'                    => 'name-1',
-                ],
-            ],
-            'label' => [
-                [
-                    'for' => 'name-1',
-                ]
-            ],
-        ], $input->input([
+        that($input)->input([
             'type'   => 'radio',
             'format' => 'hoge%sfuga'
-        ]));
+        ])->htmlMatchesArray([
+            'input' => [
+                'type'                  => 'radio',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'class'                 => 'validatable',
+                'value'                 => '1',
+                'checked'               => 'checked',
+                'id'                    => 'name-1',
+            ],
+            'label' => [
+                'for' => 'name-1',
+            ],
+        ]);
     }
 
     function test_inputSelect()
@@ -1549,59 +1678,52 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
-            'select'   => [
-                [
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'class'                 => 'validatable',
-                ],
-            ],
-            'option'   => [
-                [
+        that($input)->input([
+            'type' => 'select'
+        ])->htmlMatchesArray([
+            'select' => [
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+
+                'option' => [
                     'selected' => 'selected',
                     'value'    => '1',
                 ],
-                [
-                    'value' => '2',
-                ],
-            ],
-            'optgroup' => [
-                [
-                    'label' => 'group',
-                ]
-            ],
-        ], $input->input([
-            'type' => 'select'
-        ]));
 
-        $this->assertAttribute([
-            'select' => [
-                [
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'class'                 => 'validatable',
+                'optgroup' => [
+                    'label'  => 'group',
+                    'option' => [
+                        'value' => '2',
+                    ],
                 ],
             ],
-            'option' => [
-                [
-                    'value' => '99',
-                ],
-            ],
-        ], $input->input([
+        ]);
+
+        that($input)->input([
             'type'    => 'select',
             'options' => [
                 '99' => 'hoge'
             ]
-        ]));
+        ])->htmlMatchesArray([
+            'select' => [
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+
+                'option' => [
+                    'value' => '99',
+                ],
+            ],
+        ]);
     }
 
     function test_inputSelect_suboptions()
@@ -1617,61 +1739,61 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'suboptions' => [],
         ]);
 
-        $this->assertAttribute([
+        that($input)->input([
+            'type'  => 'select',
+            'value' => 'invalid',
+        ])->htmlMatchesArray([
             'select' => [
-                [
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'class'                 => 'validatable',
-                ],
-            ],
-            'option' => [
-                [
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+
+                'option[1]' => [
                     'value'    => 'invalid',
                     'selected' => 'selected',
                     'class'    => ' validation_invalid'
                 ],
-                [
+                'option[2]' => [
                     'value' => '1',
                 ],
-                [
-                    'value' => '2',
+                'optgroup'  => [
+                    "label"  => "group",
+                    'option' => [
+                        'value' => '2',
+                    ],
                 ],
             ],
-        ], $input->input([
-            'type'  => 'select',
-            'value' => 'invalid',
-        ]));
+        ]);
 
-        $this->assertAttribute([
-            'select' => [
-                [
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'class'                 => 'validatable',
-                ],
-            ],
-            'option' => [
-                [
-                    'value' => '1',
-                ],
-                [
-                    'value'    => '2',
-                    'selected' => 'selected',
-                ],
-            ],
-        ], $input->input([
+        that($input)->input([
             'type'  => 'select',
             'value' => '2',
-        ]));
+        ])->htmlMatchesArray([
+            'select' => [
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+
+                'option[1]'   => [
+                    'value' => '1',
+                ],
+                'optgroup[1]' => [
+                    "label"     => "group",
+                    'option[1]' => [
+                        'value'    => '2',
+                        'selected' => 'selected',
+                    ],
+                ],
+            ],
+        ]);
     }
 
     function test_inputSelect_pseudo()
@@ -1685,39 +1807,34 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'multiple' => true,
         ]);
 
-        $this->assertAttribute([
+        that($input)->input([
+            'type' => 'select',
+        ])->htmlMatchesArray([
             'input'  => [
-                [
-                    'type'               => 'hidden',
-                    'name'               => 'name',
-                    'value'              => '',
-                    'data-vinput-pseudo' => 'true',
-                ]
+                'type'               => 'hidden',
+                'name'               => 'name',
+                'value'              => '',
+                'data-vinput-pseudo' => 'true',
             ],
             'select' => [
-                [
-                    'multiple'              => 'multiple',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name',
-                    'class'                 => 'validatable',
-                ],
-            ],
-            'option' => [
-                [
+                'multiple'              => 'multiple',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+
+                'option[1]' => [
                     'value'    => '1',
                     'selected' => 'selected',
                 ],
-                [
+                'option[2]' => [
                     'value' => '2',
                 ],
             ],
-        ], $input->input([
-            'type' => 'select',
-        ]));
+        ]);
     }
 
     function test_inputSelect_multiple()
@@ -1733,37 +1850,32 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'multiple' => true,
         ]);
 
-        $this->assertAttribute([
-            'select'   => [
-                [
-                    'multiple'              => 'multiple',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name[]',
-                    'id'                    => 'name',
-                    'class'                 => 'validatable',
-                ],
-            ],
-            'option'   => [
-                [
-                    'value' => '1',
-                ],
-                [
-                    'selected' => 'selected',
-                    'value'    => '2',
-                ],
-            ],
-            'optgroup' => [
-                [
-                    'label' => 'group',
-                ]
-            ],
-        ], $input->input([
+        that($input)->input([
             'type'  => 'select',
             'value' => 2
-        ]));
+        ])->htmlMatchesArray([
+            'select' => [
+                'multiple'              => 'multiple',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name[]',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+
+                'option'   => [
+                    'value' => '1',
+                ],
+                'optgroup' => [
+                    'label'  => 'group',
+                    'option' => [
+                        'selected' => 'selected',
+                        'value'    => '2',
+                    ],
+                ],
+            ],
+        ]);
     }
 
     function test_inputSelect_strict()
@@ -1778,67 +1890,57 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
-            'select'   => [
-                [
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'class'                 => 'validatable',
-                ],
-            ],
-            'option'   => [
-                [
+        that($input)->input([
+            'type'  => 'select',
+            'value' => 0,
+        ])->htmlMatchesArray([
+            'select' => [
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+
+                'option'   => [
                     'selected' => 'selected',
                     'value'    => '0',
                 ],
-                [
-                    'value' => '',
+                'optgroup' => [
+                    'label'  => 'group',
+                    'option' => [
+                        'value' => '',
+                    ],
                 ],
             ],
-            'optgroup' => [
-                [
-                    'label' => 'group',
-                ]
-            ],
-        ], $input->input([
-            'type'  => 'select',
-            'value' => 0,
-        ]));
+        ]);
 
-        $this->assertAttribute([
-            'select'   => [
-                [
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'class'                 => 'validatable',
-                ],
-            ],
-            'option'   => [
-                [
-                    'value' => '0',
-                ],
-                [
-                    'selected' => 'selected',
-                    'value'    => '',
-                ],
-            ],
-            'optgroup' => [
-                [
-                    'label' => 'group',
-                ]
-            ],
-        ], $input->input([
+        that($input)->input([
             'type'  => 'select',
             'value' => '',
-        ]));
+        ])->htmlMatchesArray([
+            'select' => [
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+
+                'option'   => [
+                    'value' => '0',
+                ],
+                'optgroup' => [
+                    'label'  => 'group',
+                    'option' => [
+                        'selected' => 'selected',
+                        'value'    => '',
+                    ],
+                ],
+            ],
+        ]);
     }
 
     function test_inputText()
@@ -1850,23 +1952,21 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
+        that($input)->input()->htmlMatchesArray([
             'input' => [
-                [
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'type'                  => 'text',
-                    'class'                 => 'validatable',
-                    'value'                 => '',
-                    'maxlength'             => '10',
-                    'style'                 => 'ime-mode:disabled;',
-                ],
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'type'                  => 'text',
+                'class'                 => 'validatable',
+                'value'                 => '',
+                'maxlength'             => '10',
+                'style'                 => 'ime-mode:disabled;',
             ],
-        ], $input->input());
+        ]);
 
         $input = new Input([
             'name'      => 'name',
@@ -1879,24 +1979,22 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
+        that($input)->input()->htmlMatchesArray([
             'input' => [
-                [
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'type'                  => 'number',
-                    'class'                 => 'validatable',
-                    'value'                 => '',
-                    'min'                   => '10',
-                    'max'                   => '20',
-                    'style'                 => 'ime-mode:disabled;',
-                ],
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'type'                  => 'number',
+                'class'                 => 'validatable',
+                'value'                 => '',
+                'min'                   => '10',
+                'max'                   => '20',
+                'style'                 => 'ime-mode:disabled;',
             ],
-        ], $input->input());
+        ]);
 
         $input = new Input([
             'name'      => 'name',
@@ -1908,52 +2006,48 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
+        that($input)->input()->htmlMatchesArray([
             'input' => [
-                [
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'type'                  => 'number',
-                    'class'                 => 'validatable',
-                    'value'                 => '',
-                    'min'                   => '-99.9999',
-                    'max'                   => '99.9999',
-                    'step'                  => '0.0001',
-                    'maxlength'             => '8',
-                    'style'                 => 'ime-mode:disabled;',
-                ],
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'type'                  => 'number',
+                'class'                 => 'validatable',
+                'value'                 => '',
+                'min'                   => '-99.9999',
+                'max'                   => '99.9999',
+                'step'                  => '0.0001',
+                'maxlength'             => '8',
+                'style'                 => 'ime-mode:disabled;',
             ],
-        ], $input->input());
+        ]);
 
         // render 時の直接指定が勝つ
-        $this->assertAttribute([
-            'input' => [
-                [
-                    'min'                   => '-99',
-                    'max'                   => '99',
-                    'step'                  => '3',
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'type'                  => 'number',
-                    'class'                 => 'validatable',
-                    'value'                 => '',
-                    'maxlength'             => '8',
-                    'style'                 => 'ime-mode:disabled;',
-                ],
-            ],
-        ], $input->input([
+        that($input)->input([
             'min'  => '-99',
             'max'  => '99',
             'step' => '3',
-        ]));
+        ])->htmlMatchesArray([
+            'input' => [
+                'min'                   => '-99',
+                'max'                   => '99',
+                'step'                  => '3',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'type'                  => 'number',
+                'class'                 => 'validatable',
+                'value'                 => '',
+                'maxlength'             => '8',
+                'style'                 => 'ime-mode:disabled;',
+            ],
+        ]);
     }
 
     function test_inputTextarea()
@@ -1968,22 +2062,20 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
-            'textarea' => [
-                [
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'class'                 => 'validatable',
-                    'maxlength'             => '1000',
-                ],
-            ],
-        ], $input->input([
+        that($input)->input([
             'type' => 'textarea'
-        ]));
+        ])->htmlMatchesArray([
+            'textarea' => [
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+                'maxlength'             => '1000',
+            ],
+        ]);
     }
 
     function test_inputCombobox()
@@ -1996,28 +2088,24 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ]);
 
-        $this->assertAttribute([
+        that($input)->input([
+            'type' => 'combobox'
+        ])->htmlMatchesArray([
             'input'    => [
-                [
-                    'data-validation-title' => '',
-                    'data-vinput-id'        => 'name',
-                    'data-vinput-class'     => 'name',
-                    'data-vinput-index'     => '',
-                    'name'                  => 'name',
-                    'id'                    => 'name',
-                    'class'                 => 'validatable',
-                    'type'                  => 'combobox',
-                    'list'                  => 'name-datalist',
-                    'value'                 => '0',
-                ],
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+                'type'                  => 'combobox',
+                'list'                  => 'name-datalist',
+                'value'                 => '0',
             ],
             'datalist' => [
-                [
-                    'id' => 'name-datalist',
-                ]
+                'id' => 'name-datalist',
             ]
-        ], $input->input([
-            'type' => 'combobox'
-        ]));
+        ]);
     }
 }

@@ -20,19 +20,21 @@ class JsonableTest extends \ryunosuke\Test\AbstractUnitTestCase
             'iterable' => new \ArrayObject([1 => 1, 2, 3]),
             'resource' => $this->literalJson('function(){return "hogehoge"}'),
         ]);
-        $this->assertStringContainsString('"string":"string"', $json);
-        $this->assertStringContainsString('"int":123', $json);
-        $this->assertStringContainsString('"bool":true', $json);
-        $this->assertStringContainsString('"null":null', $json);
-        $this->assertStringContainsString('"array":[1,2,3]', $json);
-        $this->assertStringContainsString('"assoc":{"a":"A","b":"B"}', $json);
-        $this->assertStringContainsString('"object":{"0":1,"1":2,"2":3}', $json);
-        $this->assertStringContainsString('"iterable":{"1":1,"2":2,"3":3}', $json);
-        $this->assertStringContainsString('"resource":function(){return "hogehoge"}', $json);
+        that($json)->stringContainsAll([
+            '"string":"string"',
+            '"int":123',
+            '"bool":true',
+            '"null":null',
+            '"array":[1,2,3]',
+            '"assoc":{"a":"A","b":"B"}',
+            '"object":{"0":1,"1":2,"2":3}',
+            '"iterable":{"1":1,"2":2,"3":3}',
+            '"resource":function(){return "hogehoge"}',
+        ]);
     }
 
     function test_literalJson()
     {
-        $this->assertIsResource($this->literalJson('function(){return "hogehoge"}'));
+        that($this)->literalJson('function(){return "hogehoge"}')->isResource();
     }
 }

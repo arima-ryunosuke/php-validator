@@ -9,10 +9,10 @@ class TokenExceptionTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test___construct()
     {
         $ex = new ValidationException(null, 'message', 123, new \DomainException('prev'));
-        $this->assertEquals(null, $ex->getForm());
-        $this->assertEquals('message', $ex->getMessage());
-        $this->assertEquals(123, $ex->getCode());
-        $this->assertEquals('prev', $ex->getPrevious()->getMessage());
+        that($ex)->getForm()->isNull();
+        that($ex)->getMessage()->is("message");
+        that($ex)->getCode()->is(123);
+        that($ex)->getPrevious()->getMessage()->is("prev");
     }
 
     function test_form()
@@ -20,6 +20,6 @@ class TokenExceptionTest extends \ryunosuke\Test\AbstractUnitTestCase
         $ex = new ValidationException(null);
         $form = new Form([]);
         $ex->setForm($form);
-        $this->assertSame($form, $ex->getForm());
+        that($ex)->getForm()->isSame($form);
     }
 }

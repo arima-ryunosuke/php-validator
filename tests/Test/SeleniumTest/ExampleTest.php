@@ -16,11 +16,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('toggleInvisible', 1);
         $driver->setValue('invisible', 'hoge');
-        $this->assertCount(0, $driver->getErrors(null, false));
+        that($driver)->getErrors(null, false)->count(0);
 
         $driver->setValue('invisible', '');
         $driver->setValue('toggleInvisible', 0);
-        $this->assertCount(1, $driver->getErrors(null, false));
+        that($driver)->getErrors(null, false)->count(1);
     }
 
     /**
@@ -32,11 +32,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('client', 'hoge');
         $driver->setValue('server', 'hoge');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
 
         $driver->setValue('client', '');
         $driver->setValue('server', '');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
     }
 
     /**
@@ -49,7 +49,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('ajax1', '1');
         $driver->setValue('ajax2', '2');
         $driver->setValue('ajax_sum', '5');
-        $this->assertCount(1, $driver->getErrors(1));
+        that($driver)->getErrors(1)->count(1);
     }
 
     /**
@@ -60,10 +60,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('array_length_checkbox[]', [2, 3, 4, 5]);
-        $this->assertCount(5, $driver->getErrors());
+        that($driver)->getErrors()->count(5);
 
         $driver->setValue('array_length_checkbox[]', [2, 3, 4]);
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -74,10 +74,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('array_length_select[]', [2, 3, 4, 5]);
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
 
         $driver->setValue('array_length_select[]', [2, 3, 4]);
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -88,10 +88,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('array_length_text[]', ['1', '2', '3', '4']);
-        $this->assertCount(4, $driver->getErrors());
+        that($driver)->getErrors()->count(4);
 
         // DOM の追加/削除を実装してないのでテストできない
-        // $this->assertCount(0, $driver->getErrors());
+        // that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -107,14 +107,14 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
             __DIR__ . '/_files/3.txt',
             __DIR__ . '/_files/4.txt',
         ]);
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
 
         $driver->setValue('array_length_file[]', [
             __DIR__ . '/_files/1.txt',
             __DIR__ . '/_files/2.txt',
             __DIR__ . '/_files/3.txt',
         ]);
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -125,13 +125,13 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('aruiha_range', -4);
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('aruiha_range', 4);
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('aruiha_range', 0);
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('aruiha_range', -1);
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -143,10 +143,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('callback1', 'hoge');
         $driver->setValue('callback2', 'hoge');
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
         $driver->setValue('callback1', 'a');
         $driver->setValue('callback2', 'b');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -158,9 +158,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('compare', 'hoge');
         $driver->setValue('compare_confirm', 'fuga');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('compare_confirm', 'hoge');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -171,9 +171,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('compare_direct', '2000/01/01');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('compare_direct', '2037/12/31');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -185,9 +185,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('greater', '2011/11/11 11:11:11');
         $driver->setValue('greater_confirm', '2011/11/11 11:11:10');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('greater_confirm', '2011/11/11 11:11:12');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -199,10 +199,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('dateYmd', '2011/02/30');
         $driver->setValue('dateYmdHis', '2011/02/28 12:34:66');
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
         $driver->setValue('dateYmd', '2011/02/20');
         $driver->setValue('dateYmdHis', '2011/02/28 12:34:56');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -213,9 +213,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('decimal', '2.222');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('decimal', '2.22');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -226,9 +226,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('digits', '2.1');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('digits', '2');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -239,9 +239,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('email', 'test@@hostname');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('email', 'test@hostname');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -252,10 +252,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('email_noerror', 'test@@hostname');
-        $this->assertCount(0, $driver->getErrors(null, true, false));
-        $this->assertCount(1, $driver->getErrors(null, true, true));
+        that($driver)->getErrors(null, true, false)->count(0);
+        that($driver)->getErrors(null, true, true)->count(1);
         $driver->setValue('email_noerror', 'test@hostname');
-        $this->assertCount(0, $driver->getErrors(null, true, false));
+        that($driver)->getErrors(null, true, false)->count(0);
     }
 
     /**
@@ -266,7 +266,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('image_file_require', '1');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
     }
 
     /**
@@ -277,11 +277,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('image_file', __DIR__ . '/_files/plain.txt');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('image_file', __DIR__ . '/_files/image.jpg');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('image_file', __DIR__ . '/_files/image.png');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -294,11 +294,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('hostname', '127.0.0.1');
         $driver->setValue('hostname_v4', 'host_name');
         $driver->setValue('hostname_port', 'host_name');
-        $this->assertCount(3, $driver->getErrors());
+        that($driver)->getErrors()->count(3);
         $driver->setValue('hostname', 'aaa.bbb');
         $driver->setValue('hostname_v4', '127.0.0.1/32');
         $driver->setValue('hostname_port', 'aaa.bbb:80');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -310,10 +310,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('inarray', '5');
         $driver->setValue('notinarray', '2');
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
         $driver->setValue('inarray', '2');
         $driver->setValue('notinarray', '5');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -324,10 +324,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('inarray_strict', '2');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
 
         $driver->setValue('inarray_strict', '1');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -338,11 +338,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('json', 'aaa');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('json', '{]');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('json', '{"aaa": [1,2,3]}');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -353,9 +353,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('password', 'a1$S');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('password', 'aZsX09#!');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -366,9 +366,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('filename', '/directory/file.csv');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('filename', '/directory/file.json');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -379,9 +379,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('step', '1.4');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('step', '1.5');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -392,9 +392,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('range', '101');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('range', '99');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -406,10 +406,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('regex', '123');
         $driver->setValue('notregex', 'abc');
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
         $driver->setValue('regex', 'abc');
         $driver->setValue('notregex', '123');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -420,11 +420,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('require_checkbox[]', '1');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
         $driver->setValue('require_checkbox[]', []);
-        $this->assertCount(5, $driver->getErrors());
+        that($driver)->getErrors()->count(5);
         $driver->setValue('require_checkbox[]', '1');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -435,10 +435,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('require_select[]', []);
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
         $driver->setValue('require_select[]', [1]);
         $driver->setValue('require_select[]', []);
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
     }
 
     /**
@@ -449,10 +449,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('require_simple', '4');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
 
         $driver->setValue('require_simple', '5');
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
     }
 
     /**
@@ -464,10 +464,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('require_andor1', 'a');
         $driver->setValue('require_andor2', 'x');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
 
         $driver->setValue('require_andor2', 'b');
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
     }
 
     /**
@@ -478,15 +478,15 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('require_should', [1]);
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
         $driver->setValue('require_option', '2');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('require_option', '3');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('require_option', '1');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
         $driver->setValue('require_always', [1]);
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
     }
 
     /**
@@ -497,11 +497,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('require_array[]', ['2']);
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
         $driver->setValue('require_array[]', ['1', '2']);
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('require_array[]', ['1', '2', '3']);
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
     }
 
     /**
@@ -512,9 +512,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('stringlength', 'x');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('stringlength', 'xxx');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -525,9 +525,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('stringwidth', 'x');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
         $driver->setValue('stringwidth', 'あ');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -539,10 +539,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('telephone', '090-1234-567a');
         $driver->setValue('telephone-hyphen', '09012345678');
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
         $driver->setValue('telephone', '090-1234-567');
         $driver->setValue('telephone-hyphen', '090-1234-567');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -554,10 +554,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('url', 'hostname');
         $driver->setValue('url-http', 'hoge://hostname');
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
         $driver->setValue('url', 'hoge://hostname');
         $driver->setValue('url-http', 'http://hostname');
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -575,7 +575,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->click('.append_row1');
         $driver->click('#template_form_submit');
 
-        $this->assertCount($baseCount * 5 + 1, $driver->getErrors(null, false));
+        that($driver)->getErrors(null, false)->count($baseCount * 5 + 1);
     }
 
     /**
@@ -591,7 +591,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('rows[-1][title]', '');
         $driver->setValue('rows[-2][title]', '');
         $driver->setValue('require_address', '1');
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
     }
 
     /**
@@ -605,9 +605,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->click('.append_row1');
 
         $driver->setValue('rows[-1][checkbox][]', [2]);
-        $this->assertCount(3, $driver->getErrors());
+        that($driver)->getErrors()->count(3);
         $driver->setValue('rows[-1][checkbox][]', [1, 3]);
-        $this->assertCount(0, $driver->getErrors());
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -622,7 +622,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('rows[-1][unique_require]', '1');
         $driver->setValue('rows[-2][unique_require]', '1');
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
     }
 
     /**
@@ -638,7 +638,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('require_address', '1', '#vuejs_form');
         $driver->setValue('rows[0][checkbox][]', [1], '#vuejs_form');
         $driver->setValue('rows[1][checkbox][]', [2], '#vuejs_form');
-        $this->assertCount(8, $driver->getErrors());
+        that($driver)->getErrors()->count(8);
     }
 
     /**
@@ -651,13 +651,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('year', '2000');
         $driver->setValue('month', '5');
         $driver->setValue('day', '24');
-        $this->assertCount(0, $driver->getErrors());
-        // js で書き換えても value が変わらない？ DOM ではなく html 属性を見ているような気がする
-        //$this->assertEquals('2000/05/24', $driver->findElement(WebDriverBy::name('year-month-day'))->getAttribute('class'));
-        $this->assertStringContainsString('validation_ok', $driver->findElement(WebDriverBy::name('year-month-day'))->getAttribute('class'));
+        that($driver)->getErrors()->count(0);
+        that($driver)->findElement(WebDriverBy::name('year-month-day'))->getAttribute('class')->contains('validation_ok');
 
         $driver->setValue('month', '13');
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
     }
 
     /**
@@ -668,13 +666,13 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('flag_trimming_true', ' ');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
 
         $driver->setValue('flag_trimming_false', ' ');
-        $this->assertCount(1, $driver->getErrors());
+        that($driver)->getErrors()->count(1);
 
         $driver->setValue('flag_trimming_false', '');
-        $this->assertCount(2, $driver->getErrors());
+        that($driver)->getErrors()->count(2);
     }
 
     /**
@@ -685,6 +683,6 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/testing.php');
 
         sleep(1); // wait for js testing
-        $this->assertStringContainsString('0 failures', $driver->findElement(WebDriverBy::cssSelector('.jasmine-alert'))->getText());
+        that($driver)->findElement(WebDriverBy::cssSelector('.jasmine-alert'))->getText()->contains('0 failures');
     }
 }

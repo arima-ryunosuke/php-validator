@@ -8,7 +8,7 @@ class TokenTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_getToken()
     {
         $token = new Token('hoge', 'fuga');
-        $this->assertEquals('fuga', $token->getToken());
+        that($token)->getToken()->is('fuga');
     }
 
     function test_validate()
@@ -18,23 +18,29 @@ class TokenTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest';
-        $this->assertTrue($token->validate());
+        that($token)->validate()->isTrue();
 
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_SERVER['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest';
-        $this->assertTrue($token->validate());
+        that($token)->validate()->isTrue();
 
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_SERVER['HTTP_X_REQUESTED_WITH'] = 'none';
-        $this->assertTrue($token->validate());
+        that($token)->validate()->isTrue();
 
         $_POST['hoge'] = 'invalid';
-        $this->assertFalse($token->validate());
+        that($token)->validate()->isFalse();
     }
 
     function test_render()
     {
         $token = new Token('hoge', 'fuga');
-        $this->assertEquals("<input type='hidden' name='hoge' value='fuga'>", $token->render());
+        that($token)->render()->htmlMatchesArray([
+            "input" => [
+                "type"  => "hidden",
+                "name"  => "hoge",
+                "value" => "fuga",
+            ],
+        ]);
     }
 }

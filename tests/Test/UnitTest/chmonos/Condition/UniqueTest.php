@@ -26,28 +26,28 @@ class UniqueTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // 重複なし
         $values = $base_values;
-        $this->assertEquals(true, $validate->isValid('val', $values));
+        that($validate)->isValid('val', $values)->isTrue();
 
         // 重複あり
         $values = $base_values;
         $values['/values'][] = [
             'unique' => 'val'
         ];
-        $this->assertEquals(false, $validate->isValid('val', $values));
+        that($validate)->isValid('val', $values)->isFalse();
 
         $validate = new Unique(false);
         $validate->initialize(null, null, 'values', 'unique');
 
         // ケース無視重複なし
         $values = $base_values;
-        $this->assertEquals(true, $validate->isValid('val', $values));
+        that($validate)->isValid('val', $values)->isTrue();
 
         // ケース無視重複あり
         $values = $base_values;
         $values['/values'][] = [
             'unique' => 'VAL'
         ];
-        $this->assertEquals(false, $validate->isValid('val', $values));
+        that($validate)->isValid('val', $values)->isFalse();
     }
 
     function test_valid_single()
@@ -63,19 +63,19 @@ class UniqueTest extends \ryunosuke\Test\AbstractUnitTestCase
         // 重複なし
         $validate = new Unique(true);
         $validate->initialize(null, null, 'values', 'unique');
-        $this->assertEquals(true, $validate->isValid('val', $values));
+        that($validate)->isValid('val', $values)->isTrue();
 
         // ケース無視重複なし
         $validate = new Unique(false);
         $validate->initialize(null, null, 'values', 'unique');
-        $this->assertEquals(true, $validate->isValid('val', $values));
+        that($validate)->isValid('val', $values)->isTrue();
     }
 
     function test_setRootName()
     {
         $validate = new Unique();
         $validate->initialize(null, null, 'values', 'unique');
-        $this->assertEquals(['/values/unique'], $validate->getPropagation());
-        $this->assertEquals(['/values'], $validate->getFields());
+        that($validate)->getPropagation()->is(["/values/unique"]);
+        that($validate)->getFields()->is(["/values"]);
     }
 }

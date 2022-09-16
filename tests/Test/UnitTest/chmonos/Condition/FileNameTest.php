@@ -1,7 +1,6 @@
 <?php
 namespace ryunosuke\Test\UnitTest\chmonos\Condition;
 
-use ryunosuke\chmonos\Condition\Interfaces;
 use ryunosuke\chmonos\Condition\FileName;
 
 class FileNameTest extends \ryunosuke\Test\AbstractUnitTestCase
@@ -9,23 +8,23 @@ class FileNameTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid()
     {
         $validate = new FileName('json', '!', true);
-        $this->assertEquals(true, $validate->isValid('a.json'));
-        $this->assertEquals(true, $validate->isValid('!.json'));
-        $this->assertEquals(false, $validate->isValid('a.jsonl'));
-        $this->assertEquals(false, $validate->isValid('$.json'));
-        $this->assertEquals(false, $validate->isValid('prn.json'));
+        that($validate)->isValid('a.json')  ->isTrue();
+        that($validate)->isValid('!.json')  ->isTrue();
+        that($validate)->isValid('a.jsonl') ->isFalse();
+        that($validate)->isValid('$.json')  ->isFalse();
+        that($validate)->isValid('prn.json')->isFalse();
 
         $validate = new FileName(null, '!', false);
-        $this->assertEquals(true, $validate->isValid('ajson'));
-        $this->assertEquals(true, $validate->isValid('!json'));
-        $this->assertEquals(false, $validate->isValid('a.json'));
-        $this->assertEquals(false, $validate->isValid('$.json'));
-        $this->assertEquals(true, $validate->isValid('prn'));
+        that($validate)->isValid('ajson') ->isTrue();
+        that($validate)->isValid('!json') ->isTrue();
+        that($validate)->isValid('a.json')->isFalse();
+        that($validate)->isValid('$.json')->isFalse();
+        that($validate)->isValid('prn')   ->isTrue();
     }
 
     function test_getImeMode()
     {
         $validate = new FileName();
-        $this->assertEquals(Interfaces\ImeMode::DISABLED, $validate->getImeMode());
+        that($validate)->getImeMode()->is(FileName::DISABLED);
     }
 }

@@ -22,9 +22,9 @@ class HtmlableTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ];
 
-        $this->assertEquals($expected, $this->convertHtmlAttrs('.c1#hoge.c2[target=hoge\[\]][href="http://hoge[]"][hidden][!readonly]{width:123px!important;height:456px;}'));
+        that($this)->convertHtmlAttrs('.c1#hoge.c2[target=hoge\[\]][href="http://hoge[]"][hidden][!readonly]{width:123px!important;height:456px;}')->is($expected);
 
-        $this->assertEquals($expected, $this->convertHtmlAttrs([
+        that($this)->convertHtmlAttrs([
             'id'       => 'hoge',
             'class'    => ['c1', 'c2'],
             'href'     => 'http://hoge[]',
@@ -35,45 +35,45 @@ class HtmlableTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'width'  => '123px!important',
                 'height' => '456px',
             ],
-        ]));
+        ])->is($expected);
     }
 
     function test_createHtmlAttr()
     {
-        $this->assertEquals('a="1" b="&amp;"', $this->createHtmlAttr([
+        that($this)->createHtmlAttr([
             'a' => 1,
             'b' => '&',
-        ]));
-        $this->assertEquals('logical_true', $this->createHtmlAttr([
+        ])->is("a=\"1\" b=\"&amp;\"");
+        that($this)->createHtmlAttr([
             'logical_true'  => true,
             'logical_false' => false,
-        ]));
-        $this->assertEquals('hoge="hofugage"', $this->createHtmlAttr([
+        ])->is("logical_true");
+        that($this)->createHtmlAttr([
             'hoge' => 'ho%sge',
-        ], 'fuga'));
-        $this->assertEquals('style="color:red;background-color:white;font-family:monospace;"', $this->createHtmlAttr([
+        ], 'fuga')->is("hoge=\"hofugage\"");
+        that($this)->createHtmlAttr([
             'style' => [
                 'color'            => 'red',
                 'background-color' => 'white',
                 'font-family:monospace;'
             ],
-        ], 'fuga'));
+        ], 'fuga')->is("style=\"color:red;background-color:white;font-family:monospace;\"");
     }
 
     function test_createStyleAttr()
     {
-        $this->assertEquals('color:red;background-color:white;font-family:monospace;', $this->createStyleAttr([
+        that($this)->createStyleAttr([
             'color'            => 'red',
             'background-color' => 'white',
             'font-family:monospace;'
-        ]));
+        ])->is("color:red;background-color:white;font-family:monospace;");
     }
 
     function test_escapeHtml()
     {
-        $this->assertEquals('&lt;&amp;&gt;&quot;', $this->escapeHtml('<&>"'));
-        $this->assertEquals('&lt; &gt;', $this->escapeHtml(['<', '>']));
-        $this->assertEquals('&lt;---&gt;', $this->escapeHtml(['<', '>'], '---'));
-        $this->assertEquals(['&lt;', '&gt;'], $this->escapeHtml(['<', '>'], null));
+        that($this)->escapeHtml('<&>"')->is("&lt;&amp;&gt;&quot;");
+        that($this)->escapeHtml(['<', '>'])->is("&lt; &gt;");
+        that($this)->escapeHtml(['<', '>'], '---')->is("&lt;---&gt;");
+        that($this)->escapeHtml(['<', '>'], null)->is(["&lt;", "&gt;"]);
     }
 }
