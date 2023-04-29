@@ -355,12 +355,10 @@ function Chmonos(form, options) {
             try {
                 chmonos.validate(e).then(function (result) {
                     if (result.indexOf(true) === -1) {
-                        var button = document.activeElement;
-                        var submitter = ['input[type="submit"]', 'input[type="image"]', 'button[type="submit"]', 'button:not([type])'];
-                        if (options.alternativeSubmit && button && button.matches(submitter.join(','))) {
+                        if (options.alternativeSubmit && e.submitter) {
                             setTimeout(function () {
                                 form.removeEventListener('submit', submit);
-                                button.click();
+                                e.submitter.click();
                                 form.addEventListener('submit', submit);
                             }, 0);
                         }
