@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  php74-server:
+    image: docker.io/php:7.4.33
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/php/
+    command: php -S 0.0.0.0:3000 -t /php
+  selenium:
+    image: docker.io/selenium/standalone-chrome-debug:latest
+    ports:
+      - 4444:4444
+      - 5900:5900
