@@ -312,7 +312,10 @@ JS;
                 public function offsetExists($offset): bool { }
 
                 #[\ReturnTypeWillChange]
-                public function offsetGet($offset) { return $offset; }
+                public function offsetGet($offset)
+                {
+                    return $offset;
+                }
 
                 public function offsetSet($offset, $value): void { }
 

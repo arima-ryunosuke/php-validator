@@ -5,7 +5,6 @@ use ryunosuke\chmonos\Condition\AbstractCondition;
 use ryunosuke\chmonos\Condition\Callback;
 use ryunosuke\chmonos\Condition\Decimal;
 use ryunosuke\chmonos\Condition\Range;
-use function ryunosuke\chmonos\rm_rf;
 
 class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
