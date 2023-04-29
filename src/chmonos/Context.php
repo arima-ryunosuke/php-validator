@@ -228,6 +228,39 @@ class Context implements \IteratorAggregate
     }
 
     /**
+     * 各要素のデフォルト値を返す
+     *
+     * @return array デフォルト値
+     */
+    public function getDefaults()
+    {
+        $defaults = [];
+        foreach ($this->inputs as $name => $input) {
+            if (isset($input->context)) {
+                $defaults[$name] = $input->context->getDefaults();
+            }
+            else {
+                $defaults[$name] = $input->default;
+            }
+        }
+        return $defaults;
+    }
+
+    /**
+     * 値を返す
+     *
+     * @return array 値
+     */
+    public function getValues()
+    {
+        $values = [];
+        foreach ($this->inputs as $name => $input) {
+            $values[$name] = $input->getValue();
+        }
+        return $values;
+    }
+
+    /**
      * 検証メッセージを array で返す
      *
      * @return array 検証メッセージ

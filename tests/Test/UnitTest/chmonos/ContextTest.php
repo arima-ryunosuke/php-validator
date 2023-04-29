@@ -18,7 +18,8 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                         2,
                         6
                     ])
-                ]
+                ],
+                'default'   => 'P',
             ],
             'children' => [
                 'title'     => '子項目配列',
@@ -28,7 +29,8 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                         'title'     => '子項目1',
                         'condition' => [
                             'EmailAddress' => null
-                        ]
+                        ],
+                        'default'   => 'C1',
                     ],
                     'child2' => [
                         'title'     => '子項目2',
@@ -37,7 +39,8 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                                 3,
                                 3
                             ])
-                        ]
+                        ],
+                        'default'   => 'C2',
                     ]
                 ]
             ]
@@ -258,6 +261,45 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         $context->error('parent', 'ユーザエラー');
         $messages = $context->getMessages();
         that($messages)->hasKey('parent');
+    }
+
+    function test_getDefaults()
+    {
+        $context = new Context($this->_getRules());
+
+        that($context->getDefaults())->is([
+            "parent"   => 'P',
+            "children" => [
+                "child1" => "C1",
+                "child2" => "C2",
+            ],
+        ]);
+    }
+
+    function test_getValues()
+    {
+        $context = new Context($this->_getRules());
+
+        that($context->getValues())->is([
+            "parent"   => "P",
+            "children" => [],
+        ]);
+
+        $context->normalize([
+            "parent"   => __FILE__ . 'P',
+            "children" => [
+                ['child1' => __FILE__ . 'C1'],
+                ['child1' => __FILE__ . 'C2'],
+            ],
+        ]);
+
+        that($context->getValues())->is([
+            "parent"   => __FILE__ . 'P',
+            "children" => [
+                ["child1" => __FILE__ . 'C1', "child2" => 'C2'],
+                ["child1" => __FILE__ . 'C2', "child2" => 'C2'],
+            ],
+        ]);
     }
 
     function test_getMessages()

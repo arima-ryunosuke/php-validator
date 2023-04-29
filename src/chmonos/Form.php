@@ -13,6 +13,7 @@ use ryunosuke\chmonos\Exception\ValidationException;
  * @property-read Context $context
  * @method array getRules()
  * @method $this error($name, $message)
+ * @method array getDefaults()
  * @method array getMessages()
  * @method array getFlatMessages($format = '[%s] %s', $childformat = '%s %d行目 - %s')
  */
@@ -107,14 +108,40 @@ class Form
         return $this->context->$name(...$argument);
     }
 
+    private function _is_uploaded_file($filename)
+    {
+        // 開発中は get_included_files を「アップロードされたファイル」とみなす
+        if (php_sapi_name() === 'cli') {
+            if (in_array(realpath($filename), get_included_files(), true)) {
+                return true;
+            }
+        }
+        return is_uploaded_file($filename);
+    }
+
+    public function getValues($obtain_file = true)
+    {
+        $values = $this->context->getValues();
+
+        if (!$obtain_file) {
+            array_walk_recursive($values, function (&$value){
+                if (is_string($value) && $this->_is_uploaded_file($value)) {
+                    $value = null;
+                }
+            });
+        }
+
+        return $values;
+    }
+
     public function setValues(array $values)
     {
         $parseFile = function ($file) {
             $error = $file['error'];
             switch ($error) {
                 case UPLOAD_ERR_OK:
-                    if (php_sapi_name() !== 'cli' && !is_uploaded_file($file['tmp_name'])) {
-                        throw new \UnexpectedValueException("file is not uploaded ({$file['name']})", UPLOAD_ERR_EXTENSION); // @codeCoverageIgnore
+                    if (!$this->_is_uploaded_file($file['tmp_name'])) {
+                        throw new \UnexpectedValueException("file is not uploaded ({$file['name']})", UPLOAD_ERR_EXTENSION);
                     }
                     return $file['tmp_name'];
                 case UPLOAD_ERR_NO_FILE:
@@ -277,7 +304,9 @@ class Form
             $script = <<<JAVASCRIPT
             document.addEventListener('DOMContentLoaded', function() {
                 var thisform = document.getElementById({$this->encodeJson($this->id)});
-                {$E($this->options['vuejs'] ? '//' : '')}thisform.chmonos.initialize({$this->encodeJson($this->templateValues)});
+                {$E($this->options['vuejs'] ? "thisform.chmonos.data = {$this->encodeJson($this->getValues(false))};" : "")}
+                {$E($this->options['vuejs'] ? "thisform.chmonos.defaults = {$this->encodeJson($this->getDefaults())};" : "")}
+                {$E($this->options['vuejs'] ? '' : "thisform.chmonos.initialize({$this->encodeJson($this->templateValues)});")}
             });
             JAVASCRIPT;
 
@@ -322,7 +351,7 @@ class Form
         else {
             [$name] = array_pop($this->currents);
 
-            $this->templateValues[$name] = $this->$name->getValue();
+            $this->templateValues[$name] = $this->getValues(false)[$name] ?? [];
 
             return "</script>";
         }

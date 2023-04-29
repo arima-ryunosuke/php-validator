@@ -42,7 +42,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($form)->context->isInstanceOf(Context::class);
     }
 
-    function test_setValues()
+    function test_setValues_getValues()
     {
         $form = new Form([
             'req' => [
@@ -63,12 +63,14 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             'foo' => 'bar',
         ]);
 
+        that($values)->is($form->getValues());
+
         that($values)->isArray()->hasKey('req')->hasKey('dt')->notHasKey('foo');
         that($values)['req']->is('hoge');
         that($values)['dt']->is('2009-02-14T08:31');
     }
 
-    function test_setValues_file()
+    function test_setValues_getValues_file()
     {
         $default = [
             'name'     => '',
@@ -87,22 +89,36 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         $_FILES = [];
-        that($form)->setValues(['file' => 'specified'])['file']->is("nofile");
+        $values = $form->setValues(['file' => 'specified']);
+        that($values)->is($form->getValues());
+        that($values)['file']->is("nofile");
 
         $_FILES = ['file' => ['error' => UPLOAD_ERR_OK] + $default];
-        that($form)->setValues(['file' => 'specified'])['file']->is(__FILE__);
+        $values = $form->setValues(['file' => 'specified']);
+        that($form->getValues(false))->is(['file' => null]);
+        that($form->getValues(true))->is($values);
+        that($values)['file']->is(__FILE__);
 
         $_FILES = ['file' => ['error' => UPLOAD_ERR_OK] + $default];
-        that($form)->setValues([])['file']->is(__FILE__);
+        $values = $form->setValues([]);
+        that($form->getValues(false))->is(['file' => null]);
+        that($form->getValues(true))->is($values);
+        that($values)['file']->is(__FILE__);
 
         $_FILES = ['file' => ['error' => UPLOAD_ERR_NO_FILE] + $default];
-        that($form)->setValues([])['file']->is("nofile");
+        $values = $form->setValues([]);
+        that($form->getValues(false))->is(['file' => "nofile"]);
+        that($form->getValues(true))->is($values);
+        that($values)['file']->is("nofile");
 
         $_FILES = ['file' => ['error' => UPLOAD_ERR_INI_SIZE] + $default];
         that($form)->setValues([])->wasThrown(new \UnexpectedValueException('file size too large', UPLOAD_ERR_INI_SIZE));
 
         $_FILES = ['file' => ['error' => 999] + $default];
         that($form)->setValues([])->wasThrown(new \UnexpectedValueException('upload error', 999));
+
+        $_FILES = ['file' => ['error' => UPLOAD_ERR_OK, 'tmp_name' => 'not_uploaded_file'] + $default];
+        that($form)->setValues([])->wasThrown(new \UnexpectedValueException('file is not uploaded'));
     }
 
     function test_withFile()
@@ -197,20 +213,31 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
 
     function test_validate_files()
     {
+        file_put_contents($parent_file = tempnam(sys_get_temp_dir(), 'tmp'), '');
+        file_put_contents($multiple1_file = tempnam(sys_get_temp_dir(), 'tmp'), '');
+        file_put_contents($multiple2_file = tempnam(sys_get_temp_dir(), 'tmp'), '');
+        file_put_contents($child_file0 = tempnam(sys_get_temp_dir(), 'tmp'), '');
+        file_put_contents($child_file1 = tempnam(sys_get_temp_dir(), 'tmp'), '');
+        require_once $parent_file;
+        require_once $multiple1_file;
+        require_once $multiple2_file;
+        require_once $child_file0;
+        require_once $child_file1;
+
         $_FILES = [
             'parent_file'   => [
                 'name'     => 'local/parent_file',
                 'type'     => 'text/plain',
                 'error'    => UPLOAD_ERR_OK,
                 'size'     => 999,
-                'tmp_name' => 'remote/parent_file',
+                'tmp_name' => $parent_file,
             ],
             'multiple_file' => [
                 'name'     => ['local/multiple1_file', 'local/multiple2_file'],
                 'type'     => ['text/plain', 'text/plain'],
                 'error'    => [UPLOAD_ERR_OK, UPLOAD_ERR_OK],
                 'size'     => [999, 999],
-                'tmp_name' => ['remote/multiple1_file', 'remote/multiple2_file'],
+                'tmp_name' => [$multiple1_file, $multiple2_file],
             ],
             'children'      => [
                 'name'     => [
@@ -230,8 +257,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                     ['child_file' => 999],
                 ],
                 'tmp_name' => [
-                    ['child_file' => 'remote/child_file0'],
-                    ['child_file' => 'remote/child_file1'],
+                    ['child_file' => $child_file0],
+                    ['child_file' => $child_file1],
                 ],
             ],
         ];
@@ -274,15 +301,15 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         @$form->validate($posts);
 
         that($posts)['parent_text']->is("parent_text");
-        that($posts)['parent_file']->is("remote/parent_file");
+        that($posts)['parent_file']->is($parent_file);
 
-        that($posts)['multiple_file'][0]->is("remote/multiple1_file");
-        that($posts)['multiple_file'][1]->is("remote/multiple2_file");
+        that($posts)['multiple_file'][0]->is($multiple1_file);
+        that($posts)['multiple_file'][1]->is($multiple2_file);
 
         that($posts)['children'][0]['child_text']->is("child_text0");
-        that($posts)['children'][0]['child_file']->is("remote/child_file0");
+        that($posts)['children'][0]['child_file']->is($child_file0);
         that($posts)['children'][1]['child_text']->is("child_text1");
-        that($posts)['children'][1]['child_file']->is("remote/child_file1");
+        that($posts)['children'][1]['child_file']->is($child_file1);
     }
 
     function test_validate_files_missing()
@@ -736,8 +763,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             that($content)->stringStartsWith('<script nonce="fuga">');
             // </form> で終わる
             that($content)->stringEndsWith('</form>');
-            // initialize の呼び出しがある
-            that($content)->stringContains('chmonos.initialize');
+            // 初期化がある
+            that($content)->stringContainsAny(['chmonos.initialize', 'chmonos.data']);
         }
     }
 
