@@ -64,7 +64,7 @@ $appendmtime = function ($filename) {
             z-index: 9999999;
         }
     </style>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
     <script type="text/javascript" src="<?= $appendmtime('./validator.js') ?>"></script>
     <script type="text/javascript" src="<?= $appendmtime('../script/validator-error.js') ?>"></script>
     <script>

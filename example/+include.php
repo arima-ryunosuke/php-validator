@@ -48,7 +48,7 @@ function resetForm(Form $form, $id)
             if (!$form->validate($values)) {
                 http_response_code(422);
             }
-            echo var_pretty(['posts' => $posts, 'values' => $values], null, true);
+            echo var_pretty(['posts' => $posts, 'values' => $values], ['return' => true]);
             return true;
         }
     }

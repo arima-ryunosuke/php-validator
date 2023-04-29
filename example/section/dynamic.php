@@ -282,7 +282,6 @@ $dynamic_rule = [
         <input class="append_row3 btn btn-success" v-on:click="append" type="button" value="追加">
         <table id="vuejs-table" class="table">
             <tbody>
-            <template>
                 <tr class="item" v-for="(row, index) in rows">
                     <?= $vuejs_form->vuefor('rows', 'row', 'index') ?>
                     <th><?= $vuejs_form->label('title') ?></th>
@@ -298,7 +297,6 @@ $dynamic_rule = [
                     </td>
                     <?= $vuejs_form->vuefor() ?>
                 </tr>
-            </template>
             </tbody>
         </table>
 
@@ -314,22 +312,14 @@ $dynamic_rule = [
 
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
-            const app = new Vue({
-                el: '#application',
+            const vuejs_chmonos = document.getElementById('vuejs_form').chmonos;
+            const app = Vue.createApp({
                 data: function () {
-                    return {
-                        parent_mail: '',
-                        require_address: '',
-                        rows: [],
-                    };
+                    return vuejs_chmonos.data;
                 },
                 methods: {
                     append: function () {
-                        this.rows.push({
-                            title: "",
-                            checkbox: ["1", "3"],
-                            multiple: ["2"],
-                        });
+                        this.rows.push(Object.assign({}, vuejs_chmonos.defaults.rows));
                     },
                     remove: function (index) {
                         this.rows.splice(index, 1);
@@ -337,10 +327,10 @@ $dynamic_rule = [
                 },
                 mounted: function () {
                     this.$nextTick(function () {
-                        document.getElementById('vuejs_form').chmonos.initialize();
+                        vuejs_chmonos.initialize();
                     });
                 },
-            });
+            }).mount('#application');
         });
     </script>
 </section>
