@@ -1347,7 +1347,7 @@ if (!isset($excluded_functions["get_object_properties"]) && (!function_exists("r
      * // var_dump((array) $object);
      *
      * // この関数を使えば不可視プロパティも取得できる
-     * that(get_object_properties($object))->arraySubset([
+     * that(get_object_properties($object))->subsetEquals([
      *     'message' => 'something',
      *     'code'    => 42,
      *     'oreore'  => 'oreore',
@@ -1606,16 +1606,27 @@ if (!isset($excluded_functions["callable_code"]) && (!function_exists("ryunosuke
         $codeblock = implode('', array_slice($contents, $start - 1, $end - $start + 1));
 
         $meta = parse_php("<?php $codeblock", [
-            'begin' => T_FUNCTION,
-            'end'   => '{',
+            'begin' => [T_FN, T_FUNCTION],
+            'end'   => ['{', T_DOUBLE_ARROW],
         ]);
-        array_pop($meta);
+        $end = array_pop($meta);
 
-        $body = parse_php("<?php $codeblock", [
-            'begin'  => '{',
-            'end'    => '}',
-            'offset' => last_key($meta),
-        ]);
+        if ($end[0] === T_DOUBLE_ARROW) {
+            $body = parse_php("<?php $codeblock", [
+                'begin'  => T_DOUBLE_ARROW,
+                'end'    => [';', ',', ')'],
+                'offset' => last_key($meta),
+                'greedy' => true,
+            ]);
+            $body = array_slice($body, 1, -1);
+        }
+        else {
+            $body = parse_php("<?php $codeblock", [
+                'begin'  => '{',
+                'end'    => '}',
+                'offset' => last_key($meta),
+            ]);
+        }
 
         return [trim(implode('', array_column($meta, 1))), trim(implode('', array_column($body, 1)))];
     }
@@ -1863,9 +1874,10 @@ if (!isset($excluded_functions["strpos_quoted"]) && (!function_exists("ryunosuke
      * @param int $offset 開始位置
      * @param string|array $enclosure 囲い文字。この文字中にいる $from, $to 文字は走査外になる
      * @param string $escape エスケープ文字。この文字が前にある $from, $to 文字は走査外になる
+     * @param ?string $found $needle の内、見つかった文字列が格納される
      * @return false|int $needle の位置
      */
-    function strpos_quoted($haystack, $needle, $offset = 0, $enclosure = "'\"", $escape = '\\')
+    function strpos_quoted($haystack, $needle, $offset = 0, $enclosure = "'\"", $escape = '\\', &$found = null)
     {
         if (is_string($enclosure)) {
             if (strlen($enclosure)) {
@@ -1884,6 +1896,7 @@ if (!isset($excluded_functions["strpos_quoted"]) && (!function_exists("ryunosuke
             $offset += $strlen;
         }
 
+        $found = null;
         $enclosing = [];
         for ($i = $offset; $i < $strlen; $i++) {
             if ($i !== 0 && $haystack[$i - 1] === $escape) {
@@ -1907,6 +1920,7 @@ if (!isset($excluded_functions["strpos_quoted"]) && (!function_exists("ryunosuke
             if (empty($enclosing)) {
                 foreach ($needles as $needle) {
                     if (substr_compare($haystack, $needle, $i, strlen($needle)) === 0) {
+                        $found = $needle;
                         return $i;
                     }
                 }
@@ -2445,6 +2459,7 @@ if (!isset($excluded_functions["parse_php"]) && (!function_exists("ryunosuke\\ch
             'offset'         => 0,    // 開始トークン位置
             'flags'          => 0,    // token_get_all の $flags. TOKEN_PARSE を与えると ParseError が出ることがあるのでデフォルト 0
             'cache'          => true, // キャッシュするか否か
+            'greedy'         => false,// end と nest か一致したときに処理を継続するか
             'nest_token'     => [
                 ')' => '(',
                 '}' => '{',
@@ -2535,6 +2550,7 @@ if (!isset($excluded_functions["parse_php"]) && (!function_exists("ryunosuke\\ch
         $begin_tokens = (array) $option['begin'];
         $end_tokens = (array) $option['end'];
         $nest_tokens = $option['nest_token'];
+        $greedy = $option['greedy'];
 
         $result = [];
         $starting = !$begin_tokens;
@@ -2570,16 +2586,21 @@ if (!isset($excluded_functions["parse_php"]) && (!function_exists("ryunosuke\\ch
 
             $result[$i] = $token;
 
-            foreach ($end_tokens as $t) {
-                if (isset($nest_tokens[$t])) {
-                    $nest_token = $nest_tokens[$t];
-                    if ($token[0] === $nest_token || $token[1] === $nest_token) {
-                        $nesting++;
-                    }
+            foreach ($nest_tokens as $end_nest => $start_nest) {
+                if ($token[0] === $start_nest || $token[1] === $start_nest) {
+                    $nesting++;
                 }
-                if ($t === $token[0] || $t === $token[1]) {
+                if ($token[0] === $end_nest || $token[1] === $end_nest) {
                     $nesting--;
-                    if ($nesting <= 0) {
+                }
+            }
+
+            foreach ($end_tokens as $t) {
+                if ($t === $token[0] || $t === $token[1]) {
+                    if ($nesting <= 0 || ($nesting === 1 && in_array($t, $nest_tokens, true))) {
+                        if ($nesting === 0 && $greedy && isset($nest_tokens[$t])) {
+                            break;
+                        }
                         break 2;
                     }
                     break;
@@ -2714,6 +2735,7 @@ if (!isset($excluded_functions["function_configure"]) && (!function_exists("ryun
         $config['placeholder'] ??= '';
         $config['var_stream'] ??= get_cfg_var('rfunc.var_stream') ?: 'VarStreamV010000';          // for compatible
         $config['memory_stream'] ??= get_cfg_var('rfunc.memory_stream') ?: 'MemoryStreamV010000'; // for compatible
+        $config['chain.version'] ??= 1;
         $config['chain.nullsafe'] ??= false;
 
         // setting
@@ -2847,7 +2869,7 @@ if (!isset($excluded_functions["cache"]) && (!function_exists("ryunosuke\\chmono
      * ```
      *
      * @param string $key キャッシュのキー
-     * @param callable $provider キャッシュがない場合にコールされる callable
+     * @param ?callable $provider キャッシュがない場合にコールされる callable
      * @param ?string $namespace 名前空間
      * @return mixed キャッシュ
      */
@@ -3513,7 +3535,7 @@ if (!isset($excluded_functions["var_export2"]) && (!function_exists("ryunosuke\\
                 $hashed = is_hasharray($value);
 
                 // スカラー値のみで構成されているならシンプルな再帰
-                if (!$hashed && array_all($value, is_primitive)) {
+                if (!$hashed && array_all($value, fn(...$args) => is_primitive(...$args))) {
                     return '[' . implode(', ', array_map($export, $value)) . ']';
                 }
 
