@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.20
+
+- [feature] submitEvent.submitter が完備されたので使用する
+- [feature] js 系の値戻しが弱かったので強化
+
 ## 1.0.19
 
 - [feature][template] js 側での値の取得の強化

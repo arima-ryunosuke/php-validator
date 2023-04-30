@@ -655,32 +655,26 @@ v-model の修飾子を渡すには `v-model.modifier` 属性を指定します�
 <ul id="application">
     <input v-on:click="append" type="button" value="追加">
     <?= $form->form(['id' => 'vuejs_form', 'vuejs' => true]) ?>
-        <template>
-            <div v-for="(child, index) in parent">
-                <?= $form->vuefor('parent', 'child', 'index') ?>
-                <?= $form->input('child1') ?>
-                <?= $form->input('child2', ['v-model.modifier' => 'number']) ?>
-                <?= $form->vuefor() ?>
-            </div>
-            <input v-on:click="remove(index)" type="button" value="削除">
-        </template>
+        <div v-for="(child, index) in parent">
+            <?= $form->vuefor('parent', 'child', 'index') ?>
+            <?= $form->input('child1') ?>
+            <?= $form->input('child2', ['v-model.modifier' => 'number']) ?>
+            <?= $form->vuefor() ?>
+        </div>
+        <input v-on:click="remove(index)" type="button" value="削除">
     <?= $form->form() ?>
 </ul>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
+        const vuejs_chmonos = document.getElementById('vuejs_form').chmonos;
         const app = new Vue({
             el: '#application',
             data: function () {
-                return {
-                    parent: [],
-                };
+                return vuejs_chmonos.data;
             },
             methods: {
                 append: function () {
-                    this.parent.push({
-                        child1: "",
-                        child2: "",
-                    });
+                    this.rows.push(Object.assign({}, vuejs_chmonos.defaults.parent));
                 },
                 remove: function (index) {
                     this.parent.splice(index, 1);
@@ -688,7 +682,7 @@ v-model の修飾子を渡すには `v-model.modifier` 属性を指定します�
             },
             mounted: function () {
                 this.$nextTick(function () {
-                    document.getElementById('vuejs_form').chmonos.initialize();
+                    vuejs_chmonos.initialize();
                 });
             },
         });
