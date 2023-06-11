@@ -1002,7 +1002,7 @@ class Input
         $value = (array) array_unset($attrs, 'value', $this->getValue());
         $flipped_value = array_flip($value);
 
-        $labeled = array_unset($attrs, 'labeled', true);
+        $labeled = array_unset($attrs, 'labeled', 'right');
         $label_attrs = (array) array_unset($attrs, 'label_attrs', []);
 
         $format = array_unset($attrs, 'format', '');
@@ -1047,7 +1047,15 @@ class Input
             $html = "<input $attr>";
             if ($labeled) {
                 $lattrs = $this->createHtmlAttr($label_attrs, $key);
-                $html = $html . "<label $lattrs>{$this->escapeHtml($text)}</label>";
+                if ($labeled === 'left') {
+                    $html = "<label $lattrs>{$this->escapeHtml($text)}</label>$html";
+                }
+                elseif ($labeled === 'outer') {
+                    $html = "<label $lattrs>$html{$this->escapeHtml($text)}</label>";
+                }
+                else {// for compatible
+                    $html = "$html<label $lattrs>{$this->escapeHtml($text)}</label>";
+                }
             }
             $html = $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $attrs['name'], $key, $html);
 

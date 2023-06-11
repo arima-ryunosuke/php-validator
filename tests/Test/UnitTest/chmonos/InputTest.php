@@ -1143,8 +1143,12 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         that($input)->input([
-            'type' => 'checkbox'
+            'type'    => 'checkbox',
+            'labeled' => 'left',
         ])->htmlMatchesArray([
+            'label' => [
+                'for' => 'name-1',
+            ],
             'input' => [
                 'type'                  => 'checkbox',
                 'data-validation-title' => '',
@@ -1157,8 +1161,26 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'checked'               => 'checked',
                 'id'                    => 'name-1',
             ],
+        ]);
+
+        that($input)->input([
+            'type'    => 'checkbox',
+            'labeled' => 'outer',
+        ])->htmlMatchesArray([
             'label' => [
                 'for' => 'name-1',
+                'input' => [
+                    'type'                  => 'checkbox',
+                    'data-validation-title' => '',
+                    'data-vinput-id'        => 'name',
+                    'data-vinput-class'     => 'name',
+                    'data-vinput-index'     => '',
+                    'name'                  => 'name',
+                    'class'                 => 'validatable',
+                    'value'                 => '1',
+                    'checked'               => 'checked',
+                    'id'                    => 'name-1',
+                ],
             ]
         ]);
 
