@@ -379,21 +379,7 @@ class Form
      */
     public function label($name, $attrs = [])
     {
-        $attrs = $this->convertHtmlAttrs($attrs);
-        $attrs['vuejs'] ??= $this->options['vuejs'];
-
-        if ($this->currents) {
-            [$cname, $cindex, $child] = last_value($this->currents) + [null, null, null];
-            $name = "$cname/$name";
-            $attrs['index'] = $cindex;
-            $attrs['child'] = $child;
-        }
-        /** @var Input $input */
-        $input = $this;
-        foreach (explode('/', $name) as $key) {
-            $input = $input->context->$key;
-        }
-        return $input->label($attrs);
+        return $this->_ui($name, $attrs)->label($attrs);
     }
 
     /**
@@ -404,6 +390,11 @@ class Form
      * @return string html 文字列
      */
     public function input($name, $attrs = [])
+    {
+        return $this->_ui($name, $attrs)->input($attrs);
+    }
+
+    protected function _ui(string $name, array &$attrs)
     {
         $attrs = $this->convertHtmlAttrs($attrs);
         $attrs['vuejs'] ??= $this->options['vuejs'];
@@ -419,6 +410,6 @@ class Form
         foreach (explode('/', $name) as $key) {
             $input = $input->context->$key;
         }
-        return $input->input($attrs);
+        return $input;
     }
 }
