@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.21
+
+- [refactor] input の取得と属性の正規化を共通化
+- [feature] label のクロージャ対応
+- [feature] radio/checkbox の label の中に納める機能
+
 ## 1.0.20
 
 - [feature] submitEvent.submitter が完備されたので使用する

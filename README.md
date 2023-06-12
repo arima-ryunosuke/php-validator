@@ -451,7 +451,7 @@ input タグの属性はいくつか特殊な属性があります（カッコ�
     - multiple(false): ルール配列の multiple と同じ効果があり、name 属性に `[]` が付与されます
     - wrapper(null): ルール配列の wrapper と同じ効果があり、input タグが span でラップされます
     - grouper(null): ルール配列の grouper と同じ効果があり、同名 input タグが span でグルーピングされます
-    - labeled(true): 弟要素として label タグを生成します
+    - labeled("right"): 弟要素として label タグを生成します。"outer" とすると親要素として生成します
     - label_attrs([]): labeled が有効な場合の label 側の属性連想配列を指定します
     - format(null): 最終的な html を sprintf します。例えば `<div>%s</div>` として div で囲めます
     - separator(null): 複数要素の場合のセパレータを指定します。例えば `separator => '<br>'` として選択肢を改行区切りにします
