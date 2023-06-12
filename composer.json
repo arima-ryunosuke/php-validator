@@ -19,7 +19,7 @@
     "php": ">=7.4"
   },
   "require-dev": {
-    "ryunosuke/functions": "1.5.*",
+    "ryunosuke/functions": "1.6.*",
     "phpunit/phpunit": "9.*",
     "ryunosuke/phpunit-extension": "3.*",
     "php-webdriver/webdriver": "1.*"
