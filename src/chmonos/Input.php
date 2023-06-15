@@ -887,7 +887,7 @@ class Input
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable';
 
         $value = (array) array_unset($attrs, 'value', $this->getValue());
-        $flipped_value = array_flip($value);
+        $flipped_value = array_flip(array_map('strval', $value));
 
         $option_attrs = (array) array_unset($attrs, 'option_attrs', []);
         $options = (array) array_unset($attrs, 'options', $this->options);
@@ -1003,7 +1003,7 @@ class Input
     protected function _inputChoice($attrs)
     {
         $value = (array) array_unset($attrs, 'value', $this->getValue());
-        $flipped_value = array_flip($value);
+        $flipped_value = array_flip(array_map('strval', $value));
 
         $labeled = array_unset($attrs, 'labeled', 'right');
         $label_attrs = (array) array_unset($attrs, 'label_attrs', []);

@@ -1418,7 +1418,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         that($input)->input([
             'type'  => 'checkbox',
-            'value' => '',
+            'value' => false,
         ])->htmlMatchesArray([
             'input[1]' => [
                 'type'                  => 'checkbox',
