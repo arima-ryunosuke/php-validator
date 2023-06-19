@@ -1,5 +1,7 @@
 <?php
 
+use ryunosuke\chmonos\Condition;
+
 $basic_form = new \ryunosuke\chmonos\Form([
     'text'                  => [
         'default' => "<script>alert('XSS!!');</script>",
@@ -136,6 +138,12 @@ $basic_form = new \ryunosuke\chmonos\Form([
         'title'     => 'チェックを入れると必須',
         'condition' => [
             'Requires' => 'ignore_require',
+        ],
+    ],
+    'warning'                => [
+        'title'     => '必須警告のみ',
+        'condition' => [
+            (new Condition\Requires())->setValidationLevel('warning')->setMessageTemplate('入力した方がよいです', Condition\Requires::INVALID_TEXT),
         ],
     ],
 ], [
@@ -283,6 +291,12 @@ resetForm($basic_form, 'basic_form');
             <?= $basic_form->input('ignore') ?>
         </td>
     </tr>
+    <tr>
+        <th>警告表示</th>
+        <td>
+            <?= $basic_form->input('warning') ?>
+        </td>
+    </tr>
 </table>
 <input type="button" class="btn btn-info object-button" value="object">
 <input type="submit" id="basic_form_submit" class="btn btn-primary" value="post">
@@ -291,3 +305,13 @@ resetForm($basic_form, 'basic_form');
     js チェック有効
 </label>
 <?= $basic_form->form() ?>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        $$('#basic_form').chmonos.addCustomValidation(function (promises) {
+            promises.push(new Promise(function (resolve) {
+                resolve(!confirm('警告があります。保存しますか？'));
+            }));
+        }, 'warning');
+    });
+</script>

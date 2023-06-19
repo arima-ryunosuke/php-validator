@@ -181,21 +181,11 @@ if (resetForm($other_form, 'other_form')) {
             console.log(e)
         });
         // validated で検証完了イベントがフックできる。
-        // （イベント順にもよるが） stopPropagation すればエラーをキャンセルできるので、警告表示などにも使える
+        // （イベント順にもよるが） stopPropagation すればエラーをキャンセルできる
         $validated.on('validated', function (e) {
             console.log(e);
             e.stopPropagation();
-            if (!Object.keys(e.detail.errorTypes).length) {
-                e.target.dispatchEvent(new CustomEvent('mild-validated', {
-                    bubbles: true,
-                    detail: {
-                        errorTypes: ['これは警告です']
-                    }
-                }));
-            }
-            else {
-                alert('フックされたバリデーションイベント：エラー有り\n' + JSON.stringify(e.detail.errorTypes));
-            }
+            alert('フックされたバリデーションイベント：エラー有り\n' + JSON.stringify(e.detail.errorTypes));
         });
         $$('#other_form').chmonos.addCustomValidation(function () {
             var answer = prompt('これはカスタムバリデーションの before イベントです');

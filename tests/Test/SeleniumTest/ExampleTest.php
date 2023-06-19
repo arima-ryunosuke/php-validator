@@ -42,6 +42,22 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_ignore_warning(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('warning', 'hoge');
+        that($driver)->getErrors()->count(0);
+        that($driver)->getWarnings()->count(0);
+
+        $driver->setValue('warning', '');
+        that($driver)->getErrors()->count(0);
+        that($driver)->getWarnings()->count(1);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_ajax(WebDriver $driver)
     {
         $driver->path('/example/index.php');

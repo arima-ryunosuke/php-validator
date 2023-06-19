@@ -252,6 +252,13 @@ $condition_form = new \ryunosuke\chmonos\Form([
             return $result;
         },
     ],
+    'inarray_invalid2'      => [
+        'options'    => [
+            'x' => 'hoge',
+            'y' => "\x18y",
+            'z' => 'piyo',
+        ],
+    ],
     'json'                  => [
         'title'     => 'JSON文字列',
         'condition' => [
@@ -566,7 +573,7 @@ resetForm($condition_form, 'condition_form');
     <tr>
         <th>Array：InArrayInvalid("x", "z", current "y")</th>
         <td><?= $condition_form->input('inarray_invalid', ['value' => 'y']) ?></td>
-        <td></td>
+        <td><?= $condition_form->input('inarray_invalid2', ['type' => 'select', 'value' => 'y']) ?></td>
     </tr>
     <tr>
         <th>JSON 文字列</th>

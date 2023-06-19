@@ -94,6 +94,22 @@ class WebDriver extends RemoteWebDriver
         }
     }
 
+    public function getWarnings($sleep = null, $displayed = true, $blur = true)
+    {
+        // デフォルトが change なのでフォーカスを移さないと検証が走らないので代替
+        if ($blur) {
+            $this->findElement(WebDriverBy::id('dummy-focus'))->click();
+        }
+        if ($sleep) {
+            sleep($sleep);
+        }
+
+        $es = $this->findElements(WebDriverBy::cssSelector('.validation_warning'));
+        return array_filter($es, function (RemoteWebElement $e) use ($displayed) {
+            return (!$displayed || ($displayed && $e->isDisplayed()));
+        });
+    }
+
     public function getErrors($sleep = null, $displayed = true, $blur = true)
     {
         // デフォルトが change なのでフォーカスを移さないと検証が走らないので代替
