@@ -4,6 +4,7 @@ namespace ryunosuke\Test\UnitTest\chmonos;
 
 use ryunosuke\chmonos\Condition\Decimal;
 use ryunosuke\chmonos\Condition\InArray;
+use ryunosuke\chmonos\Condition\NotInArray;
 use ryunosuke\chmonos\Condition\Requires;
 use ryunosuke\chmonos\Condition\StringLength;
 use ryunosuke\chmonos\Context;
@@ -262,19 +263,50 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->condition->notHasKey('StringLength');
 
         $input = new Input([
-            'condition' => [
+            'condition'             => [
                 'EmailAddress' => null,
             ],
-            'options'   => [
-                1 => 'on',
+            'invalid-option-prefix' => "xxx-",
+            'options'               => [
+                1          => 'on',
+                'optgroup' => [
+                    0 => "xxx-off",
+                ],
             ],
-            'autocond'  => [
+            'autocond'              => [
                 'InArray'      => true,
+                'NotInArray'   => true,
                 'StringLength' => false,
             ],
         ]);
         that($input)->condition->hasKey('InArray');
+        that($input)->condition->hasKey('NotInArray');
         that($input)->condition->notHasKey('StringLength');
+        that($input)->options->is([
+            1 => 'on',
+            'optgroup' => [
+                0 => "off",
+            ],
+        ]);
+
+        $input = new Input([
+            'condition' => [
+                'sl'  => $sl = new StringLength(),
+                'ia'  => $ia = new InArray([]),
+                'nia' => $nia = new NotInArray([]),
+            ],
+            'options'   => [
+                1 => 'on',
+                0 => "xxx-off",
+            ],
+        ]);
+        that($input)->condition['sl']->isSame($sl);
+        that($input)->condition['ia']->isSame($ia);
+        that($input)->condition['nia']->isSame($nia);
+        that($input)->options->is([
+            1 => 'on',
+            0 => "xxx-off",
+        ]);
 
         $input = new class([
             'autocond' => true,

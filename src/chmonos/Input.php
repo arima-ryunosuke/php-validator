@@ -23,28 +23,29 @@ class Input
 
     /** @var array 生成時のデフォルト値 */
     protected static $defaultRule = [
-        'title'       => '',
-        'condition'   => [],
-        'options'     => [],
-        'suboptions'  => null,
-        'subposition' => 'prepend',
-        'event'       => ['change'],
-        'propagate'   => [],
-        'dependent'   => true,
-        'message'     => [],
-        'phantom'     => [],
-        'attribute'   => [],
-        'inputs'      => [],
-        'checkmode'   => ['server' => true, 'client' => true], // delete or empty in future scope
-        'wrapper'     => null,
-        'grouper'     => null,
-        'invisible'   => false,
-        'ignore'      => false,
-        'trimming'    => true,
-        'ime-mode'    => true,
-        'autocond'    => true,
-        'multiple'    => null,
-        'pseudo'      => true,
+        'title'                 => '',
+        'condition'             => [],
+        'invalid-option-prefix' => "\x18",
+        'options'               => [],
+        'suboptions'            => null,
+        'subposition'           => 'prepend',
+        'event'                 => ['change'],
+        'propagate'             => [],
+        'dependent'             => true,
+        'message'               => [],
+        'phantom'               => [],
+        'attribute'             => [],
+        'inputs'                => [],
+        'checkmode'             => ['server' => true, 'client' => true], // delete or empty in future scope
+        'wrapper'               => null,
+        'grouper'               => null,
+        'invisible'             => false,
+        'ignore'                => false,
+        'trimming'              => true,
+        'ime-mode'              => true,
+        'autocond'              => true,
+        'multiple'              => null,
+        'pseudo'                => true,
         // 'default'    => null, // あるかないかでデフォルト値を決めるのでコメントアウト
     ];
 
@@ -459,6 +460,44 @@ class Input
 
         $inarray = new Condition\InArray(array_keys($options));
         $this->rule['condition'][class_shorten($inarray)] = $inarray;
+    }
+
+    /**
+     * options を必要とする要素（select とか radio とか）に特殊プレフィックスで NotInArray 条件を自動で付加する
+     *
+     * ただし、すでに NotInArray 条件が登録されていたら何もしない。
+     */
+    protected function _setAutoNotInArray()
+    {
+        if ($this->type === 'combobox') {
+            return;
+        }
+
+        foreach ($this->condition as $condition) {
+            if ($condition instanceof Condition\NotInArray) {
+                return;
+            }
+        }
+
+        if (!$this->options) {
+            return;
+        }
+
+        if (strlen($this->rule["invalid-option-prefix"])) {
+            $notoptions = [];
+            array_walk_recursive($this->rule['options'], function (&$v, $k) use (&$notoptions) {
+                [, $value] = explode($this->rule["invalid-option-prefix"], $v, 2) + [1 => null];
+                if ($value !== null) {
+                    $v = $value;
+                    $notoptions[] = $k;
+                }
+            });
+
+            if ($notoptions) {
+                $notinarray = new Condition\NotInArray($notoptions);
+                $this->rule['condition'][class_shorten($notinarray)] = $notinarray;
+            }
+        }
     }
 
     /**
