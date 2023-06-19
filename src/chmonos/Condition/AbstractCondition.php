@@ -42,6 +42,9 @@ abstract class AbstractCondition
     /** @var array バリデーションメッセージ */
     protected $messages = [];
 
+    /** @var string バリデーションレベル（warning, error） */
+    protected $level = 'error';
+
     /**
      * 組み込み条件以外を使用したい時に使われる任意空間を登録
      *
@@ -365,6 +368,11 @@ JS;
             return true;
         }
 
+        // warning は php レベルの検証を行わない
+        if (in_array($this->level, ['warning'], true)) {
+            return true;
+        }
+
         static $constants = [];
         $constants[static::class] = $constants[static::class] ?? get_class_constants($this);
 
@@ -391,6 +399,20 @@ JS;
     public function isArrayableValidation()
     {
         return false;
+    }
+
+    /**
+     * 検証レベルを設定
+     *
+     * 今のところ warning, error だけの対応。
+     *
+     * @return static
+     */
+    public function setValidationLevel($level)
+    {
+        assert(in_array($level, ['warning', 'error'], true));
+        $this->level = $level;
+        return $this;
     }
 
     /**
@@ -437,6 +459,7 @@ JS;
             'arrayable' => $this->isArrayableValidation(),
             'message'   => $this->getMessageTemplates(),
             'fields'    => $this->getFields(),
+            'level'     => $this->level,
         ];
     }
 

@@ -17,9 +17,9 @@
     animation: BlinkValidatable 1.15s 1;
 }
 
-.validatable.validation_warn,
-.validatable.validation_warn + label {
-    background-color: #ff0;
+.validatable.validation_warning,
+.validatable.validation_warning + label {
+    background-color: #fff1de;
 }
 
 .validatable.validation_error,
@@ -87,14 +87,27 @@ option.validation_invalid,
 }
 
 #chmonos-toast-container:before {
-    content: '下記のエラーがあります(クリックで移動します)';
     font-size: 12px;
     color: white;
-    background-color: rgba(146, 32, 21, 0.9);
     display: block;
     border-radius: 3px;
     margin-bottom: 3px;
     padding: 3px;
+}
+
+#chmonos-toast-container:has([data-toast-type="warning"]):before {
+    content: '下記の警告があります(クリックで移動します)';
+    background-color: rgba(228, 128, 1, 0.9);
+}
+
+#chmonos-toast-container:has([data-toast-type="error"]):before {
+    content: '下記のエラーがあります(クリックで移動します)';
+    background-color: rgba(146, 32, 21, 0.9);
+}
+
+#chmonos-toast-container:has([data-toast-type="warning"]):has([data-toast-type="error"]):before {
+    content: '下記の警告・エラーがあります(クリックで移動します)';
+    background-color: rgba(146, 32, 21, 0.9);
 }
 
 #chmonos-toast-container * {
@@ -108,7 +121,7 @@ option.validation_invalid,
     overflow: hidden;
     margin: 0 0 6px;
     padding: 7px 15px 7px 50px;
-    width: 300px;
+    width: 312px;
     border-radius: 3px 3px 3px 3px;
     box-shadow: 0 0 12px #999999;
     color: #FFFFFF;

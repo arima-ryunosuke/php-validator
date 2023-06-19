@@ -1,6 +1,7 @@
 <?php
 namespace ryunosuke\Test\UnitTest\chmonos;
 
+use ryunosuke\chmonos\Condition;
 use ryunosuke\chmonos\Context;
 use ryunosuke\chmonos\Exception\ValidationException;
 use ryunosuke\chmonos\Form;
@@ -156,6 +157,33 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         that($values)->isArray()->hasKey('req')->notHasKey('foo');
         that($values)['req']->is("hoge");
+    }
+
+    function test_validate_warning()
+    {
+        $form = new Form([
+            'hoge' => [
+                'condition' => [
+                    (new Condition\Requires())->setValidationLevel('warning'),
+                ]
+            ],
+            'fuga' => [
+                'condition' => [
+                    (new Condition\Requires())->setValidationLevel('error'),
+                ]
+            ]
+        ]);
+
+        $values = [
+            'hoge' => '',
+            'fuga' => '',
+        ];
+        $form->validate($values);
+
+        $messages = $form->getMessages();
+        that($messages)->count(1);
+        that($messages)->notHasKey('hoge');
+        that($messages)->hasKey('fuga');
     }
 
     function test_validate_ignore()

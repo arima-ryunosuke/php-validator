@@ -6,12 +6,10 @@
 (function () {
     // エラー
     document.addEventListener('validated', function (e) {
-        toast.call(e.target, e.detail.errorTypes, 'error');
-    });
-
-    // 警告
-    document.addEventListener('mild-validated', function (e) {
-        toast.call(e.target, e.detail.errorTypes, 'warning');
+        toast.call(e.target, {
+            warning: e.detail.warningTypes,
+            error: e.detail.errorTypes,
+        });
     });
 
     // DOM が消え去ったときに toast も消えるように監視する
@@ -27,7 +25,7 @@
         }
     }, 111);
 
-    function toast(errors, type) {
+    function toast(result) {
         var showToast = function (options) {
             var container = document.getElementById('chmonos-toast-container');
             if (!container) {
@@ -90,30 +88,32 @@
         var title = this.dataset.validationTitle;
         var input = this.closest('[data-vinput-group]') || this;
 
-        var TOAST_NAME = 'vinput-toast-' + type;
-        var message = errors.toArray ? errors.toArray() : errors;
-        if (message.length) {
-            var toast = input[TOAST_NAME] || showToast({
-                type: type,
-                title: title || '',
-                message: message.join('\n'),
-                onClick: function (e) {
-                    scrollAndBlink(input);
-                    return false;
-                },
-                onHidden: function (e) {
+        for (type of Object.keys(result)) {
+            let TOAST_NAME = 'vinput-toast-' + type;
+            var message = result[type].toArray ? result[type].toArray() : result[type];
+            if (message.length) {
+                var toast = input[TOAST_NAME] || showToast({
+                    type: type,
+                    title: title || '',
+                    message: message.join('\n'),
+                    onClick: function (e) {
+                        scrollAndBlink(input);
+                        return false;
+                    },
+                    onHidden: function (e) {
+                        delete input[TOAST_NAME];
+                    },
+                });
+                toast.style.order = Array.prototype.indexOf.call(document.querySelectorAll('.validation_warning, .validation_error'), this) + 1;
+                toast.chmonos_vinput = input;
+                input[TOAST_NAME] = toast;
+            }
+            else {
+                var toast = input[TOAST_NAME];
+                if (toast) {
+                    toast.remove();
                     delete input[TOAST_NAME];
-                },
-            });
-            toast.style.order = Array.prototype.indexOf.call(document.querySelectorAll('.validation_warn, .validation_error'), this) + 1;
-            toast.chmonos_vinput = input;
-            input[TOAST_NAME] = toast;
-        }
-        else {
-            var toast = input[TOAST_NAME];
-            if (toast) {
-                toast.remove();
-                delete input[TOAST_NAME];
+                }
             }
         }
     }
