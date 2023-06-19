@@ -74,33 +74,34 @@ Form のルールには下記のような連想配列を渡します。
 ```php
 $form = new Form([
     'element_name1' => [
-        'title'       => '',         // 画面に表示される際の論理名を指定します
-        'condition'   => [],         // 入力条件を配列で指定します（後述）
-        'options'     => [],         // checkbox や radio などの選択肢を配列で指定します。キーが値、値が表示文字列です
-        'suboptions'  => null,       // options に無い値が来たときの選択肢を指定します（後述）
-        'subposition' => 'prepend',  // options と suboptions の結合処理を指定します。append で前方に追加、 prepend で後方に追加、クロージャで任意処理が呼び出されます
-        'event'       => ['change'], // js チェックが走るイベント名を指定します（後述）
-        'propagate'   => [],         // js チェックのイベントの伝播先を指定します（後述）
-        'message'     => [],         // エラーメッセージを指定します（後述）
-        'phantom'     => [],         // 疑似データソースを指定します（後述）
-        'attribute'   => [],         // その他のカスタムデータです。html レンダリングされる際のタグ属性にもなります
-        'inputs'      => [],         // ネスト構造を再帰的に記述します（後述）
-       //  'javascript'  => true,       // js チェックを行うかを指定します（非推奨）
-        'checkmode'   => [           // サーバー・クライアントサイドのどちらで検証を行うか指定します（非推奨。将来的に削除されます）
+        'title'                 => '',         // 画面に表示される際の論理名を指定します
+        'condition'             => [],         // 入力条件を配列で指定します（後述）
+        'invalid-option-prefix' => "\x18",     // 無効 options を表すプレフィックスを指定します（後述）
+        'options'               => [],         // checkbox や radio などの選択肢を配列で指定します。キーが値、値が表示文字列です
+        'suboptions'            => null,       // options に無い値が来たときの選択肢を指定します（後述）
+        'subposition'           => 'prepend',  // options と suboptions の結合処理を指定します。append で前方に追加、 prepend で後方に追加、クロージャで任意処理が呼び出されます
+        'event'                 => ['change'], // js チェックが走るイベント名を指定します（後述）
+        'propagate'             => [],         // js チェックのイベントの伝播先を指定します（後述）
+        'message'               => [],         // エラーメッセージを指定します（後述）
+        'phantom'               => [],         // 疑似データソースを指定します（後述）
+        'attribute'             => [],         // その他のカスタムデータです。html レンダリングされる際のタグ属性にもなります
+        'inputs'                => [],         // ネスト構造を再帰的に記述します（後述）
+       //  'javascript'            => true,       // js チェックを行うかを指定します（非推奨）
+        'checkmode'             => [           // サーバー・クライアントサイドのどちらで検証を行うか指定します（非推奨。将来的に削除されます）
             'server' => true,        // server を true にするとサーバーサイドで検証が行われます
             'client' => true,        // client を true にするとクライアントサイドで検証が行われます
         ], 
-        'wrapper'     => null,       // input 要素をラップする span class を指定します。未指定だとラップしません
-        'grouper'     => null,       // input 要素郡（同じ名前の radio/checkbox）をラップする span class を指定します。未指定だとラップしません
-        'invisible'   => false,      // 不可視状態で検証を行うかを指定します
-        'ignore'      => false,      // 検証や依存関係の値としては全て有効ですが最終的な結果から除くかを指定します（後述）
-        'trimming'    => true,       // 値のトリミングを行うかを指定します
-        'ime-mode'    => true,       // ime-mode を自動設定するかを指定します
-        'autocond'    => true,       // 一部の入力条件を自動設定するかを指定します（後述）
-        'multiple'    => null,       // 複数入力か否かを指定します（後述）
-        'dependent'   => true,       // 自動伝播設定を行うかを指定します（後述）
-        'pseudo'      => true,       // ダミー hidden を生成するかを指定します（後述）
-        // 'default'     => null,       // 値が飛んでこなかった時のデフォルト値を指定します（後述）
+        'wrapper'               => null,       // input 要素をラップする span class を指定します。未指定だとラップしません
+        'grouper'               => null,       // input 要素郡（同じ名前の radio/checkbox）をラップする span class を指定します。未指定だとラップしません
+        'invisible'             => false,      // 不可視状態で検証を行うかを指定します
+        'ignore'                => false,      // 検証や依存関係の値としては全て有効ですが最終的な結果から除くかを指定します（後述）
+        'trimming'              => true,       // 値のトリミングを行うかを指定します
+        'ime-mode'              => true,       // ime-mode を自動設定するかを指定します
+        'autocond'              => true,       // 一部の入力条件を自動設定するかを指定します（後述）
+        'multiple'              => null,       // 複数入力か否かを指定します（後述）
+        'dependent'             => true,       // 自動伝播設定を行うかを指定します（後述）
+        'pseudo'                => true,       // ダミー hidden を生成するかを指定します（後述）
+        // 'default'               => null,       // 値が飛んでこなかった時のデフォルト値を指定します（後述）
     ],
     'element_name2' => [/* 構造は同じ */],
     // ・・・
@@ -198,6 +199,16 @@ js の容量削減のため、構造的には「共通メッセージがあり�
 
 エラーメッセージは一切 html エスケープが行われないので注意してください。
 エスケープはエラー表示プラグインの仕事と割り切って、本体側ではタッチしない設計です。
+
+##### options
+
+checkbox, radio, select などの選択肢を指定します。
+1階層のネストは optgroup として扱われます。
+
+`options` が指定されると autocond 機能により InArray 条件が自動で付与されます。
+
+`invalid-option-prefix` を指定するとそのプレフィックスが付いた要素は  autocond 機能により NotInArray 条件が自動で付与されます。
+要素のプレフィックスは除去されます。
 
 ##### suboptions
 
@@ -719,9 +730,10 @@ context/template では初期化が自動で行われますが、 vuefor の場�
 なお、検証された要素は下記が設定されます。
 これは上記のエラー表示とは無関係で常に行われます。
 
+- validation_warning クラスの toggle
 - validation_error クラスの toggle
 - validation_ok クラスの toggle
-- errorTypes プロパティの代入
+- warningTypes/errorTypes プロパティの代入
 
 ### 名前空間とディレクトリの登録
 
@@ -808,6 +820,13 @@ validate には下記の引数が渡ってきます。
 とはいえ単純な condition であれば `$error(文字列)` しか使わないはずです。
 この辺は組み込みの `Ajax`, `ImageSize` が参考になるかもしれません。
 
+### エラーの警告化
+
+Condition の `setValidationLevel` を "warning" で呼ぶと、その Condition は警告化され、サーバーチェックがスルーされるようになります。
+クライアントチェックは警告表示がなされ、エラーとは扱われません。そのまま POST することも可能です。
+
+警告のハンドリングは下記の `addCustomValidation` で "warning" を追加します。
+
 #### addCustomValidation
 
 サーバーサイドでの検証が不要なら `form.chmonos` に `addCustomValidation` メソッドが生えているので、それを使用すると js による事前事後の検証が可能です。
@@ -815,12 +834,16 @@ validate には下記の引数が渡ってきます。
 ```js
 // 事前検証
 document.getElementById('form-id').chmonos.addCustomValidation(function(promises) {
-    // do something
+    // DOM を追加したり hidden を設定したり
 }, 'before');
 // 事後検証
 document.getElementById('form-id').chmonos.addCustomValidation(function(promises) {
-    // do something
+    // ajax で一意制をちぇっくしたり
 }, 'after');
+// 警告イベント
+document.getElementById('form-id').chmonos.addCustomValidation(function(promises) {
+    promises.push(!confirm("警告が出ているが本当によい？"));
+}, 'warning');
 ```
 
 それぞれ検証処理の事前・事後に登録した function がコールされます。
@@ -835,6 +858,7 @@ after で false を返すと、他の after イベントは実行されません
 
 before は例えば特殊な UI の値化、完全なる前提条件の検証などに使用できます。
 after は例えばファイル要素や非同期通信による一意チェックなどに使用できます。
+warning は「エラーがなく、警告がある」ときのみ発火されます。ここで確認ダイアログなどを仕込めば「警告が出ているが POST を強行する」などが実現できます。
 
 なお、js だけのチェックとなるので重要な検証には使用しないでください。例えば「どうせ外部キーが守ってくれるので画面で親切さを出したい」のようなあくまで利便性だけに留めるべきです。
 

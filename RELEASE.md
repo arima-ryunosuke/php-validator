@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.22
+
+- [feature] _setAutoNotInArray を実装
+- [feature] warning の仕様を正式な仕様に格上げ
+- [feature] stringable ならなんでも value に使えるようにした
+
 ## 1.0.21
 
 - [refactor] input の取得と属性の正規化を共通化
