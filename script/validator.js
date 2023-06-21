@@ -4723,12 +4723,13 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
 
         var condition = rule['condition'];
         var value = chmonos.value(input);
-        var errorTypes = {};
+        var errorTypes = {warning: {}, error: {}};
         var asyncs = [];
         var keys = Object.keys(condition);
         for (var k = 0; k < keys.length; k++) {
             let cond = condition[keys[k]];
             let cname = cond.cname;
+            let level = cond.level;
             var error = function (err) {
                 if (evt.chmonosSubtypes) {
                     if (evt.chmonosSubtypes.includes('noerror')) {
@@ -4741,21 +4742,21 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
 
                 if (err === undefined) {
                     if (input.validationErrors && input.validationErrors[cname]) {
-                        errorTypes[cname] = input.validationErrors[cname];
+                        errorTypes[level][cname] = input.validationErrors[cname];
                     }
                 }
                 else if (err === null) {
-                    delete errorTypes[cname];
+                    delete errorTypes[level][cname];
                 }
                 else if (err instanceof Promise) {
                     asyncs.push(err);
                 }
                 else if (isPlainObject(err)) {
-                    if (errorTypes[cname] === undefined) {
-                        errorTypes[cname] = {};
+                    if (errorTypes[level][cname] === undefined) {
+                        errorTypes[level][cname] = {};
                     }
                     Object.keys(err).forEach(function (mk) {
-                        errorTypes[cname][mk] = err[mk];
+                        errorTypes[level][cname][mk] = err[mk];
                     });
                 }
                 else {
@@ -4769,10 +4770,10 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
                     else {
                         ret = err;
                     }
-                    if (errorTypes[cname] === undefined) {
-                        errorTypes[cname] = {};
+                    if (errorTypes[level][cname] === undefined) {
+                        errorTypes[level][cname] = {};
                     }
-                    errorTypes[cname][err] = ret.replace(/%(.+?)%/g, function (p0, p1) {
+                    errorTypes[level][cname][err] = ret.replace(/%(.+?)%/g, function (p0, p1) {
                         if (cond['param'][p1] !== undefined) {
                             return cond['param'][p1];
                         }
@@ -4820,7 +4821,10 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         return !(obj.constructor && !{}.hasOwnProperty.call(obj.constructor.prototype, 'isPrototypeOf'));
     }
 
-    function fireError(input, errorTypes, okclass) {
+    function fireError(input, result, okclass) {
+        var warningTypes = result.warning || {};
+        var errorTypes = result.error || {};
+        var isWarning = !!Object.keys(warningTypes).length;
         var isError = !!Object.keys(errorTypes).length;
         if (input.type === 'radio' || input.type === 'checkbox') {
             input = form.querySelectorAll("input[name='" + input.name + "'].validatable");
@@ -4829,43 +4833,64 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
             input = [input];
         }
 
-        if (!errorTypes.hasOwnProperty('toArray')) {
-            Object.defineProperty(errorTypes, 'toArray', {
-                value: function () {
-                    var collectMessage = function (errors) {
-                        var message = [];
-                        Object.keys(errors).forEach(function (e) {
-                            if (typeof (errors[e]) === 'string') {
-                                message.push(errors[e]);
-                            }
-                            else {
-                                message = message.concat(collectMessage(errors[e]));
-                            }
-                        });
-                        return message;
-                    };
-                    return collectMessage(this);
-                },
-            });
-        }
+        [warningTypes, errorTypes].forEach(function (types) {
+            if (!types.hasOwnProperty('toArray')) {
+                Object.defineProperty(types, 'toArray', {
+                    value: function () {
+                        var collectMessage = function (errors) {
+                            var message = [];
+                            Object.keys(errors).forEach(function (e) {
+                                if (typeof (errors[e]) === 'string') {
+                                    message.push(errors[e]);
+                                }
+                                else {
+                                    message = message.concat(collectMessage(errors[e]));
+                                }
+                            });
+                            return message;
+                        };
+                        return collectMessage(this);
+                    },
+                });
+            }
+        });
 
         input.forEach(function (e) {
+            if (isWarning) {
+                e.classList.add('validation_warning');
+                e.validationWarnings = warningTypes;
+            }
             if (isError) {
                 e.classList.add('validation_error');
-                e.classList.remove('validation_ok');
                 e.validationErrors = errorTypes;
             }
+            if (isWarning || isError) {
+                e.classList.remove('validation_ok');
+            }
             else {
+                e.classList.remove('validation_warning');
                 e.classList.remove('validation_error');
                 e.classList.remove('validation_ok');
                 if (okclass) {
                     e.classList.add('validation_ok');
                 }
+                e.validationWarnings = undefined;
                 e.validationErrors = undefined;
             }
-            e.dispatchEvent(new CustomEvent('validated', {detail: {errorTypes: errorTypes}, bubbles: true}));
+            e.dispatchEvent(new CustomEvent('validated', {
+                detail: {
+                    warningTypes: warningTypes,
+                    errorTypes: errorTypes,
+                }, bubbles: true
+            }));
         });
-        return isError;
+        if (isError) {
+            return true;
+        }
+        if (isWarning) {
+            return null;
+        }
+        return false;
     }
 
     /// 外部用
@@ -4912,6 +4937,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
     chmonos.customValidation = {
         before: [],
         after: [],
+        warning: [],
     };
 
     chmonos.initialize = function (values) {
@@ -4971,7 +4997,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         form.addEventListener('submit', function submit(e) {
             try {
                 chmonos.validate(e).then(function (result) {
-                    if (result.indexOf(true) === -1) {
+                    var done = function () {
                         if (options.alternativeSubmit && e.submitter) {
                             setTimeout(function () {
                                 form.removeEventListener('submit', submit);
@@ -4985,6 +5011,23 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
                             form.removeEventListener('submit', submit);
                             form.submit();
                             form.addEventListener('submit', submit);
+                        }
+                    };
+                    if (result.indexOf(true) === -1) {
+                        if (chmonos.customValidation.warning.length && result.indexOf(null) !== -1) {
+                            var promises = [];
+                            if (!chmonos.customValidation.warning.some(function (f) { return f.call(form, promises) === false })) {
+                                console.log(promises);
+                                Promise.all(promises).then(function (result) {
+                                    console.log(result);
+                                    if (result.indexOf(true) === -1) {
+                                        done();
+                                    }
+                                });
+                            }
+                        }
+                        else {
+                            done();
                         }
                     }
                 });
@@ -5045,7 +5088,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         flatize(emessages, '', '', '');
 
         form.querySelectorAll('.validatable').forEach(function (input) {
-            fireError(input, errorTypes[input.dataset.vinputId] || {}, false);
+            fireError(input, {error: errorTypes[input.dataset.vinputId] || {}}, false);
         });
     };
 
