@@ -70,6 +70,9 @@ $appendmtime = function ($filename) {
     <script>
         const $ = document.querySelectorAll.bind(document);
         const $$ = document.querySelector.bind(document);
+        Window.prototype.var_dump = function () {
+            console.log(...arguments);
+        };
         Node.prototype.on = function (type, listener) {
             this.addEventListener(type, listener);
             return this;
@@ -77,6 +80,14 @@ $appendmtime = function ($filename) {
         NodeList.prototype.on = function (type, listener) {
             this.forEach(function (node) {
                 node.on(type, listener);
+            });
+        };
+        File.prototype.toDataURL = function () {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(this);
             });
         };
         document.addEventListener('DOMContentLoaded', function () {

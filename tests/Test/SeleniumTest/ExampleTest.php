@@ -579,6 +579,21 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_datauri(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('data-uri', "invalid-data-uri");
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('data-uri', "data:image/png;base64,eA");
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('data-uri', "data:text/plain;base64,eA");
+        that($driver)->getErrors()->count(0);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_dynamic_arraylength(WebDriver $driver)
     {
         $driver->path('/example/index.php');

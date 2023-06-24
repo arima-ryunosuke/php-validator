@@ -304,6 +304,14 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'Regex' => ['/^[a-z]*$/', true]
         ]
     ],
+    'mixed'                 => [
+        'title'     => '複合条件',
+        'condition' => [
+            'Requires' => null,
+            'Hostname' => '',
+            'FileName' => [['json', 'yaml'], null, true]
+        ]
+    ],
     'require_checkbox'      => [
         'title'     => '必須チェックボックス',
         'default'   => [],
@@ -472,6 +480,12 @@ $condition_form = new \ryunosuke\chmonos\Form([
         'condition' => [
             'Uri' => [['http', 'https']]
         ]
+    ],
+    'data-uri'                => [
+        'title'     => 'DataURI',
+        'condition' => [
+            'DataUri' => [['size' => 256 * 1024, 'type' => ['txt', 'csv']]]
+        ]
     ]
 ]);
 resetForm($condition_form, 'condition_form');
@@ -606,6 +620,11 @@ resetForm($condition_form, 'condition_form');
         <td><?= $condition_form->input('notregex') ?></td>
     </tr>
     <tr>
+        <th>複合条件（ファイル名・ホスト名）</th>
+        <td><?= $condition_form->input('mixed') ?></td>
+        <td></td>
+    </tr>
+    <tr>
         <th>必須：checkbox | select</th>
         <td><?= $condition_form->input('require_checkbox', ['type' => 'checkbox']) ?></td>
         <td><?= $condition_form->input('require_select', ['type' => 'select']) ?></td>
@@ -662,6 +681,20 @@ resetForm($condition_form, 'condition_form');
         <th>URL：スキーム不問 | http(s)のみ</th>
         <td><?= $condition_form->input('url') ?></td>
         <td><?= $condition_form->input('url-http') ?></td>
+    </tr>
+    <tr>
+        <th>DataURI</th>
+        <td colspan="2">
+            <?= $condition_form->input('data-uri', ['type' => 'textarea', 'style' => 'width:100%']) ?>
+            <input id="data-uri-file" type="file">
+            <script>
+                $$('#data-uri-file').addEventListener('change', async function () {
+                    const textarea = $$('[data-vinput-id=data-uri]');
+                    textarea.value = await this.files[0].toDataURL();
+                    textarea.dispatchEvent(new Event('change', {bubbles: true}));
+                });
+            </script>
+        </td>
     </tr>
 </table>
 <input type="button" class="btn btn-info object-button" value="object">
