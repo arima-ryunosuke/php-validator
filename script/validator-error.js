@@ -95,7 +95,7 @@
                 var toast = input[TOAST_NAME] || showToast({
                     type: type,
                     title: title || '',
-                    message: message.join('\n'),
+                    message: "",
                     onClick: function (e) {
                         scrollAndBlink(input);
                         return false;
@@ -104,6 +104,7 @@
                         delete input[TOAST_NAME];
                     },
                 });
+                toast.querySelector('.toast-message').innerHTML = message.join('\n');
                 toast.style.order = Array.prototype.indexOf.call(document.querySelectorAll('.validation_warning, .validation_error'), this) + 1;
                 toast.chmonos_vinput = input;
                 input[TOAST_NAME] = toast;
