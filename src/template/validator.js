@@ -869,10 +869,10 @@ function Chmonos(form, options) {
                 return async file => file.text();
             }
             if (filemanage === 'binary') {
-                return async file => String.fromCharCode(...new Uint8Array(await file.arrayBuffer()));
+                return async file => [...new Uint8Array(await file.arrayBuffer())].map(c => String.fromCharCode(c)).join('');
             }
             if (filemanage === 'base64') {
-                return async file => btoa(String.fromCharCode(...new Uint8Array(await file.arrayBuffer())));
+                return async file => btoa([...new Uint8Array(await file.arrayBuffer())].map(c => String.fromCharCode(c)).join(''));
             }
             return filemanage(file);
         })(filemanage ?? 'base64');
