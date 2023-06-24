@@ -24,6 +24,13 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.23
+
+- [feature] DataUri Condition を追加
+- [fixbug] ファイルが大きいと params でエラーが出ていた不具合を修正
+- [fixbug] 検証処理で例外が飛ぶと以後が打ち切られてしまう不具合を修正
+- [fixbug] エラーメッセージが最初の物から変わらない不具合を修正
+
 ## 1.0.22
 
 - [feature] _setAutoNotInArray を実装
