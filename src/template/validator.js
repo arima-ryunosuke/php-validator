@@ -406,9 +406,7 @@ function Chmonos(form, options) {
                         if (chmonos.customValidation.warning.length && result.indexOf(null) !== -1) {
                             var promises = [];
                             if (!chmonos.customValidation.warning.some(function (f) { return f.call(form, promises) === false })) {
-                                console.log(promises);
                                 Promise.all(promises).then(function (result) {
-                                    console.log(result);
                                     if (result.indexOf(true) === -1) {
                                         done();
                                     }

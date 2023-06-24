@@ -283,7 +283,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->condition->hasKey('NotInArray');
         that($input)->condition->notHasKey('StringLength');
         that($input)->options->is([
-            1 => 'on',
+            1          => 'on',
             'optgroup' => [
                 0 => "off",
             ],
@@ -1201,7 +1201,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'labeled' => 'outer',
         ])->htmlMatchesArray([
             'label' => [
-                'for' => 'name-1',
+                'for'   => 'name-1',
                 'input' => [
                     'type'                  => 'checkbox',
                     'data-validation-title' => '',

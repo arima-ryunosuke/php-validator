@@ -124,7 +124,7 @@ class Form
         $values = $this->context->getValues();
 
         if (!$obtain_file) {
-            array_walk_recursive($values, function (&$value){
+            array_walk_recursive($values, function (&$value) {
                 if (is_string($value) && $this->_is_uploaded_file($value)) {
                     $value = null;
                 }
