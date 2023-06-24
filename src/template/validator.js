@@ -169,7 +169,13 @@ function Chmonos(form, options) {
             if (value.length > 0 || cname === 'Requires') {
                 var values = cond['arrayable'] ? [value] : chmonos.context.cast('array', value);
                 Object.keys(values).forEach(function (v) {
-                    chmonos.condition[cname](input, values[v], fields, cond['param'], chmonos.constants[cname], error, chmonos.context, evt);
+                    try {
+                        chmonos.condition[cname](input, values[v], fields, cond['param'], chmonos.constants[cname], error, chmonos.context, evt);
+                    }
+                    catch (e) {
+                        error(chmonos.constants[cname]['INVALID']);
+                        console.error(e);
+                    }
                 });
             }
         }
