@@ -117,7 +117,7 @@ $dynamic_rule = [
             <dt><?= $template_form->label('title') ?></dt>
             <dd><?= $template_form->input('title') ?></dd>
             <dt>選択肢</dt>
-            <dd><?= $template_form->input('checkbox', ['type' => 'checkbox']) ?><br><?= $template_form->input('multiple', ['type' => 'select']) ?></dd>
+            <dd><?= $template_form->input('checkbox', ['type' => 'checkbox']) ?><br><?= $template_form->input('multiple', ['type' => 'select']) ?><span data-vnode="">${multiple.length}個</span></dd>
             <dt>兄弟内の重複禁止</dt>
             <dd><?= $template_form->input('unique_require') ?> <?= $template_form->input('unique') ?></dd>
             <dt>ファイル要素</dt>
