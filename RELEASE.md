@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.24
+
+- [feature] spawn に簡易テンプレート機能を実装
+- [fixbug] autocond に配列指定時の未定義動作を修正
+
 ## 1.0.23
 
 - [feature] DataUri Condition を追加

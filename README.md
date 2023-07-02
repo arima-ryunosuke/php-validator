@@ -359,6 +359,7 @@ $rule = [
 
 これは前述の「options があるときに InArray condition」だけを設定することを意味します。
 また、 Input クラスに `_setAutoHoge` メソッドが存在するときに `['Hoge' => false]` を指定すると Hoge も除外されるようになります。
+指定されなかった condition は true 扱いになります。
 
 ##### dependent
 
@@ -619,8 +620,8 @@ name や index, イベントなどは birth で設定されるため、上記が
     <ul>
         <?= $form->template('parent') ?>
         <li>
-            <?= $form->input('child1') ?>
-            <?= $form->input('child2') ?>
+            <span data-vnode="">this is ${child1}</span><?= $form->input('child1') ?>
+            <span data-vnode="">this is ${child2}</span><?= $form->input('child2') ?>
         </li>
         <?= $form->template() ?>
     </ul>
@@ -639,6 +640,14 @@ name や index, イベントなどは birth で設定されるため、上記が
 実際のところ template メソッドは context でのボイラープレートを自動でまとめ上げただけに過ぎません。
 
 あまり複雑なことは出来ませんが、単純に動的要素を追加したいだけなら template の方が便利です。
+
+上記の通り `data-vnode` という属性を与えると値を用いてレンダリングされます。
+vuejs のように双方向バインディングではありませんが、ちょっとしてテキストを埋め込む分には十分便利です。
+
+`data-vnode` の値は将来的に動作を変えたりオプションを渡したりする想定です。現時点でいかなる値も与えてはいけません。
+
+実装は js のテンプレートリテラルを動的に実行しています。
+危険な文字列が来ると致命的なことになるので十分注意してください。
 
 #### vuefor
 
