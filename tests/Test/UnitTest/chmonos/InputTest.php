@@ -275,7 +275,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
             'autocond'              => [
                 'InArray'      => true,
-                'NotInArray'   => true,
+                // 'NotInArray'   => true,// 未指定は true 扱い
                 'StringLength' => false,
             ],
         ]);

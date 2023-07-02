@@ -176,7 +176,7 @@ class Input
             }
         }
         foreach ($automethods[static::class] as $name => $method) {
-            if ($rule['autocond'] === true || (is_array($rule['autocond']) && $rule['autocond'][$name])) {
+            if ($rule['autocond'] === true || (is_array($rule['autocond']) && ($rule['autocond'][$name] ?? true))) {
                 $this->$method();
             }
         }
