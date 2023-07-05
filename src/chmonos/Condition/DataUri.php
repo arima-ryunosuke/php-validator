@@ -142,7 +142,7 @@ class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
     {
         $matches = [];
 
-        if (!preg_match('#^data:(.+?/.+?)?(;charset=+?)?(;base64)?,#iu', $value, $matches)) {
+        if (!preg_match('#^data:(.+?/.+?)?(;charset=.+?)?(;base64)?,#iu', $value, $matches)) {
             return $error($consts['INVALID']);
         }
 
@@ -164,7 +164,7 @@ class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
     public function getValue($value)
     {
         if ($this->convertible) {
-            return base64_decode(preg_replace('#^data:(.+?/.+?)?(;charset=+?)?(;base64)?,#iu', '', $value), true);
+            return base64_decode(preg_replace('#^data:(.+?/.+?)?(;charset=.+?)?(;base64)?,#iu', '', $value), true);
         }
         return $value;
     }

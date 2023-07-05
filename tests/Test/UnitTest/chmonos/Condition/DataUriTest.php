@@ -16,6 +16,7 @@ class DataUriTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid("data:image/png;base64," . base64_encode(str_repeat("x", 65)))->isFalse();
 
         $validate = new DataUri(["type" => ["png", "jpg"]]);
+        that($validate)->isValid("data:image/png;charset=8bit;base64," . "eA")->isTrue();
         that($validate)->isValid("data:image/png;base64," . "eA")->isTrue();
         that($validate)->isValid("data:image/jpeg;base64," . "eA")->isTrue();
         that($validate)->isValid("data:image/hoge;base64," . "eA")->isFalse();
