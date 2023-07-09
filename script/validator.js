@@ -4416,7 +4416,7 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
 
         $matches = [];
 
-        if (!preg_match('#^data:(.+?/.+?)?(;charset=+?)?(;base64)?,#iu', $value, $matches)) {
+        if (!preg_match('#^data:(.+?/.+?)?(;charset=.+?)?(;base64)?,#iu', $value, $matches)) {
             return $error($consts['INVALID']);
         }
 
@@ -5382,21 +5382,23 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
             template = form.querySelector('[data-vtemplate-name="' + template + '"]')
         }
 
-        var entries = Object.entries(values);
-        var args = entries.map(e => e[0]);
-        var vals = entries.map(e => e[1]);
-
         var node = chmonos.birth(template, values, index);
-        node.querySelectorAll('[data-vnode]').forEach(function (e) {
-            try {
-                const F = new Function(...args, 'return `' + e.outerHTML + '`');
-                e.insertAdjacentHTML('afterend', F(...vals));
-                e.remove();
-            }
-            catch (e) {
-                console.error(e);
-            }
-        });
+        if (values) {
+            var entries = Object.entries(values);
+            var args = entries.map(e => e[0]);
+            var vals = entries.map(e => e[1]);
+
+            node.querySelectorAll('[data-vnode]').forEach(function (e) {
+                try {
+                    const F = new Function(...args, 'return `' + e.outerHTML + '`');
+                    e.insertAdjacentHTML('afterend', F(...vals));
+                    e.remove();
+                }
+                catch (e) {
+                    console.error(e);
+                }
+            });
+        }
         template.dispatchEvent(new CustomEvent('spawn', {
             detail: {
                 node: node,
