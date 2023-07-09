@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.25
+
+- [change] エラーの見た目を調整
+- [fixbug] spawn に values を与えないとエラーになってしまう不具合を修正
+- [fixbug] DataUri の正規表現が誤っていたので修正
+
 ## 1.0.24
 
 - [feature] spawn に簡易テンプレート機能を実装
