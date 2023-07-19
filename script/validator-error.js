@@ -9,6 +9,7 @@
         toast.call(e.target, {
             warning: e.detail.warningTypes,
             error: e.detail.errorTypes,
+            phantoms: e.detail.phantoms,
         });
     });
 
@@ -55,30 +56,31 @@
             return result;
         };
         // 指定要素までスクロールして目立たせる
-        var scrollAndBlink = function (input) {
-            while (input !== null && input.offsetParent === null) {
-                input = input.parentElement;
-            }
-            if (!input) {
-                return;
-            }
-
-            (new IntersectionObserver(function (entries, observer) {
-                var entry = entries[0];
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('validatable_blink');
-                    entry.target.addEventListener('animationend', function (e) {
-                        e.target.classList.remove('validatable_blink');
-                    }, {
-                        once: true,
-                    });
-                    observer.unobserve(entry.target);
-                }
+        var scrollAndBlink = function (input, phantoms) {
+            var blinker = new IntersectionObserver(function (entries, observer) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('validatable_blink');
+                        entry.target.addEventListener('animationend', function (e) {
+                            e.target.classList.remove('validatable_blink');
+                        }, {
+                            once: true,
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
             }, {
                 threshold: 1.0,
-            })).observe(input);
+            });
+            var blinkee = [input].concat(phantoms).map(function (e) {
+                while (e !== null && e.offsetParent === null) {
+                    e = e.parentElement;
+                }
+                return e;
+            }).filter(e => e !== null);
+            blinkee.forEach(e => blinker.observe(e));
 
-            input.scrollIntoView({
+            blinkee[0]?.scrollIntoView({
                 behavior: "smooth",
                 block: "center",
             });
@@ -88,7 +90,7 @@
         var title = this.dataset.validationTitle;
         var input = this.closest('[data-vinput-group]') || this;
 
-        for (type of Object.keys(result)) {
+        for (type of ['error', 'warning']) {
             let TOAST_NAME = 'vinput-toast-' + type;
             var message = result[type].toArray ? result[type].toArray() : result[type];
             if (message.length) {
@@ -97,7 +99,7 @@
                     title: title || '',
                     message: "",
                     onClick: function (e) {
-                        scrollAndBlink(input);
+                        scrollAndBlink(input, result.phantoms);
                         return false;
                     },
                     onHidden: function (e) {

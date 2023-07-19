@@ -77,11 +77,14 @@ function Chmonos(form, options) {
         }
 
         var phantom = rule['phantom'];
+        var phantoms = [];
         if (phantom.length) {
             var flag = true;
             var brothers = [];
             for (var i = 1; i < phantom.length; i++) {
-                var target = chmonos.value(chmonos.brother(input, phantom[i])[0]);
+                var inputs = chmonos.brother(input, phantom[i]);
+                var target = chmonos.value(inputs[0]);
+                phantoms.push(...inputs);
                 if (target.length === 0) {
                     flag = false;
                     break;
@@ -182,7 +185,7 @@ function Chmonos(form, options) {
 
         result.push(new Promise(function (resolve) {
             Promise.all(asyncs).then(function () {
-                resolve(fireError(input, errorTypes, value.length > 0));
+                resolve(fireError(input, errorTypes, value.length > 0, phantoms));
             });
         }));
 
@@ -210,13 +213,14 @@ function Chmonos(form, options) {
         return !(obj.constructor && !{}.hasOwnProperty.call(obj.constructor.prototype, 'isPrototypeOf'));
     }
 
-    function fireError(input, result, okclass) {
+    function fireError(input, result, okclass, phantoms) {
+        phantoms = phantoms ?? [];
         var warningTypes = result.warning || {};
         var errorTypes = result.error || {};
         var isWarning = !!Object.keys(warningTypes).length;
         var isError = !!Object.keys(errorTypes).length;
         if (input.type === 'radio' || input.type === 'checkbox') {
-            input = form.querySelectorAll("input[name='" + input.name + "'].validatable");
+            input = Array.from(form.querySelectorAll("input[name='" + input.name + "'].validatable"));
         }
         else {
             input = [input];
@@ -244,7 +248,7 @@ function Chmonos(form, options) {
             }
         });
 
-        input.forEach(function (e) {
+        input.concat(phantoms).forEach(function (e) {
             if (isWarning) {
                 e.classList.add('validation_warning');
                 e.validationWarnings = warningTypes;
@@ -266,10 +270,13 @@ function Chmonos(form, options) {
                 e.validationWarnings = undefined;
                 e.validationErrors = undefined;
             }
+        });
+        input.forEach(function (e) {
             e.dispatchEvent(new CustomEvent('validated', {
                 detail: {
                     warningTypes: warningTypes,
                     errorTypes: errorTypes,
+                    phantoms: phantoms,
                 }, bubbles: true
             }));
         });
