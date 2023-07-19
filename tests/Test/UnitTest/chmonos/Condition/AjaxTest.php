@@ -45,15 +45,15 @@ class AjaxTest extends \ryunosuke\Test\AbstractUnitTestCase
 
     function test_response()
     {
-        $validate = new Ajax('hoge', [], [$this, '_method']);
+        $validate = new Ajax('hoge?id=123&seq=456', [], [$this, '_method']);
 
-        $_POST = ['key' => 'trust'];
+        $_GET = ['id' => 123, 'seq' => 456, 'key' => 'trust'];
         that($validate)->response()->isNull();
 
-        $_POST = ['key' => 'trust', 'other' => 'hoge'];
+        $_GET = ['id' => 123, 'seq' => 456, 'key' => 'trust', 'other' => 'hoge'];
         that($validate)->response()->isNull();
 
-        $_POST = ['key' => 'dummy'];
+        $_GET = ['id' => 123, 'seq' => 456, 'key' => 'dummy'];
         that($validate)->response()->is([
             "AjaxInvalid" => "false",
         ]);
@@ -63,15 +63,15 @@ class AjaxTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Ajax([
             'url'    => 'hoge',
-            'method' => 'get',
+            'method' => 'post',
         ], [], [$this, '_method']);
-
-        $_GET = ['key' => 'trust'];
-        $_POST = [];
-        that($validate)->response()->isNull();
 
         $_GET = [];
         $_POST = ['key' => 'trust'];
+        that($validate)->response()->isNull();
+
+        $_GET = ['key' => 'trust'];
+        $_POST = [];
         that($validate)->response()->is([
             "AjaxInvalid" => "false",
         ]);

@@ -34,7 +34,10 @@ class Ajax extends AbstractCondition
     public function __construct($request, $fields = [], $method = null)
     {
         if (is_string($request)) {
-            $request = ['url' => $request];
+            $request = [
+                'url'    => $request,
+                'method' => 'GET',
+            ];
         }
         $request += [
             'api'         => 'xhr',  // xhr, fetch, other window.foo
@@ -48,6 +51,8 @@ class Ajax extends AbstractCondition
             'timeout'     => null,
             'handler'     => null,   // response handler
         ];
+        $request['method'] = strtoupper($request['method']);
+
         $this->_request = $request;
         $this->_fields = $fields;
         $this->_method = $method;
@@ -68,18 +73,21 @@ class Ajax extends AbstractCondition
             (function() {
                 if ($value && $params.request.url) {
                     function request() {
-                        var formdata = new FormData();
-                        formdata.append(input.name, $value);
+                        var url = new URL($params.request.url, location.href);
+                        var formdata = undefined;
+                        var body = $params.request.method === 'GET' ? url.searchParams : formdata = new FormData();
+
+                        body.append(input.name, $value);
                         var keys = Object.keys($fields);
                         for (var i = 0; i < keys.length; i++) {
-                            formdata.append(keys[i], $fields[keys[i]]);
+                            body.append(keys[i], $fields[keys[i]]);
                         }
-    
+
                         var handler = $params.request.handler || function(response){return response};
                         if ($params.request.api === 'xhr') {
                             return new Promise(function(resolve, reject) {
                                 var xhr = new XMLHttpRequest();
-                                xhr.open($params.request.method, $params.request.url);
+                                xhr.open($params.request.method, url);
                                 Object.keys($params.request.headers).forEach(function(header) {
                                     xhr.setRequestHeader(header, $params.request.headers[header]);
                                 });
@@ -101,8 +109,7 @@ class Ajax extends AbstractCondition
                             });
                         }
                         if ($params.request.api === 'fetch') {
-                            var request = new Request($params.request.url, Object.assign({body: formdata}, $params.request));
-                            return window.fetch(request).then(function(response) {
+                            return window.fetch(url, Object.assign({body: formdata}, $params.request)).then(function(response) {
                                 if (!response.ok) {
                                     throw response;
                                 }
@@ -115,7 +122,7 @@ class Ajax extends AbstractCondition
                         }
                         
                         return new Promise(function(resolve, reject) {
-                            window[$params.request.api](Object.assign({body: formdata}, $params.request)).then(function(response) {
+                            window[$params.request.api](Object.assign({url: url, body: formdata}, $params.request)).then(function(response) {
                                 $error(response);
                                 resolve();
                             }).catch(function(e) {
@@ -184,10 +191,11 @@ JS;
             return null;
         }
         if ($fields === null) {
-            if (strtoupper($this->_request['method']) === 'GET') {
-                $fields = $_GET;
+            if ($this->_request['method'] === 'GET') {
+                parse_str(parse_url($this->_request['url'], PHP_URL_QUERY), $query);
+                $fields = array_diff_key($_GET, $query);
             }
-            if (strtoupper($this->_request['method']) === 'POST') {
+            if ($this->_request['method'] === 'POST') {
                 $fields = get_uploaded_files() + $_POST;
             }
         }
