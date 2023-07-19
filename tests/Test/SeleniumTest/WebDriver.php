@@ -37,11 +37,16 @@ class WebDriver extends RemoteWebDriver
         switch ($e->getTagName()) {
             case 'select':
                 $select = new WebDriverSelect($e);
-                if ($clearable) {
-                    $select->deselectAll();
+                if ($select->isMultiple()) {
+                    if ($clearable) {
+                        $select->deselectAll();
+                    }
+                    foreach ($values as $v) {
+                        $select->selectByValue($v);
+                    }
                 }
-                foreach ((array) $value as $v) {
-                    $select->selectByValue($v);
+                else {
+                    $select->selectByValue($value);
                 }
                 break;
 

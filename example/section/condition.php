@@ -1,5 +1,7 @@
 <?php
 
+use ryunosuke\chmonos\Condition\AbstractCondition;
+
 $condition_form = new \ryunosuke\chmonos\Form([
     'ajax1'                 => [
         'condition' => [
@@ -255,8 +257,11 @@ $condition_form = new \ryunosuke\chmonos\Form([
     'inarray_invalid2'      => [
         'options'    => [
             'x' => 'hoge',
-            'y' => "\x18y",
+            'y' => "\x18warning",
             'z' => 'piyo',
+        ],
+        'autocond'   => [
+            'NotInArray' => fn(AbstractCondition $cond) => $cond->setValidationLevel('warning')->setMessageTemplate('選択できません', 'valueInArray'),
         ],
     ],
     'json'                  => [

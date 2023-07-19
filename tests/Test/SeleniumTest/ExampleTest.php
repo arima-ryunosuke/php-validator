@@ -349,6 +349,36 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_inarray_invalid(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('inarray_invalid', 'x');
+        that($driver)->getErrors()->count(0);
+        $driver->setValue('inarray_invalid', 'y');
+        that($driver)->getErrors()->count(3);
+        $driver->setValue('inarray_invalid', 'z');
+        that($driver)->getErrors()->count(0);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
+    function test_inarray_invalid2(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('inarray_invalid2', 'x');
+        that($driver)->getErrors()->count(0);
+        $driver->setValue('inarray_invalid2', 'y');
+        that($driver)->getWarnings()->count(1);
+        $driver->setValue('inarray_invalid2', 'z');
+        that($driver)->getErrors()->count(0);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_json(WebDriver $driver)
     {
         $driver->path('/example/index.php');
@@ -686,7 +716,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         that($driver)->findElement(WebDriverBy::name('year-month-day'))->getAttribute('class')->contains('validation_ok');
 
         $driver->setValue('month', '13');
-        that($driver)->getErrors()->count(2);
+        that($driver)->getErrors()->count(4);
     }
 
     /**
