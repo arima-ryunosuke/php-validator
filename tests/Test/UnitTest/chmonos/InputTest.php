@@ -2,6 +2,7 @@
 /** @noinspection CssUnknownProperty */
 namespace ryunosuke\Test\UnitTest\chmonos;
 
+use ryunosuke\chmonos\Condition\AbstractCondition;
 use ryunosuke\chmonos\Condition\Decimal;
 use ryunosuke\chmonos\Condition\InArray;
 use ryunosuke\chmonos\Condition\NotInArray;
@@ -288,6 +289,29 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 0 => "off",
             ],
         ]);
+
+        $input = new Input([
+            'condition' => [
+                'EmailAddress' => null,
+            ],
+            'options'   => [1 => 'on'],
+            'autocond'  => fn(AbstractCondition $cond) => $cond->setValidationLevel('warning'),
+        ]);
+        that($input->condition['InArray'])->level->is('warning');
+        that($input->condition['StringLength'])->level->is('warning');
+
+        $input = new Input([
+            'condition' => [
+                'EmailAddress' => null,
+            ],
+            'options'   => [1 => 'on'],
+            'autocond'  => [
+                'InArray'      => fn(AbstractCondition $cond) => $cond->setValidationLevel('warning'),
+                'StringLength' => true,
+            ],
+        ]);
+        that($input->condition['InArray'])->level->is('warning');
+        that($input->condition['StringLength'])->level->is('error');
 
         $input = new Input([
             'condition' => [

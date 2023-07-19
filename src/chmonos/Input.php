@@ -176,8 +176,17 @@ class Input
             }
         }
         foreach ($automethods[static::class] as $name => $method) {
-            if ($rule['autocond'] === true || (is_array($rule['autocond']) && ($rule['autocond'][$name] ?? true))) {
-                $this->$method();
+            if ($rule['autocond'] === true || $rule['autocond'] instanceof \Closure || $rule['autocond'] instanceof \Closure || (is_array($rule['autocond']) && ($rule['autocond'][$name] ?? true))) {
+                /** @var AbstractCondition $cond */
+                $cond = $this->$method();
+                if ($cond !== null) {
+                    if ($rule['autocond'] instanceof \Closure) {
+                        $rule['autocond']($cond);
+                    }
+                    if ((is_array($rule['autocond']) && ($rule['autocond'][$name] ?? null) instanceof \Closure)) {
+                        $rule['autocond'][$name]($cond);
+                    }
+                }
             }
         }
 
@@ -418,6 +427,7 @@ class Input
 
         $stringlength = new Condition\StringLength(null, $max);
         $this->rule['condition'][class_shorten($stringlength)] = $stringlength;
+        return $stringlength;
     }
 
     /**
@@ -460,6 +470,7 @@ class Input
 
         $inarray = new Condition\InArray(array_keys($options));
         $this->rule['condition'][class_shorten($inarray)] = $inarray;
+        return $inarray;
     }
 
     /**
@@ -496,6 +507,7 @@ class Input
             if ($notoptions) {
                 $notinarray = new Condition\NotInArray($notoptions);
                 $this->rule['condition'][class_shorten($notinarray)] = $notinarray;
+                return $notinarray;
             }
         }
     }
