@@ -4254,18 +4254,21 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
             (function() {
                 if ($value && $params.request.url) {
                     function request() {
-                        var formdata = new FormData();
-                        formdata.append(input.name, $value);
+                        var url = new URL($params.request.url, location.href);
+                        var formdata = undefined;
+                        var body = $params.request.method === 'GET' ? url.searchParams : formdata = new FormData();
+
+                        body.append(input.name, $value);
                         var keys = Object.keys($fields);
                         for (var i = 0; i < keys.length; i++) {
-                            formdata.append(keys[i], $fields[keys[i]]);
+                            body.append(keys[i], $fields[keys[i]]);
                         }
-    
+
                         var handler = $params.request.handler || function(response){return response};
                         if ($params.request.api === 'xhr') {
                             return new Promise(function(resolve, reject) {
                                 var xhr = new XMLHttpRequest();
-                                xhr.open($params.request.method, $params.request.url);
+                                xhr.open($params.request.method, url);
                                 Object.keys($params.request.headers).forEach(function(header) {
                                     xhr.setRequestHeader(header, $params.request.headers[header]);
                                 });
@@ -4287,8 +4290,7 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
                             });
                         }
                         if ($params.request.api === 'fetch') {
-                            var request = new Request($params.request.url, Object.assign({body: formdata}, $params.request));
-                            return window.fetch(request).then(function(response) {
+                            return window.fetch(url, Object.assign({body: formdata}, $params.request)).then(function(response) {
                                 if (!response.ok) {
                                     throw response;
                                 }
@@ -4301,7 +4303,7 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
                         }
                         
                         return new Promise(function(resolve, reject) {
-                            window[$params.request.api](Object.assign({body: formdata}, $params.request)).then(function(response) {
+                            window[$params.request.api](Object.assign({url: url, body: formdata}, $params.request)).then(function(response) {
                                 $error(response);
                                 resolve();
                             }).catch(function(e) {
@@ -4861,11 +4863,14 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         }
 
         var phantom = rule['phantom'];
+        var phantoms = [];
         if (phantom.length) {
             var flag = true;
             var brothers = [];
             for (var i = 1; i < phantom.length; i++) {
-                var target = chmonos.value(chmonos.brother(input, phantom[i])[0]);
+                var inputs = chmonos.brother(input, phantom[i]);
+                var target = chmonos.value(inputs[0]);
+                phantoms.push(...inputs);
                 if (target.length === 0) {
                     flag = false;
                     break;
@@ -4966,7 +4971,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
 
         result.push(new Promise(function (resolve) {
             Promise.all(asyncs).then(function () {
-                resolve(fireError(input, errorTypes, value.length > 0));
+                resolve(fireError(input, errorTypes, value.length > 0, phantoms));
             });
         }));
 
@@ -4994,13 +4999,14 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         return !(obj.constructor && !{}.hasOwnProperty.call(obj.constructor.prototype, 'isPrototypeOf'));
     }
 
-    function fireError(input, result, okclass) {
+    function fireError(input, result, okclass, phantoms) {
+        phantoms = phantoms ?? [];
         var warningTypes = result.warning || {};
         var errorTypes = result.error || {};
         var isWarning = !!Object.keys(warningTypes).length;
         var isError = !!Object.keys(errorTypes).length;
         if (input.type === 'radio' || input.type === 'checkbox') {
-            input = form.querySelectorAll("input[name='" + input.name + "'].validatable");
+            input = Array.from(form.querySelectorAll("input[name='" + input.name + "'].validatable"));
         }
         else {
             input = [input];
@@ -5028,7 +5034,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
             }
         });
 
-        input.forEach(function (e) {
+        input.concat(phantoms).forEach(function (e) {
             if (isWarning) {
                 e.classList.add('validation_warning');
                 e.validationWarnings = warningTypes;
@@ -5050,10 +5056,13 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
                 e.validationWarnings = undefined;
                 e.validationErrors = undefined;
             }
+        });
+        input.forEach(function (e) {
             e.dispatchEvent(new CustomEvent('validated', {
                 detail: {
                     warningTypes: warningTypes,
                     errorTypes: errorTypes,
+                    phantoms: phantoms,
                 }, bubbles: true
             }));
         });
