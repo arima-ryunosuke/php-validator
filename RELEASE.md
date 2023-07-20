@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.0.26
+
+- [fixbug] Ajax が特定条件で動かなかった不具合を修正
+- [feature] autocond にクロージャを渡すとその Condition の設定をできる機能
+- [feature] エラー発火に phantom も含める
+
 ## 1.0.25
 
 - [change] エラーの見た目を調整

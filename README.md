@@ -361,6 +361,9 @@ $rule = [
 また、 Input クラスに `_setAutoHoge` メソッドが存在するときに `['Hoge' => false]` を指定すると Hoge も除外されるようになります。
 指定されなかった condition は true 扱いになります。
 
+true の代わりにクロージャを渡すと自動生成された Condition インスタンスを引数としてコールバックされます。
+これは validationLevel や message を設定したい際に有用です。
+
 ##### dependent
 
 依存項目を指定します。
