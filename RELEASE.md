@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.1.0
+
+- [feature] type をルール配列で指定可能にする機能
+- [*change] bump version
+
 ## 1.0.26
 
 - [fixbug] Ajax が特定条件で動かなかった不具合を修正

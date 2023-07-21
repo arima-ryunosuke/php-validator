@@ -46,11 +46,9 @@ Form にはいくつかのオプションがあります。
 ```php
 // Form インスタンスを作成
 $form = new Form([/* ルールについては後述 */], [
-    'tokenName'         => '',           // CSRF トークンの name 属性を指定します。未指定だと CSRF 対策が無効になります
-    'nonce'             => '',           // 生成される script タグの nonce 属性を指定します（CSP 用です。不要なら指定不要です）
-    'inputClass'        => Input::class, // UI 要素の検証やレンダリングに使用する Input クラス名を指定します。基本的には指定不要です
-    'alternativeSubmit' => true,         // submit 時に サブミットボタンの name や formaction などの属性が有効になります
-    'vuejs'             => false,        // レンダリングが vuejs に適した形になります
+    'nonce'      => '',           // 生成される script タグの nonce 属性を指定します（CSP 用です。不要なら指定不要です）
+    'inputClass' => Input::class, // UI 要素の検証やレンダリングに使用する Input クラス名を指定します。基本的には指定不要です
+    'vuejs'      => false,        // レンダリングが vuejs に適した形になります
 ]);
 
 // POST でバリデーション
@@ -877,8 +875,6 @@ warning は「エラーがなく、警告がある」ときのみ発火されま
 ## Note
 
 - アンドキュメントな仕様が結構多いです
-- イベント順のしがらみで Form オブジェクトでレンダリングされた form は submit ボタンの name, value, formaction が反映されないことがあります
-    - 非同期のツラミです。いっそのこと自分でハンドリングしたい場合は alternativeSubmit を false にしてください
 - `composer build` すると npm ディレクトリが作成されますが基本的に気にしなくていいです
     - バベったり uglifyJs する予定があるので npm を利用していますが、現在は locutus のダウンロードにしか使っていません  
       その locutus も js 群はリポジトリに含めているので今のところ用途はありません
