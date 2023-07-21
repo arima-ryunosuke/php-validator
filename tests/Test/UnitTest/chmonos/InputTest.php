@@ -62,14 +62,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->checkmode->is([]);
         that($c1)->checkmode->is(['server' => true, 'client' => false]);
         that($c2)->checkmode->is(['server' => true, 'client' => true]);
-
-        # for compatible
-
-        $input = new Input(['javascript' => true]);
-        that($input)->checkmode->is(['server' => true, 'client' => true]);
-
-        $input = new Input(['javascript' => false]);
-        that($input)->checkmode->is(['server' => true, 'client' => false]);
     }
 
     function test___isset()
@@ -786,7 +778,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'scalar' => 123,
                 'string' => '"</script>',
                 'array'  => [1, 2, 3],
-                'hash'   => ['a' => 'A', 'b' => 'B', 'c' => 'C'],
+                'hash'   => (object) ['a' => 'A', 'b' => 'B', 'c' => 'C'],
             ]
         ]);
 
@@ -794,7 +786,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'input' => [
                 'scalar'                => '123',
                 'string'                => '"</script>',
-                'array'                 => '[1,2,3]',
+                'array'                 => '1 2 3',
                 'hash'                  => '{"a":"A","b":"B","c":"C"}',
                 'data-validation-title' => '',
                 'data-vinput-id'        => 'hoge',

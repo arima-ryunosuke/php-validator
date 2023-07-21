@@ -227,18 +227,6 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
     }
 
-    function test_validate_csrf()
-    {
-        $form = new Form([], [
-            'tokenName' => 'hoge',
-        ]);
-
-        $_SERVER['REQUEST_METHOD'] = 'POST';
-        $_POST['hoge'] = 'invalid';
-
-        that($form)->validate([])->wasThrown('token is invalid');
-    }
-
     function test_validate_files()
     {
         file_put_contents($parent_file = tempnam(sys_get_temp_dir(), 'tmp'), '');
@@ -801,15 +789,5 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $form = new Form([]);
 
         that($form)->vuefor('children', 'child', 'i')->wasThrown('vuejs flag is false');
-    }
-
-    function test_form_csrf()
-    {
-        $form = new Form([], [
-            'tokenName' => 'hoge',
-        ]);
-        // method=post 時のみ含まれる
-        that($form)->form(['method' => 'get'])->stringNotContains("<input type='hidden' name='hoge'");
-        that($form)->form(['method' => 'post'])->stringContains("<input type='hidden' name='hoge'");
     }
 }

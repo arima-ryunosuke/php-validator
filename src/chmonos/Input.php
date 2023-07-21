@@ -98,11 +98,6 @@ class Input
         $rule['attribute'] = arrayize($rule['attribute']);
         $rule['event'] = arrayize($rule['event']);
 
-        // for compatible
-        if (array_key_exists('javascript', $rule) && !$rule['javascript']) {
-            $rule['checkmode']['client'] = false;
-        }
-
         // 文字列指定の Condition をオブジェクト化する
         foreach ($rule['condition'] as $name => $condition) {
             if (!($condition instanceof AbstractCondition)) {
@@ -117,9 +112,6 @@ class Input
         foreach ($rule['attribute'] as $name => $attribute) {
             if (is_int($name)) {
                 throw new \InvalidArgumentException("attribute requires hash array");
-            }
-            if (is_array($attribute)) {
-                $rule['attribute'][$name] = $this->encodeJson($attribute);
             }
         }
 
@@ -1107,7 +1099,7 @@ class Input
                 elseif ($labeled === 'outer') {
                     $html = "<label $lattrs>$html{$this->escapeHtml($text)}</label>";
                 }
-                else {// for compatible
+                else {// right
                     $html = "$html<label $lattrs>{$this->escapeHtml($text)}</label>";
                 }
             }

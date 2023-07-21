@@ -1,7 +1,6 @@
 <?php
 namespace ryunosuke\chmonos;
 
-use ryunosuke\chmonos\Exception\TokenException;
 use ryunosuke\chmonos\Exception\ValidationException;
 
 /**
@@ -28,9 +27,6 @@ class Form
     /** @var string */
     private $id;
 
-    /** @var Token */
-    private $token;
-
     /** @var array */
     private $options;
 
@@ -51,16 +47,13 @@ class Form
     public function __construct(array $rules, $options = [])
     {
         $options += [
-            'tokenName'         => '',
-            'nonce'             => '',
-            'inputClass'        => Input::class,
-            'alternativeSubmit' => true,
-            'vuejs'             => false,
+            'nonce'      => '',
+            'inputClass' => Input::class,
+            'vuejs'      => false,
         ];
         $this->options = $options;
 
         $this->context = (new Context($rules, null, $options['inputClass']))->initialize();
-        $this->token = strlen($options['tokenName']) ? new Token($options['tokenName']) : null;
     }
 
     /**
@@ -214,10 +207,6 @@ class Form
      */
     public function validate(array &$values)
     {
-        if ($this->token !== null && !$this->token->validate()) {
-            throw new TokenException($this, 'token is invalid.');
-        }
-
         $values = $this->setValues($values);
         $result = $this->context->validate($values);
         $values = $this->context->filter($values, false);
@@ -279,15 +268,9 @@ class Form
 
             $this->id = $attrs['id'];
 
-            $csrf_input = '';
-            if ($this->token !== null && strtolower($attrs['method'] ?? '') === 'post') {
-                $csrf_input = $this->token->render();
-            }
-
             $jsoption = $this->encodeJson([
-                'allrules'          => $this->getRules(),
-                'errors'            => $this->getMessages(),
-                'alternativeSubmit' => $this->options['alternativeSubmit'],
+                'allrules' => $this->getRules(),
+                'errors'   => $this->getMessages(),
             ]);
 
             $script = <<<JAVASCRIPT
@@ -297,7 +280,7 @@ class Form
             });
             JAVASCRIPT;
 
-            return "<form {$this->createHtmlAttr($attrs)}><script {$this->createHtmlAttr($scriptAttrs)}>$script</script>$csrf_input";
+            return "<form {$this->createHtmlAttr($attrs)}><script {$this->createHtmlAttr($scriptAttrs)}>$script</script>";
         }
         // 閉じタグ
         else {

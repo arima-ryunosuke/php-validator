@@ -51,6 +51,9 @@ trait Htmlable
             }
             return implode($glue, $value);
         }
+        if ($value instanceof \stdClass) {
+            return htmlspecialchars(self::encodeJson($value), $flags);
+        }
         return htmlspecialchars((string) $value, $flags);
     }
 }

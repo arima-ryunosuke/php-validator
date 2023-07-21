@@ -394,7 +394,7 @@ function Chmonos(form, options) {
             try {
                 chmonos.validate(e).then(function (result) {
                     var done = function () {
-                        if (options.alternativeSubmit && e.submitter) {
+                        if (e.submitter) {
                             setTimeout(function () {
                                 form.removeEventListener('submit', submit);
                                 e.submitter.click();
