@@ -384,6 +384,16 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // default が配列なら checkbox になるはず
         that($input)->_detectType()->is('checkbox');
+
+        $rule = [
+            'type'    => 'unknown',
+            'options' => [1 => '1', 2 => '2'],
+            'default' => [1, 2],
+        ];
+        $input = new Input($rule);
+
+        // 明確に指定していればそれになるはず
+        that($input)->_detectType()->is('unknown');
     }
 
     function test_setAutoInArray()

@@ -356,6 +356,10 @@ class Input
      */
     protected function _detectType()
     {
+        if (isset($this->rule['type'])) {
+            return $this->rule['type'];
+        }
+
         // Context を持ってるなら間違いなく arrays
         if (isset($this->context)) {
             return 'arrays';
