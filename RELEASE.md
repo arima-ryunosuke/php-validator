@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.1.1
+
+- [feature] options に stdClass を使用できる機能
+- [feature] null でもデフォルト値が使われるようになる nullable オプションを追加
+- [feature] context のルール配列にクロージャを指定できる機能
+
 ## 1.1.0
 
 - [feature] type をルール配列で指定可能にする機能

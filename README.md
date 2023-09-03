@@ -99,6 +99,7 @@ $form = new Form([
         'multiple'              => null,       // 複数入力か否かを指定します（後述）
         'dependent'             => true,       // 自動伝播設定を行うかを指定します（後述）
         'pseudo'                => true,       // ダミー hidden を生成するかを指定します（後述）
+        'nullable'              => false,      // 値が null の場合でも default 値を使用するか指定します
         // 'default'               => null,       // 値が飛んでこなかった時のデフォルト値を指定します（後述）
     ],
     'element_name2' => [/* 構造は同じ */],
@@ -207,6 +208,31 @@ checkbox, radio, select などの選択肢を指定します。
 
 `invalid-option-prefix` を指定するとそのプレフィックスが付いた要素は  autocond 機能により NotInArray 条件が自動で付与されます。
 要素のプレフィックスは除去されます。
+
+キーは値になります（1階層のネストは optgroup のタイトル）。
+値はラベルになりますが、ラベルは stdClass が許容されます。
+stdClass の場合、 `label`, `invalid` というプロパティが特別扱いされ、`label` がラベルに、`invalid` が上記で言う `invalid-option-prefix` が指定された値にあたります。
+その他の属性は html の属性値になります。
+つまり、下記のコードは（ほぼ）等価です。
+
+```php
+$rule = [
+    'options'    => [
+        10 => '電話',
+        20 => 'メール',
+        30 => "\x18FAX", // これは autocond 機能により NotInArray 条件で不正な値とみなされる
+    ],
+];
+$rule = [
+    'options'    => [
+        10 => (object) ['label' => '電話', 'data-attr' => '10'],
+        20 => (object) ['label' => 'メール', 'data-attr' => '20'],
+        30 => (object) ['label' => 'FAX', 'data-attr' => '30', 'invalid' => true], // これは autocond 機能により NotInArray 条件で不正な値とみなされる
+    ],
+];
+```
+
+違いは option に `data-attr` という属性値が生やせることです。
 
 ##### suboptions
 
@@ -410,8 +436,10 @@ true を指定すると配列の場合は空配列、そうでなければ空文
 
 この自動処理は互換性を保たず変更されるため、可能なら明示的に指定するようにしてください。
 
-「値が飛んでこなかった時」であることに注意してください。 isset でも strlen でもなく、本当になかったときのみに適用されます。
+デフォルトでは「値が飛んでこなかった時」であることに注意してください。 isset でも strlen でもなく、本当になかったときのみに適用されます。端的に言えば `array_key_exists` 判定です。
 ただし、それだとチェックボックスについては少々都合が悪いため `pseudo` でダミー hidden が生成できます。
+
+`nullable` を true にすると値が null の場合でも default 値が使われるようになります。端的に言えば `isset` 判定です。
 
 pseudo と default の違いは下記となります。
 
