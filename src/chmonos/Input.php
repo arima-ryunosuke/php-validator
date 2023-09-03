@@ -45,6 +45,7 @@ class Input
         'autocond'              => true,
         'multiple'              => null,
         'pseudo'                => true,
+        'nullable'              => true,
         // 'default'    => null, // あるかないかでデフォルト値を決めるのでコメントアウト
     ];
 
@@ -261,6 +262,15 @@ class Input
 
     public function normalize($values)
     {
+        $exists = function ($value, $values) {
+            if ($this->nullable) {
+                return array_key_exists($value, $values);
+            }
+            else {
+                return isset($values[$value]);
+            }
+        };
+
         if ($phantom = $this->phantom) {
             $flag = true;
             $palues = [];
@@ -275,7 +285,7 @@ class Input
 
             $value = $flag ? vsprintf($phantom[0], $palues) : $this->default;
         }
-        elseif (array_key_exists($this->name, $values)) {
+        elseif ($exists($this->name, $values)) {
             $value = $values[$this->name];
 
             if ($this->pseudo !== false && $value === '') {

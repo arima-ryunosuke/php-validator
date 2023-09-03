@@ -126,10 +126,13 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'pseudo'   => true,
             'multiple' => true,
             'trimming' => true,
+            'nullable' => false,
         ]);
 
         // 無いならデフォルト
         that($input)->normalize([])->is('DDD');
+        // null でもデフォルト
+        that($input)->normalize(['hoge' => null])->is('DDD');
         // あるならその値
         that($input)->normalize(['hoge' => 'hogera'])->is('hogera');
         // trim される
@@ -143,8 +146,13 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'pseudo'   => 'hoge',
             'multiple' => false,
             'trimming' => false,
+            'nullable' => true,
         ]);
 
+        // 無いならデフォルト
+        that($input)->normalize([])->is('DDD');
+        // null でも null
+        that($input)->normalize(['hoge' => null])->is(null);
         // trim されない
         that($input)->normalize(['hoge' => ' hogera '])->is(' hogera ');
         // pseudo:値指定で multiple で空文字ならその値になる
