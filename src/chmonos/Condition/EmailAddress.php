@@ -1,8 +1,6 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
-use ryunosuke\chmonos\Condition\Interfaces;
-
 /**
  * メールアドレスバリデータ
  *

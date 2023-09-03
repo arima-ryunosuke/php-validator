@@ -1,7 +1,6 @@
 <?php
 namespace ryunosuke\chmonos;
 
-use ryunosuke\chmonos\Condition;
 use ryunosuke\chmonos\Condition\AbstractCondition;
 use ryunosuke\chmonos\Condition\Interfaces;
 use ryunosuke\chmonos\Exception\ValidationException;

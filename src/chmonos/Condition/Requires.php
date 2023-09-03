@@ -1,7 +1,6 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
-use ryunosuke\chmonos\Condition\Interfaces;
 use function ryunosuke\chmonos\is_primitive;
 
 /**

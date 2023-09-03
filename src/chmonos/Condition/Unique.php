@@ -1,7 +1,6 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
-use ryunosuke\chmonos\Condition\Interfaces;
 use ryunosuke\chmonos\Context;
 
 /**
