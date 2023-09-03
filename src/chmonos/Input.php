@@ -502,10 +502,17 @@ class Input
         if (strlen($this->rule["invalid-option-prefix"])) {
             $notoptions = [];
             array_walk_recursive($this->rule['options'], function (&$v, $k) use (&$notoptions) {
-                [, $value] = explode($this->rule["invalid-option-prefix"], $v, 2) + [1 => null];
-                if ($value !== null) {
-                    $v = $value;
-                    $notoptions[] = $k;
+                if (is_string($v)) {
+                    [, $value] = explode($this->rule["invalid-option-prefix"], $v, 2) + [1 => null];
+                    if ($value !== null) {
+                        $v = $value;
+                        $notoptions[] = $k;
+                    }
+                }
+                elseif ($v instanceof \stdClass) {
+                    if ($v->invalid ?? false) {
+                        $notoptions[] = $k;
+                    }
                 }
             });
 
@@ -1131,6 +1138,16 @@ class Input
 
     protected function _inputOption($value, $key, $text, $option_attrs)
     {
+        if ($text instanceof \stdClass) {
+            $label = $text->label;
+
+            unset($text->label);
+            unset($text->invalid);
+
+            $option_attrs += (array) $text;
+            $text = $label;
+        }
+
         if (isset($value[$key])) {
             $option_attrs['selected'] = 'selected';
         }

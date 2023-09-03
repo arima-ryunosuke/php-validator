@@ -1815,6 +1815,66 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
     }
 
+    function test_inputSelect_stdclass()
+    {
+        $input = new Input([
+            'name'    => 'name',
+            'options' => [
+                1       => (object) [
+                    'label'   => 'object.1',
+                    'invalid' => false,
+                ],
+                2       => (object) [
+                    'label'   => 'object.2',
+                    'invalid' => true,
+                ],
+                'group' => [
+                    3 => (object) [
+                        'label'   => 'object.3',
+                        'invalid' => false,
+                    ],
+                ]
+            ]
+        ]);
+
+        that($input)->input([
+            'type' => 'select'
+        ])->htmlMatchesArray([
+            'select' => [
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+
+                'option[1]' => [
+                    'selected' => 'selected',
+                    'value'    => '1',
+                    'object.1',
+                ],
+
+                'option[2]' => [
+                    'value'    => '2',
+                    'object.2',
+                ],
+
+                'optgroup' => [
+                    'label'  => 'group',
+                    'option' => [
+                        'value' => '3',
+                        'object.3',
+                    ],
+                ],
+            ],
+        ]);
+
+        that($input)->condition['NotInArray']->getValidationParam()['haystack']->is([
+            2 => 0,
+        ]);
+    }
+
     function test_inputSelect_suboptions()
     {
         $input = new Input([
