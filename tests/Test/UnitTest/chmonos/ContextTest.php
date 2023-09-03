@@ -93,15 +93,31 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test___construct()
     {
         $context = new Context([
-            'parent' => [
+            'parent'  => [
                 'inputs' => [
                     'child' => [],
                 ],
             ],
+            'prefix_' => function () {
+                return [
+                    'inner1' => [],
+                    'inner2' => [],
+                ];
+            },
+            function () {
+                yield 'yield_inner1' => [];
+                yield 'yield_inner2' => [];
+            },
         ], null, CustomInput::class);
 
         that($context)->parent->isInstanceOf(CustomInput::class);
         that($context)->parent->context->child->isInstanceOf(CustomInput::class);
+
+        that($context)->prefix_inner1->isInstanceOf(CustomInput::class);
+        that($context)->prefix_inner2->isInstanceOf(CustomInput::class);
+
+        that($context)->yield_inner1->isInstanceOf(CustomInput::class);
+        that($context)->yield_inner2->isInstanceOf(CustomInput::class);
     }
 
     function test___isset()

@@ -26,7 +26,20 @@ class Context implements \IteratorAggregate
 
         assert(is_a($inputClass, Input::class, true));
 
+        $flatrules = [];
         foreach ($rules as $name => $rule) {
+            if ($rule instanceof \Closure) {
+                foreach ($rule() as $name2 => $rule2) {
+                    $name2 = is_int($name) ? $name2 : "{$name}$name2";
+                    $flatrules[$name2] = $rule2;
+                }
+            }
+            else {
+                $flatrules[$name] = $rule;
+            }
+        }
+
+        foreach ($flatrules as $name => $rule) {
             $ignore = false;
             if (substr($name, 0, 1) === '@') {
                 $ignore = true;
