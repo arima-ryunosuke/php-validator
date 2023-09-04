@@ -36,6 +36,16 @@ class NotInArray extends AbstractCondition
         parent::__construct();
     }
 
+    public function getHaystack()
+    {
+        if ($this->_strict === null) {
+            return $this->_haystack;
+        }
+        else {
+            return array_flip($this->_haystack);
+        }
+    }
+
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
         if ($params['strict'] === null) {

@@ -1856,7 +1856,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 ],
 
                 'option[2]' => [
-                    'value'    => '2',
+                    "class" => ["validation_invalid"],
+                    'value' => '2',
                     'object.2',
                 ],
 

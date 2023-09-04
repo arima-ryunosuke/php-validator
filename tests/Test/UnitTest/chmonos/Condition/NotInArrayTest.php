@@ -18,6 +18,7 @@ class NotInArrayTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid(101)->isTrue();
         that($validate)->isValid("101")->isTrue();
         that($validate)->isValid("50str")->isTrue();
+        that($validate)->getHaystack()->is(range(0, 100));
 
         // no strict. 緩すぎて 50str みたいな文字列も受け入れてしまう
         $validate = new NotInArray(range(0, 100), false);
@@ -29,6 +30,7 @@ class NotInArrayTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid("100")->isFalse();
         that($validate)->isValid(101)->isTrue();
         that($validate)->isValid("101")->isTrue();
+        that($validate)->getHaystack()->is(range(0, 100));
 
         // auto. 文字列化されて strict なのでいい感じにやってくれる
         $validate = new NotInArray(range(0, 100), null);
@@ -41,5 +43,6 @@ class NotInArrayTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid(101)->isTrue();
         that($validate)->isValid("101")->isTrue();
         that($validate)->isValid("50str")->isTrue();
+        that($validate)->getHaystack()->is(range(0, 100));
     }
 }

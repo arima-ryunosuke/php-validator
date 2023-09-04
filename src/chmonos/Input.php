@@ -3,6 +3,7 @@ namespace ryunosuke\chmonos;
 
 use ryunosuke\chmonos\Condition\AbstractCondition;
 use ryunosuke\chmonos\Condition\Interfaces;
+use ryunosuke\chmonos\Condition\NotInArray;
 use ryunosuke\chmonos\Exception\ValidationException;
 
 /**
@@ -1159,29 +1160,36 @@ class Input
 
     protected function _completeOptions(&$options, $values)
     {
-        if ($this->suboptions === null) {
-            return [];
-        }
-
-        $option_values = array_flatten($options, fn($keys) => end($keys));
-
         $invalids = [];
-        foreach ($values as $value) {
-            if (!array_key_exists($value, $option_values)) {
-                $invalids[$value] = $this->suboptions[$value] ?? $value;
+
+        if ($this->suboptions !== null) {
+            $option_values = array_flatten($options, fn($keys) => end($keys));
+
+            foreach ($values as $value) {
+                if (!array_key_exists($value, $option_values)) {
+                    $invalids[$value] = $this->suboptions[$value] ?? $value;
+                }
+            }
+            switch ($this->subposition) {
+                case 'append':
+                    $options = array_replace($options, $invalids);
+                    break;
+                case 'prepend':
+                    $options = array_replace($invalids, $options);
+                    break;
+                default:
+                    $options = ($this->subposition)($options, $invalids);
+                    break;
             }
         }
-        switch ($this->subposition) {
-            case 'append':
-                $options = array_replace($options, $invalids);
+
+        foreach ($this->condition as $condition) {
+            if ($condition instanceof NotInArray) {
+                $invalids = $condition->getHaystack();
                 break;
-            case 'prepend':
-                $options = array_replace($invalids, $options);
-                break;
-            default:
-                $options = ($this->subposition)($options, $invalids);
-                break;
+            }
         }
+
         return $invalids;
     }
 
