@@ -39,6 +39,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->propagate->isArray();
 
         $rule = [
+            'condition' => [
+                null,
+            ],
             'options' => [
                 'group' => [
                     '1' => 'groupoption.1'
@@ -47,6 +50,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]
         ];
         $input = new Input($rule);
+        that($input)->condition->count(1);
         that($input)->default->is(1);
     }
 

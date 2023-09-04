@@ -40,6 +40,9 @@ class Context implements \IteratorAggregate
         }
 
         foreach ($flatrules as $name => $rule) {
+            if ($rule === null) {
+                continue;
+            }
             $ignore = false;
             if (substr($name, 0, 1) === '@') {
                 $ignore = true;

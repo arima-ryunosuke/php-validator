@@ -101,6 +101,10 @@ class Input
 
         // 文字列指定の Condition をオブジェクト化する
         foreach ($rule['condition'] as $name => $condition) {
+            if (is_int($name) && $condition === null) {
+                unset($rule['condition'][$name]);
+                continue;
+            }
             if (!($condition instanceof AbstractCondition)) {
                 $rule['condition'][$name] = AbstractCondition::create($name, $condition);
             }
