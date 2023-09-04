@@ -1,6 +1,6 @@
 <?php
 
-use ryunosuke\chmonos\Condition\AbstractCondition;
+use ryunosuke\chmonos\Condition\AbstractCondition;use ryunosuke\chmonos\Condition\Requires;
 
 $condition_form = new \ryunosuke\chmonos\Form([
     'ajax1'                 => [
@@ -433,21 +433,13 @@ $condition_form = new \ryunosuke\chmonos\Form([
     'require_any'           => [
         'title'     => '依存チェックボックス',
         'condition' => [
-            'Requires' => [
-                [
-                    'require_array' => ['any', [1, '3']],
-                ]
-            ]
+            new Requires(['require_array' => ['any', [1, '3']],]),
         ]
     ],
     'require_in'            => [
         'title'     => '依存チェックボックス',
         'condition' => [
-            'Requires' => [
-                [
-                    'require_array' => ['in', [1, '3']],
-                ]
-            ]
+            (new Requires(['require_array' => ['in', [1, '3']],]))->setValidationLevel('warning'),
         ]
     ],
     'stringlength'          => [
