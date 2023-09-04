@@ -7,6 +7,10 @@
     font-weight: bold;
 }
 
+.validatable_label.required[data-vlevel="warning"]:after {
+    color: #ffa300;
+}
+
 @keyframes BlinkValidatable {
     50% {
         box-shadow: 0 1px 15px 0 red;

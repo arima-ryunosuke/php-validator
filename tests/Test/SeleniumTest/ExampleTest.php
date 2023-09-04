@@ -547,7 +547,8 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('require_array[]', ['1', '2']);
         that($driver)->getErrors()->count(1);
         $driver->setValue('require_array[]', ['1', '2', '3']);
-        that($driver)->getErrors()->count(2);
+        that($driver)->getErrors()->count(1);
+        that($driver)->getWarnings()->count(1);
     }
 
     /**
