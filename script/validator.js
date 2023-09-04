@@ -5515,6 +5515,8 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         if (rkey) {
             fields = fields || chmonos.fields(input);
             var label = holder.querySelector('[data-vlabel-id="' + input.dataset.vinputId + '"]') || document.createElement('span');
+            input.setAttribute('data-vlevel', condition[rkey]['level']);
+            label.setAttribute('data-vlevel', condition[rkey]['level']);
             input.classList.remove('required');
             label.classList.remove('required');
             chmonos.condition['Requires'](input, '', fields, condition[rkey]['param'], chmonos.constants['Requires'], function () {
