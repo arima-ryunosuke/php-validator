@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.1.2
+
+- [fixbug] invalid-option-prefix 由来の無効値の場合に validation_invalid が付与されない不具合を修正
+- [feature] required のラベリングにエラーレベル属性を付与
+
 ## 1.1.1
 
 - [feature] options に stdClass を使用できる機能
