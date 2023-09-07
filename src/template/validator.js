@@ -613,7 +613,8 @@ function Chmonos(form, options) {
 
             node.querySelectorAll('[data-vnode]').forEach(function (e) {
                 try {
-                    const F = new Function(...args, 'return `' + e.outerHTML + '`');
+                    const T = e.dataset.vnode;
+                    const F = new Function(...args, 'return ' + T + '`' + e.outerHTML + '`');
                     e.insertAdjacentHTML('afterend', F(...vals));
                     e.remove();
                 }
