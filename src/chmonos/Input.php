@@ -882,7 +882,7 @@ class Input
 
     protected function _inputArrays($attrs)
     {
-        $attrs['name'] = "__{$this->name}";
+        $attrs['name'] = $this->_concatString('__', [$attrs['name']]);
         $attrs['type'] = 'dummy';
         $attrs['value'] = 'dummy';
         $attrs['style'] = concat($attrs['style'] ?? '', ';') . $this->createStyleAttr([
