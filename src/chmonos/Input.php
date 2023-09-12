@@ -245,14 +245,14 @@ class Input
     {
         foreach ($this->condition as $condition) {
             if ($condition instanceof Condition\Interfaces\Initialize) {
-                $condition->initialize($root, $context, $this->parent->name, $this->name);
+                $condition->initialize($root, $context, $this->parent->name ?? null, $this->name);
             }
         }
 
         foreach ($this->getDependent() as $dependent) {
             if ($dependent[0] === '/') {
                 $target = $root->{substr($dependent, 1)};
-                $target->rule['propagate'] = array_merge($target->propagate, [$this->parent->name . '/' . $this->name]);
+                $target->rule['propagate'] = array_merge($target->propagate, [($this->parent->name ?? '') . '/' . $this->name]);
             }
             else {
                 $target = $context->$dependent;
