@@ -101,21 +101,20 @@ class WebDriver extends RemoteWebDriver
 
     public function getWarnings($sleep = null, $displayed = true, $blur = true)
     {
-        // デフォルトが change なのでフォーカスを移さないと検証が走らないので代替
-        if ($blur) {
-            $this->findElement(WebDriverBy::id('dummy-focus'))->click();
-        }
-        if ($sleep) {
-            sleep($sleep);
-        }
-
-        $es = $this->findElements(WebDriverBy::cssSelector('.validation_warning'));
-        return array_filter($es, function (RemoteWebElement $e) use ($displayed) {
-            return (!$displayed || ($displayed && $e->isDisplayed()));
-        });
+        return $this->getResult('.validation_warning', $sleep, $displayed, $blur);
     }
 
     public function getErrors($sleep = null, $displayed = true, $blur = true)
+    {
+        return $this->getResult('.validation_error', $sleep, $displayed, $blur);
+    }
+
+    public function getMessages($sleep = null, $displayed = true, $blur = true)
+    {
+        return $this->getResult('.validation_message', $sleep, $displayed, $blur);
+    }
+
+    private function getResult(string $cssClass, ?int $sleep, bool $displayed, bool $blur)
     {
         // デフォルトが change なのでフォーカスを移さないと検証が走らないので代替
         if ($blur) {
@@ -125,7 +124,7 @@ class WebDriver extends RemoteWebDriver
             sleep($sleep);
         }
 
-        $es = $this->findElements(WebDriverBy::cssSelector('.validation_error'));
+        $es = $this->findElements(WebDriverBy::cssSelector($cssClass));
         return array_filter($es, function (RemoteWebElement $e) use ($displayed) {
             return (!$displayed || ($displayed && $e->isDisplayed()));
         });

@@ -643,6 +643,71 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_dynamic_requireschild(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->click('.append_row1');
+        $driver->click('.append_row1');
+
+        $driver->setValue('rows[-1][title]', 'hoge');
+        $driver->setValue('rows[-2][title]', 'fuga');
+        $driver->setValue('rows[-1][unique]', '12');
+        $driver->setValue('rows[-2][unique]', '34');
+        $driver->click('#template_form_submit');
+        that($driver)->getMessages()->count(5);
+
+        $driver->setValue('rows[-1][title]', 'title1');
+        $driver->setValue('rows[-2][title]', 'title2');
+        $driver->click('#template_form_submit');
+        that($driver)->getMessages()->count(5);
+
+        $driver->setValue('rows[-1][unique]', '99');
+        $driver->click('#template_form_submit');
+        that($driver)->getMessages()->count(4);
+
+        $driver->setValue('rows[-1][title]', 'title3');
+        $driver->click('#template_form_submit');
+        that($driver)->getMessages()->count(5);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
+    function test_dynamic_uniquechild(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->click('.append_row1');
+        $driver->click('.append_row1');
+        $driver->click('.append_row1');
+
+        $driver->setValue('rows[-1][unique]', '97');
+        $driver->setValue('rows[-2][unique]', '98');
+        $driver->setValue('rows[-3][unique]', '99');
+        $driver->setValue('rows[-1][title]', 'title1');
+        $driver->setValue('rows[-2][title]', 'title2');
+        $driver->setValue('rows[-3][title]', 'title2');
+        $driver->setValue('rows[-1][checkbox][]', [1, 3]);
+        $driver->setValue('rows[-2][checkbox][]', [1, 3]);
+        $driver->setValue('rows[-3][checkbox][]', [1, 3]);
+        $driver->click('#template_form_submit');
+        that($driver)->getMessages()->count(4);
+
+        $driver->setValue('rows[-3][title]', 'title3');
+        $driver->setValue('rows[-3][checkbox][]', [1, 3]);
+        $driver->click('#template_form_submit');
+        that($driver)->getMessages()->count(3);
+
+        $driver->setValue('rows[-3][title]', 'title2');
+        $driver->setValue('rows[-3][checkbox][]', [2, 3]);
+        $driver->click('#template_form_submit');
+        that($driver)->getMessages()->count(3);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_dynamic_require(WebDriver $driver)
     {
         $driver->path('/example/index.php');

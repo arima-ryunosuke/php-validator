@@ -23,7 +23,14 @@ $dynamic_rule = [
         'title'     => '行',
         'default'   => [],
         'condition' => [
-            'ArrayLength' => [1, 3]
+            'RequiresChild' => [
+                [
+                    'title'  => ['all', ['title1', 'title2']],
+                    'unique' => ['any', ['99', '98']],
+                ]
+            ],
+            'UniqueChild'   => [['title', 'checkbox']],
+            'ArrayLength'   => [1, 3]
         ],
         'inputs'    => [
             'title'          => [
@@ -280,6 +287,7 @@ $dynamic_rule = [
 
         <br>
         <input class="append_row3 btn btn-success" v-on:click="append" type="button" value="追加">
+        <?= $vuejs_form->input('rows', ['data-vinput-selector' => '"#vuejs-table"']) ?>
         <table id="vuejs-table" class="table">
             <tbody>
                 <tr class="item" v-for="(row, index) in rows">
