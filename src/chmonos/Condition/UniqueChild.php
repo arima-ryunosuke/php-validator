@@ -2,6 +2,7 @@
 namespace ryunosuke\chmonos\Condition;
 
 use ryunosuke\chmonos\Context;
+use function ryunosuke\chmonos\array_kmap;
 use function ryunosuke\chmonos\arrayize;
 
 /**
@@ -17,7 +18,7 @@ use function ryunosuke\chmonos\arrayize;
  * ['elem1', 'elem2'],
  * ```
  */
-class UniqueChild extends AbstractCondition implements Interfaces\Propagation, Interfaces\Initialize
+class UniqueChild extends AbstractParentCondition
 {
     public const INVALID   = 'UniqueChildInvalid';
     public const NO_UNIQUE = 'UniqueChildNoUnique';
@@ -27,64 +28,26 @@ class UniqueChild extends AbstractCondition implements Interfaces\Propagation, I
         self::NO_UNIQUE => '値が重複しています',
     ];
 
-    protected $_name;
     protected $_inputs;
 
     public function __construct($inputs)
     {
         $this->_inputs = arrayize($inputs);
 
-        parent::__construct();
-    }
-
-    public function initialize(?Context $root, ?Context $context, $parent, $name)
-    {
-        $this->_name = $name;
-    }
-
-    public function getFields()
-    {
-        return ["/$this->_name"];
-    }
-
-    public function getPropagation()
-    {
-        return array_map(fn($v) => "/$this->_name/$v", $this->_inputs);
-    }
-
-    public static function getJavascriptCode()
-    {
-        return <<<'JS'
-            (function() {
-                $context['values'] = [];
-                for (var row of chmonos.value($params.name)) {
-                    var values = [];
-                    for (var name of $params.inputs) {
-                        values = values.concat($context['cast']('array', row[name]));
-                    }
-                    $context['values'].push(values.join('\x1f'));
-                }
-                // @validationcode:inject
-            })();
-JS;
-    }
-
-    public static function prevalidate($value, $fields, $params)
-    {
-        $context = ['values' => []];
-        foreach ($fields["/{$params['name']}"] as $row) {
-            $values = [];
-            foreach ($params['inputs'] as $name) {
-                $values = array_merge($values, (array) $row[$name]);
-            }
-            $context['values'][] = implode("\x1f", $values);
-        }
-        return $context;
+        parent::__construct($this->_inputs);
     }
 
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
-        if (count($context['values']) !== count(array_unique($context['values']))) {
+        $rows = array_kmap($value, $context['function'](function ($row, $k, $n, $children, $context) {
+            $row = array_intersect_key($row, $children);
+            $row = array_kmap($row, $context['function'](function ($v, $k, $n, $context) {
+                return implode("\x1f", $context['cast']('array', $v));
+            }, $context));
+            return implode("\x1e", $row);
+        }, array_flip($params['children']), $context));
+
+        if (count($rows) !== count(array_unique($rows))) {
             $error($consts['NO_UNIQUE']);
         }
     }

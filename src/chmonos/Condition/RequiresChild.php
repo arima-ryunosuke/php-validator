@@ -1,7 +1,7 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
-use ryunosuke\chmonos\Context;
+use function ryunosuke\chmonos\array_kmap;
 
 /**
  * 子供必須バリデータ
@@ -20,7 +20,7 @@ use ryunosuke\chmonos\Context;
  * ],
  * ```
  */
-class RequiresChild extends AbstractCondition implements Interfaces\Propagation, Interfaces\Initialize
+class RequiresChild extends AbstractParentCondition
 {
     public const INVALID     = 'RequiresChildInvalid';
     public const NOT_CONTAIN = 'RequiresChildNotContain';
@@ -30,62 +30,28 @@ class RequiresChild extends AbstractCondition implements Interfaces\Propagation,
         self::NOT_CONTAIN => '必須項目を含んでいません',
     ];
 
-    protected $_name;
     protected $_inputs;
 
     public function __construct(array $inputs)
     {
         $this->_inputs = $inputs;
 
-        parent::__construct();
-    }
-
-    public function initialize(?Context $root, ?Context $context, $parent, $name)
-    {
-        $this->_name = $name;
-    }
-
-    public function getFields()
-    {
-        return ["/$this->_name"];
-    }
-
-    public function getPropagation()
-    {
-        return array_map(fn($v) => "/$this->_name/$v", array_keys($this->_inputs));
-    }
-
-    public static function getJavascriptCode()
-    {
-        return <<<'JS'
-            (function() {
-                $context['values'] = {};
-                for (var row of chmonos.value($params.name)) {
-                    for (var name of Object.keys($params.inputs)) {
-                        $context['values'][name] = ($context['values'][name] ?? []).concat($context['cast']('array', row[name]));
-                    }
-                }
-                // @validationcode:inject
-            })();
-JS;
-    }
-
-    public static function prevalidate($value, $fields, $params)
-    {
-        $context = ['values' => []];
-        foreach ($fields["/{$params['name']}"] as $row) {
-            foreach ($params['inputs'] as $name => $rule) {
-                $context['values'][$name] = array_merge($context['values'][$name] ?? [], (array) $row[$name]);
-            }
-        }
-        return $context;
+        parent::__construct(array_keys($this->_inputs));
     }
 
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
-        $context['foreach']($context['values'], function ($name, $values, $params, $consts, $error, $context) {
-            $operator = $params['inputs'][$name][0];
-            $operands = $params['inputs'][$name][1];
+        $cols = array_kmap(array_flip($params['children']), $context['function'](function ($_, $k, $n, $value, $context) {
+            $col = array_column($value, $k);
+            $col = array_reduce($col, $context['function'](function ($carry, $c, $context) {
+                return array_merge($carry, $context['cast']('array', $c));
+            }, $context), []);
+            return $col;
+        }, $value, $context));
+
+        $context['foreach']($cols, function ($name, $values, $inputs, $consts, $error, $context) {
+            $operator = $inputs[$name][0];
+            $operands = $inputs[$name][1];
 
             $intersect = array_intersect_key(
                 array_flip($context['cast']('array', $values)),
@@ -98,6 +64,6 @@ JS;
             if ($operator === 'all' && count($intersect) !== count($operands)) {
                 $error($consts['NOT_CONTAIN']);
             }
-        }, $params, $consts, $error, $context);
+        }, $params['inputs'], $consts, $error, $context);
     }
 }

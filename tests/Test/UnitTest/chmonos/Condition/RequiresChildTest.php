@@ -8,7 +8,7 @@ class RequiresChildTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid()
     {
         $base_values = [
-            '/values' => [
+            'values' => [
                 [
                     'k1' => 'val1',
                     'k2' => 'val2',
@@ -30,30 +30,38 @@ class RequiresChildTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
         $validate->initialize(null, null, null, 'values');
 
-        that($validate)->getFields()->is(['/values']);
+        that($validate)->getPropagation()->is(['/values/k1', '/values/k2']);
+        that($validate)->isArrayableValidation()->is(true);
 
         $values = $base_values;
-        that($validate)->isValid('val', $values)->isFalse();
+        that($validate)->isValid($values['values'])->isFalse();
 
         $values = $base_values;
-        $values['/values'][] = [
+        $values['values'][] = [
             'k1' => 'val7',
             'k2' => '',
         ];
-        that($validate)->isValid('val', $values)->isFalse();
+        that($validate)->isValid($values['values'])->isFalse();
 
         $values = $base_values;
-        $values['/values'][] = [
+        $values['values'][] = [
             'k1' => '',
             'k2' => 'val8',
         ];
-        that($validate)->isValid('val', $values)->isFalse();
+        that($validate)->isValid($values['values'])->isFalse();
 
         $values = $base_values;
-        $values['/values'][] = [
+        $values['values'][] = [
             'k1' => 'val7',
             'k2' => 'val8',
         ];
-        that($validate)->isValid('val', $values)->isTrue();
+        that($validate)->isValid($values['values'])->isTrue();
+
+        $values = $base_values;
+        $values['values'][] = [
+            'k1' => ['val7'],
+            'k2' => ['val8'],
+        ];
+        that($validate)->isValid($values['values'])->isTrue();
     }
 }
