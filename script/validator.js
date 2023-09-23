@@ -39,6 +39,100 @@ function Chmonos(form, options) {
 
     /// phpjs のインポート
     /**/
+var array_column = this.array_column = (function(){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+module.exports = function array_column(input, ColumnKey) {
+  var IndexKey = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+  // eslint-disable-line camelcase
+  //   discuss at: http://locutus.io/php/array_column/
+  //   original by: Enzo Dañobeytía
+  //   example 1: array_column([{name: 'Alex', value: 1}, {name: 'Elvis', value: 2}, {name: 'Michael', value: 3}], 'name')
+  //   returns 1: {0: "Alex", 1: "Elvis", 2: "Michael"}
+  //   example 2: array_column({0: {name: 'Alex', value: 1}, 1: {name: 'Elvis', value: 2}, 2: {name: 'Michael', value: 3}}, 'name')
+  //   returns 2: {0: "Alex", 1: "Elvis", 2: "Michael"}
+  //   example 3: array_column([{name: 'Alex', value: 1}, {name: 'Elvis', value: 2}, {name: 'Michael', value: 3}], 'name', 'value')
+  //   returns 3: {1: "Alex", 2: "Elvis", 3: "Michael"}
+  //   example 4: array_column([{name: 'Alex', value: 1}, {name: 'Elvis', value: 2}, {name: 'Michael', value: 3}], null, 'value')
+  //   returns 4: {1: {name: 'Alex', value: 1}, 2: {name: 'Elvis', value: 2}, 3: {name: 'Michael', value: 3}}
+
+  if (input !== null && ((typeof input === 'undefined' ? 'undefined' : _typeof(input)) === 'object' || Array.isArray(input))) {
+    var newarray = [];
+    if ((typeof input === 'undefined' ? 'undefined' : _typeof(input)) === 'object') {
+      var temparray = [];
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = Object.keys(input)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var key = _step.value;
+
+          temparray.push(input[key]);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      input = temparray;
+    }
+    if (Array.isArray(input)) {
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = input.keys()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var _key = _step2.value;
+
+          if (IndexKey && input[_key][IndexKey]) {
+            if (ColumnKey) {
+              newarray[input[_key][IndexKey]] = input[_key][ColumnKey];
+            } else {
+              newarray[input[_key][IndexKey]] = input[_key];
+            }
+          } else {
+            if (ColumnKey) {
+              newarray.push(input[_key][ColumnKey]);
+            } else {
+              newarray.push(input[_key]);
+            }
+          }
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+    }
+    return Object.assign({}, newarray);
+  }
+};
+return module.exports;
+})();
+/**/
 var array_count_values = this.array_count_values = (function(){
 'use strict';
 
@@ -228,6 +322,76 @@ module.exports = function array_keys(input, searchValue, argStrict) {
 return module.exports;
 })();
 /**/
+var array_merge = this.array_merge = (function(){
+'use strict';
+
+module.exports = function array_merge() {
+  // eslint-disable-line camelcase
+  //  discuss at: http://locutus.io/php/array_merge/
+  // original by: Brett Zamir (http://brett-zamir.me)
+  // bugfixed by: Nate
+  // bugfixed by: Brett Zamir (http://brett-zamir.me)
+  //    input by: josh
+  //   example 1: var $arr1 = {"color": "red", 0: 2, 1: 4}
+  //   example 1: var $arr2 = {0: "a", 1: "b", "color": "green", "shape": "trapezoid", 2: 4}
+  //   example 1: array_merge($arr1, $arr2)
+  //   returns 1: {"color": "green", 0: 2, 1: 4, 2: "a", 3: "b", "shape": "trapezoid", 4: 4}
+  //   example 2: var $arr1 = []
+  //   example 2: var $arr2 = {1: "data"}
+  //   example 2: array_merge($arr1, $arr2)
+  //   returns 2: {0: "data"}
+
+  var args = Array.prototype.slice.call(arguments);
+  var argl = args.length;
+  var arg;
+  var retObj = {};
+  var k = '';
+  var argil = 0;
+  var j = 0;
+  var i = 0;
+  var ct = 0;
+  var toStr = Object.prototype.toString;
+  var retArr = true;
+
+  for (i = 0; i < argl; i++) {
+    if (toStr.call(args[i]) !== '[object Array]') {
+      retArr = false;
+      break;
+    }
+  }
+
+  if (retArr) {
+    retArr = [];
+    for (i = 0; i < argl; i++) {
+      retArr = retArr.concat(args[i]);
+    }
+    return retArr;
+  }
+
+  for (i = 0, ct = 0; i < argl; i++) {
+    arg = args[i];
+    if (toStr.call(arg) === '[object Array]') {
+      for (j = 0, argil = arg.length; j < argil; j++) {
+        retObj[ct++] = arg[j];
+      }
+    } else {
+      for (k in arg) {
+        if (arg.hasOwnProperty(k)) {
+          if (parseInt(k, 10) + '' === k) {
+            retObj[ct++] = arg[k];
+          } else {
+            retObj[k] = arg[k];
+          }
+        }
+      }
+    }
+  }
+
+  return retObj;
+};
+return module.exports;
+})();
+/**/
 var array_reduce = this.array_reduce = (function(){
 /**
  * array_reduce
@@ -245,6 +409,57 @@ module.exports = function array_reduce(input, callback, initial) {
         initial = callback(initial, input[keys[i]]);
     }
     return initial;
+};
+return module.exports;
+})();
+/**/
+var array_unique = this.array_unique = (function(){
+'use strict';
+
+module.exports = function array_unique(inputArr) {
+  // eslint-disable-line camelcase
+  //  discuss at: http://locutus.io/php/array_unique/
+  // original by: Carlos R. L. Rodrigues (http://www.jsfromhell.com)
+  //    input by: duncan
+  //    input by: Brett Zamir (http://brett-zamir.me)
+  // bugfixed by: Kevin van Zonneveld (http://kvz.io)
+  // bugfixed by: Nate
+  // bugfixed by: Kevin van Zonneveld (http://kvz.io)
+  // bugfixed by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Michael Grier
+  //      note 1: The second argument, sort_flags is not implemented;
+  //      note 1: also should be sorted (asort?) first according to docs
+  //   example 1: array_unique(['Kevin','Kevin','van','Zonneveld','Kevin'])
+  //   returns 1: {0: 'Kevin', 2: 'van', 3: 'Zonneveld'}
+  //   example 2: array_unique({'a': 'green', 0: 'red', 'b': 'green', 1: 'blue', 2: 'red'})
+  //   returns 2: {a: 'green', 0: 'red', 1: 'blue'}
+
+  var key = '';
+  var tmpArr2 = {};
+  var val = '';
+
+  var _arraySearch = function _arraySearch(needle, haystack) {
+    var fkey = '';
+    for (fkey in haystack) {
+      if (haystack.hasOwnProperty(fkey)) {
+        if (haystack[fkey] + '' === needle + '') {
+          return fkey;
+        }
+      }
+    }
+    return false;
+  };
+
+  for (key in inputArr) {
+    if (inputArr.hasOwnProperty(key)) {
+      val = inputArr[key];
+      if (_arraySearch(val, tmpArr2) === false) {
+        tmpArr2[key] = val;
+      }
+    }
+  }
+
+  return tmpArr2;
 };
 return module.exports;
 })();
@@ -2764,21 +2979,6 @@ module.exports = function preg_match(pattern, subject, matches) {
 return module.exports;
 })();
 /**/
-var join = this.join = (function(){
-'use strict';
-
-module.exports = function join(glue, pieces) {
-  //  discuss at: http://locutus.io/php/join/
-  // original by: Kevin van Zonneveld (http://kvz.io)
-  //   example 1: join(' ', ['Kevin', 'van', 'Zonneveld'])
-  //   returns 1: 'Kevin van Zonneveld'
-
-  var implode = require('../strings/implode');
-  return implode(glue, pieces);
-};
-return module.exports;
-})();
-/**/
 var implode = this.implode = (function(){
 'use strict';
 
@@ -2816,6 +3016,21 @@ module.exports = function implode(glue, pieces) {
   }
 
   return pieces;
+};
+return module.exports;
+})();
+/**/
+var join = this.join = (function(){
+'use strict';
+
+module.exports = function join(glue, pieces) {
+  //  discuss at: http://locutus.io/php/join/
+  // original by: Kevin van Zonneveld (http://kvz.io)
+  //   example 1: join(' ', ['Kevin', 'van', 'Zonneveld'])
+  //   returns 1: 'Kevin van Zonneveld'
+
+  var implode = require('../strings/implode');
+  return implode(glue, pieces);
 };
 return module.exports;
 })();
@@ -4100,6 +4315,21 @@ module.exports = function gettype(mixedVar) {
 return module.exports;
 })();
 /**/
+var array_kmap = this.array_kmap = (function(){
+/**
+ * array_kmap
+ */
+module.exports = function array_kmap(array, callback) {
+    var n = 0;
+    var result = array instanceof Array ? [] : {};
+    for (var [k, v] of Object.entries(array)) {
+        result[k] = callback(v, k, n++);
+    }
+    return result;
+};
+return module.exports;
+})();
+/**/
 var filesize = this.filesize = (function(){
 /**
  * filesize
@@ -4727,7 +4957,33 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
             }, $statement, $getDepend, $context), true);
         }, $getDepend, $context), false)) {
             $nofify($value, $error, $consts);
-        }},"Step":function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
+        }},"RequiresChild":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $cols, $_, $k, $n, $col, $carry, $c, $name, $values, $inputs, $operator, $operands, $intersect;
+// 
+
+        $cols = array_kmap(array_flip($params['children']), $context['function'](function ($_, $k, $n, $value, $context) {
+            $col = array_column($value, $k);
+            $col = array_reduce($col, $context['function'](function ($carry, $c, $context) {
+                return array_merge($carry, $context['cast']('array', $c));
+            }, $context), []);
+            return $col;
+        }, $value, $context));
+
+        $context['foreach']($cols, function ($name, $values, $inputs, $consts, $error, $context) {
+            $operator = $inputs[$name][0];
+            $operands = $inputs[$name][1];
+
+            $intersect = array_intersect_key(
+                array_flip($context['cast']('array', $values)),
+                array_flip($context['cast']('array', $operands)),
+            );
+
+            if ($operator === 'any' && !count($intersect)) {
+                $error($consts['NOT_CONTAIN']);
+            }
+            if ($operator === 'all' && count($intersect) !== count($operands)) {
+                $error($consts['NOT_CONTAIN']);
+            }
+        }, $params['inputs'], $consts, $error, $context);},"Step":function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
 
         if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value)) {
             return $error($consts['INVALID']);
@@ -4809,7 +5065,20 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
             return false;
         }
     
-            })();},"Uri":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $parsed;
+            })();},"UniqueChild":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $rows, $row, $k, $n, $children, $v;
+// 
+
+        $rows = array_kmap($value, $context['function'](function ($row, $k, $n, $children, $context) {
+            $row = array_intersect_key($row, $children);
+            $row = array_kmap($row, $context['function'](function ($v, $k, $n, $context) {
+                return implode("\x1f", $context['cast']('array', $v));
+            }, $context));
+            return implode("\x1e", $row);
+        }, array_flip($params['children']), $context));
+
+        if (count($rows) !== count(array_unique($rows))) {
+            $error($consts['NO_UNIQUE']);
+        }},"Uri":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $parsed;
 // 
 
         $parsed = parse_url($value);
@@ -4827,12 +5096,12 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
 
     /// エラー定数のインポート
     /**/
-this.constants = {"Ajax":{"INVALID":"AjaxInvalid"},"ArrayLength":{"INVALID":"ArrayLengthInvalidLength","TOO_SHORT":"ArrayLengthInvalidMin","TOO_LONG":"ArrayLengthInvalidMax","SHORTLONG":"ArrayLengthInvalidMinMax"},"Aruiha":{"INVALID":"AruihaInvalid"},"Callback":{"INVALID":"CallbackInvalid"},"Compare":{"INVALID":"compareInvalid","EQUAL":"compareEqual","NOT_EQUAL":"compareNotEqual","LESS_THAN":"compareLessThan","GREATER_THAN":"compareGreaterThan","SIMILAR":"compareSimilar"},"DataUri":{"INVALID":"dataUriInvalid","INVALID_SIZE":"dataUriInvalidSize","INVALID_TYPE":"dataUriInvalidType"},"Date":{"INVALID":"dateInvalid","INVALID_DATE":"dateInvalidDate","FALSEFORMAT":"dateFalseFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Decimal":{"INVALID":"DecimalInvalid","INVALID_INT":"DecimalInvalidInt","INVALID_DEC":"DecimalInvalidDec","INVALID_INTDEC":"DecimalInvalidIntDec","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Digits":{"INVALID":"notDigits","NOT_DIGITS":"digitsInvalid","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"EmailAddress":{"INVALID":"emailAddressInvalid","INVALID_FORMAT":"emailAddressInvalidFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileName":{"INVALID":"InvalidFileName","INVALID_FILENAME_STR":"InvalidFileNameStr","INVALID_FILENAME_EXT":"InvalidFileNameExt","INVALID_FILENAME_RESERVED":"InvalidFileNameReserved","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileSize":{"INVALID":"FileSizeInvalid","INVALID_OVER":"FileSizeInvalidOver"},"FileType":{"INVALID":"FileTypeInvalid","INVALID_TYPE":"FileTypeInvalidType"},"Hostname":{"INVALID":"InvalidHostname","INVALID_PORT":"InvalidHostnamePort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"ImageSize":{"INVALID":"ImageFileInvalid","INVALID_WIDTH":"ImageFileInvalidWidth","INVALID_HEIGHT":"ImageFileInvalidHeight"},"InArray":{"INVALID":"InvalidInArray","NOT_IN_ARRAY":"notInArray"},"Json":{"INVALID":"JsonInvalid","INVALID_INVALID_SCHEMA":"JsonInvalidSchema"},"NotInArray":{"INVALID":"InvalidNotInArray","VALUE_IN_ARRAY":"valueInArray"},"Password":{"INVALID":"InvalidPassword","INVALID_PASSWORD_LESS":"InvalidPasswordLess","INVALID_PASSWORD_WEAK":"InvalidPasswordWeak","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Range":{"INVALID":"RangeInvalid","INVALID_MIN":"RangeInvalidMin","INVALID_MAX":"RangeInvalidMax","INVALID_MINMAX":"RangeInvalidMinMax","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Regex":{"INVALID":"regexInvalid","ERROROUS":"regexErrorous","NOT_MATCH":"regexNotMatch","NEGATION":"regexNegation"},"Requires":{"INVALID":"RequireInvalid","INVALID_TEXT":"RequireInvalidText","INVALID_MULTIPLE":"RequireInvalidSelectSingle"},"Step":{"INVALID":"StepInvalid","INVALID_STEP":"StepInvalidInt","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"StringLength":{"INVALID":"StringLengthInvalidLength","TOO_SHORT":"StringLengthInvalidMin","TOO_LONG":"StringLengthInvalidMax","SHORTLONG":"StringLengthInvalidMinMax","DIFFERENT":"StringLengthInvalidDifferenr"},"StringWidth":{"INVALID":"StringWidthInvalidLength","TOO_SHORT":"StringWidthInvalidMin","TOO_LONG":"StringWidthInvalidMax","SHORTLONG":"StringWidthInvalidMinMax","DIFFERENT":"StringWidthInvalidDifferenr"},"Telephone":{"INVALID":"InvalidTelephone","INVALID_TELEPHONE":"InvalidTelephoneNumber","INVALID_WITH_HYPHEN":"InvalidTelephoneWithHyphen","INVALID_NONE_HYPHEN":"InvalidTelephoneNoneHyphen","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Unique":{"INVALID":"UniqueInvalid","NO_UNIQUE":"UniqueNoUnique"},"Uri":{"INVALID":"UriInvalid","INVALID_SCHEME":"UriInvalidScheme","INVALID_HOST":"UriInvalidHost","INVALID_PORT":"UriInvalidPort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4}};/*
+this.constants = {"Ajax":{"INVALID":"AjaxInvalid"},"ArrayLength":{"INVALID":"ArrayLengthInvalidLength","TOO_SHORT":"ArrayLengthInvalidMin","TOO_LONG":"ArrayLengthInvalidMax","SHORTLONG":"ArrayLengthInvalidMinMax"},"Aruiha":{"INVALID":"AruihaInvalid"},"Callback":{"INVALID":"CallbackInvalid"},"Compare":{"INVALID":"compareInvalid","EQUAL":"compareEqual","NOT_EQUAL":"compareNotEqual","LESS_THAN":"compareLessThan","GREATER_THAN":"compareGreaterThan","SIMILAR":"compareSimilar"},"DataUri":{"INVALID":"dataUriInvalid","INVALID_SIZE":"dataUriInvalidSize","INVALID_TYPE":"dataUriInvalidType"},"Date":{"INVALID":"dateInvalid","INVALID_DATE":"dateInvalidDate","FALSEFORMAT":"dateFalseFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Decimal":{"INVALID":"DecimalInvalid","INVALID_INT":"DecimalInvalidInt","INVALID_DEC":"DecimalInvalidDec","INVALID_INTDEC":"DecimalInvalidIntDec","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Digits":{"INVALID":"notDigits","NOT_DIGITS":"digitsInvalid","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"EmailAddress":{"INVALID":"emailAddressInvalid","INVALID_FORMAT":"emailAddressInvalidFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileName":{"INVALID":"InvalidFileName","INVALID_FILENAME_STR":"InvalidFileNameStr","INVALID_FILENAME_EXT":"InvalidFileNameExt","INVALID_FILENAME_RESERVED":"InvalidFileNameReserved","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileSize":{"INVALID":"FileSizeInvalid","INVALID_OVER":"FileSizeInvalidOver"},"FileType":{"INVALID":"FileTypeInvalid","INVALID_TYPE":"FileTypeInvalidType"},"Hostname":{"INVALID":"InvalidHostname","INVALID_PORT":"InvalidHostnamePort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"ImageSize":{"INVALID":"ImageFileInvalid","INVALID_WIDTH":"ImageFileInvalidWidth","INVALID_HEIGHT":"ImageFileInvalidHeight"},"InArray":{"INVALID":"InvalidInArray","NOT_IN_ARRAY":"notInArray"},"Json":{"INVALID":"JsonInvalid","INVALID_INVALID_SCHEMA":"JsonInvalidSchema"},"NotInArray":{"INVALID":"InvalidNotInArray","VALUE_IN_ARRAY":"valueInArray"},"Password":{"INVALID":"InvalidPassword","INVALID_PASSWORD_LESS":"InvalidPasswordLess","INVALID_PASSWORD_WEAK":"InvalidPasswordWeak","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Range":{"INVALID":"RangeInvalid","INVALID_MIN":"RangeInvalidMin","INVALID_MAX":"RangeInvalidMax","INVALID_MINMAX":"RangeInvalidMinMax","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Regex":{"INVALID":"regexInvalid","ERROROUS":"regexErrorous","NOT_MATCH":"regexNotMatch","NEGATION":"regexNegation"},"Requires":{"INVALID":"RequireInvalid","INVALID_TEXT":"RequireInvalidText","INVALID_MULTIPLE":"RequireInvalidSelectSingle"},"RequiresChild":{"INVALID":"RequiresChildInvalid","NOT_CONTAIN":"RequiresChildNotContain"},"Step":{"INVALID":"StepInvalid","INVALID_STEP":"StepInvalidInt","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"StringLength":{"INVALID":"StringLengthInvalidLength","TOO_SHORT":"StringLengthInvalidMin","TOO_LONG":"StringLengthInvalidMax","SHORTLONG":"StringLengthInvalidMinMax","DIFFERENT":"StringLengthInvalidDifferenr"},"StringWidth":{"INVALID":"StringWidthInvalidLength","TOO_SHORT":"StringWidthInvalidMin","TOO_LONG":"StringWidthInvalidMax","SHORTLONG":"StringWidthInvalidMinMax","DIFFERENT":"StringWidthInvalidDifferenr"},"Telephone":{"INVALID":"InvalidTelephone","INVALID_TELEPHONE":"InvalidTelephoneNumber","INVALID_WITH_HYPHEN":"InvalidTelephoneWithHyphen","INVALID_NONE_HYPHEN":"InvalidTelephoneNoneHyphen","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Unique":{"INVALID":"UniqueInvalid","NO_UNIQUE":"UniqueNoUnique"},"UniqueChild":{"INVALID":"UniqueChildInvalid","NO_UNIQUE":"UniqueChildNoUnique"},"Uri":{"INVALID":"UriInvalid","INVALID_SCHEME":"UriInvalidScheme","INVALID_HOST":"UriInvalidHost","INVALID_PORT":"UriInvalidPort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4}};/*
 */
 
     /// エラー文言のインポート
     /**/
-this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid value given","ArrayLengthInvalidMin":"%min%件以上は入力してください","ArrayLengthInvalidMax":"%max%件以下で入力して下さい","ArrayLengthInvalidMinMax":"%min%件～%max%件を入力して下さい"},"Aruiha":{"AruihaInvalid":"必ず呼び出し元で再宣言する"},"Callback":{"CallbackInvalid":"クロージャの戻り値で上書きされる"},"Compare":{"compareInvalid":"Invalid value given","compareEqual":"%operand%と同じ値を入力してください","compareNotEqual":"%operand%と異なる値を入力してください","compareLessThan":"%operand%より小さい値を入力してください","compareGreaterThan":"%operand%より大きい値を入力してください"},"DataUri":{"dataUriInvalid":"Invalid value given","dataUriInvalidSize":"%size_message%以下で入力してください","dataUriInvalidType":"%type_message%形式で入力してください"},"Date":{"dateInvalid":"Invalid value given","dateInvalidDate":"有効な日付を入力してください","dateFalseFormat":"%format%形式で入力してください"},"Decimal":{"DecimalInvalid":"小数値を入力してください","DecimalInvalidInt":"整数部分を%int%桁以下で入力してください","DecimalInvalidDec":"小数部分を%dec%桁以下で入力してください","DecimalInvalidIntDec":"整数部分を%int%桁、小数部分を%dec%桁以下で入力してください"},"Digits":{"notDigits":"Invalid value given","digitsInvalid":"整数を入力してください"},"EmailAddress":{"emailAddressInvalid":"Invalid value given","emailAddressInvalidFormat":"メールアドレスを正しく入力してください"},"FileName":{"InvalidFileName":"Invalid value given","InvalidFileNameStr":"有効なファイル名を入力してください","InvalidFileNameExt":"%extensions%ファイル名を入力してください","InvalidFileNameReserved":"使用できないファイル名です"},"FileSize":{"FileSizeInvalid":"入力ファイルが不正です","FileSizeInvalidOver":"ファイルサイズが大きすぎます。%message%以下のファイルを選択してください"},"FileType":{"FileTypeInvalid":"入力ファイルが不正です","FileTypeInvalidType":"%type%形式のファイルを選択して下さい"},"Hostname":{"InvalidHostname":"ホスト名を正しく入力してください","InvalidHostnamePort":"ポート番号を正しく入力してください"},"ImageSize":{"ImageFileInvalid":"画像ファイルを入力してください","ImageFileInvalidWidth":"横サイズは%width%ピクセル以下で選択してください","ImageFileInvalidHeight":"縦サイズは%height%ピクセル以下で選択してください"},"InArray":{"InvalidInArray":"Invalid value given","notInArray":"選択値が不正です"},"Json":{"JsonInvalid":"JSON文字列が不正です","JsonInvalidSchema":"キーが不正です"},"NotInArray":{"InvalidNotInArray":"Invalid value given","valueInArray":"選択値が不正です"},"Password":{"InvalidPassword":"Invalid value given","InvalidPasswordLess":"%char_types%を含めてください","InvalidPasswordWeak":"%char_types%のいずれかを%repeat%文字以上含めてください"},"Range":{"RangeInvalid":"Invalid value given","RangeInvalidMin":"%min%以上で入力して下さい","RangeInvalidMax":"%max%以下で入力して下さい","RangeInvalidMinMax":"%min%以上%max%以下で入力して下さい"},"Regex":{"regexInvalid":"Invalid value given","regexErrorous":"There was%pattern%'","regexNotMatch":"パターンに一致しません","regexNegation":"使用できない文字が含まれています"},"Requires":{"RequireInvalid":"Invalid value given","RequireInvalidText":"入力必須です","RequireInvalidSelectSingle":"選択してください"},"Step":{"StepInvalid":"Invalid value given","StepInvalidInt":"%step%の倍数で入力してください"},"StringLength":{"StringLengthInvalidLength":"Invalid value given","StringLengthInvalidMin":"%min%文字以上で入力して下さい","StringLengthInvalidMax":"%max%文字以下で入力して下さい","StringLengthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringLengthInvalidDifferenr":"%min%文字で入力して下さい"},"StringWidth":{"StringWidthInvalidLength":"Invalid value given","StringWidthInvalidMin":"%min%文字以上で入力して下さい","StringWidthInvalidMax":"%max%文字以下で入力して下さい","StringWidthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringWidthInvalidDifferenr":"%min%文字で入力して下さい"},"Telephone":{"InvalidTelephone":"電話番号を正しく入力してください","InvalidTelephoneNumber":"電話番号を入力してください","InvalidTelephoneWithHyphen":"ハイフン付きで電話番号を入力してください","InvalidTelephoneNoneHyphen":"ハイフン無しで電話番号を入力してください"},"Unique":{"UniqueInvalid":"Invalid value given","UniqueNoUnique":"値が重複しています"},"Uri":{"UriInvalid":"URLをスキームから正しく入力してください","UriInvalidScheme":"スキームが不正です(%schemes%のみ)","UriInvalidHost":"ホスト名が不正です","UriInvalidPort":"ポート番号が不正です"}};/*
+this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid value given","ArrayLengthInvalidMin":"%min%件以上は入力してください","ArrayLengthInvalidMax":"%max%件以下で入力して下さい","ArrayLengthInvalidMinMax":"%min%件～%max%件を入力して下さい"},"Aruiha":{"AruihaInvalid":"必ず呼び出し元で再宣言する"},"Callback":{"CallbackInvalid":"クロージャの戻り値で上書きされる"},"Compare":{"compareInvalid":"Invalid value given","compareEqual":"%operand%と同じ値を入力してください","compareNotEqual":"%operand%と異なる値を入力してください","compareLessThan":"%operand%より小さい値を入力してください","compareGreaterThan":"%operand%より大きい値を入力してください"},"DataUri":{"dataUriInvalid":"Invalid value given","dataUriInvalidSize":"%size_message%以下で入力してください","dataUriInvalidType":"%type_message%形式で入力してください"},"Date":{"dateInvalid":"Invalid value given","dateInvalidDate":"有効な日付を入力してください","dateFalseFormat":"%format%形式で入力してください"},"Decimal":{"DecimalInvalid":"小数値を入力してください","DecimalInvalidInt":"整数部分を%int%桁以下で入力してください","DecimalInvalidDec":"小数部分を%dec%桁以下で入力してください","DecimalInvalidIntDec":"整数部分を%int%桁、小数部分を%dec%桁以下で入力してください"},"Digits":{"notDigits":"Invalid value given","digitsInvalid":"整数を入力してください"},"EmailAddress":{"emailAddressInvalid":"Invalid value given","emailAddressInvalidFormat":"メールアドレスを正しく入力してください"},"FileName":{"InvalidFileName":"Invalid value given","InvalidFileNameStr":"有効なファイル名を入力してください","InvalidFileNameExt":"%extensions%ファイル名を入力してください","InvalidFileNameReserved":"使用できないファイル名です"},"FileSize":{"FileSizeInvalid":"入力ファイルが不正です","FileSizeInvalidOver":"ファイルサイズが大きすぎます。%message%以下のファイルを選択してください"},"FileType":{"FileTypeInvalid":"入力ファイルが不正です","FileTypeInvalidType":"%type%形式のファイルを選択して下さい"},"Hostname":{"InvalidHostname":"ホスト名を正しく入力してください","InvalidHostnamePort":"ポート番号を正しく入力してください"},"ImageSize":{"ImageFileInvalid":"画像ファイルを入力してください","ImageFileInvalidWidth":"横サイズは%width%ピクセル以下で選択してください","ImageFileInvalidHeight":"縦サイズは%height%ピクセル以下で選択してください"},"InArray":{"InvalidInArray":"Invalid value given","notInArray":"選択値が不正です"},"Json":{"JsonInvalid":"JSON文字列が不正です","JsonInvalidSchema":"キーが不正です"},"NotInArray":{"InvalidNotInArray":"Invalid value given","valueInArray":"選択値が不正です"},"Password":{"InvalidPassword":"Invalid value given","InvalidPasswordLess":"%char_types%を含めてください","InvalidPasswordWeak":"%char_types%のいずれかを%repeat%文字以上含めてください"},"Range":{"RangeInvalid":"Invalid value given","RangeInvalidMin":"%min%以上で入力して下さい","RangeInvalidMax":"%max%以下で入力して下さい","RangeInvalidMinMax":"%min%以上%max%以下で入力して下さい"},"Regex":{"regexInvalid":"Invalid value given","regexErrorous":"There was%pattern%'","regexNotMatch":"パターンに一致しません","regexNegation":"使用できない文字が含まれています"},"Requires":{"RequireInvalid":"Invalid value given","RequireInvalidText":"入力必須です","RequireInvalidSelectSingle":"選択してください"},"RequiresChild":{"RequiresChildInvalid":"Invalid value given","RequiresChildNotContain":"必須項目を含んでいません"},"Step":{"StepInvalid":"Invalid value given","StepInvalidInt":"%step%の倍数で入力してください"},"StringLength":{"StringLengthInvalidLength":"Invalid value given","StringLengthInvalidMin":"%min%文字以上で入力して下さい","StringLengthInvalidMax":"%max%文字以下で入力して下さい","StringLengthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringLengthInvalidDifferenr":"%min%文字で入力して下さい"},"StringWidth":{"StringWidthInvalidLength":"Invalid value given","StringWidthInvalidMin":"%min%文字以上で入力して下さい","StringWidthInvalidMax":"%max%文字以下で入力して下さい","StringWidthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringWidthInvalidDifferenr":"%min%文字で入力して下さい"},"Telephone":{"InvalidTelephone":"電話番号を正しく入力してください","InvalidTelephoneNumber":"電話番号を入力してください","InvalidTelephoneWithHyphen":"ハイフン付きで電話番号を入力してください","InvalidTelephoneNoneHyphen":"ハイフン無しで電話番号を入力してください"},"Unique":{"UniqueInvalid":"Invalid value given","UniqueNoUnique":"値が重複しています"},"UniqueChild":{"UniqueChildInvalid":"Invalid value given","UniqueChildNoUnique":"値が重複しています"},"Uri":{"UriInvalid":"URLをスキームから正しく入力してください","UriInvalidScheme":"スキームが不正です(%schemes%のみ)","UriInvalidHost":"ホスト名が不正です","UriInvalidPort":"ポート番号が不正です"}};/*
 */
 
     /// 初期化（コンストラクション）
@@ -5399,7 +5668,8 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
 
             node.querySelectorAll('[data-vnode]').forEach(function (e) {
                 try {
-                    const F = new Function(...args, 'return `' + e.outerHTML + '`');
+                    const T = e.dataset.vnode;
+                    const F = new Function(...args, 'return ' + T + '`' + e.outerHTML + '`');
                     e.insertAdjacentHTML('afterend', F(...vals));
                     e.remove();
                 }
