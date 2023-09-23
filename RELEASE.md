@@ -24,6 +24,18 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.1.3
+
+- [feature] エラー処理の改善
+- [refactor] array 専用 Condition を汎化
+- [feature] array の中の重複項目があるか検査する UniqueChild を追加
+- [feature] array の中の必要項目があるか検査する RequiresChild を追加
+- [fixbug] vuejs で array の dummy input を生成するとエラーになる不具合を修正
+- [fixbug] array に initialize な condition を与えると notice が出る不具合を修正
+- [feature] 全メッセージを変更する機能
+- [feature] ルール配列に null が来た時にスルーする機能
+- [feature] vnode にタグ関数を指定できる機能
+
 ## 1.1.2
 
 - [fixbug] invalid-option-prefix 由来の無効値の場合に validation_invalid が付与されない不具合を修正
