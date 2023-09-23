@@ -191,6 +191,28 @@
             });
         });
 
+        describe('chmonos.function', function () {
+            it('array_kmap', function () {
+                expect(chmonos.array_kmap([1, 2, 3], (v, k, n) => '' + (v + k + n))).toEqual(['100', '211', '322']);
+                expect(chmonos.array_kmap({1: 1, 2: 2, 3: 3}, (v, k, n) => '' + (v + k + n))).toEqual({1: '110', 2: '221', 3: '332'});
+            });
+
+            it('array_reduce', function () {
+                expect(chmonos.array_reduce([1, 2, 3], (c, v) => c + v, 0)).toEqual(6);
+                expect(chmonos.array_reduce([1, 2, 3], (c, v) => c + v, 100)).toEqual(106);
+                expect(chmonos.array_reduce([1, 2, 3], (c, v) => c + v, '')).toEqual('123');
+                expect(chmonos.array_reduce([1, 2, 3], (c, v) => c + v, 'x')).toEqual('x123');
+            });
+
+            it('preg_match', function () {
+                var matches = [];
+                expect(chmonos.preg_match('/^[a-z]+$/', 'hoge')).toEqual(1);
+                expect(chmonos.preg_match('/^[a-z]+$/', 'hoge123')).toEqual(0);
+                expect(chmonos.preg_match('/^([a-z]+)(\\d+)/', 'hoge123X', matches)).toEqual(1);
+                expect(matches).toEqual(['hoge123', 'hoge', '123']);
+            });
+        });
+
         describe('chmonos.dom', function () {
             it('sibling', function () {
                 expect(chmonos.sibling('rows')).toEqualLoosely({
