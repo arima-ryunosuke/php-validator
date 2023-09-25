@@ -56,13 +56,13 @@
             return result;
         };
         // 指定要素までスクロールして目立たせる
-        var scrollAndBlink = function (input, phantoms) {
+        var scrollAndBlink = function (input, phantoms, type) {
             var blinker = new IntersectionObserver(function (entries, observer) {
                 entries.forEach(function (entry) {
                     if (entry.isIntersecting) {
-                        entry.target.classList.add('validatable_blink');
+                        entry.target.classList.add('validatable_blink_' + type);
                         entry.target.addEventListener('animationend', function (e) {
-                            e.target.classList.remove('validatable_blink');
+                            e.target.classList.remove('validatable_blink_' + type);
                         }, {
                             once: true,
                         });
@@ -75,6 +75,14 @@
             var blinkee = [input].concat(phantoms).map(function (e) {
                 while (e !== null && e.offsetParent === null) {
                     e = e.parentElement;
+                }
+                if (e !== null && e.getAttribute('type') === 'dummy') {
+                    if (e.dataset.vinputSelector) {
+                        e = e.closest('form')?.querySelector(e.dataset.vinputSelector);
+                    }
+                    else {
+                        e = e.closest('form')?.querySelector(`[data-vtemplate-name="${e.dataset.vinputClass}"]`)?.parentNode;
+                    }
                 }
                 return e;
             }).filter(e => e !== null);
@@ -90,7 +98,7 @@
         var title = this.dataset.validationTitle;
         var input = this.closest('[data-vinput-group]') || this;
 
-        for (type of ['error', 'warning']) {
+        for (const type of ['error', 'warning']) {
             let TOAST_NAME = 'vinput-toast-' + type;
             var message = result[type].toArray ? result[type].toArray() : result[type];
             if (message.length) {
@@ -99,7 +107,7 @@
                     title: title || '',
                     message: "",
                     onClick: function (e) {
-                        scrollAndBlink(input, result.phantoms);
+                        scrollAndBlink(input, result.phantoms, type);
                         return false;
                     },
                     onHidden: function (e) {

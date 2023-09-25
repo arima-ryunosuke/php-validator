@@ -11,14 +11,26 @@
     color: #ffa300;
 }
 
-@keyframes BlinkValidatable {
+@keyframes BlinkValidatableError {
     50% {
-        box-shadow: 0 1px 15px 0 red;
+        box-shadow: 0 1px 15px 0 #ff0000;
+        background-color: #fcc;
     }
 }
 
-.validatable_blink {
-    animation: BlinkValidatable 1.15s 1;
+@keyframes BlinkValidatableWarning {
+    50% {
+        box-shadow: 0 1px 15px 0 #ffa300;
+        background-color: #fff1de;
+    }
+}
+
+.validatable_blink_error {
+    animation: BlinkValidatableError 1.15s 1;
+}
+
+.validatable_blink_warning {
+    animation: BlinkValidatableWarning 1.15s 1;
 }
 
 .validatable.validation_warning,
