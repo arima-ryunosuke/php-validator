@@ -263,6 +263,21 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
     }
 
+    function test_setMessage()
+    {
+        $condition = new Decimal(1, 1);
+        $condition->setMessage('this is all message');
+
+        $condition->addMessage(Decimal::INVALID, 'custom');
+        that($condition)->getMessages()->is([Decimal::INVALID => 'custom']);
+
+        $condition->isValid("31.4");
+        that($condition)->getMessages()->is([Decimal::INVALID_INT => 'this is all message']);
+
+        $condition->isValid("3.14");
+        that($condition)->getMessages()->is([Decimal::INVALID_DEC => 'this is all message']);
+    }
+
     function test_addMessage()
     {
         $condition = new Callback(function () { }, [], 'userdata');

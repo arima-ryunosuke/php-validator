@@ -511,6 +511,23 @@ JS;
     }
 
     /**
+     * 全メッセージ変更メソッド
+     *
+     * 実際のところ「このエラーはアレ、あのエラーはコレ」というシチュエーションは少なく、一括で設定することがほとんどである。
+     *
+     * @param string $message エラーメッセージ
+     * @return static
+     */
+    public function setMessage($message)
+    {
+        foreach (static::$messageTemplates as $key => $dummy) {
+            $this->setMessageTemplate($message, $key);
+        }
+
+        return $this;
+    }
+
+    /**
      * メッセージのもととなるテンプレートを返す
      *
      * @return array メッセージテンプレート
