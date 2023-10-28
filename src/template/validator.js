@@ -440,7 +440,7 @@ function Chmonos(form, options) {
         chmonos.customValidation[timing].push(validation);
     };
 
-    chmonos.validate = function (evt) {
+    chmonos.validate = function (evt, selector) {
         form.validationValues = undefined;
         evt = evt || new CustomEvent('vatidation');
         var validation_id = new Date().getTime();
@@ -450,7 +450,11 @@ function Chmonos(form, options) {
             promises.push(true);
             return Promise.all(promises);
         }
-        form.querySelectorAll('.validatable').forEach(function (e) {
+        var inputs = form.querySelectorAll('.validatable');
+        if (selector) {
+            inputs = Array.from(inputs).filter((e) => e.matches(selector));
+        }
+        inputs.forEach(function (e) {
             promises.push.apply(promises, core_validate(e, validation_id, evt));
         });
         if (chmonos.customValidation.after.some(function (f) { return f.call(form, promises) === false })) {
