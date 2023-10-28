@@ -19,8 +19,11 @@
         if (container) {
             Array.prototype.forEach.call(container.children, function (e) {
                 var vinput = e.chmonos_vinput;
-                if (vinput && vinput.closest('body') === null) {
-                    e.remove();
+                if (vinput) {
+                    var rect = vinput.getBoundingClientRect();
+                    if ((vinput.closest('body') === null) || (rect.left === 0 && rect.right === 0 && rect.top === 0 && rect.bottom === 0)) {
+                        e.remove();
+                    }
                 }
             });
         }
