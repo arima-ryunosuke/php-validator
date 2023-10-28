@@ -77,14 +77,9 @@ abstract class AbstractCondition
     public static function setMessages($messages)
     {
         $classes = [];
-        foreach (self::$namespaces as $ns => $dir) {
-            foreach (glob("$dir/*.php") as $file) {
-                $classes[] = "$ns\\" . pathinfo($file, PATHINFO_FILENAME);
-            }
-        }
 
         foreach ($messages as $key => $message) {
-            if (class_exists($key)) {
+            if (is_string($key) && class_exists($key)) {
                 /** @var self $key */
                 $key::$messageTemplates = (array) $message + $key::$messageTemplates;
             }
@@ -92,6 +87,13 @@ abstract class AbstractCondition
                 static::$messageTemplates[$key] = $message;
             }
             else {
+                if (!$classes) {
+                    foreach (self::$namespaces as $ns => $dir) {
+                        foreach (glob("$dir/*.php") as $file) {
+                            $classes[] = "$ns\\" . pathinfo($file, PATHINFO_FILENAME);
+                        }
+                    }
+                }
                 foreach ($classes as $class) {
                     if (isset($class::$messageTemplates[$key])) {
                         $class::$messageTemplates[$key] = $message;
