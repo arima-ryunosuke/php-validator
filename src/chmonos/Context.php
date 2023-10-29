@@ -369,6 +369,26 @@ class Context implements \IteratorAggregate
     }
 
     /**
+     * ネスト要素も含めて全ての Input を返す
+     *
+     * @return Input[] 全ての Input
+     */
+    public function getAllInput()
+    {
+        $inputs = [];
+        foreach ($this->inputs as $name => $input) {
+            $inputs[$name] = $input;
+
+            if ($input->getType() === 'arrays') {
+                foreach ($input->context->getAllInput() as $name2 => $input2) {
+                    $inputs["$name/$name2"] = $input2;
+                }
+            }
+        }
+        return $inputs;
+    }
+
+    /**
      * @return \Generator|\Traversable|Input[]
      */
     public function getIterator(): \Generator

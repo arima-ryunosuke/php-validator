@@ -532,6 +532,12 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         that(array_keys(iterator_to_array($context)))->is(['inputA', 'inputB']);
     }
 
+    function test_getAllInput()
+    {
+        $context = new Context($this->_getRules());
+        that(array_keys($context->getAllInput()))->is(['parent', 'children', 'children/child1', 'children/child2']);
+    }
+
     function test_noform()
     {
         $tmpfile = sys_get_temp_dir() . '/plain.txt';
