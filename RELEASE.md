@@ -24,6 +24,14 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.1.4
+
+- [feature] validate 引数に selector を追加
+- [feature] 「DOM消え」の定義に不可視要素を追加
+- [feature] Input の setter を実装
+- [feature] 再帰的に input を返す getAllInput を実装
+- [refactor] 使用しない場合はディスクアクセスとクラスロードを抑制
+
 ## 1.1.3
 
 - [feature] エラー処理の改善
