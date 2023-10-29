@@ -241,6 +241,27 @@ class Input
         return $this->rule[$name];
     }
 
+    /**
+     * rule プロパティへのアクセス
+     *
+     * いかなる検証も型チェックも行われない直接代入なので注意して使わなければならない。
+     *
+     * @param string $name
+     * @param mixed $value
+     */
+    public function __set($name, $value)
+    {
+        if ($name === 'context') {
+            $this->context = $value;
+            return;
+        }
+
+        if (!array_key_exists($name, $this->rule)) {
+            throw new \InvalidArgumentException("undefined property '{$name}'");
+        }
+        $this->rule[$name] = $value;
+    }
+
     public function initialize(Context $root, Context $context)
     {
         foreach ($this->condition as $condition) {

@@ -91,6 +91,36 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->hogera->isThrowable(new \InvalidArgumentException('undefined property'));
     }
 
+    function test___set()
+    {
+        $input = new Input([
+            'condition' => [
+                'StringLength' => [2, 6]
+            ],
+            'inputs'    => [
+                'child' => [
+                    'title' => 'child',
+                ]
+            ],
+        ]);
+
+        that($input)->context->isNotNull();
+        that($input)->condition->isNotEmpty();
+
+        $input->context = null;
+        $input->condition = [];
+        $input->attribute = ['data-a' => 'A'];
+        $input->event = ['mouseup'];
+
+        that($input)->context->isNull();
+        that($input)->condition->isEmpty();
+
+        that($input)->attribute->is(['data-a' => 'A']);
+        that($input)->event->is(['mouseup']);
+
+        that($input)->try('__set', 'hogera', null)->wasThrown(new \InvalidArgumentException('undefined property'));
+    }
+
     function test_initialize()
     {
         $context = new Context([
