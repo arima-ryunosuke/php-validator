@@ -71,13 +71,13 @@ class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new FileType([
             'image' => ['gif', 'png', 'jpg'],
         ]);
-        that($validate)->getAccepts()->is([".gif", ".png", ".jpg", "image/gif", "image/png", "image/jpeg"]);
+        that($validate)->getAccepts()->is([".gif", ".png", ".jpg", "image/gif", "image/jpeg", "image/png"]);
 
         // * は無視される
         $validate = new FileType([
             'image' => ['*', 'gif', 'png', 'jpg'],
         ]);
-        that($validate)->getAccepts()->is([".gif", ".png", ".jpg", "image/gif", "image/png", "image/jpeg"]);
+        that($validate)->getAccepts()->is([".gif", ".png", ".jpg", "image/gif", "image/jpeg", "image/png"]);
     }
 
     function test_getType()
