@@ -10,7 +10,7 @@ namespace ryunosuke\chmonos\Condition;
  * - format: string
  *   - 許容する日付フォーマット
  */
-class Date extends AbstractCondition implements Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\ConvertibleValue
+class Date extends AbstractCondition implements Interfaces\Range, Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\ConvertibleValue
 {
     public const INVALID      = 'dateInvalid';
     public const INVALID_DATE = 'dateInvalidDate';
@@ -75,6 +75,57 @@ class Date extends AbstractCondition implements Interfaces\MaxLength, Interfaces
         }
         else if (date($params['format'], $time) !== $value) {
             $error($consts['FALSEFORMAT']);
+        }
+    }
+
+    public function getMin()
+    {
+        if (!$this->_isRFC3339) {
+            return null;
+        }
+
+        if ($this->_member['Y'] && $this->_member['m'] && $this->_member['d'] && $this->_member['H'] && $this->_member['i'] && $this->_member['s']) {
+            return date($this->_format, strtotime('1000-01-01T00:00:00'));
+        }
+        if ($this->_member['Y'] && $this->_member['m'] && $this->_member['d'] && $this->_member['H'] && $this->_member['i']) {
+            return date($this->_format, strtotime('1000-01-01T00:00'));
+        }
+        if ($this->_member['Y'] && $this->_member['m'] && $this->_member['d']) {
+            return date($this->_format, strtotime('1000-01-01'));
+        }
+        if ($this->_member['Y'] && $this->_member['m']) {
+            return date($this->_format, strtotime('1000-01'));
+        }
+    }
+
+    public function getMax()
+    {
+        if (!$this->_isRFC3339) {
+            return null;
+        }
+
+        if ($this->_member['Y'] && $this->_member['m'] && $this->_member['d'] && $this->_member['H'] && $this->_member['i'] && $this->_member['s']) {
+            return date($this->_format, strtotime('9999-12-31T23:59:59'));
+        }
+        if ($this->_member['Y'] && $this->_member['m'] && $this->_member['d'] && $this->_member['H'] && $this->_member['i']) {
+            return date($this->_format, strtotime('9999-12-31T23:59'));
+        }
+        if ($this->_member['Y'] && $this->_member['m'] && $this->_member['d']) {
+            return date($this->_format, strtotime('9999-12-31'));
+        }
+        if ($this->_member['Y'] && $this->_member['m']) {
+            return date($this->_format, strtotime('9999-12'));
+        }
+    }
+
+    public function getStep()
+    {
+        if (!$this->_isRFC3339) {
+            return null;
+        }
+
+        if ($this->_member['s']) {
+            return '1';
         }
     }
 
