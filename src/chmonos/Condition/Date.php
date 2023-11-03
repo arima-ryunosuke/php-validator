@@ -23,10 +23,40 @@ class Date extends AbstractCondition implements Interfaces\MaxLength, Interfaces
     ];
 
     protected $_format;
+    protected $_member;
+    protected $_isRFC3339; // TZ は除く（実質的に type=date に適合するか？ を表す）
 
     public function __construct($format)
     {
         $this->_format = $format;
+
+        // （よほど変なフォーマットじゃない限り）各要素にユニークな値を入れて date すれば「どの要素があるか？」が取得できる
+        $YmdHis = date($this->_format, strtotime('2006-01-02 15:04:05'));
+        $this->_member = [
+            'Y' => strpos($YmdHis, '2006') !== false,
+            'm' => strpos($YmdHis, '01') !== false,
+            'd' => strpos($YmdHis, '02') !== false,
+            'H' => strpos($YmdHis, '15') !== false,
+            'i' => strpos($YmdHis, '04') !== false,
+            's' => strpos($YmdHis, '05') !== false,
+        ];
+
+        $this->_isRFC3339 = false;
+        if ($this->_member['Y'] && $this->_member['m'] && $this->_member['d'] && $this->_member['H'] && $this->_member['i'] && $this->_member['s']) {
+            $this->_isRFC3339 = $YmdHis === '2006-01-02T15:04:05';
+        }
+        elseif ($this->_member['Y'] && $this->_member['m'] && $this->_member['d'] && $this->_member['H'] && $this->_member['i']) {
+            $this->_isRFC3339 = $YmdHis === '2006-01-02T15:04';
+        }
+        elseif ($this->_member['Y'] && $this->_member['m'] && $this->_member['d']) {
+            $this->_isRFC3339 = $YmdHis === '2006-01-02';
+        }
+        elseif ($this->_member['Y'] && $this->_member['m']) {
+            $this->_isRFC3339 = $YmdHis === '2006-01';
+        }
+        elseif (!$this->_member['Y'] && !$this->_member['m'] && !$this->_member['d']) {
+            $this->_isRFC3339 = $YmdHis === '15:04:05';
+        }
 
         parent::__construct();
     }
