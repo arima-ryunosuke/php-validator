@@ -138,7 +138,7 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         that(AbstractCondition::class)::outputJavascript($out_dir, true)->isTrue();
 
-        that("$out_dir/validator.js")->fileContains('core_validate');
+        that("$out_dir/validator.js")->fileContains('validateInputs');
         that("$out_dir/validator.js")->fileContains('"CustomCondition":');
 
         // 出したばかりなので false になるはず

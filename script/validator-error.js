@@ -26,6 +26,10 @@
         }
     }, 111);
 
+    // 実質同じ要素だが、個別要素で飛んでくることがあるので Map でまとめる
+    var chmonosMessages = new Map();
+    var chmonosMessageTimerId = null;
+
     function toast(result) {
         var showToast = function (options) {
             var container = document.getElementById('chmonos-toast-container');
@@ -98,34 +102,46 @@
         var title = this.dataset.validationTitle;
         var input = this.closest('[data-vinput-group]') || this;
 
+        var messages = chmonosMessages.get(input) ?? {};
         for (const type of ['error', 'warning']) {
-            let TOAST_NAME = 'vinput-toast-' + type;
-            var message = result[type].toArray ? result[type].toArray() : result[type];
-            if (message.length) {
-                var toast = input[TOAST_NAME] || showToast({
-                    type: type,
-                    title: title || '',
-                    message: "",
-                    onClick: function (e) {
-                        scrollAndBlink(input, result.phantoms, type);
-                        return false;
-                    },
-                    onHidden: function (e) {
-                        delete input[TOAST_NAME];
-                    },
-                });
-                toast.querySelector('.toast-message').innerHTML = message.join('\n');
-                toast.style.order = Array.prototype.indexOf.call(document.querySelectorAll('.validation_warning, .validation_error'), this) + 1;
-                toast.chmonos_vinput = input;
-                input[TOAST_NAME] = toast;
-            }
-            else {
-                var toast = input[TOAST_NAME];
-                if (toast) {
-                    toast.remove();
-                    delete input[TOAST_NAME];
+            messages.title = title;
+            messages[type] = (messages[type] ?? []).concat(result[type].toArray ? result[type].toArray() : result[type]);
+        }
+        chmonosMessages.set(input, messages);
+
+        clearTimeout(chmonosMessageTimerId);
+        chmonosMessageTimerId = setTimeout(function () {
+            for (const [input, messages] of chmonosMessages) {
+                for (const type of ['error', 'warning']) {
+                    let TOAST_NAME = 'vinput-toast-' + type;
+                    if (messages[type].length) {
+                        var toast = input[TOAST_NAME] || showToast({
+                            type: type,
+                            title: messages.title || '',
+                            message: "",
+                            onClick: function (e) {
+                                scrollAndBlink(input, result.phantoms, type);
+                                return false;
+                            },
+                            onHidden: function (e) {
+                                delete input[TOAST_NAME];
+                            },
+                        });
+                        toast.querySelector('.toast-message').innerHTML = [...new Set(messages[type])].join('\n');
+                        toast.style.order = Array.prototype.indexOf.call(document.querySelectorAll('.validation_warning, .validation_error'), this) + 1;
+                        toast.chmonos_vinput = input;
+                        input[TOAST_NAME] = toast;
+                    }
+                    else {
+                        var toast = input[TOAST_NAME];
+                        if (toast) {
+                            toast.remove();
+                            delete input[TOAST_NAME];
+                        }
+                    }
                 }
             }
-        }
+            chmonosMessages.clear();
+        });
     }
 })();
