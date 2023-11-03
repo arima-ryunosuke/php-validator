@@ -63,6 +63,14 @@ class Date extends AbstractCondition implements Interfaces\Range, Interfaces\Max
 
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
+        // datetime-local で秒が 00 の場合、00が省略される場合があるので補完する
+        if ($params['member']['s']) {
+            $value00 = $context['str_concat']($value, ':00');
+            if (strtotime($value00) !== false) {
+                $value = $value00;
+            }
+        }
+
         $time = strtotime($value);
 
         // 時刻のみの場合を考慮して年月日を付加して再チャレンジ
