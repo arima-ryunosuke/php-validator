@@ -841,17 +841,25 @@ function Chmonos(form, options) {
             return dummy;
         }
 
+        const getValue = function (e) {
+            var value = e.value;
+            if (options.allrules[elemName]['trimming']) {
+                value = value.trim();
+            }
+            // number/date 用の特別処理
+            if (value.length === 0 && e.validity.badInput && Number.isNaN(e.valueAsNumber)) {
+                value = 'bad'; // 数としても日付として不正なら何でもいい（ただし maxlength に引っかかるので短めが良い）
+            }
+            return value;
+        };
+
         if (input.name.match(/\[]$/)) {
             return Array.from(form.querySelectorAll('[name="' + input.name + '"].validatable:enabled'), function (e) {
-                return e.value;
+                return getValue(e);
             });
         }
 
-        var val = input.value;
-        if (options.allrules[elemName]['trimming']) {
-            val = val.trim();
-        }
-        return val;
+        return getValue(input);
     };
 
     /**
