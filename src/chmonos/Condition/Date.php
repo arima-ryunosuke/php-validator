@@ -10,7 +10,7 @@ namespace ryunosuke\chmonos\Condition;
  * - format: string
  *   - 許容する日付フォーマット
  */
-class Date extends AbstractCondition implements Interfaces\Range, Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\ConvertibleValue
+class Date extends AbstractCondition implements Interfaces\Range, Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\InferableType, Interfaces\ConvertibleValue
 {
     public const INVALID      = 'dateInvalid';
     public const INVALID_DATE = 'dateInvalidDate';
@@ -142,9 +142,26 @@ class Date extends AbstractCondition implements Interfaces\Range, Interfaces\Max
 
     public function getType()
     {
-        // @task InferableType を implement してないので有効になっていない
-        // type=date,datetime は format をパースしなければならないし、そもそもブラウザ対応状況が劣悪なので text
-        return 'text';
+        if (!$this->_isRFC3339) {
+            return 'text';
+        }
+
+        if ($this->_member['Y'] && $this->_member['m'] && $this->_member['d'] && $this->_member['H'] && $this->_member['i'] && $this->_member['s']) {
+            return 'datetime-local';
+        }
+        if ($this->_member['Y'] && $this->_member['m'] && $this->_member['d'] && $this->_member['H'] && $this->_member['i']) {
+            return 'datetime-local';
+        }
+        if ($this->_member['Y'] && $this->_member['m'] && $this->_member['d']) {
+            return 'date';
+        }
+        if ($this->_member['Y'] && $this->_member['m']) {
+            return 'month';
+        }
+        if (!$this->_member['Y'] && !$this->_member['m'] && !$this->_member['d']) {
+            return 'time';
+        }
+        return 'text'; // @codeCoverageIgnore
     }
 
     public function getValue($value)
