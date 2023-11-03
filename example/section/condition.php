@@ -139,15 +139,15 @@ $condition_form = new \ryunosuke\chmonos\Form([
         ]
     ],
     'dateYmd'               => [
-        'title'     => '日時（Y/m/d）',
+        'title'     => '日時（Y-m-d）',
         'condition' => [
-            'Date' => 'Y/m/d'
+            'Date' => 'Y-m-d'
         ]
     ],
     'dateYmdHis'            => [
-        'title'     => '日時（Y/m/d H:i:s）',
+        'title'     => '日時（Y-m-dTH:i:s）',
         'condition' => [
-            'Date' => 'Y/m/d H:i:s'
+            'Date' => 'Y-m-d\TH:i:s'
         ]
     ],
     'decimal'               => [
@@ -533,7 +533,7 @@ resetForm($condition_form, 'condition_form');
         <td><?= $condition_form->input('greater_confirm') ?></td>
     </tr>
     <tr>
-        <th>日時：Y/m/d | Y/m/d H:i:s</th>
+        <th>日時：Y-m-d | Y-m-d H:i:s</th>
         <td><?= $condition_form->input('dateYmd') ?></td>
         <td><?= $condition_form->input('dateYmdHis') ?></td>
     </tr>

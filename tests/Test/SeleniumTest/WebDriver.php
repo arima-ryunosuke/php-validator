@@ -99,6 +99,11 @@ class WebDriver extends RemoteWebDriver
         }
     }
 
+    public function getOks($sleep = null, $displayed = true, $blur = true)
+    {
+        return $this->getResult('.validation_ok', $sleep, $displayed, $blur);
+    }
+
     public function getWarnings($sleep = null, $displayed = true, $blur = true)
     {
         return $this->getResult('.validation_warning', $sleep, $displayed, $blur);

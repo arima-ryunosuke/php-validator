@@ -27,19 +27,22 @@ $other_form = new Form([
         'condition' => [
             'Digits' => null,
             'Range'  => [1900, 2100]
-        ]
+        ],
+        'default' => 2000,
     ],
     'month'               => [
         'condition' => [
             'Digits' => null,
             'Range'  => [1, 12]
-        ]
+        ],
+        'default' => 2,
     ],
     'day'                 => [
         'condition' => [
             'Digits' => null,
             'Range'  => [1, 31]
-        ]
+        ],
+        'default' => 31,
     ],
     'consent_check'       => [
         'options' => [

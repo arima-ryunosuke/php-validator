@@ -213,12 +213,19 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     {
         $driver->path('/example/index.php');
 
-        $driver->setValue('dateYmd', '2011/02/30');
-        $driver->setValue('dateYmdHis', '2011/02/28 12:34:66');
-        that($driver)->getErrors()->count(2);
-        $driver->setValue('dateYmd', '2011/02/20');
-        $driver->setValue('dateYmdHis', '2011/02/28 12:34:56');
-        that($driver)->getErrors()->count(0);
+        // @todo 言語・ロケール設定で Y-m-d にできそう
+        // @todo selenium で validity が動いていないようで、ERROR チェックではなく OK チェックにしている
+
+        $driver->setValue('dateYmd', '02-29-2012');
+        $driver->setValue('dateYmdHis', '02-29-2012T12:34:56AM');
+        that($driver)->getOks()->count(2);
+
+        $driver->setValue('dateYmd', '02-30-2012');
+        $driver->setValue('dateYmdHis', '02-30-2012T12:34:56AM');
+        that($driver)->getOks()->count(0);
+        $driver->setValue('dateYmd', '02-29-2012');
+        $driver->setValue('dateYmdHis', '02-29-2012T12:34:56AM');
+        that($driver)->getOks()->count(2);
     }
 
     /**

@@ -16,7 +16,7 @@ $basic_form = new \ryunosuke\chmonos\Form([
     'datetime'              => [
         'default' => time(),
         'condition' => [
-            'Date' => 'Y-m-d\TH:i'
+            'Date' => 'Y-m-d\TH:i:s'
         ],
     ],
     'combobox'              => [
@@ -226,7 +226,9 @@ resetForm($basic_form, 'basic_form');
     </tr>
     <tr>
         <th>datetime要素</th>
-        <td><?= $basic_form->input('datetime', ['type' => 'datetime-local']) ?></td>
+        <td><?= $basic_form->input('datetime', [
+            'format' => 'yyyyMMdd日',
+            ]) ?></td>
     </tr>
     <tr>
         <th>combobox要素</th>
