@@ -2155,6 +2155,32 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'name'      => 'name',
             'condition' => [
+                'Date' => 'Y-m-d\TH:i:s'
+            ]
+        ]);
+
+        that($input)->input()->htmlMatchesArray([
+            'input' => [
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'type'                  => 'datetime-local',
+                'class'                 => 'validatable',
+                'value'                 => '',
+                'min'                   => '1000-01-01T00:00:00',
+                'max'                   => '9999-12-31T23:59:59',
+                'step'                  => '1',
+                'maxlength'             => '19',
+                'style'                 => 'ime-mode:disabled;',
+            ],
+        ]);
+
+        $input = new Input([
+            'name'      => 'name',
+            'condition' => [
                 'Digits' => null,
                 'Range'  => [
                     10,
