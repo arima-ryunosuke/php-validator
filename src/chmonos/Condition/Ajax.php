@@ -47,6 +47,7 @@ class Ajax extends AbstractCondition
                 'X-Requested-With' => 'XMLHttpRequest',
             ],
             'cache'       => 'no-cache',
+            'expire'      => 60,
             'credentials' => 'same-origin',
             'timeout'     => null,
             'handler'     => null,   // response handler
@@ -71,6 +72,7 @@ class Ajax extends AbstractCondition
         /** @noinspection JSValidateTypes */
         return <<<'JS'
             (function() {
+                $params.request.caches = $params.request.caches ?? {};
                 if ($value && $params.request.url) {
                     function request() {
                         var url = new URL($params.request.url, location.href);
@@ -83,7 +85,29 @@ class Ajax extends AbstractCondition
                             body.append(keys[i], $fields[keys[i]]);
                         }
 
-                        var handler = $params.request.handler || function(response){return response};
+                        if ($params.request.method === 'GET') {
+                            if ($params.request.caches[url]) {
+                                if ($params.request.caches[url].expire > (new Date()).getTime()) {
+                                    $error($params.request.caches[url].data);
+                                    return Promise.resolve(null);
+                                }
+                                else {
+                                    delete $params.request.caches[url];
+                                }
+                            }
+                        }
+
+                        var handler = function (response) {
+                            var data = ($params.request.handler || function(response){return response})(response);
+                            if ($params.request.method === 'GET') {
+                                $params.request.caches[url] = {
+                                    expire: (new Date()).getTime() + $params.request.expire * 1000,
+                                    data: data,
+                                };
+                            }
+                            return data;
+                        };
+
                         if ($params.request.api === 'xhr') {
                             return new Promise(function(resolve, reject) {
                                 var xhr = new XMLHttpRequest();
@@ -132,16 +156,7 @@ class Ajax extends AbstractCondition
                     }
 
                     if (e.type === 'submit') {
-                        if (input.validationErrors) {
-                            $error();
-                            input.validationAjaxStop = false;
-                        }
-                        else {
-                            if (!input.validationAjaxStop) {
-                                $error(request());
-                            }
-                            input.validationAjaxStop = true;
-                        }
+                        $error(request());
                     }
                     else {
                         if (!input.validationAjaxDebounce) {
