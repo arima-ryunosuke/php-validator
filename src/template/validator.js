@@ -121,7 +121,7 @@ function Chmonos(form, options) {
                     if (evt.chmonosSubtypes.includes('noerror')) {
                         return;
                     }
-                    if (evt.chmonosSubtypes.includes('norequire') && input !== evt.target && evt.target.tagName !== 'FORM') {
+                    if (evt.chmonosSubtypes.includes('norequire') && cname === 'Requires' && input !== evt.target && evt.target.tagName !== 'FORM') {
                         return;
                     }
                 }
