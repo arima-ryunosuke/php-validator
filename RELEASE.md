@@ -24,6 +24,19 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.2.0
+
+- [change] Ajax のリクエスト削減機構を是正
+- [*change] 検証フェーズと通知フェーズを明確に分ける
+- [feature] mimetype の強化と trait での一本化
+- [fixbug] norequire が必須エラー以外にも効いていた不具合を修正
+- [fixbug] 中途半端な入力で validation が走らない不具合を修正
+- [fixbug] Revert "[feature] 「DOM消え」の定義に不可視要素を追加"
+- [fixbug] datetime-local の秒問題を修正
+- [feature] Date に InferableType を implement
+- [feature] Date に Range を implement
+- [feature] Date に member パラメータを追加
+
 ## 1.1.4
 
 - [feature] validate 引数に selector を追加
