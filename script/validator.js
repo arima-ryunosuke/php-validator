@@ -4482,6 +4482,7 @@ return module.exports;
     /**/
 this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $message;
             (function() {
+                $params.request.caches = $params.request.caches ?? {};
                 if ($value && $params.request.url) {
                     function request() {
                         var url = new URL($params.request.url, location.href);
@@ -4494,7 +4495,29 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
                             body.append(keys[i], $fields[keys[i]]);
                         }
 
-                        var handler = $params.request.handler || function(response){return response};
+                        if ($params.request.method === 'GET') {
+                            if ($params.request.caches[url]) {
+                                if ($params.request.caches[url].expire > (new Date()).getTime()) {
+                                    $error($params.request.caches[url].data);
+                                    return Promise.resolve(null);
+                                }
+                                else {
+                                    delete $params.request.caches[url];
+                                }
+                            }
+                        }
+
+                        var handler = function (response) {
+                            var data = ($params.request.handler || function(response){return response})(response);
+                            if ($params.request.method === 'GET') {
+                                $params.request.caches[url] = {
+                                    expire: (new Date()).getTime() + $params.request.expire * 1000,
+                                    data: data,
+                                };
+                            }
+                            return data;
+                        };
+
                         if ($params.request.api === 'xhr') {
                             return new Promise(function(resolve, reject) {
                                 var xhr = new XMLHttpRequest();
@@ -4543,16 +4566,7 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
                     }
 
                     if (e.type === 'submit') {
-                        if (input.validationErrors) {
-                            $error();
-                            input.validationAjaxStop = false;
-                        }
-                        else {
-                            if (!input.validationAjaxStop) {
-                                $error(request());
-                            }
-                            input.validationAjaxStop = true;
-                        }
+                        $error(request());
                     }
                     else {
                         if (!input.validationAjaxDebounce) {
@@ -4664,8 +4678,16 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
 
         if ($params['type'] && !in_array($matches[1], $params['allowTypes'], true)) {
             $error($consts['INVALID_TYPE']);
-        }},"Date":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $time;
+        }},"Date":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $value00, $time;
 // 
+
+        // datetime-local で秒が 00 の場合、00が省略される場合があるので補完する
+        if ($params['member']['s']) {
+            $value00 = $context['str_concat']($value, ':00');
+            if (strtotime($value00) !== false) {
+                $value = $value00;
+            }
+        }
 
         $time = strtotime($value);
 
@@ -5111,156 +5133,6 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
 
     /// 内部用
 
-    function core_validate(input, validation_id, evt) {
-        var result = [];
-
-        if (chmonos.validationDisabled) {
-            return result;
-        }
-
-        // propagate などで同一要素に検証が走ることがあるので一意な ID を持たせて、同一 ID ならスルーするようにする
-        var vid = input.validationId;
-        if (vid !== undefined && vid === validation_id) {
-            return result;
-        }
-        input.validationId = validation_id;
-
-        var elemName = input.dataset.vinputClass;
-        var rule = options.allrules[elemName];
-        if (rule === undefined) {
-            return result;
-        }
-
-        var phantom = rule['phantom'];
-        var phantoms = [];
-        if (phantom.length) {
-            var flag = true;
-            var brothers = [];
-            for (var i = 1; i < phantom.length; i++) {
-                var inputs = chmonos.brother(input, phantom[i]);
-                var target = chmonos.value(inputs[0]);
-                phantoms.push(...inputs);
-                if (target.length === 0) {
-                    flag = false;
-                    break;
-                }
-                brothers.push(target);
-            }
-            // noinspection JSUnresolvedFunction
-            input.value = flag ? vsprintf(phantom[0], brothers) : '';
-        }
-
-        var fields = chmonos.fields(input);
-        chmonos.required(input, fields);
-
-        if (!rule['invisible'] && input.type !== 'hidden' && input.offsetParent === null) {
-            fireError(input, {}, true);
-            return result;
-        }
-
-        if (input.disabled) {
-            return result;
-        }
-
-        var condition = rule['condition'];
-        var value = chmonos.value(input);
-        var errorTypes = {warning: {}, error: {}};
-        var asyncs = [];
-        var keys = Object.keys(condition);
-        for (var k = 0; k < keys.length; k++) {
-            let cond = condition[keys[k]];
-            let cname = cond.cname;
-            let level = cond.level;
-            var error = function (err) {
-                if (evt.chmonosSubtypes) {
-                    if (evt.chmonosSubtypes.includes('noerror')) {
-                        return;
-                    }
-                    if (evt.chmonosSubtypes.includes('norequire') && input !== evt.target && evt.target.tagName !== 'FORM') {
-                        return;
-                    }
-                }
-
-                if (err === undefined) {
-                    if (input.validationErrors && input.validationErrors[cname]) {
-                        errorTypes[level][cname] = input.validationErrors[cname];
-                    }
-                }
-                else if (err === null) {
-                    delete errorTypes[level][cname];
-                }
-                else if (err instanceof Promise) {
-                    asyncs.push(err);
-                }
-                else if (isPlainObject(err)) {
-                    if (errorTypes[level][cname] === undefined) {
-                        errorTypes[level][cname] = {};
-                    }
-                    Object.keys(err).forEach(function (mk) {
-                        errorTypes[level][cname][mk] = err[mk];
-                    });
-                }
-                else {
-                    var ret;
-                    if (cond['message'][err] !== undefined) {
-                        ret = cond['message'][err];
-                    }
-                    else if (chmonos.messages[cname][err] !== undefined) {
-                        ret = chmonos.messages[cname][err];
-                    }
-                    else {
-                        ret = err;
-                    }
-                    if (errorTypes[level][cname] === undefined) {
-                        errorTypes[level][cname] = {};
-                    }
-                    errorTypes[level][cname][err] = ret.replace(/%(.+?)%/g, function (p0, p1) {
-                        if (cond['param'][p1] !== undefined) {
-                            return cond['param'][p1];
-                        }
-                        return p0;
-                    });
-                }
-            };
-            // 値が空の場合は Requires しか検証しない（空かどうかの制御を他の condition に任せたくない）
-            // value は必ず length を持つように制御してるので「空・未入力」の判定は length === 0 で OK
-            if (value.length > 0 || cname === 'Requires') {
-                var values = cond['arrayable'] ? [value] : chmonos.context.cast('array', value);
-                Object.keys(values).forEach(function (v) {
-                    try {
-                        chmonos.condition[cname](input, values[v], fields, cond['param'], chmonos.constants[cname], error, chmonos.context, evt);
-                    }
-                    catch (e) {
-                        error(chmonos.constants[cname]['INVALID']);
-                        console.error(e);
-                    }
-                });
-            }
-        }
-
-        result.push(new Promise(function (resolve) {
-            Promise.all(asyncs).then(function () {
-                resolve(fireError(input, errorTypes, value.length > 0, phantoms));
-            });
-        }));
-
-        // ラジオボタンやチェックボックスなどはこれ以上無駄なので検証 ID を放り込んでおく
-        if (input.type === 'radio' || input.type === 'checkbox') {
-            form.querySelectorAll("input[name='" + input.name + "'].validatable").forEach(function (e) {
-                e.validationId = validation_id;
-            });
-        }
-
-        // 伝播先へ伝播
-        rule['propagate'].forEach(function (propagate) {
-            chmonos.brother(input, propagate).forEach(function (elm) {
-                result.push.apply(result, core_validate(elm, validation_id, evt));
-            });
-        });
-
-        return result;
-    }
-
     function isPlainObject(obj) {
         if (typeof (obj) !== 'object' || obj.nodeType || obj === obj.window) {
             return false;
@@ -5268,20 +5140,107 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         return !(obj.constructor && !{}.hasOwnProperty.call(obj.constructor.prototype, 'isPrototypeOf'));
     }
 
-    function fireError(input, result, okclass, phantoms) {
-        phantoms = phantoms ?? [];
-        var warningTypes = result.warning || {};
-        var errorTypes = result.error || {};
-        var isWarning = !!Object.keys(warningTypes).length;
-        var isError = !!Object.keys(errorTypes).length;
-        if (input.type === 'radio' || input.type === 'checkbox') {
-            input = Array.from(form.querySelectorAll("input[name='" + input.name + "'].validatable"));
-        }
-        else {
-            input = [input];
+    function resolveDepend(input, contains, already) {
+        contains.group = contains.group ?? true;
+        contains.phantom = contains.phantom ?? true;
+        contains.propagate = contains.propagate ?? false;
+
+        already = already ?? new Set();
+
+        var elemName = input.dataset.vinputClass;
+        var rule = options.allrules[elemName];
+
+        const add = function (input) {
+            if (already.has(input)) {
+                return;
+            }
+            already.add(input);
+            resolveDepend(input, contains, already);
         }
 
-        [warningTypes, errorTypes].forEach(function (types) {
+        add(input);
+
+        if (contains.group) {
+            if (input.type === 'radio' || input.type === 'checkbox') {
+                for (const e of form.querySelectorAll("input[name='" + input.name + "'].validatable")) {
+                    add(e);
+                }
+            }
+        }
+        if (contains.phantom) {
+            rule?.phantom?.forEach(function (phantom) {
+                for (const e of chmonos.brother(input, phantom)) {
+                    add(e);
+                }
+            });
+        }
+        if (contains.propagate) {
+            rule?.propagate?.forEach(function (propagate) {
+                for (const e of chmonos.brother(input, propagate)) {
+                    add(e);
+                }
+            });
+        }
+
+        return already;
+    }
+
+    function addError(input, result) {
+        const inputs = resolveDepend(input, {
+            group: true,
+            phantom: true,
+            propagate: false,
+        });
+        var warningTypes = result.warning ?? {};
+        var errorTypes = result.error ?? {};
+        var isWarning = Object.keys(warningTypes).length;
+        var isError = Object.keys(errorTypes).length;
+
+        input.validationWarnings = Object.assign(input.validationWarnings ?? {}, warningTypes);
+        input.validationErrors = Object.assign(input.validationErrors ?? {}, errorTypes);
+        inputs.forEach(function (input) {
+            input.validationWarnings = Object.assign(input.validationWarnings ?? {}, isWarning ? {"": []} : {});
+            input.validationErrors = Object.assign(input.validationErrors ?? {}, isError ? {"": []} : {});
+        });
+
+        if (isError) {
+            return true;
+        }
+        if (isWarning) {
+            return null;
+        }
+        return false;
+    }
+
+    function notifyError(input, okclass) {
+        const inputs = resolveDepend(input, {
+            group: true,
+            phantom: true,
+            propagate: true,
+        });
+        inputs.forEach(function (input) {
+            var isWarning = Object.keys(input.validationWarnings ?? {}).length;
+            var isError = Object.keys(input.validationErrors ?? {}).length;
+            if (isWarning) {
+                input.classList.add('validation_warning');
+            }
+            if (isError) {
+                input.classList.add('validation_error');
+            }
+            if (isWarning || isError) {
+                input.classList.remove('validation_ok');
+            }
+            else {
+                input.classList.remove('validation_warning');
+                input.classList.remove('validation_error');
+                input.classList.remove('validation_ok');
+                if (okclass && chmonos.value(input)?.length > 0) {
+                    input.classList.add('validation_ok');
+                }
+            }
+        });
+        // {condition: {errortype: message}} => {errortype: message} in future scope
+        [input.validationWarnings ?? {}, input.validationErrors ?? {}].forEach(function (types) {
             if (!types.hasOwnProperty('toArray')) {
                 Object.defineProperty(types, 'toArray', {
                     value: function () {
@@ -5302,46 +5261,168 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
                 });
             }
         });
+        input.dispatchEvent(new CustomEvent('validated', {
+            bubbles: true,
+            detail: {
+                warningTypes: input.validationWarnings ?? {},
+                errorTypes: input.validationErrors ?? {},
+                phantoms: [...inputs],
+            },
+        }));
+    }
 
-        input.concat(phantoms).forEach(function (e) {
-            if (isWarning) {
-                e.classList.add('validation_warning');
-                e.validationWarnings = warningTypes;
-            }
-            if (isError) {
-                e.classList.add('validation_error');
-                e.validationErrors = errorTypes;
-            }
-            if (isWarning || isError) {
-                e.classList.remove('validation_ok');
-            }
-            else {
-                e.classList.remove('validation_warning');
-                e.classList.remove('validation_error');
-                e.classList.remove('validation_ok');
-                if (okclass) {
-                    e.classList.add('validation_ok');
-                }
-                e.validationWarnings = undefined;
-                e.validationErrors = undefined;
-            }
+    function validateInputs(inputs, evt) {
+        if (chmonos.validationDisabled) {
+            return Promise.resolve([]);
+        }
+
+        const validation_id = new Date().getTime();
+        const promises = [];
+
+        form.validationValues = undefined;
+
+        inputs.forEach(function (input) {
+            input.validationWarnings = {};
+            input.validationErrors = {};
         });
-        input.forEach(function (e) {
-            e.dispatchEvent(new CustomEvent('validated', {
-                detail: {
-                    warningTypes: warningTypes,
-                    errorTypes: errorTypes,
-                    phantoms: phantoms,
-                }, bubbles: true
+        inputs.forEach(function (input) {
+            // propagate などで同一要素に検証が走ることがあるので一意な ID を持たせて、同一 ID ならスルーするようにする
+            var vid = input.validationId;
+            if (vid !== undefined && vid === validation_id) {
+                return;
+            }
+            input.validationId = validation_id;
+
+            var elemName = input.dataset.vinputClass;
+            var rule = options.allrules[elemName];
+            if (rule === undefined) {
+                return;
+            }
+
+            var phantom = rule['phantom'];
+            if (phantom.length) {
+                var flag = true;
+                var brothers = [];
+                for (var i = 1; i < phantom.length; i++) {
+                    var inputs = chmonos.brother(input, phantom[i]);
+                    var target = chmonos.value(inputs[0]);
+                    if (target.length === 0) {
+                        flag = false;
+                        break;
+                    }
+                    brothers.push(target);
+                }
+                // noinspection JSUnresolvedFunction
+                input.value = flag ? vsprintf(phantom[0], brothers) : '';
+            }
+
+            var fields = chmonos.fields(input);
+            chmonos.required(input, fields);
+
+            if (!rule['invisible'] && input.type !== 'hidden' && input.offsetParent === null) {
+                return;
+            }
+
+            if (input.disabled) {
+                return;
+            }
+
+            var condition = rule['condition'];
+            var value = chmonos.value(input);
+            var errorTypes = {warning: {}, error: {}};
+            var asyncs = [];
+            var keys = Object.keys(condition);
+            for (var k = 0; k < keys.length; k++) {
+                let cond = condition[keys[k]];
+                let cname = cond.cname;
+                let level = cond.level;
+                var error = function (err) {
+                    if (evt.chmonosSubtypes) {
+                        if (evt.chmonosSubtypes.includes('noerror')) {
+                            return;
+                        }
+                        if (evt.chmonosSubtypes.includes('norequire') && cname === 'Requires' && input !== evt.target && evt.target.tagName !== 'FORM') {
+                            return;
+                        }
+                    }
+
+                    if (err === undefined) {
+                        if (input.validationErrors && input.validationErrors[cname]) {
+                            errorTypes[level][cname] = input.validationErrors[cname];
+                        }
+                    }
+                    else if (err === null) {
+                        delete errorTypes[level][cname];
+                    }
+                    else if (err instanceof Promise) {
+                        asyncs.push(err);
+                    }
+                    else if (isPlainObject(err)) {
+                        if (errorTypes[level][cname] === undefined) {
+                            errorTypes[level][cname] = {};
+                        }
+                        Object.keys(err).forEach(function (mk) {
+                            errorTypes[level][cname][mk] = err[mk];
+                        });
+                    }
+                    else {
+                        var ret;
+                        if (cond['message'][err] !== undefined) {
+                            ret = cond['message'][err];
+                        }
+                        else if (chmonos.messages[cname][err] !== undefined) {
+                            ret = chmonos.messages[cname][err];
+                        }
+                        else {
+                            ret = err;
+                        }
+                        if (errorTypes[level][cname] === undefined) {
+                            errorTypes[level][cname] = {};
+                        }
+                        errorTypes[level][cname][err] = ret.replace(/%(.+?)%/g, function (p0, p1) {
+                            if (cond['param'][p1] !== undefined) {
+                                return cond['param'][p1];
+                            }
+                            return p0;
+                        });
+                    }
+                };
+                // 値が空の場合は Requires しか検証しない（空かどうかの制御を他の condition に任せたくない）
+                // value は必ず length を持つように制御してるので「空・未入力」の判定は length === 0 で OK
+                if (value.length > 0 || cname === 'Requires') {
+                    var values = cond['arrayable'] ? [value] : chmonos.context.cast('array', value);
+                    Object.keys(values).forEach(function (v) {
+                        try {
+                            chmonos.condition[cname](input, values[v], fields, cond['param'], chmonos.constants[cname], error, chmonos.context, evt);
+                        }
+                        catch (e) {
+                            error(chmonos.constants[cname]['INVALID']);
+                            console.error(e);
+                        }
+                    });
+                }
+            }
+
+            // ラジオボタンやチェックボックスなどはこれ以上無駄なので検証 ID を放り込んでおく
+            if (input.type === 'radio' || input.type === 'checkbox') {
+                form.querySelectorAll("input[name='" + input.name + "'].validatable").forEach(function (e) {
+                    e.validationId = validation_id;
+                });
+            }
+
+            promises.push(new Promise(function (resolve) {
+                Promise.all(asyncs).then(function () {
+                    resolve(addError(input, errorTypes));
+                });
             }));
         });
-        if (isError) {
-            return true;
-        }
-        if (isWarning) {
-            return null;
-        }
-        return false;
+
+        return Promise.all(promises).then(function (results) {
+            inputs.forEach(function (input) {
+                notifyError(input, true);
+            });
+            return results;
+        });
     }
 
     /// 外部用
@@ -5433,8 +5514,11 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
                 var parts = eventName.split('.');
                 if (e.type === parts[0]) {
                     e.chmonosSubtypes = parts.slice(1);
-                    form.validationValues = undefined;
-                    core_validate(e.target, new Date().getTime(), e);
+                    validateInputs(resolveDepend(e.target, {
+                        group: true,
+                        phantom: true,
+                        propagate: true,
+                    }), e);
                     break;
                 }
             }
@@ -5498,29 +5582,28 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
     chmonos.validate = function (evt, selector) {
         form.validationValues = undefined;
         evt = evt || new CustomEvent('vatidation');
-        var validation_id = new Date().getTime();
+
+        var inputs = form.querySelectorAll('.validatable');
+        if (selector) {
+            inputs = Array.from(inputs).filter((e) => e.matches(selector));
+        }
 
         var promises = [];
         if (chmonos.customValidation.before.some(function (f) { return f.call(form, promises) === false })) {
             promises.push(true);
             return Promise.all(promises);
         }
-        var inputs = form.querySelectorAll('.validatable');
-        if (selector) {
-            inputs = Array.from(inputs).filter((e) => e.matches(selector));
-        }
-        inputs.forEach(function (e) {
-            promises.push.apply(promises, core_validate(e, validation_id, evt));
-        });
+        promises.push(validateInputs(inputs, evt));
         if (chmonos.customValidation.after.some(function (f) { return f.call(form, promises) === false })) {
             promises.push(true);
-            return Promise.all(promises);
         }
-        return Promise.all(promises);
+
+        return Promise.all(promises).then(results => [...results].flat());
     };
 
     chmonos.setErrors = function (emessages) {
         var errorTypes = {};
+        // {input: {condition: {errortype: message}}} => {input: {errortype: message}} in future scope
         var flatize = function (current, parent, child, grand) {
             Object.keys(current).forEach(function (key) {
                 var value = current[key];
@@ -5540,14 +5623,25 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         };
         flatize(emessages, '', '', '');
 
-        form.querySelectorAll('.validatable').forEach(function (input) {
-            fireError(input, {error: errorTypes[input.dataset.vinputId] || {}}, false);
+        const inputs = form.querySelectorAll('.validatable');
+        inputs.forEach(function (input) {
+            addError(input, {error: errorTypes[input.dataset.vinputId] || {}});
+        });
+        inputs.forEach(function (input) {
+            notifyError(input);
         });
     };
 
     chmonos.clearErrors = function () {
-        form.querySelectorAll('.validatable').forEach(function (input) {
-            fireError(input, {}, false);
+        const inputs = form.querySelectorAll('.validatable');
+        inputs.forEach(function (input) {
+            input.validationWarnings = {};
+            input.validationErrors = {};
+            input.classList.remove('validation_warning');
+            input.classList.remove('validation_error');
+        });
+        inputs.forEach(function (input) {
+            notifyError(input);
         });
     };
 
@@ -5851,6 +5945,9 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
             input = form.querySelector('[data-vinput-id="' + input + '"]');
         }
         var elemName = input.dataset.vinputClass;
+        if (elemName == null) {
+            return undefined;
+        }
         var type = input.type;
         if (type === 'file') {
             if (input.multiple) {
@@ -5896,17 +5993,25 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
             return dummy;
         }
 
+        const getValue = function (e) {
+            var value = e.value;
+            if (options.allrules[elemName]['trimming']) {
+                value = value.trim();
+            }
+            // number/date 用の特別処理
+            if (value.length === 0 && e.validity.badInput && Number.isNaN(e.valueAsNumber)) {
+                value = 'bad'; // 数としても日付として不正なら何でもいい（ただし maxlength に引っかかるので短めが良い）
+            }
+            return value;
+        };
+
         if (input.name.match(/\[]$/)) {
             return Array.from(form.querySelectorAll('[name="' + input.name + '"].validatable:enabled'), function (e) {
-                return e.value;
+                return getValue(e);
             });
         }
 
-        var val = input.value;
-        if (options.allrules[elemName]['trimming']) {
-            val = val.trim();
-        }
-        return val;
+        return getValue(input);
     };
 
     /**
