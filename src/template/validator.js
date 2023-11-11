@@ -418,7 +418,7 @@ function Chmonos(form, options) {
         }
 
         // 必須マーク
-        form.querySelectorAll('.validatable:enabled').forEach(function (input) {
+        form.querySelectorAll('.validatable:is(input, textarea, select):enabled').forEach(function (input) {
             chmonos.required(input);
         });
 
@@ -506,7 +506,7 @@ function Chmonos(form, options) {
         form.validationValues = undefined;
         evt = evt || new CustomEvent('vatidation');
 
-        var inputs = form.querySelectorAll('.validatable');
+        var inputs = form.querySelectorAll('.validatable:is(input, textarea, select)');
         if (selector) {
             inputs = Array.from(inputs).filter((e) => e.matches(selector));
         }
@@ -546,7 +546,7 @@ function Chmonos(form, options) {
         };
         flatize(emessages, '', '', '');
 
-        const inputs = form.querySelectorAll('.validatable');
+        const inputs = form.querySelectorAll('.validatable:is(input, textarea, select)');
         inputs.forEach(function (input) {
             addError(input, {error: errorTypes[input.dataset.vinputId] || {}});
         });
@@ -556,7 +556,7 @@ function Chmonos(form, options) {
     };
 
     chmonos.clearErrors = function () {
-        const inputs = form.querySelectorAll('.validatable');
+        const inputs = form.querySelectorAll('.validatable:is(input, textarea, select)');
         inputs.forEach(function (input) {
             input.validationWarnings = {};
             input.validationErrors = {};
@@ -661,7 +661,7 @@ function Chmonos(form, options) {
                 }
             });
         }
-        Array.from(fragment.querySelectorAll('.validatable:enabled')).forEach(function (e) {
+        Array.from(fragment.querySelectorAll('.validatable:is(input, textarea, select):enabled')).forEach(function (e) {
             chmonos.required(e, undefined, fragment);
         });
 
@@ -946,7 +946,7 @@ function Chmonos(form, options) {
         }
 
         var values = {};
-        form.querySelectorAll('.validatable:enabled').forEach(function (e) {
+        form.querySelectorAll('.validatable:is(input, textarea, select):enabled').forEach(function (e) {
             var id = e.dataset.vinputId;
             if (id === undefined || values['/' + id] !== undefined) {
                 return;
