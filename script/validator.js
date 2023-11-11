@@ -4860,6 +4860,28 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
             if (in_array($value, $params['haystack'], $params['strict'])) {
                 $error($consts['VALUE_IN_ARRAY']);
             }
+        }},"Number":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $match;
+// 
+
+        $match = [];
+
+        if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value, $match)) {
+            return $error($consts['INVALID']);
+        }
+
+        $match[2] = (isset($match[2])) ? $match[2] : '';
+        if (strlen($match[1]) > $params['int'] && strlen($match[2]) > $params['dec'] + 1) {
+            return $error($consts['INVALID_INTDEC']);
+        }
+        else if (strlen($match[1]) > $params['int']) {
+            return $error($consts['INVALID_INT']);
+        }
+        else if (strlen($match[2]) > $params['dec'] + 1) {
+            return $error($consts['INVALID_DEC']);
+        }
+
+        if (!(+$params['min'] <= +$value && +$value <= +$params['max'])) {
+            return $error($consts['INVALID_MINMAX']);
         }},"Password":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $fulfill, $key, $regex, $counts;
 // 
 
@@ -5118,12 +5140,12 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
 
     /// エラー定数のインポート
     /**/
-this.constants = {"Ajax":{"INVALID":"AjaxInvalid"},"ArrayLength":{"INVALID":"ArrayLengthInvalidLength","TOO_SHORT":"ArrayLengthInvalidMin","TOO_LONG":"ArrayLengthInvalidMax","SHORTLONG":"ArrayLengthInvalidMinMax"},"Aruiha":{"INVALID":"AruihaInvalid"},"Callback":{"INVALID":"CallbackInvalid"},"Compare":{"INVALID":"compareInvalid","EQUAL":"compareEqual","NOT_EQUAL":"compareNotEqual","LESS_THAN":"compareLessThan","GREATER_THAN":"compareGreaterThan","SIMILAR":"compareSimilar"},"DataUri":{"INVALID":"dataUriInvalid","INVALID_SIZE":"dataUriInvalidSize","INVALID_TYPE":"dataUriInvalidType"},"Date":{"INVALID":"dateInvalid","INVALID_DATE":"dateInvalidDate","FALSEFORMAT":"dateFalseFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Decimal":{"INVALID":"DecimalInvalid","INVALID_INT":"DecimalInvalidInt","INVALID_DEC":"DecimalInvalidDec","INVALID_INTDEC":"DecimalInvalidIntDec","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Digits":{"INVALID":"notDigits","NOT_DIGITS":"digitsInvalid","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"EmailAddress":{"INVALID":"emailAddressInvalid","INVALID_FORMAT":"emailAddressInvalidFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileName":{"INVALID":"InvalidFileName","INVALID_FILENAME_STR":"InvalidFileNameStr","INVALID_FILENAME_EXT":"InvalidFileNameExt","INVALID_FILENAME_RESERVED":"InvalidFileNameReserved","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileSize":{"INVALID":"FileSizeInvalid","INVALID_OVER":"FileSizeInvalidOver"},"FileType":{"INVALID":"FileTypeInvalid","INVALID_TYPE":"FileTypeInvalidType"},"Hostname":{"INVALID":"InvalidHostname","INVALID_PORT":"InvalidHostnamePort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"ImageSize":{"INVALID":"ImageFileInvalid","INVALID_WIDTH":"ImageFileInvalidWidth","INVALID_HEIGHT":"ImageFileInvalidHeight"},"InArray":{"INVALID":"InvalidInArray","NOT_IN_ARRAY":"notInArray"},"Json":{"INVALID":"JsonInvalid","INVALID_INVALID_SCHEMA":"JsonInvalidSchema"},"NotInArray":{"INVALID":"InvalidNotInArray","VALUE_IN_ARRAY":"valueInArray"},"Password":{"INVALID":"InvalidPassword","INVALID_PASSWORD_LESS":"InvalidPasswordLess","INVALID_PASSWORD_WEAK":"InvalidPasswordWeak","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Range":{"INVALID":"RangeInvalid","INVALID_MIN":"RangeInvalidMin","INVALID_MAX":"RangeInvalidMax","INVALID_MINMAX":"RangeInvalidMinMax","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Regex":{"INVALID":"regexInvalid","ERROROUS":"regexErrorous","NOT_MATCH":"regexNotMatch","NEGATION":"regexNegation"},"Requires":{"INVALID":"RequireInvalid","INVALID_TEXT":"RequireInvalidText","INVALID_MULTIPLE":"RequireInvalidSelectSingle"},"RequiresChild":{"INVALID":"RequiresChildInvalid","NOT_CONTAIN":"RequiresChildNotContain"},"Step":{"INVALID":"StepInvalid","INVALID_STEP":"StepInvalidInt","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"StringLength":{"INVALID":"StringLengthInvalidLength","TOO_SHORT":"StringLengthInvalidMin","TOO_LONG":"StringLengthInvalidMax","SHORTLONG":"StringLengthInvalidMinMax","DIFFERENT":"StringLengthInvalidDifferenr"},"StringWidth":{"INVALID":"StringWidthInvalidLength","TOO_SHORT":"StringWidthInvalidMin","TOO_LONG":"StringWidthInvalidMax","SHORTLONG":"StringWidthInvalidMinMax","DIFFERENT":"StringWidthInvalidDifferenr"},"Telephone":{"INVALID":"InvalidTelephone","INVALID_TELEPHONE":"InvalidTelephoneNumber","INVALID_WITH_HYPHEN":"InvalidTelephoneWithHyphen","INVALID_NONE_HYPHEN":"InvalidTelephoneNoneHyphen","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Unique":{"INVALID":"UniqueInvalid","NO_UNIQUE":"UniqueNoUnique"},"UniqueChild":{"INVALID":"UniqueChildInvalid","NO_UNIQUE":"UniqueChildNoUnique"},"Uri":{"INVALID":"UriInvalid","INVALID_SCHEME":"UriInvalidScheme","INVALID_HOST":"UriInvalidHost","INVALID_PORT":"UriInvalidPort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4}};/*
+this.constants = {"Ajax":{"INVALID":"AjaxInvalid"},"ArrayLength":{"INVALID":"ArrayLengthInvalidLength","TOO_SHORT":"ArrayLengthInvalidMin","TOO_LONG":"ArrayLengthInvalidMax","SHORTLONG":"ArrayLengthInvalidMinMax"},"Aruiha":{"INVALID":"AruihaInvalid"},"Callback":{"INVALID":"CallbackInvalid"},"Compare":{"INVALID":"compareInvalid","EQUAL":"compareEqual","NOT_EQUAL":"compareNotEqual","LESS_THAN":"compareLessThan","GREATER_THAN":"compareGreaterThan","SIMILAR":"compareSimilar"},"DataUri":{"INVALID":"dataUriInvalid","INVALID_SIZE":"dataUriInvalidSize","INVALID_TYPE":"dataUriInvalidType"},"Date":{"INVALID":"dateInvalid","INVALID_DATE":"dateInvalidDate","FALSEFORMAT":"dateFalseFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Decimal":{"INVALID":"DecimalInvalid","INVALID_INT":"DecimalInvalidInt","INVALID_DEC":"DecimalInvalidDec","INVALID_INTDEC":"DecimalInvalidIntDec","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Digits":{"INVALID":"notDigits","NOT_DIGITS":"digitsInvalid","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"EmailAddress":{"INVALID":"emailAddressInvalid","INVALID_FORMAT":"emailAddressInvalidFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileName":{"INVALID":"InvalidFileName","INVALID_FILENAME_STR":"InvalidFileNameStr","INVALID_FILENAME_EXT":"InvalidFileNameExt","INVALID_FILENAME_RESERVED":"InvalidFileNameReserved","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileSize":{"INVALID":"FileSizeInvalid","INVALID_OVER":"FileSizeInvalidOver"},"FileType":{"INVALID":"FileTypeInvalid","INVALID_TYPE":"FileTypeInvalidType"},"Hostname":{"INVALID":"InvalidHostname","INVALID_PORT":"InvalidHostnamePort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"ImageSize":{"INVALID":"ImageFileInvalid","INVALID_WIDTH":"ImageFileInvalidWidth","INVALID_HEIGHT":"ImageFileInvalidHeight"},"InArray":{"INVALID":"InvalidInArray","NOT_IN_ARRAY":"notInArray"},"Json":{"INVALID":"JsonInvalid","INVALID_INVALID_SCHEMA":"JsonInvalidSchema"},"NotInArray":{"INVALID":"InvalidNotInArray","VALUE_IN_ARRAY":"valueInArray"},"Number":{"INVALID":"NumberInvalid","INVALID_INT":"NumberInvalidInt","INVALID_DEC":"NumberInvalidDec","INVALID_INTDEC":"NumberInvalidIntDec","INVALID_MIN":"NumberMin","INVALID_MAX":"NumberMax","INVALID_MINMAX":"NumberMinMax","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Password":{"INVALID":"InvalidPassword","INVALID_PASSWORD_LESS":"InvalidPasswordLess","INVALID_PASSWORD_WEAK":"InvalidPasswordWeak","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Range":{"INVALID":"RangeInvalid","INVALID_MIN":"RangeInvalidMin","INVALID_MAX":"RangeInvalidMax","INVALID_MINMAX":"RangeInvalidMinMax","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Regex":{"INVALID":"regexInvalid","ERROROUS":"regexErrorous","NOT_MATCH":"regexNotMatch","NEGATION":"regexNegation"},"Requires":{"INVALID":"RequireInvalid","INVALID_TEXT":"RequireInvalidText","INVALID_MULTIPLE":"RequireInvalidSelectSingle"},"RequiresChild":{"INVALID":"RequiresChildInvalid","NOT_CONTAIN":"RequiresChildNotContain"},"Step":{"INVALID":"StepInvalid","INVALID_STEP":"StepInvalidInt","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"StringLength":{"INVALID":"StringLengthInvalidLength","TOO_SHORT":"StringLengthInvalidMin","TOO_LONG":"StringLengthInvalidMax","SHORTLONG":"StringLengthInvalidMinMax","DIFFERENT":"StringLengthInvalidDifferenr"},"StringWidth":{"INVALID":"StringWidthInvalidLength","TOO_SHORT":"StringWidthInvalidMin","TOO_LONG":"StringWidthInvalidMax","SHORTLONG":"StringWidthInvalidMinMax","DIFFERENT":"StringWidthInvalidDifferenr"},"Telephone":{"INVALID":"InvalidTelephone","INVALID_TELEPHONE":"InvalidTelephoneNumber","INVALID_WITH_HYPHEN":"InvalidTelephoneWithHyphen","INVALID_NONE_HYPHEN":"InvalidTelephoneNoneHyphen","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Unique":{"INVALID":"UniqueInvalid","NO_UNIQUE":"UniqueNoUnique"},"UniqueChild":{"INVALID":"UniqueChildInvalid","NO_UNIQUE":"UniqueChildNoUnique"},"Uri":{"INVALID":"UriInvalid","INVALID_SCHEME":"UriInvalidScheme","INVALID_HOST":"UriInvalidHost","INVALID_PORT":"UriInvalidPort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4}};/*
 */
 
     /// エラー文言のインポート
     /**/
-this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid value given","ArrayLengthInvalidMin":"%min%件以上は入力してください","ArrayLengthInvalidMax":"%max%件以下で入力して下さい","ArrayLengthInvalidMinMax":"%min%件～%max%件を入力して下さい"},"Aruiha":{"AruihaInvalid":"必ず呼び出し元で再宣言する"},"Callback":{"CallbackInvalid":"クロージャの戻り値で上書きされる"},"Compare":{"compareInvalid":"Invalid value given","compareEqual":"%operand%と同じ値を入力してください","compareNotEqual":"%operand%と異なる値を入力してください","compareLessThan":"%operand%より小さい値を入力してください","compareGreaterThan":"%operand%より大きい値を入力してください"},"DataUri":{"dataUriInvalid":"Invalid value given","dataUriInvalidSize":"%size_message%以下で入力してください","dataUriInvalidType":"%type_message%形式で入力してください"},"Date":{"dateInvalid":"Invalid value given","dateInvalidDate":"有効な日付を入力してください","dateFalseFormat":"%format%形式で入力してください"},"Decimal":{"DecimalInvalid":"小数値を入力してください","DecimalInvalidInt":"整数部分を%int%桁以下で入力してください","DecimalInvalidDec":"小数部分を%dec%桁以下で入力してください","DecimalInvalidIntDec":"整数部分を%int%桁、小数部分を%dec%桁以下で入力してください"},"Digits":{"notDigits":"Invalid value given","digitsInvalid":"整数を入力してください"},"EmailAddress":{"emailAddressInvalid":"Invalid value given","emailAddressInvalidFormat":"メールアドレスを正しく入力してください"},"FileName":{"InvalidFileName":"Invalid value given","InvalidFileNameStr":"有効なファイル名を入力してください","InvalidFileNameExt":"%extensions%ファイル名を入力してください","InvalidFileNameReserved":"使用できないファイル名です"},"FileSize":{"FileSizeInvalid":"入力ファイルが不正です","FileSizeInvalidOver":"ファイルサイズが大きすぎます。%message%以下のファイルを選択してください"},"FileType":{"FileTypeInvalid":"入力ファイルが不正です","FileTypeInvalidType":"%type%形式のファイルを選択して下さい"},"Hostname":{"InvalidHostname":"ホスト名を正しく入力してください","InvalidHostnamePort":"ポート番号を正しく入力してください"},"ImageSize":{"ImageFileInvalid":"画像ファイルを入力してください","ImageFileInvalidWidth":"横サイズは%width%ピクセル以下で選択してください","ImageFileInvalidHeight":"縦サイズは%height%ピクセル以下で選択してください"},"InArray":{"InvalidInArray":"Invalid value given","notInArray":"選択値が不正です"},"Json":{"JsonInvalid":"JSON文字列が不正です","JsonInvalidSchema":"キーが不正です"},"NotInArray":{"InvalidNotInArray":"Invalid value given","valueInArray":"選択値が不正です"},"Password":{"InvalidPassword":"Invalid value given","InvalidPasswordLess":"%char_types%を含めてください","InvalidPasswordWeak":"%char_types%のいずれかを%repeat%文字以上含めてください"},"Range":{"RangeInvalid":"Invalid value given","RangeInvalidMin":"%min%以上で入力して下さい","RangeInvalidMax":"%max%以下で入力して下さい","RangeInvalidMinMax":"%min%以上%max%以下で入力して下さい"},"Regex":{"regexInvalid":"Invalid value given","regexErrorous":"There was%pattern%'","regexNotMatch":"パターンに一致しません","regexNegation":"使用できない文字が含まれています"},"Requires":{"RequireInvalid":"Invalid value given","RequireInvalidText":"入力必須です","RequireInvalidSelectSingle":"選択してください"},"RequiresChild":{"RequiresChildInvalid":"Invalid value given","RequiresChildNotContain":"必須項目を含んでいません"},"Step":{"StepInvalid":"Invalid value given","StepInvalidInt":"%step%の倍数で入力してください"},"StringLength":{"StringLengthInvalidLength":"Invalid value given","StringLengthInvalidMin":"%min%文字以上で入力して下さい","StringLengthInvalidMax":"%max%文字以下で入力して下さい","StringLengthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringLengthInvalidDifferenr":"%min%文字で入力して下さい"},"StringWidth":{"StringWidthInvalidLength":"Invalid value given","StringWidthInvalidMin":"%min%文字以上で入力して下さい","StringWidthInvalidMax":"%max%文字以下で入力して下さい","StringWidthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringWidthInvalidDifferenr":"%min%文字で入力して下さい"},"Telephone":{"InvalidTelephone":"電話番号を正しく入力してください","InvalidTelephoneNumber":"電話番号を入力してください","InvalidTelephoneWithHyphen":"ハイフン付きで電話番号を入力してください","InvalidTelephoneNoneHyphen":"ハイフン無しで電話番号を入力してください"},"Unique":{"UniqueInvalid":"Invalid value given","UniqueNoUnique":"値が重複しています"},"UniqueChild":{"UniqueChildInvalid":"Invalid value given","UniqueChildNoUnique":"値が重複しています"},"Uri":{"UriInvalid":"URLをスキームから正しく入力してください","UriInvalidScheme":"スキームが不正です(%schemes%のみ)","UriInvalidHost":"ホスト名が不正です","UriInvalidPort":"ポート番号が不正です"}};/*
+this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid value given","ArrayLengthInvalidMin":"%min%件以上は入力してください","ArrayLengthInvalidMax":"%max%件以下で入力して下さい","ArrayLengthInvalidMinMax":"%min%件～%max%件を入力して下さい"},"Aruiha":{"AruihaInvalid":"必ず呼び出し元で再宣言する"},"Callback":{"CallbackInvalid":"クロージャの戻り値で上書きされる"},"Compare":{"compareInvalid":"Invalid value given","compareEqual":"%operand%と同じ値を入力してください","compareNotEqual":"%operand%と異なる値を入力してください","compareLessThan":"%operand%より小さい値を入力してください","compareGreaterThan":"%operand%より大きい値を入力してください"},"DataUri":{"dataUriInvalid":"Invalid value given","dataUriInvalidSize":"%size_message%以下で入力してください","dataUriInvalidType":"%type_message%形式で入力してください"},"Date":{"dateInvalid":"Invalid value given","dateInvalidDate":"有効な日付を入力してください","dateFalseFormat":"%format%形式で入力してください"},"Decimal":{"DecimalInvalid":"小数値を入力してください","DecimalInvalidInt":"整数部分を%int%桁以下で入力してください","DecimalInvalidDec":"小数部分を%dec%桁以下で入力してください","DecimalInvalidIntDec":"整数部分を%int%桁、小数部分を%dec%桁以下で入力してください"},"Digits":{"notDigits":"Invalid value given","digitsInvalid":"整数を入力してください"},"EmailAddress":{"emailAddressInvalid":"Invalid value given","emailAddressInvalidFormat":"メールアドレスを正しく入力してください"},"FileName":{"InvalidFileName":"Invalid value given","InvalidFileNameStr":"有効なファイル名を入力してください","InvalidFileNameExt":"%extensions%ファイル名を入力してください","InvalidFileNameReserved":"使用できないファイル名です"},"FileSize":{"FileSizeInvalid":"入力ファイルが不正です","FileSizeInvalidOver":"ファイルサイズが大きすぎます。%message%以下のファイルを選択してください"},"FileType":{"FileTypeInvalid":"入力ファイルが不正です","FileTypeInvalidType":"%type%形式のファイルを選択して下さい"},"Hostname":{"InvalidHostname":"ホスト名を正しく入力してください","InvalidHostnamePort":"ポート番号を正しく入力してください"},"ImageSize":{"ImageFileInvalid":"画像ファイルを入力してください","ImageFileInvalidWidth":"横サイズは%width%ピクセル以下で選択してください","ImageFileInvalidHeight":"縦サイズは%height%ピクセル以下で選択してください"},"InArray":{"InvalidInArray":"Invalid value given","notInArray":"選択値が不正です"},"Json":{"JsonInvalid":"JSON文字列が不正です","JsonInvalidSchema":"キーが不正です"},"NotInArray":{"InvalidNotInArray":"Invalid value given","valueInArray":"選択値が不正です"},"Number":{"NumberInvalid":"数値を入力してください","NumberInvalidInt":"整数部分を%int%桁以下で入力してください","NumberInvalidDec":"小数部分を%dec%桁以下で入力してください","NumberInvalidIntDec":"整数部分を%int%桁、小数部分を%dec%桁以下で入力してください","NumberMin":"%min%以上で入力して下さい","NumberMax":"%max%以下で入力して下さい","NumberMinMax":"%min%以上%max%以下で入力して下さい"},"Password":{"InvalidPassword":"Invalid value given","InvalidPasswordLess":"%char_types%を含めてください","InvalidPasswordWeak":"%char_types%のいずれかを%repeat%文字以上含めてください"},"Range":{"RangeInvalid":"Invalid value given","RangeInvalidMin":"%min%以上で入力して下さい","RangeInvalidMax":"%max%以下で入力して下さい","RangeInvalidMinMax":"%min%以上%max%以下で入力して下さい"},"Regex":{"regexInvalid":"Invalid value given","regexErrorous":"There was%pattern%'","regexNotMatch":"パターンに一致しません","regexNegation":"使用できない文字が含まれています"},"Requires":{"RequireInvalid":"Invalid value given","RequireInvalidText":"入力必須です","RequireInvalidSelectSingle":"選択してください"},"RequiresChild":{"RequiresChildInvalid":"Invalid value given","RequiresChildNotContain":"必須項目を含んでいません"},"Step":{"StepInvalid":"Invalid value given","StepInvalidInt":"%step%の倍数で入力してください"},"StringLength":{"StringLengthInvalidLength":"Invalid value given","StringLengthInvalidMin":"%min%文字以上で入力して下さい","StringLengthInvalidMax":"%max%文字以下で入力して下さい","StringLengthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringLengthInvalidDifferenr":"%min%文字で入力して下さい"},"StringWidth":{"StringWidthInvalidLength":"Invalid value given","StringWidthInvalidMin":"%min%文字以上で入力して下さい","StringWidthInvalidMax":"%max%文字以下で入力して下さい","StringWidthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringWidthInvalidDifferenr":"%min%文字で入力して下さい"},"Telephone":{"InvalidTelephone":"電話番号を正しく入力してください","InvalidTelephoneNumber":"電話番号を入力してください","InvalidTelephoneWithHyphen":"ハイフン付きで電話番号を入力してください","InvalidTelephoneNoneHyphen":"ハイフン無しで電話番号を入力してください"},"Unique":{"UniqueInvalid":"Invalid value given","UniqueNoUnique":"値が重複しています"},"UniqueChild":{"UniqueChildInvalid":"Invalid value given","UniqueChildNoUnique":"値が重複しています"},"Uri":{"UriInvalid":"URLをスキームから正しく入力してください","UriInvalidScheme":"スキームが不正です(%schemes%のみ)","UriInvalidHost":"ホスト名が不正です","UriInvalidPort":"ポート番号が不正です"}};/*
 */
 
     /// 初期化（コンストラクション）
@@ -5264,6 +5286,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         input.dispatchEvent(new CustomEvent('validated', {
             bubbles: true,
             detail: {
+                title: input.dataset.validationTitle ?? null,
                 warningTypes: input.validationWarnings ?? {},
                 errorTypes: input.validationErrors ?? {},
                 phantoms: [...inputs],
@@ -5495,7 +5518,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         }
 
         // 必須マーク
-        form.querySelectorAll('.validatable:enabled').forEach(function (input) {
+        form.querySelectorAll('.validatable:is(input, textarea, select):enabled').forEach(function (input) {
             chmonos.required(input);
         });
 
@@ -5583,7 +5606,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         form.validationValues = undefined;
         evt = evt || new CustomEvent('vatidation');
 
-        var inputs = form.querySelectorAll('.validatable');
+        var inputs = form.querySelectorAll('.validatable:is(input, textarea, select)');
         if (selector) {
             inputs = Array.from(inputs).filter((e) => e.matches(selector));
         }
@@ -5623,7 +5646,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         };
         flatize(emessages, '', '', '');
 
-        const inputs = form.querySelectorAll('.validatable');
+        const inputs = form.querySelectorAll('.validatable:is(input, textarea, select)');
         inputs.forEach(function (input) {
             addError(input, {error: errorTypes[input.dataset.vinputId] || {}});
         });
@@ -5633,7 +5656,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
     };
 
     chmonos.clearErrors = function () {
-        const inputs = form.querySelectorAll('.validatable');
+        const inputs = form.querySelectorAll('.validatable:is(input, textarea, select)');
         inputs.forEach(function (input) {
             input.validationWarnings = {};
             input.validationErrors = {};
@@ -5738,7 +5761,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
                 }
             });
         }
-        Array.from(fragment.querySelectorAll('.validatable:enabled')).forEach(function (e) {
+        Array.from(fragment.querySelectorAll('.validatable:is(input, textarea, select):enabled')).forEach(function (e) {
             chmonos.required(e, undefined, fragment);
         });
 
@@ -6023,7 +6046,7 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
         }
 
         var values = {};
-        form.querySelectorAll('.validatable:enabled').forEach(function (e) {
+        form.querySelectorAll('.validatable:is(input, textarea, select):enabled').forEach(function (e) {
             var id = e.dataset.vinputId;
             if (id === undefined || values['/' + id] !== undefined) {
                 return;
