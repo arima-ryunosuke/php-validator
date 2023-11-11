@@ -187,6 +187,7 @@ function Chmonos(form, options) {
         input.dispatchEvent(new CustomEvent('validated', {
             bubbles: true,
             detail: {
+                title: input.dataset.validationTitle ?? null,
                 warningTypes: input.validationWarnings ?? {},
                 errorTypes: input.validationErrors ?? {},
                 phantoms: [...inputs],

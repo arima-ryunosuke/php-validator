@@ -7,6 +7,7 @@
     // エラー
     document.addEventListener('validated', function (e) {
         toast.call(e.target, {
+            title: e.detail.title,
             warning: e.detail.warningTypes,
             error: e.detail.errorTypes,
             phantoms: e.detail.phantoms,
@@ -99,12 +100,11 @@
         };
 
         // group 単位で toast を共用する（radio や checkbox でその分表示されても嬉しくない）
-        var title = this.dataset.validationTitle;
         var input = this.closest('[data-vinput-group]') || this;
 
         var messages = chmonosMessages.get(input) ?? {};
         for (const type of ['error', 'warning']) {
-            messages.title = title;
+            messages.title = result.title;
             messages[type] = (messages[type] ?? []).concat(result[type].toArray ? result[type].toArray() : result[type]);
         }
         chmonosMessages.set(input, messages);
