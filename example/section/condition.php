@@ -162,6 +162,12 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'Digits' => null
         ]
     ],
+    'number'                => [
+        'title'     => '数値',
+        'condition' => [
+            'Number' => [-9.9, 999.999],
+        ]
+    ],
     'email'                 => [
         'title'     => 'メールアドレス',
         'condition' => [
@@ -545,6 +551,11 @@ resetForm($condition_form, 'condition_form');
     <tr>
         <th>整数</th>
         <td><?= $condition_form->input('digits') ?></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>数値</th>
+        <td><?= $condition_form->input('number') ?></td>
         <td></td>
     </tr>
     <tr>

@@ -257,6 +257,19 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_number(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('number', '-10');
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('number', '-9.9');
+        that($driver)->getErrors()->count(0);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_email(WebDriver $driver)
     {
         $driver->path('/example/index.php');
