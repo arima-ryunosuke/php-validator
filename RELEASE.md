@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.2.1
+
+- [feature] Number Condition 追加
+- [feature] エラー表示の分離を改善
+- [fixbug] 無修飾な .validatable に :input を付与
+
 ## 1.2.0
 
 - [change] Ajax のリクエスト削減機構を是正
