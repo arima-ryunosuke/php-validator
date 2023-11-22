@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.2.2
+
+- [feature] 全てが完了して submit する前後のイベントを追加
+
 ## 1.2.1
 
 - [feature] Number Condition 追加
