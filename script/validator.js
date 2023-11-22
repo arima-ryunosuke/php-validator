@@ -5559,7 +5559,15 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
                         if (e.submitter) {
                             setTimeout(function () {
                                 form.removeEventListener('submit', submit);
-                                e.submitter.click();
+                                if (form.dispatchEvent(new CustomEvent('submitting', {
+                                    bubbles: true,
+                                    cancelable: true,
+                                }))) {
+                                    e.submitter.click();
+                                }
+                                form.dispatchEvent(new CustomEvent('submitted', {
+                                    bubbles: true,
+                                }));
                                 form.addEventListener('submit', submit);
                             }, 0);
                         }
@@ -5567,7 +5575,15 @@ this.messages = {"Ajax":[],"ArrayLength":{"ArrayLengthInvalidLength":"Invalid va
                             // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
                             // 発火するしないは規定されていないらしいので念の為に付け外す
                             form.removeEventListener('submit', submit);
-                            form.submit();
+                            if (form.dispatchEvent(new CustomEvent('submitting', {
+                                bubbles: true,
+                                cancelable: true,
+                            }))) {
+                                form.submit();
+                            }
+                            form.dispatchEvent(new CustomEvent('submitted', {
+                                bubbles: true,
+                            }));
                             form.addEventListener('submit', submit);
                         }
                     };
