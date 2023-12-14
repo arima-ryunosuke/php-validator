@@ -72,6 +72,42 @@ $condition_form = new \ryunosuke\chmonos\Form([
         ],
         'default'   => [],
     ],
+    'array_exclusion_checkbox'    => [
+        'title'     => '排他チェックボックス',
+        'condition' => [
+            'ArrayExclusion' => [
+                [
+                    1 => '選択肢1',
+                    2 => '選択肢2',
+                ],
+            ]
+        ],
+        'options'   => [
+            1 => '選択肢1',
+            2 => '選択肢2',
+            3 => '選択肢3',
+            4 => '選択肢4',
+        ],
+        'default'   => [],
+    ],
+    'array_exclusion_select'    => [
+        'title'     => '排他セレクトボックス',
+        'condition' => [
+            'ArrayExclusion' => [
+                [
+                    1 => '選択肢1',
+                    2 => '選択肢2',
+                ],
+            ]
+        ],
+        'options'   => [
+            1 => '選択肢1',
+            2 => '選択肢2',
+            3 => '選択肢3',
+            4 => '選択肢4',
+        ],
+        'default'   => [],
+    ],
     'aruiha_range'          => [
         'condition' => [
             'Aruiha' => [
@@ -454,6 +490,12 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'StringLength' => [2, 6]
         ]
     ],
+    'stringlength_grapheme' => [
+        'title'     => '文字長（grapheme）',
+        'condition' => [
+            'StringLength' => [2, 6, true]
+        ]
+    ],
     'stringwidth'           => [
         'title'     => '文字幅',
         'condition' => [
@@ -511,6 +553,15 @@ resetForm($condition_form, 'condition_form');
         <td>
             <?= $condition_form->input('array_length_text', ['type' => 'text']) ?><br>
             <?= $condition_form->input('array_length_file', ['type' => 'file']) ?><br>
+        </td>
+    </tr>
+    <tr>
+        <th>1+2 の排他制御</th>
+        <td>
+            <?= $condition_form->input('array_exclusion_checkbox', ['type' => 'checkbox']) ?>
+        </td>
+        <td>
+            <?= $condition_form->input('array_exclusion_select', ['type' => 'select']) ?>
         </td>
     </tr>
     <tr>
@@ -671,9 +722,9 @@ resetForm($condition_form, 'condition_form');
         </td>
     </tr>
     <tr>
-        <th>文字長</th>
+        <th>文字長： mb_strlen | grapheme_strlen</th>
         <td><?= $condition_form->input('stringlength') ?></td>
-        <td></td>
+        <td><?= $condition_form->input('stringlength_grapheme') ?></td>
     </tr>
     <tr>
         <th>文字幅</th>

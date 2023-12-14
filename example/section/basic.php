@@ -19,12 +19,12 @@ $basic_form = new \ryunosuke\chmonos\Form([
             'Date' => 'Y-m-d\TH:i:s'
         ],
     ],
-    'combobox'              => [
-        'title'   => 'combobox要素',
+    'datalist'              => [
+        'title'   => 'date要素（datalist 付き）',
         'options' => [
-            '選択肢1',
-            '選択肢2',
-            '選択肢3'
+            '2014-12-24' => 'クリスマス前日',
+            '2014-12-25' => 'クリスマス当日',
+            '2014-12-26' => 'クリスマス後日'
         ],
     ],
     'checkbox'              => [
@@ -231,8 +231,8 @@ resetForm($basic_form, 'basic_form');
             ]) ?></td>
     </tr>
     <tr>
-        <th>combobox要素</th>
-        <td><?= $basic_form->input('combobox', ['type' => 'combobox']) ?></td>
+        <th>date要素（datalist 付き）</th>
+        <td><?= $basic_form->input('datalist', ['type' => 'date']) ?></td>
     </tr>
     <tr>
         <th>checkbox要素</th>

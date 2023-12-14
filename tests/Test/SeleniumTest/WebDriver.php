@@ -55,6 +55,7 @@ class WebDriver extends RemoteWebDriver
                 if (in_array($e->getAttribute('type'), ['checkbox', 'radio'])) {
                     $inputs = $this->findElements(WebDriverBy::cssSelector("$parent [name='$name']:not([type=hidden])"));
                     foreach ($inputs as $input) {
+                        $this->executeScript('arguments[0].scrollIntoView(true);', [$input]);
                         if ($clearable && $input->isSelected()) {
                             $input->click();
                         }

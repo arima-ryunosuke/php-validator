@@ -113,6 +113,26 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_arrayexclusion(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('array_exclusion_checkbox[]', [1, 2]);
+        that($driver)->getErrors()->count(4);
+
+        $driver->setValue('array_exclusion_checkbox[]', [1]);
+        that($driver)->getErrors()->count(0);
+
+        $driver->setValue('array_exclusion_select[]', [1, 2]);
+        that($driver)->getErrors()->count(1);
+
+        $driver->setValue('array_exclusion_select[]', [1]);
+        that($driver)->getErrors()->count(0);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_arraylength_file(WebDriver $driver)
     {
         $driver->path('/example/index.php');
@@ -582,6 +602,14 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         that($driver)->getErrors()->count(1);
         $driver->setValue('stringlength', 'xxx');
         that($driver)->getErrors()->count(0);
+
+        // unknown error: ChromeDriver only supports characters in the BMP
+//        $driver->setValue('stringlength_grapheme', '🥺');
+//        that($driver)->getErrors()->count(1);
+//        $driver->setValue('stringlength_grapheme', '🥺🥺🥺🥺🥺🥺🥺');
+//        that($driver)->getErrors()->count(1);
+//        $driver->setValue('stringlength', '🥺🥺🥺🥺🥺🥺');
+//        that($driver)->getErrors()->count(0);
     }
 
     /**
