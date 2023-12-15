@@ -1163,6 +1163,59 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
     }
 
+    function test_input_datalist()
+    {
+        $input = new Input([
+            'name'    => 'name',
+            'datalist' => [
+                '2014-12-23' => 'yesterday',
+                '2014-12-24' => 'today',
+                '2014-12-25' => 'tomorrow',
+            ]
+        ]);
+
+        that($input)->input([
+            'type' => 'date'
+        ])->htmlMatchesArray([
+            'input'    => [
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'id'                    => 'name',
+                'class'                 => 'validatable',
+                'type'                  => 'date',
+                'list'                  => 'name-datalist',
+                'value'                 => '',
+            ],
+            'datalist' => [
+                "id"        => "name-datalist",
+                "option[1]" => [
+                    "value" => "2014-12-23",
+                    "yesterday",
+                ],
+                "option[2]" => [
+                    "value" => "2014-12-24",
+                    "today",
+                ],
+                "option[3]" => [
+                    "value" => "2014-12-25",
+                    "tomorrow",
+                ],
+            ]
+        ]);
+
+        // InArray 系は設定されない
+        that($input)->condition->isEmpty();
+
+        // 両方の設定はできない
+        that(Input::class)->new([
+            'options'  => ['A'],
+            'datalist' => ['B']
+        ])->wasThrown(new \InvalidArgumentException('both datalist and options are specified'));
+    }
+
     function test_inputArrays()
     {
         $input = new Input([
@@ -2290,6 +2343,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
     function test_inputCombobox()
     {
+        // for compatible delete in future scope
         $input = new Input([
             'name'    => 'name',
             'options' => [
