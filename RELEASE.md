@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.2.3
+
+- [feature] datalist の生成機能
+- [feature] ArrayExclusion を追加
+- [feature] StringLength の書記素単位対応
+
 ## 1.2.2
 
 - [feature] 全てが完了して submit する前後のイベントを追加

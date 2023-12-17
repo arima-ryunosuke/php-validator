@@ -80,6 +80,7 @@ $form = new Form([
         'options'               => [],         // checkbox や radio などの選択肢を配列で指定します。キーが値、値が表示文字列です
         'suboptions'            => null,       // options に無い値が来たときの選択肢を指定します（後述）
         'subposition'           => 'prepend',  // options と suboptions の結合処理を指定します。append で前方に追加、 prepend で後方に追加、クロージャで任意処理が呼び出されます
+        'datalist'              => [],         // datalist を生成します。現状では「自動 Condition が行われない options」という仕様です
         'event'                 => ['change'], // js チェックが走るイベント名を指定します（後述）
         'propagate'             => [],         // js チェックのイベントの伝播先を指定します（後述）
         'message'               => [],         // エラーメッセージを指定します（後述）
