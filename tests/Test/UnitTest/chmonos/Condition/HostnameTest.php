@@ -116,6 +116,14 @@ class HostnameTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('localhost')  ->isFalse();
     }
 
+    function test_multiple()
+    {
+        $validate = new Hostname(['', 4], false, '#,#');
+        that($validate)->isValid('')->isTrue();
+        that($validate)->isValid('example.com, 127.0.0.1,example.com')->isTrue();
+        that($validate)->isValid('example.com, 127.0.0.1,example.com:80')->isFalse();
+    }
+
     function test_getImeMode()
     {
         $validate = new Hostname();

@@ -7,6 +7,9 @@ namespace ryunosuke\chmonos\Condition;
  * - schemes: array
  *   - 許容するスキームを指定
  *   - 例えば ['http', 'https', 'ftp'] とするとこの3スキームしか通らない
+ * - delimiter: ?string
+ *   - 非 null を渡すと複数値が許容され、指定文字がデリミタ（正規表現）として使用される
+ *   - どのような文字を渡しても空白文字は取り除かれる（"," と ", " は実質同じ意味になる）
  */
 class Uri extends AbstractCondition implements Interfaces\ImeMode, Interfaces\InferableType
 {
@@ -23,27 +26,41 @@ class Uri extends AbstractCondition implements Interfaces\ImeMode, Interfaces\In
     ];
 
     protected $_schemes;
+    protected $_delimiter;
 
-    public function __construct($schemes = [])
+    public function __construct($schemes = [], $delimiter = null)
     {
         $this->_schemes = (array) $schemes;
+        $this->_delimiter = $delimiter;
 
         parent::__construct();
     }
 
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
-        $parsed = parse_url($value);
+        if ($params['delimiter'] === null) {
+            $value = $context['cast']('array', $value);
+        }
+        else {
+            $value = array_filter(array_map(fn($v) => trim($v), preg_split($params['delimiter'], $value)), fn($v) => strlen($v));
+        }
 
-        if (!$parsed || !isset($parsed['scheme'])) {
-            $error($consts['INVALID']);
-        }
-        else if (count($params['schemes']) && !in_array($parsed['scheme'], $params['schemes'])) {
-            $error($consts['INVALID_SCHEME']);
-        }
-        else if (!isset($parsed['host'])) {
-            $error($consts['INVALID_HOST']);
-        }
+        $context['foreach']($value, function ($key, $value, $params, $error, $consts) {
+            $parsed = parse_url($value);
+
+            if (!$parsed || !isset($parsed['scheme'])) {
+                $error($consts['INVALID']);
+                return false;
+            }
+            else if (count($params['schemes']) && !in_array($parsed['scheme'], $params['schemes'])) {
+                $error($consts['INVALID_SCHEME']);
+                return false;
+            }
+            else if (!isset($parsed['host'])) {
+                $error($consts['INVALID_HOST']);
+                return false;
+            }
+        }, $params, $error, $consts);
     }
 
     public function getImeMode()

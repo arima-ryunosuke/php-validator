@@ -29,6 +29,14 @@ class EmailAddressTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('Xaaa@bbbX')->isFalse();
     }
 
+    function test_multiple()
+    {
+        $validate = new EmailAddress(null, '#\\n|,#');
+        that($validate)->isValid('')->isTrue();
+        that($validate)->isValid("test@test.com, test@test.com,\ntest@test.com")->isTrue();
+        that($validate)->isValid("test@test.com, test@test.com,\naaa")->isFalse();
+    }
+
     function test_getImeMode()
     {
         $validate = new EmailAddress();
@@ -39,5 +47,14 @@ class EmailAddressTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new EmailAddress();
         that($validate)->getType()->is("text");
+    }
+
+    function test_getMaxLength()
+    {
+        $validate = new EmailAddress(null);
+        that($validate)->getMaxLength()->is(256);
+
+        $validate = new EmailAddress(null, ',');
+        that($validate)->getMaxLength()->is(null);
     }
 }

@@ -42,6 +42,17 @@ class UriTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('ftp://hostname')->isTrue();
     }
 
+    function test_multiple()
+    {
+        $validate = new Uri([
+            'http',
+            'https'
+        ], '#,#');
+        that($validate)->isValid('')->isTrue();
+        that($validate)->isValid('http://example.com, https://example.com,https://example.com:80')->isTrue();
+        that($validate)->isValid('http://example.com, https://example.com,ftp://example.com')->isFalse();
+    }
+
     function test_getImeMode()
     {
         $validate = new Uri();

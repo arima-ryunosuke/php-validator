@@ -10,6 +10,9 @@ namespace ryunosuke\chmonos\Condition;
  * - require_port: ?bool
  *   - ポート番号を許容するか
  *   - true: ポート必須, false: ポート不要, null: どちらでも良い
+ * - delimiter: ?string
+ *   - 非 null を渡すと複数値が許容され、指定文字がデリミタ（正規表現）として使用される
+ *   - どのような文字を渡しても空白文字は取り除かれる（"," と ", " は実質同じ意味になる）
  */
 class Hostname extends AbstractCondition implements Interfaces\ImeMode
 {
@@ -23,11 +26,13 @@ class Hostname extends AbstractCondition implements Interfaces\ImeMode
 
     protected $_types;
     protected $_require_port;
+    protected $_delimiter;
 
-    public function __construct($types = '', $require_port = false)
+    public function __construct($types = '', $require_port = false, $delimiter = null)
     {
         $this->_types = (array) $types;
         $this->_require_port = $require_port;
+        $this->_delimiter = $delimiter;
 
         parent::__construct();
     }
@@ -38,37 +43,48 @@ class Hostname extends AbstractCondition implements Interfaces\ImeMode
             if (strlen($port)) {
                 if ($require_port === false) {
                     $error($consts['INVALID']);
+                    return false;
                 }
                 if ($port > 65535) {
                     $error($consts['INVALID_PORT']);
+                    return false;
                 }
             }
             else {
                 if ($require_port === true) {
                     $error($consts['INVALID_PORT']);
+                    return false;
                 }
             }
+            return true;
         };
 
-        $matches = [];
-
-        if (in_array('', $params['types']) && preg_match('#^(([a-z0-9])|([a-z0-9][a-z0-9-]{0,61}[a-z0-9])|((([a-z0-9])|([a-z0-9][a-z0-9-]{0,61}[a-z0-9]))\\.)+[a-z]+)(:([1-9][0-9]{0,4}))?$#i', $value, $matches)) {
-            $checkport(isset($matches[9]) ? $matches[9] : '', $params['require_port'], $error, $consts);
-            return;
+        if ($params['delimiter'] === null) {
+            $value = $context['cast']('array', $value);
         }
-        if (in_array('cidr', $params['types']) && preg_match('#^(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)(?:\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)){3}/([0-9]|[1-2][0-9]|3[0-2])(:([1-9][0-9]{0,4}))?$#i', $value, $matches)) {
-            $checkport(isset($matches[3]) ? $matches[3] : '', $params['require_port'], $error, $consts);
-            return;
-        }
-        if (in_array(4, $params['types']) && preg_match('#^(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)(?:\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)){3}(:([1-9][0-9]{0,4}))?$#i', $value, $matches)) {
-            $checkport(isset($matches[2]) ? $matches[2] : '', $params['require_port'], $error, $consts);
-            return;
-        }
-        if (in_array(6, $params['types']) && preg_match('#^::$#i', $value, $matches)) {
-            return;
+        else {
+            $value = array_filter(array_map(fn($v) => trim($v), preg_split($params['delimiter'], $value)), fn($v) => strlen($v));
         }
 
-        $error($consts['INVALID']);
+        $context['foreach']($value, function ($key, $value, $params, $checkport, $error, $consts) {
+            $matches = [];
+
+            if (in_array('', $params['types']) && preg_match('#^(([a-z0-9])|([a-z0-9][a-z0-9-]{0,61}[a-z0-9])|((([a-z0-9])|([a-z0-9][a-z0-9-]{0,61}[a-z0-9]))\\.)+[a-z]+)(:([1-9][0-9]{0,4}))?$#i', $value, $matches)) {
+                return $checkport(isset($matches[9]) ? $matches[9] : '', $params['require_port'], $error, $consts);
+            }
+            if (in_array('cidr', $params['types']) && preg_match('#^(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)(?:\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)){3}/([0-9]|[1-2][0-9]|3[0-2])(:([1-9][0-9]{0,4}))?$#i', $value, $matches)) {
+                return $checkport(isset($matches[3]) ? $matches[3] : '', $params['require_port'], $error, $consts);
+            }
+            if (in_array(4, $params['types']) && preg_match('#^(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)(?:\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)){3}(:([1-9][0-9]{0,4}))?$#i', $value, $matches)) {
+                return $checkport(isset($matches[2]) ? $matches[2] : '', $params['require_port'], $error, $consts);
+            }
+            if (in_array(6, $params['types']) && preg_match('#^::$#i', $value, $matches)) {
+                return true;
+            }
+
+            $error($consts['INVALID']);
+            return false;
+        }, $params, $checkport, $error, $consts);
     }
 
     public function getImeMode()

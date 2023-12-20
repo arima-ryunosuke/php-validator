@@ -44,6 +44,14 @@ class TelephoneTest extends \ryunosuke\Test\AbstractUnitTestCase
         that(Telephone::class)->new('string')->getValidationParam()->wasThrown(new \UnexpectedValueException('hyphen is invalid value'));
     }
 
+    function test_multiple()
+    {
+        $validate = new Telephone(true, '#,#');
+        that($validate)->isValid('')->isTrue();
+        that($validate)->isValid('070-1234-5678, 080-1234-5678,090-1234-5678')->isTrue();
+        that($validate)->isValid('070-1234-5678, 080-1234-5678,090-1234-5678, 123456789')->isFalse();
+    }
+
     function test_getImeMode()
     {
         $validate = new Telephone();
@@ -54,5 +62,17 @@ class TelephoneTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Telephone();
         that($validate)->getType()->is("tel");
+    }
+
+    function test_getMaxLength()
+    {
+        $validate = new Telephone();
+        that($validate)->getMaxLength()->is(15);
+
+        $validate = new Telephone(false);
+        that($validate)->getMaxLength()->is(13);
+
+        $validate = new Telephone(false, ',');
+        that($validate)->getMaxLength()->is(null);
     }
 }

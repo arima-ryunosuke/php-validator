@@ -87,7 +87,8 @@ class AruihaTest extends \ryunosuke\Test\AbstractUnitTestCase
                 [
                     "class" => "EmailAddress",
                     "param" => [
-                        "regex" => "#this_is_regex#",
+                        "regex"     => "#this_is_regex#",
+                        'delimiter' => null,
                     ],
                 ],
             ],
