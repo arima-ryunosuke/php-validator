@@ -198,6 +198,48 @@ module.exports = function array_count_values(array) {
 return module.exports;
 })();
 /**/
+var array_filter = this.array_filter = (function(){
+'use strict';
+
+module.exports = function array_filter(arr, func) {
+  // eslint-disable-line camelcase
+  //  discuss at: http://locutus.io/php/array_filter/
+  // original by: Brett Zamir (http://brett-zamir.me)
+  //    input by: max4ever
+  // improved by: Brett Zamir (http://brett-zamir.me)
+  //      note 1: Takes a function as an argument, not a function's name
+  //   example 1: var odd = function (num) {return (num & 1);}
+  //   example 1: array_filter({"a": 1, "b": 2, "c": 3, "d": 4, "e": 5}, odd)
+  //   returns 1: {"a": 1, "c": 3, "e": 5}
+  //   example 2: var even = function (num) {return (!(num & 1));}
+  //   example 2: array_filter([6, 7, 8, 9, 10, 11, 12], even)
+  //   returns 2: [ 6, , 8, , 10, , 12 ]
+  //   example 3: array_filter({"a": 1, "b": false, "c": -1, "d": 0, "e": null, "f":'', "g":undefined})
+  //   returns 3: {"a":1, "c":-1}
+
+  var retObj = {};
+  var k;
+
+  func = func || function (v) {
+    return v;
+  };
+
+  // @todo: Issue #73
+  if (Object.prototype.toString.call(arr) === '[object Array]') {
+    retObj = [];
+  }
+
+  for (k in arr) {
+    if (func(arr[k])) {
+      retObj[k] = arr[k];
+    }
+  }
+
+  return retObj;
+};
+return module.exports;
+})();
+/**/
 var array_flip = this.array_flip = (function(){
 "use strict";
 
@@ -315,6 +357,67 @@ module.exports = function array_keys(input, searchValue, argStrict) {
         tmpArr[tmpArr.length] = key;
       }
     }
+  }
+
+  return tmpArr;
+};
+return module.exports;
+})();
+/**/
+var array_map = this.array_map = (function(){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+module.exports = function array_map(callback) {
+  // eslint-disable-line camelcase
+  //  discuss at: http://locutus.io/php/array_map/
+  // original by: Andrea Giammarchi (http://webreflection.blogspot.com)
+  // improved by: Kevin van Zonneveld (http://kvz.io)
+  // improved by: Brett Zamir (http://brett-zamir.me)
+  //    input by: thekid
+  //      note 1: If the callback is a string (or object, if an array is supplied),
+  //      note 1: it can only work if the function name is in the global context
+  //   example 1: array_map( function (a){return (a * a * a)}, [1, 2, 3, 4, 5] )
+  //   returns 1: [ 1, 8, 27, 64, 125 ]
+
+  var argc = arguments.length;
+  var argv = arguments;
+  var obj = null;
+  var cb = callback;
+  var j = argv[1].length;
+  var i = 0;
+  var k = 1;
+  var m = 0;
+  var tmp = [];
+  var tmpArr = [];
+
+  var $global = typeof window !== 'undefined' ? window : global;
+
+  while (i < j) {
+    while (k < argc) {
+      tmp[m++] = argv[k++][i];
+    }
+
+    m = 0;
+    k = 1;
+
+    if (callback) {
+      if (typeof callback === 'string') {
+        cb = $global[callback];
+      } else if ((typeof callback === 'undefined' ? 'undefined' : _typeof(callback)) === 'object' && callback.length) {
+        obj = typeof callback[0] === 'string' ? $global[callback[0]] : callback[0];
+        if (typeof obj === 'undefined') {
+          throw new Error('Object not found: ' + callback[0]);
+        }
+        cb = typeof callback[1] === 'string' ? obj[callback[1]] : callback[1];
+      }
+      tmpArr[i++] = cb.apply(obj, tmp);
+    } else {
+      tmpArr[i++] = tmp;
+    }
+
+    tmp = [];
   }
 
   return tmpArr;
@@ -4489,6 +4592,52 @@ module.exports = function mime_content_type(file) {
 return module.exports;
 })();
 /**/
+var preg_split = this.preg_split = (function(){
+/**
+ * preg_split
+ *
+ * flags は未対応。
+ * PREG_SPLIT_NO_EMPTY は対応できなくもないが、他に合わせると文字列指定になりフラグとしての汎用性がなくなるし、結局 trim することが多いので実装するアドバンテージが薄い
+ */
+module.exports = function preg_split(pattern, subject, limit, flags) {
+    // 引数4つ以上は未対応
+    if (arguments.length >= 4) {
+        throw 'arguments is too long.';
+    }
+    limit = limit ?? 0;
+
+    // 表現とフラグをセパレート
+    var meta = pattern.charAt(0);
+    var exp = new RegExp(meta + '(.*)' + meta + '([im]*)');
+    var eaf = pattern.match(exp);
+
+    // マッチング
+    var regexp = new RegExp(eaf[1], eaf[2] + 'gd');
+    var match = subject.matchAll(regexp);
+
+    var current = 0;
+    var result = [];
+    for (var m of match) {
+        var part = subject.substring(current, m.indices[0][0]);
+        // @todo flags(PREG_SPLIT_NO_EMPTY)
+        if (part.length >= 0) {
+            result.push(part);
+        }
+
+        if (limit > 0 && result.length >= limit) {
+            result[result.length - 1] += subject.substring(m.indices[0][0]);
+            return result;
+        }
+
+        current = m.indices[0][1];
+    }
+
+    result.push(subject.substring(current));
+    return result;
+};
+return module.exports;
+})();
+/**/
 
     /// 検証ルールのインポート
     /**/
@@ -4739,11 +4888,22 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
 
         if (!ctype_digit(ltrim($value, '-+'))) {
             $error($consts['NOT_DIGITS']);
-        }},"EmailAddress":function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
+        }},"EmailAddress":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $v, $key;
+// 
 
-        if (!preg_match($params['regex'], $value)) {
-            $error($consts['INVALID_FORMAT']);
-        }},"FileName":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $pathinfo;
+        if ($params['delimiter'] === null) {
+            $value = $context['cast']('array', $value);
+        }
+        else {
+            $value = array_filter(array_map(($v) => trim($v), preg_split($params['delimiter'], $value)), ($v) => strlen($v));
+        }
+
+        $context['foreach']($value, function ($key, $value, $params, $error, $consts) {
+            if (!preg_match($params['regex'], $value)) {
+                $error($consts['INVALID_FORMAT']);
+                return false;
+            }
+        }, $params, $error, $consts);},"FileName":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $pathinfo;
 // 
 
         if (!preg_match($params['regex'], $value)) {
@@ -4785,44 +4945,55 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
 
         if (!in_array($mimetype, $params['mimetype'])) {
             $error($consts['INVALID_TYPE']);
-        }},"Hostname":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $checkport, $port, $require_port, $matches;
+        }},"Hostname":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $checkport, $port, $require_port, $v, $key, $matches;
 // 
 
         $checkport = function ($port, $require_port, $error, $consts) {
             if (strlen($port)) {
                 if ($require_port === false) {
                     $error($consts['INVALID']);
+                    return false;
                 }
                 if ($port > 65535) {
                     $error($consts['INVALID_PORT']);
+                    return false;
                 }
             }
             else {
                 if ($require_port === true) {
                     $error($consts['INVALID_PORT']);
+                    return false;
                 }
             }
+            return true;
         };
 
-        $matches = [];
-
-        if (in_array('', $params['types']) && preg_match('#^(([a-z0-9])|([a-z0-9][a-z0-9-]{0,61}[a-z0-9])|((([a-z0-9])|([a-z0-9][a-z0-9-]{0,61}[a-z0-9]))\\.)+[a-z]+)(:([1-9][0-9]{0,4}))?$#i', $value, $matches)) {
-            $checkport(isset($matches[9]) ? $matches[9] : '', $params['require_port'], $error, $consts);
-            return;
+        if ($params['delimiter'] === null) {
+            $value = $context['cast']('array', $value);
         }
-        if (in_array('cidr', $params['types']) && preg_match('#^(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)(?:\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)){3}/([0-9]|[1-2][0-9]|3[0-2])(:([1-9][0-9]{0,4}))?$#i', $value, $matches)) {
-            $checkport(isset($matches[3]) ? $matches[3] : '', $params['require_port'], $error, $consts);
-            return;
-        }
-        if (in_array(4, $params['types']) && preg_match('#^(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)(?:\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)){3}(:([1-9][0-9]{0,4}))?$#i', $value, $matches)) {
-            $checkport(isset($matches[2]) ? $matches[2] : '', $params['require_port'], $error, $consts);
-            return;
-        }
-        if (in_array(6, $params['types']) && preg_match('#^::$#i', $value, $matches)) {
-            return;
+        else {
+            $value = array_filter(array_map(($v) => trim($v), preg_split($params['delimiter'], $value)), ($v) => strlen($v));
         }
 
-        $error($consts['INVALID']);},"ImageSize":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $size;
+        $context['foreach']($value, function ($key, $value, $params, $checkport, $error, $consts) {
+            $matches = [];
+
+            if (in_array('', $params['types']) && preg_match('#^(([a-z0-9])|([a-z0-9][a-z0-9-]{0,61}[a-z0-9])|((([a-z0-9])|([a-z0-9][a-z0-9-]{0,61}[a-z0-9]))\\.)+[a-z]+)(:([1-9][0-9]{0,4}))?$#i', $value, $matches)) {
+                return $checkport(isset($matches[9]) ? $matches[9] : '', $params['require_port'], $error, $consts);
+            }
+            if (in_array('cidr', $params['types']) && preg_match('#^(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)(?:\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)){3}/([0-9]|[1-2][0-9]|3[0-2])(:([1-9][0-9]{0,4}))?$#i', $value, $matches)) {
+                return $checkport(isset($matches[3]) ? $matches[3] : '', $params['require_port'], $error, $consts);
+            }
+            if (in_array(4, $params['types']) && preg_match('#^(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)(?:\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d|\\d)){3}(:([1-9][0-9]{0,4}))?$#i', $value, $matches)) {
+                return $checkport(isset($matches[2]) ? $matches[2] : '', $params['require_port'], $error, $consts);
+            }
+            if (in_array(6, $params['types']) && preg_match('#^::$#i', $value, $matches)) {
+                return true;
+            }
+
+            $error($consts['INVALID']);
+            return false;
+        }, $params, $checkport, $error, $consts);},"ImageSize":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $size;
             (function() {
                 $error(getimagesize($value).then(function($size) {
                     // 
@@ -5086,25 +5257,39 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
         }
         else if (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
             $error($consts['TOO_LONG']);
-        }},"Telephone":function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
+        }},"Telephone":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $v, $key;
+// 
 
-        // 明らかに電話番号っぽくない場合のチェック
-        if (mb_strlen($value) > $params['maxlength']) {
-            return $error($consts['INVALID']);
+        if ($params['delimiter'] === null) {
+            $value = $context['cast']('array', $value);
+        }
+        else {
+            $value = array_filter(array_map(($v) => trim($v), preg_split($params['delimiter'], $value)), ($v) => strlen($v));
         }
 
-        // 電話番号っぽいが細部がおかしい場合
-        if (!preg_match($params['pattern'], $value)) {
-            if ($params['hyphen'] === null) {
-                $error($consts['INVALID_TELEPHONE']);
+        $context['foreach']($value, function ($key, $value, $params, $error, $consts) {
+            // 明らかに電話番号っぽくない場合のチェック
+            if (mb_strlen($value) > $params['maxlength']) {
+                $error($consts['INVALID']);
+                return false;
             }
-            else if ($params['hyphen'] === true) {
-                $error($consts['INVALID_WITH_HYPHEN']);
+
+            // 電話番号っぽいが細部がおかしい場合
+            if (!preg_match($params['pattern'], $value)) {
+                if ($params['hyphen'] === null) {
+                    $error($consts['INVALID_TELEPHONE']);
+                    return false;
+                }
+                else if ($params['hyphen'] === true) {
+                    $error($consts['INVALID_WITH_HYPHEN']);
+                    return false;
+                }
+                else if ($params['hyphen'] === false) {
+                    $error($consts['INVALID_NONE_HYPHEN']);
+                    return false;
+                }
             }
-            else if ($params['hyphen'] === false) {
-                $error($consts['INVALID_NONE_HYPHEN']);
-            }
-        }},"Unique":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $acv;
+        }, $params, $error, $consts);},"Unique":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $acv;
             (function() {
                 $context['values'] = {};
                 var regexp = new RegExp($params.root + '/(-?\\d+)/' + $params.name);
@@ -5138,20 +5323,32 @@ this.condition = {"Ajax":function(input, $value, $fields, $params, $consts, $err
 
         if (count($rows) !== count(array_unique($rows))) {
             $error($consts['NO_UNIQUE']);
-        }},"Uri":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $parsed;
+        }},"Uri":function(input, $value, $fields, $params, $consts, $error, $context, e) {var $v, $key, $parsed;
 // 
 
-        $parsed = parse_url($value);
+        if ($params['delimiter'] === null) {
+            $value = $context['cast']('array', $value);
+        }
+        else {
+            $value = array_filter(array_map(($v) => trim($v), preg_split($params['delimiter'], $value)), ($v) => strlen($v));
+        }
 
-        if (!$parsed || !isset($parsed['scheme'])) {
-            $error($consts['INVALID']);
-        }
-        else if (count($params['schemes']) && !in_array($parsed['scheme'], $params['schemes'])) {
-            $error($consts['INVALID_SCHEME']);
-        }
-        else if (!isset($parsed['host'])) {
-            $error($consts['INVALID_HOST']);
-        }}};/*
+        $context['foreach']($value, function ($key, $value, $params, $error, $consts) {
+            $parsed = parse_url($value);
+
+            if (!$parsed || !isset($parsed['scheme'])) {
+                $error($consts['INVALID']);
+                return false;
+            }
+            else if (count($params['schemes']) && !in_array($parsed['scheme'], $params['schemes'])) {
+                $error($consts['INVALID_SCHEME']);
+                return false;
+            }
+            else if (!isset($parsed['host'])) {
+                $error($consts['INVALID_HOST']);
+                return false;
+            }
+        }, $params, $error, $consts);}};/*
 */
 
     /// エラー定数のインポート
