@@ -298,6 +298,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         that($driver)->getErrors()->count(1);
         $driver->setValue('email', 'test@hostname');
         that($driver)->getErrors()->count(0);
+
+        $driver->setValue('email_multiple', 'test@hostname,aaa');
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('email_multiple', 'test@hostname');
+        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -354,6 +359,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('hostname', 'aaa.bbb');
         $driver->setValue('hostname_v4', '127.0.0.1/32');
         $driver->setValue('hostname_port', 'aaa.bbb:80');
+        that($driver)->getErrors()->count(0);
+
+        $driver->setValue('hostname_multiple', 'aaa.bbb, aaa_bbb.com');
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('hostname_multiple', 'aaa.bbb, aaa-bbb.com');
         that($driver)->getErrors()->count(0);
     }
 
@@ -633,10 +643,10 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->setValue('telephone', '090-1234-567a');
-        $driver->setValue('telephone-hyphen', '09012345678');
+        $driver->setValue('telephone-multiple', '08012345678,09012345678');
         that($driver)->getErrors()->count(2);
         $driver->setValue('telephone', '090-1234-567');
-        $driver->setValue('telephone-hyphen', '090-1234-567');
+        $driver->setValue('telephone-multiple', '080-1234-5678, 090-1234-5678');
         that($driver)->getErrors()->count(0);
     }
 
@@ -649,9 +659,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('url', 'hostname');
         $driver->setValue('url-http', 'hoge://hostname');
-        that($driver)->getErrors()->count(2);
+        $driver->setValue('url-multiple', "http://hostname\nhoge://hostname");
+        that($driver)->getErrors()->count(3);
         $driver->setValue('url', 'hoge://hostname');
         $driver->setValue('url-http', 'http://hostname');
+        $driver->setValue('url-multiple', "http://hostname\nhttps://hostname");
         that($driver)->getErrors()->count(0);
     }
 

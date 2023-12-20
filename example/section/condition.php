@@ -211,6 +211,13 @@ $condition_form = new \ryunosuke\chmonos\Form([
         ],
         'event'     => ['input'],
     ],
+    'email_multiple'        => [
+        'title'     => 'メールアドレス（カンマで複数値）',
+        'condition' => [
+            'EmailAddress' => [null, '#,#']
+        ],
+        'event'     => ['input'],
+    ],
     'email_noerror'         => [
         'title'     => 'メールアドレス（change エラー）',
         'condition' => [
@@ -251,6 +258,12 @@ $condition_form = new \ryunosuke\chmonos\Form([
         'title'     => 'ホスト名',
         'condition' => [
             'Hostname' => ''
+        ]
+    ],
+    'hostname_multiple'     => [
+        'title'     => 'ホスト名（カンマで複数値）',
+        'condition' => [
+            'Hostname' => ['', null, '#,#']
         ]
     ],
     'hostname_v4'           => [
@@ -508,10 +521,10 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'Telephone' => null
         ]
     ],
-    'telephone-hyphen'      => [
-        'title'     => '電話番号（ハイフン必須）',
+    'telephone-multiple'             => [
+        'title'     => '電話番号（カンマで複数値）',
         'condition' => [
-            'Telephone' => true
+            'Telephone' => [true, '#,#']
         ]
     ],
     'url'                   => [
@@ -524,6 +537,12 @@ $condition_form = new \ryunosuke\chmonos\Form([
         'title'     => 'URL（http(s)のみ）',
         'condition' => [
             'Uri' => [['http', 'https']]
+        ]
+    ],
+    'url-multiple'                   => [
+        'title'     => 'URL（改行・カンマで複数値）',
+        'condition' => [
+            'Uri' => [['http', 'https'], "#\\n|,#u"]
         ]
     ],
     'data-uri'                => [
@@ -610,9 +629,9 @@ resetForm($condition_form, 'condition_form');
         <td></td>
     </tr>
     <tr>
-        <th>メールアドレス（input でエラー）</th>
+        <th>メールアドレス（input でエラー | 複数値）</th>
         <td><?= $condition_form->input('email') ?></td>
-        <td></td>
+        <td><?= $condition_form->input('email_multiple') ?></td>
     </tr>
     <tr>
         <th>メールアドレス（input でエラーなし、chage でエラー）</th>
@@ -625,13 +644,15 @@ resetForm($condition_form, 'condition_form');
         <td><?= $condition_form->input('image_type') ?><?= $condition_form->input('image_file', ['type' => 'file']) ?></td>
     </tr>
     <tr>
-        <th>ホスト名：ホスト名のみ | ホスト名、IPv4、cidrのみ | ホスト名、ポート必須</th>
+        <th>ホスト名：ホスト名のみ | ホスト名、IPv4、cidrのみ | ホスト名、ポート必須 | 複数値</th>
         <td>
             <?= $condition_form->input('hostname') ?>
             <?= $condition_form->input('hostname_v4') ?>
             <?= $condition_form->input('hostname_port') ?>
         </td>
-        <td></td>
+        <td>
+            <?= $condition_form->input('hostname_multiple') ?>
+        </td>
     </tr>
     <tr>
         <th>Array：InArray(1, 2, 3) | NotInArray(1, 2, 3)</th>
@@ -732,14 +753,19 @@ resetForm($condition_form, 'condition_form');
         <td></td>
     </tr>
     <tr>
-        <th>電話番号： ハイフン不問 | ハイフン必須</th>
+        <th>電話番号： ハイフン不問 | ハイフン必須な複数値</th>
         <td><?= $condition_form->input('telephone') ?></td>
-        <td><?= $condition_form->input('telephone-hyphen') ?></td>
+        <td><?= $condition_form->input('telephone-multiple') ?></td>
     </tr>
     <tr>
-        <th>URL：スキーム不問 | http(s)のみ</th>
-        <td><?= $condition_form->input('url') ?></td>
-        <td><?= $condition_form->input('url-http') ?></td>
+        <th>URL：スキーム不問 | http(s)のみ | 複数値</th>
+        <td>
+            <?= $condition_form->input('url') ?>
+            <?= $condition_form->input('url-http') ?>
+        </td>
+        <td>
+            <?= $condition_form->input('url-multiple', ['type' => 'textarea']) ?>
+        </td>
     </tr>
     <tr>
         <th>DataURI</th>

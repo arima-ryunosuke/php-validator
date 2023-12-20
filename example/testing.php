@@ -211,6 +211,14 @@
                 expect(chmonos.preg_match('/^([a-z]+)(\\d+)/', 'hoge123X', matches)).toEqual(1);
                 expect(matches).toEqual(['hoge123', 'hoge', '123']);
             });
+
+            it('preg_split', function () {
+                expect(chmonos.preg_split('/,/', 'a,b,c')).toEqual(['a', 'b', 'c']);
+                expect(chmonos.preg_split('/,/', ',a,b,c,')).toEqual(['', 'a', 'b', 'c', '']);
+                expect(chmonos.preg_split('/,/', ',a,b,c,', 3)).toEqual(['', 'a', 'b,c,']);
+                expect(chmonos.preg_split('/,|-/', ',h-o--g,-,e-')).toEqual(['', 'h', 'o', '', 'g', '', '', 'e', '']);
+                expect(chmonos.preg_split('/,|-/', ',h-o--g,-,e-', 4)).toEqual(['', 'h', 'o', '-g,-,e-']);
+            });
         });
 
         describe('chmonos.dom', function () {
