@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.2.4
+
+- [feature] maxlength の有効モードを追加
+- [feature] 一部の Condition で複数値をサポート
+- [feature] validate の記述内のアロー関数に対応
+
 ## 1.2.3
 
 - [feature] datalist の生成機能
