@@ -44,6 +44,7 @@ class Input
         'ignore'                => false,
         'trimming'              => true,
         'ime-mode'              => true,
+        'maxlength'             => true,
         'autocond'              => true,
         'multiple'              => null,
         'pseudo'                => true,
@@ -1039,7 +1040,7 @@ class Input
         }
 
         // maxlength がない
-        if (!isset($attrs['maxlength'])) {
+        if ($this->maxlength && !isset($attrs['maxlength'])) {
             $maxlength = $this->_getMaxlength();
             if ($maxlength !== null) {
                 $attrs['maxlength'] = $maxlength;
@@ -1081,7 +1082,7 @@ class Input
 
         $value = array_unset($attrs, 'value', $this->getValue());
 
-        if (!isset($attrs['maxlength'])) {
+        if ($this->maxlength && !isset($attrs['maxlength'])) {
             $maxlength = $this->_getMaxlength();
             if ($maxlength !== null) {
                 $attrs['maxlength'] = $maxlength;

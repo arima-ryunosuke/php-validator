@@ -503,12 +503,20 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                     null,
                     20
                 ]
-            ]
+            ],
+            'maxlength' => true,
         ];
         $input = new Input($rule);
 
         // EmailAddress(256) に負けずに 20 になるはず
         that($input)->_getMaxlength()->is(20);
+
+        // html 属性にも現れるはず
+        that($input)->input()->htmlMatchesArray([
+            'input' => [
+                'maxlength' => '20',
+            ],
+        ]);
 
         $rule = [
             'condition' => [
@@ -517,12 +525,20 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                     20
                 ],
                 'EmailAddress' => null
-            ]
+            ],
+            'maxlength' => false,
         ];
         $input = new Input($rule);
 
         // 指定順は影響しないはず
         that($input)->_getMaxlength()->is(20);
+
+        // html 属性には現れないはず
+        that($input)->input()->htmlMatchesArray([
+            'input' => [
+                'maxlength' => null,
+            ],
+        ]);
     }
 
     function test_getImeMode()
