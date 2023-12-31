@@ -32,25 +32,9 @@ class ImageSize extends AbstractCondition implements Interfaces\InferableType
         parent::__construct();
     }
 
-    public static function getJavascriptCode()
-    {
-        /** @noinspection JSUnresolvedFunction */
-        return <<<'JS'
-            (function() {
-                $error(getimagesize($value).then(function($size) {
-                    // @validationcode:inject
-                }));
-            })();
-JS;
-    }
-
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
-        /** @var $size */
-
-        if ($context['lang'] === 'php') {
-            $size = getimagesize($value);
-        }
+        $size = yield getimagesize($value);
 
         if ($size === false) {
             $error($consts['INVALID']);

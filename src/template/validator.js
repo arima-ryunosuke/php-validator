@@ -317,7 +317,7 @@ function Chmonos(form, options) {
                     var values = cond['arrayable'] ? [value] : chmonos.context.cast('array', value);
                     Object.keys(values).forEach(function (v) {
                         try {
-                            chmonos.condition[cname](input, values[v], fields, cond['param'], chmonos.constants[cname], error, chmonos.context, evt);
+                            asyncs.push(chmonos.condition[cname](input, values[v], fields, cond['param'], chmonos.constants[cname], error, chmonos.context, evt));
                         }
                         catch (e) {
                             error(chmonos.constants[cname]['INVALID']);

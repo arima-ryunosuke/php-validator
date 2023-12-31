@@ -148,6 +148,7 @@ abstract class AbstractCondition
                     $block = preg_replace('#(^\s*{)|}\s*$#u', '', $block);
                     $tokens = array_slice(token_get_all("<?php $block"), 1);
                     $tokens = array_map(fn($v) => is_array($v) ? $v : [ord($v), $v], $tokens);
+                    $tokens = array_map(fn($v) => $v[0] === T_YIELD ? ['', 'await'] : $v, $tokens);
                     $tokens = array_filter($tokens, fn($v) => $v[0] !== T_FN);
                     $block = implode("", array_column($tokens, 1));
                     $vars = array_diff(array_unique(array_column(array_filter($tokens, fn($v) => $v[0] === T_VARIABLE), 1)), $args);
@@ -158,7 +159,7 @@ abstract class AbstractCondition
                     if ($vars) {
                         $code = 'var ' . implode(', ', $vars) . ";\n" . $code;
                     }
-                    $code = 'function(input, ' . implode(', ', $args) . ', e) {' . trim($code) . '}';
+                    $code = 'async function(input, ' . implode(', ', $args) . ', e) {' . trim($code) . '}';
 
                     $contents[$name] = $code;
                     $condition[$name] = self::literalJson($code);
@@ -390,7 +391,14 @@ JS;
         };
 
         $context = self::$cache['context'] + static::prevalidate($value, $fields, $params);
-        static::validate($value, $fields, $params, $constants[static::class], $error, $context);
+        $return = static::validate($value, $fields, $params, $constants[static::class], $error, $context);
+        if ($return instanceof \Generator) {
+            while ($return->valid()) {
+                $return->send($return->current());
+            }
+            $return = $return->getReturn();
+            assert(!$return instanceof \Generator);
+        }
 
         return !count($this->messages);
     }
