@@ -18,6 +18,40 @@ if (!defined('ryunosuke\\chmonos\\IS_PRIVATE')) {
     define('ryunosuke\\chmonos\\IS_PRIVATE', 16);
 }
 
+if (!defined('ryunosuke\\chmonos\\EN_MONTH_SHORT')) {
+    define('ryunosuke\\chmonos\\EN_MONTH_SHORT', [
+        1  => "jan",
+        2  => "feb",
+        3  => "mar",
+        4  => "apr",
+        5  => "may",
+        6  => "jun",
+        7  => "jul",
+        8  => "aug",
+        9  => "sep",
+        10 => "oct",
+        11 => "nov",
+        12 => "dec",
+    ]);
+}
+
+if (!defined('ryunosuke\\chmonos\\EN_MONTH_LONG')) {
+    define('ryunosuke\\chmonos\\EN_MONTH_LONG', [
+        1  => "january",
+        2  => "february",
+        3  => "march",
+        4  => "april",
+        5  => "may",
+        6  => "june",
+        7  => "july",
+        8  => "august",
+        9  => "september",
+        10 => "october",
+        11 => "november",
+        12 => "december",
+    ]);
+}
+
 if (!defined('ryunosuke\\chmonos\\JP_ERA')) {
     define('ryunosuke\\chmonos\\JP_ERA', [
         [
@@ -747,6 +781,44 @@ if (!function_exists('ryunosuke\\chmonos\\array_map_key')) {
     }
 }
 
+assert(!function_exists('ryunosuke\\chmonos\\array_pos_key') || (new \ReflectionFunction('ryunosuke\\chmonos\\array_pos_key'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\array_pos_key')) {
+    /**
+     * 配列の指定キーの位置を返す
+     *
+     * Example:
+     * ```php
+     * that(array_pos_key(['a' => 'A', 'b' => 'B', 'c' => 'C'], 'c'))->isSame(2);
+     * that(array_pos_key(['a' => 'A', 'b' => 'B', 'c' => 'C'], 'x', -1))->isSame(-1);
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\array
+     *
+     * @param array $array 対象配列
+     * @param string|int $key 取得する位置
+     * @param mixed $default 見つからなかったときのデフォルト値。指定しないと例外
+     * @return mixed 指定キーの位置
+     */
+    function array_pos_key($array, $key, $default = null)
+    {
+        // very slow
+        // return array_flip(array_keys($array))[$key];
+
+        $n = 0;
+        foreach ($array as $k => $v) {
+            if ($k === $key) {
+                return $n;
+            }
+            $n++;
+        }
+
+        if (func_num_args() === 2) {
+            throw new \OutOfBoundsException("$key is not found.");
+        }
+        return $default;
+    }
+}
+
 assert(!function_exists('ryunosuke\\chmonos\\array_put') || (new \ReflectionFunction('ryunosuke\\chmonos\\array_put'))->isUserDefined());
 if (!function_exists('ryunosuke\\chmonos\\array_put')) {
     /**
@@ -1140,6 +1212,137 @@ if (!function_exists('ryunosuke\\chmonos\\is_indexarray')) {
             }
         }
         return true;
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\kvsort') || (new \ReflectionFunction('ryunosuke\\chmonos\\kvsort'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\kvsort')) {
+    /**
+     * 比較関数にキーも渡ってくる安定ソート
+     *
+     * 比較関数は ($valueA, $valueB, $keyA, $keyB) という引数を取る。
+     * 「値で比較して同値だったらキーも見たい」という状況はまれによくあるはず。
+     * さらに安定ソートであり、同値だとしても元の並び順は維持される。
+     *
+     * $schwartzians を指定した場合は呼び出しが ($schwartzianA, $schwartzianB, $valueA, $valueB, $keyA, $keyB) になる。
+     * $schwartzianX は単一値の場合はその結果、配列の場合はキー構造が維持されて渡ってくる。
+     * このあたりは表現しにくいので Example を参照。
+     *
+     * $comparator は省略できる。省略した場合、型に基づいてよしなにソートする。
+     * （が、比較のたびに型チェックが入るので指定したほうが高速に動く）。
+     *
+     * ただし、標準のソート関数とは異なり、参照渡しではなくソートして返り値で返す。
+     * また、いわゆる asort であり、キー・値は常に維持される。
+     *
+     * Example:
+     * ```php
+     * $array = [
+     *     'a'  => 3,
+     *     'b'  => 1,
+     *     'c'  => 2,
+     *     'x1' => 9,
+     *     'x2' => 9,
+     *     'x3' => 9,
+     * ];
+     * // 普通のソート
+     * that(kvsort($array))->isSame([
+     *     'b'  => 1,
+     *     'c'  => 2,
+     *     'a'  => 3,
+     *     'x1' => 9,
+     *     'x2' => 9,
+     *     'x3' => 9,
+     * ]);
+     * // キーを使用したソート
+     * that(kvsort($array, fn($av, $bv, $ak, $bk) => strcmp($bk, $ak)))->isSame([
+     *     'x3' => 9,
+     *     'x2' => 9,
+     *     'x1' => 9,
+     *     'c'  => 2,
+     *     'b'  => 1,
+     *     'a'  => 3,
+     * ]);
+     * // シュワルツ変換を使用したソート（引数説明のために全て列挙している）
+     * that(kvsort($array, fn($hashA, $hashB, $av, $bv, $ak, $bk) => ($hashA['md5'] <=> $hashB['md5']) ?: ($hashA['sha1'] <=> $hashB['sha1']), [
+     *     'md5'  => fn($v) => md5($v),
+     *     'sha1' => fn($v) => sha1($v),
+     * ]))->isSame([
+     *     'x1' => 9,
+     *     'x2' => 9,
+     *     'x3' => 9,
+     *     'b'  => 1,
+     *     'c'  => 2,
+     *     'a'  => 3,
+     * ]);
+     * // シュワルツ変換の場合 $comparator は省略可能（昇順）で、配列ではなく単一値を渡せばその結果値が渡ってくる（これは要するに md5 での昇順ソート）
+     * that(kvsort($array, null, fn($v) => md5($v)))->isSame([
+     *     'x1' => 9,
+     *     'x2' => 9,
+     *     'x3' => 9,
+     *     'b'  => 1,
+     *     'c'  => 2,
+     *     'a'  => 3,
+     * ]);
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\array
+     *
+     * @template T of iterable|array
+     * @param T $array 対象配列
+     * @param callable|int|null $comparator 比較関数。SORT_XXX も使える
+     * @param callable|callable[] $schwartzians シュワルツ変換に使用する仮想列
+     * @return T ソートされた配列
+     */
+    function kvsort($array, $comparator = null, $schwartzians = [])
+    {
+        // シュワルツ変換の準備（単一であるとかピッタリ呼び出しとか）
+        $is_array = is_array($schwartzians) && !is_callable($schwartzians);
+        $schwartzians = arrayize($schwartzians);
+        foreach ($schwartzians as $s => $schwartzian) {
+            $schwartzians[$s] = func_user_func_array($schwartzian);
+        }
+
+        // $comparator が定数あるいは省略時は自動導出
+        if ($comparator === null || is_int($comparator)) {
+            // シュワルツ変換のときは型は意識しなくてよい（呼び元の責務）ので昇順降順だけ見る
+            if ($schwartzians) {
+                if (($comparator ?? SORT_ASC) === SORT_ASC) {
+                    $comparator = fn($as, $bs) => $as <=> $bs;
+                }
+                else {
+                    $comparator = fn($as, $bs) => -($as <=> $bs);
+                }
+            }
+            // そうでない場合は varcmp に委譲
+            else {
+                $sort_flg = $comparator;
+                $comparator = fn($av, $bv, $ak, $bk) => varcmp($av, $bv, $sort_flg);
+            }
+        }
+
+        // 一時配列の準備
+        $n = 0;
+        $tmp = [];
+        foreach ($array as $k => $v) {
+            $virtuals = [];
+            if ($is_array) {
+                foreach ($schwartzians as $s => $schwartzian) {
+                    $virtuals[$s] = $schwartzian($v, $k, $n);
+                }
+            }
+            else {
+                $virtuals = $schwartzians[0]($v, $k, $n);
+            }
+            $tmp[] = [$n++, $k, $v, $virtuals];
+        }
+
+        // ソートしてから元の配列の体裁で返す
+        usort($tmp, function ($a, $b) use ($comparator, $schwartzians) {
+            $virtuals = $schwartzians ? [$a[3], $b[3]] : [];
+            $com = $comparator(...$virtuals, ...[$a[2], $b[2], $a[1], $b[1]]);
+            return $com !== 0 ? $com : ($a[0] - $b[0]);
+        });
+        return array_column($tmp, 2, 1);
     }
 }
 
@@ -1727,6 +1930,480 @@ if (!function_exists('ryunosuke\\chmonos\\paml_import')) {
     }
 }
 
+assert(!function_exists('ryunosuke\\chmonos\\date_interval') || (new \ReflectionFunction('ryunosuke\\chmonos\\date_interval'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\date_interval')) {
+    /**
+     * 秒を世紀・年・月・日・時間・分・秒・ミリ秒の各要素に分解する
+     *
+     * @memo $sec に P から始まる iso8601継続時間を渡すと DateInterval のパーサーとして働く。
+     * そのとき、各要素には負数を与えることができる。
+     *
+     * P で始まらない場合、秒の分解機能になる。
+     * 例えば `60 * 60 * 24 * 900 + 12345.678` （約900日12345秒）は・・・
+     *
+     * - 2 年（約900日なので）
+     * - 5 ヶ月（約(900 - 365 * 2 = 170)日なので）
+     * - 18 日（約(170 - 30.416 * 5 = 18)日なので）
+     * - 3 時間（約12345秒なので）
+     * - 25 分（約(12345 - 3600 * 3 = 1545)秒なので）
+     * - 45 秒（約(1545 - 60 * 25 = 45)秒なので）
+     * - 678 ミリ秒（.678 部分そのまま）
+     *
+     * となる（年はうるう年未考慮で365日、月は30.41666666日で換算）。
+     *
+     * $format を与えると DateInterval::format して文字列で返す。与えないと DateInterval をそのまま返す。
+     * $format はクロージャを与えることができる。クロージャを与えた場合、各要素を引数としてコールバックされる。
+     * $format は配列で与えることができる。配列で与えた場合、 0 になる要素は省かれる。
+     * セパレータを与えたり、pre/suffix を与えたりできるが、難解なので省略する。
+     *
+     * $limit_type で換算のリミットを指定できる。例えば 'y' を指定すると「2年5ヶ月」となるが、 'm' を指定すると「29ヶ月」となる。
+     * 数値を与えるとその範囲でオートスケールする。例えば 3 を指定すると値が大きいとき `ymd` の表示になり、年が 0 になると `mdh` の表示に切り替わるようになる。
+     *
+     * Example:
+     * ```php
+     * // 書式文字列指定（%vはミリ秒）
+     * that(date_interval(60 * 60 * 24 * 900 + 12345.678, '%Y/%M/%D %H:%I:%S.%v'))->isSame('02/05/18 03:25:45.678');
+     *
+     * // 書式にクロージャを与えるとコールバックされる（引数はスケールの小さい方から）
+     * that(date_interval(60 * 60 * 24 * 900 + 12345.678, fn() => implode(',', func_get_args())))->isSame('678,45,25,3,18,5,2,0');
+     *
+     * // リミットを指定（month までしか計算しないので year は 0 になり month は 29になる）
+     * that(date_interval(60 * 60 * 24 * 900 + 12345.678, '%Y/%M/%D %H:%I:%S.%v', 'm'))->isSame('00/29/18 03:25:45.678');
+     *
+     * // 書式に配列を与えてリミットに数値を与えるとその範囲でオートスケールする
+     * $format = [
+     *     'y' => '%y年',
+     *     'm' => '%mヶ月',
+     *     'd' => '%d日',
+     *     ' ',
+     *     'h' => '%h時間',
+     *     'i' => '%i分',
+     *     's' => '%s秒',
+     * ];
+     * // 数が大きいので年・月・日の3要素のみ
+     * that(date_interval(60 * 60 * 24 * 900 + 12345, $format, 3))->isSame('2年5ヶ月18日');
+     * // 数がそこそこだと日・時間・分の3要素に切り替わる
+     * that(date_interval(60 * 60 * 24 * 20 + 12345, $format, 3))->isSame('20日 3時間25分');
+     * // どんなに数が小さくても3要素以下にはならない
+     * that(date_interval(1234, $format, 3))->isSame('0時間20分34秒');
+     *
+     * // 書式指定なし（DateInterval を返す）
+     * that(date_interval(123.456))->isInstanceOf(\DateInterval::class);
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\datetime
+     *
+     * @param int|float|string $sec タイムスタンプ|ISO8601継続時間文字列
+     * @param string|array|null $format 時刻フォーマット
+     * @param string|int $limit_type どこまで換算するか（[c|y|m|d|h|i|s]）
+     * @return string|\DateInterval 時間差文字列 or DateInterval オブジェクト
+     */
+    function date_interval($sec, $format = null, $limit_type = 'y')
+    {
+        // for compatible
+        if (is_string($sec) && preg_match('#^(?P<S>[\-+])?P((?P<Y>-?\d+)Y)?((?P<M>-?\d+)M)?((?P<D>-?\d+)D)?(T((?P<h>-?\d+)H)?((?P<m>-?\d+)M)?((?P<s>-?\d+(\.\d+)?)S)?)?$#', $sec, $matches, PREG_UNMATCHED_AS_NULL)) {
+            $interval = new \DateInterval('P0Y');
+            $interval->y = (int) $matches['Y'];
+            $interval->m = (int) $matches['M'];
+            $interval->d = (int) $matches['D'];
+            $interval->h = (int) $matches['h'];
+            $interval->i = (int) $matches['m'];
+            $interval->s = (int) $matches['s'];
+            $interval->f = (float) $matches['s'] - $interval->s;
+
+            if ($matches['S'] === '-') {
+                $interval->y = -$interval->y;
+                $interval->m = -$interval->m;
+                $interval->d = -$interval->d;
+                $interval->h = -$interval->h;
+                $interval->i = -$interval->i;
+                $interval->s = -$interval->s;
+                $interval->f = -$interval->f;
+            }
+
+            $now = new \DateTimeImmutable();
+            if ($now > $now->add($interval)) {
+                $interval->invert = 1;
+                $interval->y = -$interval->y;
+                $interval->m = -$interval->m;
+                $interval->d = -$interval->d;
+                $interval->h = -$interval->h;
+                $interval->i = -$interval->i;
+                $interval->s = -$interval->s;
+                $interval->f = -$interval->f;
+            }
+            return $interval;
+        }
+
+        $ymdhisv = ['c', 'y', 'm', 'd', 'h', 'i', 's', 'v'];
+        $map = ['c' => 7, 'y' => 6, 'm' => 5, 'd' => 4, 'h' => 3, 'i' => 2, 's' => 1];
+        if (ctype_digit("$limit_type")) {
+            $limit = $map['c'];
+            $limit_type = (int) $limit_type;
+            if (!is_array($format) && !is_null($format)) {
+                throw new \UnexpectedValueException('$format must be array if $limit_type is digit.');
+            }
+        }
+        else {
+            $limit = $map[$limit_type] ?? throws(new \InvalidArgumentException("limit_type:$limit_type is undefined."));
+        }
+
+        // 各単位を導出
+        $mills = $sec * 1000;
+        $seconds = $sec;
+        $minutes = $seconds / 60;
+        $hours = $minutes / 60;
+        $days = $hours / 24;
+        $months = $days / (365 / 12);
+        $years = $days / 365;
+        $centurys = $years / 100;
+
+        // $limit に従って値を切り捨てて DateInterval を作成
+        $interval = new \DateInterval('PT1S');
+        $interval->c = $limit < $map['c'] ? 0 : (int) $centurys % 1000;
+        $interval->y = $limit < $map['y'] ? 0 : (int) ($limit === $map['y'] ? $years : (int) $years % 100);
+        $interval->m = $limit < $map['m'] ? 0 : (int) ($limit === $map['m'] ? $months : (int) $months % 12);
+        $interval->d = $limit < $map['d'] ? 0 : (int) ($limit === $map['d'] ? $days : (int) ((int) ($days * 100000000) % (int) (365 / 12 * 100000000) / 100000000));
+        $interval->h = $limit < $map['h'] ? 0 : (int) ($limit === $map['h'] ? $hours : (int) $hours % 24);
+        $interval->i = $limit < $map['i'] ? 0 : (int) ($limit === $map['i'] ? $minutes : (int) $minutes % 60);
+        $interval->s = $limit < $map['s'] ? 0 : (int) ($limit === $map['s'] ? $seconds : (int) $seconds % 60);
+        $interval->v = $mills % 1000;
+
+        // null は DateInterval をそのまま返す
+        if ($format === null) {
+            return $interval;
+        }
+
+        // クロージャはコールバックする
+        if ($format instanceof \Closure) {
+            return $format($interval->v, $interval->s, $interval->i, $interval->h, $interval->d, $interval->m, $interval->y, $interval->c);
+        }
+
+        // 配列はいろいろとフィルタする
+        if (is_array($format)) {
+            // 数値ならその範囲でオートスケール
+            if (is_int($limit_type)) {
+                // 配列を回して値があるやつ + $limit_type の範囲とする
+                foreach ($ymdhisv as $n => $key) {
+                    // 最低 $limit_type は保持するために isset する
+                    if ($interval->$key > 0 || !isset($ymdhisv[$n + $limit_type + 1])) {
+                        $pos = [];
+                        for ($i = 0; $i < $limit_type; $i++) {
+                            if (isset($ymdhisv[$n + $i])) {
+                                if (($p = array_pos_key($format, $ymdhisv[$n + $i], -1)) >= 0) {
+                                    $pos[] = $p;
+                                }
+                            }
+                        }
+                        if (!$pos) {
+                            throw new \UnexpectedValueException('$format is empty.');
+                        }
+                        // 順不同なので min/max から slice しなければならない
+                        $min = min($pos);
+                        $max = max($pos);
+                        $format = array_slice($format, $min, $max - $min + 1);
+                        break;
+                    }
+                }
+            }
+
+            // 来ている $format を正規化（日時文字列は配列にするかつ値がないならフィルタ）
+            $tmp = [];
+            foreach ($format as $key => $fmt) {
+                if (isset($interval->$key)) {
+                    if (!is_int($limit_type) && $interval->$key === 0) {
+                        $tmp[] = ['', '', ''];
+                        continue;
+                    }
+                    $fmt = arrayize($fmt);
+                    $fmt = switchs(count($fmt), [
+                        1 => static fn() => ['', $fmt[0], ''],
+                        2 => static fn() => ['', $fmt[0], $fmt[1]],
+                        3 => static fn() => array_values($fmt),
+                    ]);
+                }
+                $tmp[] = $fmt;
+            }
+            // さらに前後の値がないならフィルタ
+            $tmp2 = [];
+            foreach ($tmp as $n => $fmt) {
+                $prevempty = true;
+                for ($i = $n - 1; $i >= 0; $i--) {
+                    if (!is_array($tmp[$i])) {
+                        break;
+                    }
+                    if (strlen($tmp[$i][1])) {
+                        $prevempty = false;
+                        break;
+                    }
+                }
+                $nextempty = true;
+                for ($i = $n + 1, $l = count($tmp); $i < $l; $i++) {
+                    if (!is_array($tmp[$i])) {
+                        break;
+                    }
+                    if (strlen($tmp[$i][1])) {
+                        $nextempty = false;
+                        break;
+                    }
+                }
+
+                if (is_array($fmt)) {
+                    if ($prevempty) {
+                        $fmt[0] = '';
+                    }
+                    if ($nextempty) {
+                        $fmt[2] = '';
+                    }
+                }
+                elseif ($prevempty || $nextempty) {
+                    $fmt = '';
+                }
+                $tmp2 = array_merge($tmp2, arrayize($fmt));
+            }
+            $format = implode('', $tmp2);
+        }
+
+        $format = strtr_escaped($format, [
+            '%c' => $interval->c,
+            '%v' => $interval->v,
+        ], '%');
+        return $interval->format($format);
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\date_modulate') || (new \ReflectionFunction('ryunosuke\\chmonos\\date_modulate'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\date_modulate')) {
+    /**
+     * 日時を加減算する
+     *
+     * フォーマットを維持しつつ日時文字列の最小単位でよしなに加算する。
+     * 具体的には Example を参照。
+     *
+     * Example:
+     * ```php
+     * // 年加算
+     * that(date_modulate('2014', 1))->isSame('2015');
+     * // 月加算
+     * that(date_modulate('2014/12', 1))->isSame('2015/01');
+     * // 日加算
+     * that(date_modulate('2014/12/24', 1))->isSame('2014/12/25');
+     * // 時加算
+     * that(date_modulate('2014/12/24 12', 1))->isSame('2014/12/24 13');
+     * // 分加算
+     * that(date_modulate('2014/12/24 12:34', 1))->isSame('2014/12/24 12:35');
+     * // 秒加算
+     * that(date_modulate('2014/12/24 12:34:56', 1))->isSame('2014/12/24 12:34:57');
+     * // ミリ秒加算
+     * that(date_modulate('2014/12/24 12:34:56.789', 1))->isSame('2014/12/24 12:34:56.790');
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\datetime
+     *
+     * @param string $datetimedata 日時文字列
+     * @param int|string|\DateInterval $modify 加減算値
+     * @return string 加算された日時文字列
+     */
+    function date_modulate($datetimedata, $modify)
+    {
+        $format = date_parse_format($datetimedata, $parseinfo);
+        if ($format === null) {
+            throw new \UnexpectedValueException("failed parse date format ($datetimedata)");
+        }
+
+        if (is_string($modify) && !ctype_digit(ltrim($modify, '+-'))) {
+            $modify = date_interval($modify);
+        }
+
+        $dt = new \DateTime();
+        $dt->setDate($parseinfo['Y'] ?? 1, $parseinfo['M'] ?? 1, $parseinfo['D'] ?? 1);
+        $dt->setTime($parseinfo['h'] ?? 0, $parseinfo['m'] ?? 0, $parseinfo['s'] ?? 0, ($parseinfo['f'] ?? 0) * 1000);
+        if ($modify instanceof \DateInterval) {
+            $dt->add($modify);
+        }
+        else {
+            $unitmap = [
+                'Y' => 'year',
+                'M' => 'month',
+                'D' => 'day',
+                'h' => 'hour',
+                'm' => 'minute',
+                's' => 'second',
+                'f' => 'millisecond',
+            ];
+            $unit = $unitmap[array_key_last(array_filter($unitmap, fn($key) => $parseinfo[$key] !== null, ARRAY_FILTER_USE_KEY))];
+            $dt->modify("$modify $unit");
+        }
+        return $dt->format($format);
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\date_parse_format') || (new \ReflectionFunction('ryunosuke\\chmonos\\date_parse_format'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\date_parse_format')) {
+    /**
+     * 日時文字列のフォーマットを返す
+     *
+     * 例えば "2014/12/24 12:34:56" から "Y/m/d H:i:s" を逆算して返す。
+     * 精度は非常に低く、相対表現なども未対応（そもそも逆算は一意に決まるものでもない）。
+     *
+     *  Example:
+     * ```php
+     * // RFC3339
+     * that(date_parse_format('2014-12-24T12:34:56'))->isSame('Y-m-d\TH:i:s');
+     * // 日本式
+     * that(date_parse_format('2014/12/24 12:34:56'))->isSame('Y/m/d H:i:s');
+     * // アメリカ式
+     * that(date_parse_format('12/24/2014 12:34:56'))->isSame('m/d/Y H:i:s');
+     * // イギリス式
+     * that(date_parse_format('24.12.2014 12:34:56'))->isSame('d.m.Y H:i:s');
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\datetime
+     *
+     * @param string $datetimestring 日時文字列
+     * @param array $parsed パースの参考情報が格納される（内部向け）
+     * @return ?string フォーマット文字列
+     */
+    function date_parse_format($datetimestring, &$parsed = [])
+    {
+        $datetimestring = trim($datetimestring);
+        $parsed = (function ($datetimestring) {
+            $date_parse = function ($datetimestring) {
+                $parsed = date_parse($datetimestring);
+                $parsed['datetimestring'] = $datetimestring;
+                $parsed += [
+                    'has:Y' => $parsed['year'] !== false,
+                    'has:M' => $parsed['month'] !== false,
+                    'has:D' => $parsed['day'] !== false,
+                    'has:h' => $parsed['hour'] !== false,
+                    'has:m' => $parsed['minute'] !== false,
+                    'has:s' => $parsed['second'] !== false,
+                    'has:f' => $parsed['fraction'] !== false,
+                    'has:z' => ($parsed['zone'] ?? false) !== false,
+                ];
+                return $parsed;
+            };
+
+            $parsed = $date_parse($datetimestring);
+
+            // エラーがあってもある程度は救うことができる
+            if ($parsed['error_count']) {
+                // スラッシュの扱いに難があるので統一して再チャレンジ（2014/12 と 2014-12 は扱いがまったく異なる）
+                $parsed = $date_parse(str_replace('/', '-', $datetimestring));
+                if (!$parsed['error_count']) {
+                    $parsed['warnings'][] = 'replace "/" -> "-"';
+                    return $parsed;
+                }
+                // 例えば fraction で誤検知している場合（20140202T123456.789123 は Y:7891 になる）
+                if ($parsed['has:Y'] && $parsed['has:M'] && $parsed['has:D'] && $parsed['has:h'] && $parsed['has:m'] && $parsed['has:s'] && $parsed['has:f']) {
+                    $rdot = strrpos($datetimestring, '.');
+                    if ($rdot !== false) {
+                        $parsed = $date_parse(substr($datetimestring, 0, $rdot));
+                        if (!$parsed['error_count']) {
+                            $parsed['warnings'][] = 'remove fraction';
+                            $parsed['fraction'] = '0' . substr($datetimestring, $rdot);
+                            return $parsed;
+                        }
+                    }
+                }
+                // 例えば minute が足りない場合（20140202T12, 2014-02-02T12 のような分無しはパース自体が失敗する）
+                if ($parsed['has:Y'] && $parsed['has:M'] && $parsed['has:D'] && !$parsed['has:h'] && !$parsed['has:m'] && !$parsed['has:s'] && !$parsed['has:f']) {
+                    $parsed = $date_parse($datetimestring . ':00');
+                    if (!$parsed['error_count']) {
+                        $parsed['warnings'][] = 'add minute';
+                        return $parsed;
+                    }
+                }
+                return $parsed;
+            }
+
+            // 日付ありきとする
+            if (!$parsed['has:Y'] && !$parsed['has:M'] && !$parsed['has:D'] && $parsed['has:h'] && $parsed['has:m'] && $parsed['has:s']) {
+                // 例えば 201412 は h:20,m:14,s:12 と解釈される
+                $parsed = $date_parse($datetimestring . '01T00:00:00');
+                if (!$parsed['error_count']) {
+                    $parsed['warnings'][] = 'add day';
+                    return $parsed;
+                }
+                // 例えば 2014 は h:20,m:14 と解釈される
+                $parsed = $date_parse($datetimestring . '0101T00:00:00');
+                if (!$parsed['error_count']) {
+                    $parsed['warnings'][] = 'add month,day';
+                    return $parsed;
+                }
+                return $parsed;
+            }
+
+            return $parsed;
+        })($datetimestring);
+
+        if ($parsed['error_count']) {
+            return null;
+        }
+        // date_parse は妥当でない日付はエラーではなく警告扱い（2015-09-31 等）
+        if ($parsed['has:Y'] && $parsed['has:M'] && $parsed['has:D'] && !checkdate($parsed['month'], $parsed['day'], $parsed['year'])) {
+            return null;
+        }
+
+        // 得られた値でマッチングすれば元となる文字列が取得できる
+        $parsed['monthF'] = EN_MONTH_LONG[$parsed['month']] ?? '';
+        $parsed['monthM'] = EN_MONTH_SHORT[$parsed['month']] ?? '';
+        $parsed['dayS'] = (new \NumberFormatter('en_US', \NumberFormatter::ORDINAL))->format($parsed['day'] ?: 0);
+        $parsed['fractionV'] = substr($parsed['fraction'], 2);
+        $regex = [
+            'Y' => "(?<Y>{$parsed['year']})?          (?<dY>[^0-9a-z]+)?",
+            'M' => "(?<M>(0?{$parsed['month']})|({$parsed['monthF']})|({$parsed['monthM']}))? (?<dM>[^0-9]+)?",
+            'D' => "(?<D>(0?{$parsed['dayS']})|(0?{$parsed['day']}))?                         (?<dD>[^0-9]+)?",
+            'h' => "(?<h>0?{$parsed['hour']})?        (?<dh>[^0-9]+)?",
+            'm' => "(?<m>0?{$parsed['minute']})?      (?<dm>[^0-9]+)?",
+            's' => "(?<s>0?{$parsed['second']})?      (?<ds>[^0-9]+)?",
+            'f' => "(?<f>0?{$parsed['fractionV']}0*)? (?<df>[^0-9]+)?",
+            'z' => "(?<z>[+\-]\d{1,2}:?\d{1,2})?      (?<dz>[^0-9]+)?",
+        ];
+        $formats = [
+            'ja-jp' => "^{$regex['Y']}{$regex['M']}{$regex['D']}{$regex['h']}{$regex['m']}{$regex['s']}{$regex['f']}{$regex['z']}$",
+            'en-us' => "^{$regex['M']}{$regex['D']}{$regex['Y']}{$regex['h']}{$regex['m']}{$regex['s']}{$regex['f']}{$regex['z']}$",
+            'en-gb' => "^{$regex['D']}{$regex['M']}{$regex['Y']}{$regex['h']}{$regex['m']}{$regex['s']}{$regex['f']}{$regex['z']}$",
+        ];
+        foreach ($formats as $format) {
+            if (preg_match("#$format#ixu", $datetimestring, $matches, PREG_UNMATCHED_AS_NULL)) {
+                break;
+            }
+        }
+        if (!$matches) {
+            $parsed['errors'][] = 'unmatch regex';
+            return null;
+        }
+
+        $parsed += [
+            'Y' => strlen($matches['Y'] ?? '') ? $matches['Y'] : null,
+            'M' => strlen($matches['M'] ?? '') ? $matches['M'] : null,
+            'D' => strlen($matches['D'] ?? '') ? $matches['D'] : null,
+            'h' => strlen($matches['h'] ?? '') ? $matches['h'] : null,
+            'm' => strlen($matches['m'] ?? '') ? $matches['m'] : null,
+            's' => strlen($matches['s'] ?? '') ? $matches['s'] : null,
+            'f' => strlen($matches['f'] ?? '') ? $matches['f'] : null,
+            'z' => strlen($matches['z'] ?? '') ? $matches['z'] : null,
+        ];
+
+        $parts = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+        $parts['Y'] = $parsed['Y'] === null ? '' : 'Y';
+        $parts['M'] = $parsed['M'] === null ? '' : [1 => 'n', 2 => 'm', 3 => 'M'][strlen($parts['M'])] ?? 'F';
+        $parts['D'] = $parsed['D'] === null ? '' : [1 => 'j', 2 => 'd', 3 => 'jS'][strlen($parts['D'])] ?? 'dS';
+        $parts['h'] = $parsed['h'] === null ? '' : (strlen($parts['h']) === 1 ? 'G' : 'H');
+        $parts['m'] = $parsed['m'] === null ? '' : 'i'; // ゼロなし分フォーマットは存在しない
+        $parts['s'] = $parsed['s'] === null ? '' : 's'; // ゼロなし秒フォーマットは存在しない
+        $parts['f'] = $parsed['f'] === null ? '' : (strlen($parts['f']) > 3 ? 'u' : 'v');
+        $parts['z'] = $parsed['z'] === null ? '' : (strpos($parts['z'], ':') !== false ? 'P' : 'O');
+
+        foreach (['dY', 'dM', 'dD', 'dh', 'dm', 'ds', 'df', 'dz'] as $d) {
+            $parts[$d] = implode('', array_map(fn($v) => ctype_alpha($v) ? "\\$v" : $v, str_split($parts[$d] ?? '')));
+        }
+
+        return implode('', $parts);
+    }
+}
+
 assert(!function_exists('ryunosuke\\chmonos\\error') || (new \ReflectionFunction('ryunosuke\\chmonos\\error'))->isUserDefined());
 if (!function_exists('ryunosuke\\chmonos\\error')) {
     /**
@@ -2121,6 +2798,7 @@ if (!function_exists('ryunosuke\\chmonos\\parse_php')) {
             'flags'          => 0,    // token_get_all の $flags. TOKEN_PARSE を与えると ParseError が出ることがあるのでデフォルト 0
             'cache'          => true, // キャッシュするか否か
             'greedy'         => false,// end と nest か一致したときに処理を継続するか
+            'backtick'       => true, // `` もパースするか
             'nest_token'     => [
                 ')' => '(',
                 '}' => '{',
@@ -2135,6 +2813,9 @@ if (!function_exists('ryunosuke\\chmonos\\parse_php')) {
             $phptag = $option['phptag'] ? '<?php ' : '';
             $phpcode = $phptag . $phpcode;
             $position = -strlen($phptag);
+
+            $backtick = '';
+            $backticking = false;
 
             $tokens = [];
             $tmp = token_get_all($phpcode, $option['flags']);
@@ -2183,9 +2864,23 @@ if (!function_exists('ryunosuke\\chmonos\\parse_php')) {
                 }
                 // @codeCoverageIgnoreEnd
 
+                if (!$option['backtick']) {
+                    if ($token[1] === '`') {
+                        if ($backticking) {
+                            $token[1] = $backtick . $token[1];
+                            $backtick = '';
+                        }
+                        $backticking = !$backticking;
+                    }
+                    if ($backticking) {
+                        $backtick .= $token[1];
+                        continue;
+                    }
+                }
+
                 $token[] = $position;
                 if ($option['flags'] & TOKEN_NAME) {
-                    $token[] = token_name($token[0]);
+                    $token[] = !$option['backtick'] && $token[0] === 96 ? 'T_BACKTICK' : token_name($token[0]);
                 }
 
                 $position += strlen($token[1]);
@@ -2596,6 +3291,83 @@ if (!function_exists('ryunosuke\\chmonos\\str_exists')) {
     }
 }
 
+assert(!function_exists('ryunosuke\\chmonos\\strpos_escaped') || (new \ReflectionFunction('ryunosuke\\chmonos\\strpos_escaped'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\strpos_escaped')) {
+    /**
+     * エスケープを考慮して strpos する
+     *
+     * 文字列中のエスケープ中でない生の文字を検索する。
+     * 例えば `"abc\nxyz"` という文字列で `"n"` という文字は存在しないとみなす。
+     * `"\n"` は改行のエスケープシーケンスであり、 `"n"` という文字ではない（エスケープシーケンスとして "n" を流用しているだけ）。
+     * 逆に `"\\n"` はバックスラッシュと `"n"` という文字であり `"n"` が存在する。
+     * 簡単に言えば「直前にバックスラッシュがある場合はヒットしない strpos」である。
+     * バックスラッシュは $escape 引数で指定可能。
+     *
+     * $needle 自体にエスケープ文字を含む場合、反対の意味で検索する。
+     * つまり、「直前にバックスラッシュがある場合のみヒットする strpos」になる。
+     *
+     * $offset 引数を指定するとその位置から探索を開始するが、戻り読みはしないのでエスケープ文字の真っ只中を指定する場合は注意。
+     * 例えば `"\n"` は改行文字だけであるが、offset に 1 に指定して "n" を探すとマッチする。
+     *
+     * Example:
+     * ```php
+     * # 分かりにくいので \ ではなく % をエスケープ文字とする
+     * $defargs = [0, '%'];
+     *
+     * // これは false である（"%d" という文字の列であるため "d" という文字は存在しない）
+     * that(strpos_escaped('%d', 'd', ...$defargs))->isSame(false);
+     * // これは 2 である（"%" "d" という文字の列であるため（d の前の % は更にその前の % に呑まれておりメタ文字ではない））
+     * that(strpos_escaped('%%d', 'd', ...$defargs))->isSame(2);
+     *
+     * // これは 0 である（% をつけて検索するとそのエスケープシーケンス的なものそのものを探すため）
+     * that(strpos_escaped('%d', '%d', ...$defargs))->isSame(0);
+     * // これは false である（"%" "d" という文字の列であるため "%d" という文字は存在しない）
+     * that(strpos_escaped('%%d', '%d', ...$defargs))->isSame(false);
+     * // これは 2 である（"%" "%d" という文字の列であるため）
+     * that(strpos_escaped('%%%d', '%d', ...$defargs))->isSame(2);
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\strings
+     *
+     * @param string $haystack 対象文字列
+     * @param string|array $needle 探す文字
+     * @param int $offset 開始位置
+     * @param string $escape エスケープ文字
+     * @param ?string $found 見つかった文字が格納される
+     * @return false|int 見つかった位置
+     */
+    function strpos_escaped($haystack, $needle, $offset = 0, $escape = '\\', &$found = null)
+    {
+        $q_escape = preg_quote($escape, '#');
+        if (is_stringable($needle)) {
+            $needle = preg_split("#($q_escape?.)#u", $needle, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        }
+
+        $needles = arrayval($needle);
+        assert(!in_array($escape, $needles, true), sprintf('$needle must not contain only escape charactor ("%s")', implode(', ', $needles)));
+
+        $matched = [];
+        foreach (array_map(fn($c) => preg_quote($c, '#'), $needles) as $need) {
+            if (preg_match_all("#((?:$q_escape)*?)($need)#u", $haystack, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER, $offset)) {
+                foreach ($matches as [, $m_escape, $m_needle]) {
+                    if ((strlen($m_escape[0]) / strlen($escape)) % 2 === 0) {
+                        $matched[$m_needle[1]] ??= $m_needle[0];
+                    }
+                }
+            }
+        }
+        if (!$matched) {
+            $found = null;
+            return false;
+        }
+
+        ksort($matched);
+        $min = array_key_first($matched);
+        $found = $matched[$min];
+        return $min;
+    }
+}
+
 assert(!function_exists('ryunosuke\\chmonos\\strpos_quoted') || (new \ReflectionFunction('ryunosuke\\chmonos\\strpos_quoted'))->isUserDefined());
 if (!function_exists('ryunosuke\\chmonos\\strpos_quoted')) {
     /**
@@ -2669,6 +3441,54 @@ if (!function_exists('ryunosuke\\chmonos\\strpos_quoted')) {
             }
         }
         return false;
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\strtr_escaped') || (new \ReflectionFunction('ryunosuke\\chmonos\\strtr_escaped'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\strtr_escaped')) {
+    /**
+     * エスケープを考慮して strtr する
+     *
+     * 「エスケープ」についての詳細は strpos_escaped を参照。
+     *
+     * $replace_pairs は [from => to] な配列を指定する。
+     * to がクロージャの場合はキーとオフセットでコールバックされる。
+     *
+     * strtr と同様、最も長いキーから置換を行い、置換後の文字列は対象にならない。
+     *
+     * Example:
+     * ```php
+     * # 分かりにくいので \ ではなく % をエスケープ文字とする
+     * that(strtr_escaped('XYZ ab %% %s', [
+     *     'ab'  => 'AB',  // 2. 1 で置換された文字は対象にならない
+     *     'A'   => '%a',  // 使われない
+     *     'Z'   => '%z',  // 使われない
+     *     '%%'  => 'p',   // 普通に置換される
+     *     's'   => 'S',   // エスケープが対象なので置換されない（%s は文字 "s" ではない（\n が文字 "n" ではないのと同じ））
+     *     'XYZ' => 'abc', // 1. 後ろにあるがまず置換される
+     * ], '%'))->isSame('abc AB p %s');
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\strings
+     *
+     * @param string $string 対象文字列
+     * @param array $replace_pairs 置換するペア
+     * @param string $escape エスケープ文字
+     * @return string 置換された文字列
+     */
+    function strtr_escaped($string, $replace_pairs, $escape = '\\')
+    {
+        uksort($replace_pairs, fn($a, $b) => strlen($b) - strlen($a));
+        $froms = array_keys($replace_pairs);
+
+        $offset = 0;
+        while (($pos = strpos_escaped($string, $froms, $offset, $escape, $found)) !== false) {
+            $to = $replace_pairs[$found];
+            $replaced = $to instanceof \Closure ? $to($found, $pos) : $to;
+            $string = substr_replace($string, $replaced, $pos, strlen($found));
+            $offset = $pos + strlen($replaced);
+        }
+        return $string;
     }
 }
 
@@ -2766,6 +3586,144 @@ if (!function_exists('ryunosuke\\chmonos\\blank_if')) {
 
         // 上記以外は empty に任せる
         return empty($var) ? $default : $var;
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\switchs') || (new \ReflectionFunction('ryunosuke\\chmonos\\switchs'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\switchs')) {
+    /**
+     * switch 構文の関数版
+     *
+     * case にクロージャを与えると実行して返す。
+     * つまり、クロージャを返すことは出来ないので注意。
+     *
+     * $default を与えないとマッチしなかったときに例外を投げる。
+     *
+     * Example:
+     * ```php
+     * $cases = [
+     *     1 => 'value is 1',
+     *     2 => fn() => 'value is 2',
+     * ];
+     * that(switchs(1, $cases))->isSame('value is 1');
+     * that(switchs(2, $cases))->isSame('value is 2');
+     * that(switchs(3, $cases, 'undefined'))->isSame('undefined');
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\syntax
+     *
+     * @param mixed $value 調べる値
+     * @param array $cases case 配列
+     * @param null $default マッチしなかったときのデフォルト値。指定しないと例外
+     * @return mixed
+     */
+    function switchs($value, $cases, $default = null)
+    {
+        if (!array_key_exists($value, $cases)) {
+            if (func_num_args() === 2) {
+                throw new \OutOfBoundsException("value $value is not defined in " . json_encode(array_keys($cases)));
+            }
+            return $default;
+        }
+
+        $case = $cases[$value];
+        if ($case instanceof \Closure) {
+            return $case($value);
+        }
+        return $case;
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\throws') || (new \ReflectionFunction('ryunosuke\\chmonos\\throws'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\throws')) {
+    /**
+     * throw の関数版
+     *
+     * hoge() or throw などしたいことがまれによくあるはず。
+     *
+     * Example:
+     * ```php
+     * try {
+     *     throws(new \Exception('throws'));
+     * }
+     * catch (\Exception $ex) {
+     *     that($ex->getMessage())->isSame('throws');
+     * }
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\syntax
+     *
+     * @param \Exception $ex 投げる例外
+     * @return mixed （`return hoge or throws` のようなコードで警告が出るので抑止用）
+     */
+    function throws($ex)
+    {
+        throw $ex;
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\dataurl_encode') || (new \ReflectionFunction('ryunosuke\\chmonos\\dataurl_encode'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\dataurl_encode')) {
+    /**
+     * DataURL をエンコードする
+     *
+     * $metadata で mimetype や エンコード等を指定できる。
+     * 指定されていない場合、自動検出して埋め込まれる。
+     *
+     * - mimetype(?string): 特筆無し
+     * - charset(?string): 自動検出は mime 名になる。明示指定はそのまま埋め込まれる
+     * - base64(?bool): true:base64encode, false:urlencode, null: raw
+     *   - null の raw はスキームとしては base64 となる。つまり既に base64 の文字列が手元にある場合（変換したくない場合）に指定する
+     *
+     * Example:
+     * ```php
+     * that(dataurl_encode("hello, world", ['base64' => false]))->isSame("data:text/plain;charset=US-ASCII,hello%2C%20world");
+     * that(dataurl_encode("hello, world", ['mimetype' => 'text/csv', 'charset' => 'hoge']))->isSame("data:text/csv;charset=hoge;base64,aGVsbG8sIHdvcmxk");
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\url
+     *
+     * @param string $data エンコードするデータ
+     * @param array $metadata エンコードオプション
+     * @return string DataURL
+     */
+    function dataurl_encode($data, $metadata = [])
+    {
+        if (!isset($metadata['mimetype'], $metadata['charset'])) {
+            try {
+                $finfo = finfo_open();
+                [$mimetype, $charset] = preg_split('#;\\s#', finfo_buffer($finfo, $data, FILEINFO_MIME), 2, PREG_SPLIT_NO_EMPTY);
+
+                $metadata['mimetype'] ??= $mimetype;
+                $metadata['charset'] ??= mb_preferred_mime_name(explode('=', $charset, 2)[1]);
+            }
+            finally {
+                finfo_close($finfo);
+            }
+        }
+
+        if (!array_key_exists('base64', $metadata)) {
+            $metadata['base64'] = true;
+        }
+
+        $encoder = function ($data) use ($metadata) {
+            if ($metadata['base64'] === null) {
+                return $data;
+            }
+
+            if ($metadata['base64']) {
+                return base64_encode($data);
+            }
+            else {
+                return rawurlencode($data);
+            }
+        };
+
+        return "data:"
+            . $metadata['mimetype']
+            . (strlen($metadata['charset']) ? ";charset=" . $metadata['charset'] : "")
+            . (($metadata['base64'] ?? true) ? ';base64' : '')
+            . "," . $encoder($data);
     }
 }
 
@@ -3486,5 +4444,92 @@ if (!function_exists('ryunosuke\\chmonos\\var_hash')) {
         }
 
         return rtrim(strtr(base64_encode($hash), ['+' => '-', '/' => '_']));
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\varcmp') || (new \ReflectionFunction('ryunosuke\\chmonos\\varcmp'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\varcmp')) {
+    /**
+     * php7 の `<=>` の関数版
+     *
+     * 引数で大文字小文字とか自然順とか型モードとかが指定できる。
+     * さらに追加で SORT_STRICT という厳密比較フラグを渡すことができる。
+     *
+     * Example:
+     * ```php
+     * // 'a' と 'z' なら 'z' の方が大きい
+     * that(varcmp('z', 'a') > 0)->isTrue();
+     * that(varcmp('a', 'z') < 0)->isTrue();
+     * that(varcmp('a', 'a') === 0)->isTrue();
+     *
+     * // 'a' と 'Z' なら 'a' の方が大きい…が SORT_FLAG_CASE なので 'Z' のほうが大きい
+     * that(varcmp('Z', 'a', SORT_FLAG_CASE) > 0)->isTrue();
+     * that(varcmp('a', 'Z', SORT_FLAG_CASE) < 0)->isTrue();
+     * that(varcmp('a', 'A', SORT_FLAG_CASE) === 0)->isTrue();
+     *
+     * // '2' と '12' なら '2' の方が大きい…が SORT_NATURAL なので '12' のほうが大きい
+     * that(varcmp('12', '2', SORT_NATURAL) > 0)->isTrue();
+     * that(varcmp('2', '12', SORT_NATURAL) < 0)->isTrue();
+     *
+     * // SORT_STRICT 定数が使える（下記はすべて宇宙船演算子を使うと 0 になる）
+     * that(varcmp(['a' => 'A', 'b' => 'B'], ['b' => 'B', 'a' => 'A'], SORT_STRICT) < 0)->isTrue();
+     * that(varcmp((object) ['a'], (object) ['a'], SORT_STRICT) < 0)->isTrue();
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\var
+     *
+     * @param mixed $a 比較する値1
+     * @param mixed $b 比較する値2
+     * @param ?int $mode 比較モード（SORT_XXX）。省略すると型でよしなに選択
+     * @param ?int $precision 小数比較の際の誤差桁
+     * @return int 等しいなら 0、 $a のほうが大きいなら > 0、 $bのほうが大きいなら < 0
+     */
+    function varcmp($a, $b, $mode = null, $precision = null)
+    {
+        // 負数は逆順とみなす
+        $reverse = 1;
+        if ($mode < 0) {
+            $reverse = -1;
+            $mode = -$mode;
+        }
+
+        // null が来たらよしなにする（なるべく型に寄せるが SORT_REGULAR はキモいので避ける）
+        if ($mode === null || $mode === SORT_FLAG_CASE) {
+            if ((is_int($a) || is_float($a)) && (is_int($b) || is_float($b))) {
+                $mode = SORT_NUMERIC;
+            }
+            elseif (is_string($a) && is_string($b)) {
+                $mode = SORT_STRING | $mode; // SORT_FLAG_CASE が単品で来てるかもしれないので混ぜる
+            }
+        }
+
+        $flag_case = $mode & SORT_FLAG_CASE;
+        $mode = $mode & ~SORT_FLAG_CASE;
+
+        if ($mode === SORT_NUMERIC) {
+            $delta = $a - $b;
+            if ($precision > 0 && abs($delta) < pow(10, -$precision)) {
+                return 0;
+            }
+            return $reverse * (0 < $delta ? 1 : ($delta < 0 ? -1 : 0));
+        }
+        if ($mode === SORT_STRING) {
+            if ($flag_case) {
+                return $reverse * strcasecmp($a, $b);
+            }
+            return $reverse * strcmp($a, $b);
+        }
+        if ($mode === SORT_NATURAL) {
+            if ($flag_case) {
+                return $reverse * strnatcasecmp($a, $b);
+            }
+            return $reverse * strnatcmp($a, $b);
+        }
+        if ($mode === SORT_STRICT) {
+            return $reverse * ($a === $b ? 0 : ($a > $b ? 1 : -1));
+        }
+
+        // for SORT_REGULAR
+        return $reverse * ($a == $b ? 0 : ($a > $b ? 1 : -1));
     }
 }
