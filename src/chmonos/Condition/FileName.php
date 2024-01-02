@@ -43,7 +43,7 @@ class FileName extends AbstractCondition implements Interfaces\ImeMode
     public function __construct($extensions = null, $symbols = null, $windows = null)
     {
         $extensions ??= [];
-        $symbols ??= '/!-_.\'()&$@=;+,';
+        $symbols ??= '/!-_.\'()&$@=;+,:\\';
         $windows ??= DIRECTORY_SEPARATOR === '\\';
 
         $this->_extensions = (array) $extensions;

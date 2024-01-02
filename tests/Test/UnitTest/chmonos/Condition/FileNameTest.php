@@ -7,6 +7,10 @@ class FileNameTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
     function test_valid()
     {
+        $validate = new FileName('json');
+        that($validate)->isValid('/full/path/name.json')->isTrue();
+        that($validate)->isValid('C:\\path\\name.json') ->isTrue();
+
         $validate = new FileName('json', '!', true);
         that($validate)->isValid('a.json')  ->isTrue();
         that($validate)->isValid('!.json')  ->isTrue();
