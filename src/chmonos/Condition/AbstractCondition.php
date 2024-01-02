@@ -131,7 +131,7 @@ abstract class AbstractCondition
         $src_dirs = array_merge([$out_dir], [$template_dir], $condition_dirs);
 
         $v_path = "$outdir/validator.js";
-        if ($force_flg || (!is_file($v_path) || max(array_map(fn($dir) => dirmtime($dir), $src_dirs)) > filemtime($v_path))) {
+        if ($force_flg || (!is_file($v_path) || max(filemtime(__FILE__), ...array_map(fn($dir) => dirmtime($dir), $src_dirs)) > filemtime($v_path))) {
             // Condition クラスからメタ情報を収集
             $contents = $condition = $constants = $messages = [];
             foreach (array_reverse(self::$namespaces, true) as $ns => $dir) {
@@ -170,26 +170,54 @@ abstract class AbstractCondition
                 }
             }
 
-            // locutus, override, phpjs から全関数名を引っ張って・・・
-            $jsfiles = array_merge(glob("$template_dir/phpjs/locutus/*/*.js"), glob("$template_dir/phpjs/override/*.js"), glob("$outdir/phpjs/*.js"));
-            $jsfiles = array_each($jsfiles, function (&$carry, $fn) {
+            // locutus, override/phpjs から全関数名を引っ張って・・・
+            $fncontents = function (&$carry, $fn) {
                 $carry[basename($fn, '.js')] = preg_replace('@\R//# sourceMappingURL=.+\.map$@u', '', trim(file_get_contents($fn)));
-            }, []);
+            };
+            $locutsjs = array_each(glob("$template_dir/phpjs/locutus/*/*.js"), $fncontents, []);
+            $overridejs = array_each(array_merge(glob("$template_dir/phpjs/override/*.js"), glob("$outdir/phpjs/*.js")), $fncontents, []);
+            $jsfiles = array_merge($locutsjs, $overridejs);
 
-            // $allcode 内に含まれていたら「使っている」とみなす
-            $jsfuncs = [];
-            $allcode = implode(';', $contents) . file_get_contents("$template_dir/validator.js");
-            foreach ($jsfiles as $funcname => $jscontent) {
-                if (preg_match('#' . $funcname . '\(#ms', $allcode)) {
-                    $jsfuncs[$funcname] = self::literalJson($jscontent);
-
-                    // require('../hoge/fuga') のような依存も見る（依存の依存も見ていたらキリがないので1段階のみ）
-                    if (preg_match("#require\\('\.\./.+?/(.+?)'\\)#ms", $jscontent, $match)) {
-                        $jsfuncs[$match[1]] = self::literalJson($jsfiles[$match[1]]);
-                    }
+            // 使用されている定数を導出
+            $overridecontent = implode(';', $overridejs);
+            $jsconsts = [];
+            foreach (get_defined_constants() as $key => $value) {
+                // locutus は php 定数を文字列として扱っているので validation code 内で使用しているもののみ収集
+                if (preg_match('#[^_0-9a-zA-Z]' . preg_quote($key) . '[^_0-9a-zA-Z]#', $overridecontent)) {
+                    $jsconsts[$key] = $value;
                 }
             }
+            ksort($jsconsts);
 
+            // 使用されている関数を導出
+            $allcode = implode(';', $contents) . file_get_contents("$template_dir/validator.js");
+            $jsfuncs = [];
+            $gather = function ($funcname) use (&$gather, &$jsfuncs, $jsfiles) {
+                if (isset($jsfuncs[$funcname])) {
+                    return;
+                }
+                $jscontent = $jsfiles[$funcname];
+                $jsfuncs[$funcname] = self::literalJson($jscontent);
+
+                // require('../hoge/fuga') のような依存も見る
+                if (preg_match_all("#require\\('\.\./.+?/(.+?)'\\)#ms", $jscontent, $matches)) {
+                    foreach ($matches[1] as $match) {
+                        $gather($match);
+                    }
+                }
+            };
+            foreach ($jsfiles as $funcname => $jscontent) {
+                if (preg_match('#[^_0-9a-zA-Z]' . preg_quote($funcname) . '\(#ms', $allcode)) {
+                    $gather($funcname);
+                }
+            }
+            ksort($jsfuncs);
+
+            $echo_constant = function ($array) {
+                foreach ($array as $key => $value) {
+                    echo "*/\nvar $key = this.$key = " . self::encodeJson($value) . ";\n/*";
+                }
+            };
             $echo_function = function ($array) {
                 foreach ($array as $key => $value) {
                     echo "*/\nvar $key = this.$key = (function(){\n" . self::encodeJson($value) . "\nreturn module.exports;\n})();\n/*";

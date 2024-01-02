@@ -18,6 +18,12 @@ trait Jsonable
         if (is_resource($value)) {
             return stream_get_contents($value);
         }
+        if (is_float($value) && is_nan($value)) {
+            return 'NaN';
+        }
+        if (is_float($value) && is_infinite($value)) {
+            return ($value < 0 ? '-' : '+') . 'Infinity';
+        }
         return json_encode($value, $options);
     }
 

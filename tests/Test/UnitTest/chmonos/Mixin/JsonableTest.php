@@ -19,6 +19,8 @@ class JsonableTest extends \ryunosuke\Test\AbstractUnitTestCase
             'object'   => (object) [1, 2, 3],
             'iterable' => new \ArrayObject([1 => 1, 2, 3]),
             'resource' => $this->literalJson('function(){return "hogehoge"}'),
+            'nan'      => NAN,
+            'infinity' => [+INF, -INF],
         ]);
         that($json)->stringContainsAll([
             '"string":"string"',
@@ -30,6 +32,8 @@ class JsonableTest extends \ryunosuke\Test\AbstractUnitTestCase
             '"object":{"0":1,"1":2,"2":3}',
             '"iterable":{"1":1,"2":2,"3":3}',
             '"resource":function(){return "hogehoge"}',
+            '"nan":NaN',
+            '"infinity":[+Infinity,-Infinity]',
         ]);
     }
 

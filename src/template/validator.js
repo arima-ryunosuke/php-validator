@@ -38,6 +38,7 @@ function Chmonos(form, options) {
     };
 
     /// phpjs のインポート
+    /*<?php $echo_constant($jsconsts); ?>*/
     /*<?php $echo_function($jsfuncs); ?>*/
 
     /// 検証ルールのインポート
