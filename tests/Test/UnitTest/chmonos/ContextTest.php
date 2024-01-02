@@ -661,6 +661,11 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                     new Condition\Ajax('/'),
                 ],
             ],
+            'alpha-digit'      => [
+                'condition' => [
+                    new Condition\AlphaDigit(),
+                ],
+            ],
             'array-exclustion' => [
                 'condition' => [
                     new Condition\ArrayExclusion(['a' => null, 'b' => null]),
