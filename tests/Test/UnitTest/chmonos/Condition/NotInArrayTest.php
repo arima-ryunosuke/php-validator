@@ -45,4 +45,21 @@ class NotInArrayTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid("50str")->isTrue();
         that($validate)->getHaystack()->is(range(0, 100));
     }
+
+    function test_getFixture()
+    {
+        $validate = new NotInArray(['', 2, 3], null);
+        that($validate)->getFixture(null, [])->is(null);
+        that($validate)->getFixture(1, [])->is(1);
+        that($validate)->getFixture("2", [])->is(null);
+        that($validate)->getFixture(3, [])->is(null);
+        that($validate)->getFixture(4, [])->is(4);
+
+        $validate = new NotInArray(['', 2, 3], true);
+        that($validate)->getFixture(null, [])->is(null);
+        that($validate)->getFixture(1, [])->is(1);
+        that($validate)->getFixture("2", [])->is(null);
+        that($validate)->getFixture(3, [])->is(null);
+        that($validate)->getFixture(4, [])->is(4);
+    }
 }

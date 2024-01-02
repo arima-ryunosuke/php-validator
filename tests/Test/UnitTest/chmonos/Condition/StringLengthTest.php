@@ -56,4 +56,12 @@ class StringLengthTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦')->isTrue();
         that($validate)->isValid('👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦a')->isFalse();
     }
+
+    function test_getFixture()
+    {
+        $validate = new StringLength(2, 5);
+        that($validate)->getFixture('abcd', [])->is('abcd');
+        that($validate)->getFixture('abcdefg', [])->is('abcde');
+        that($validate)->getFixture('a', [])->is('aX');
+    }
 }

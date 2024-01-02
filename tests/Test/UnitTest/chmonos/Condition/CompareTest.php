@@ -146,4 +146,37 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Compare('==', 'depend');
         that($validate)->getPropagation()->is(["depend"]);
     }
+
+    function test_getFixture()
+    {
+        $validate = new Compare('==', 'depend');
+        that($validate)->getFixture(null, [])->isSame(null);
+        that($validate)->getFixture(null, ['depend' => 'DEPEND'])->is('DEPEND');
+
+        $validate = new Compare('>', 'depend');
+        that($validate)->getFixture(null, [])->isSame(null);
+        that($validate)->getFixture(null, ['depend' => '2014'])->gt('2014');
+        that($validate)->getFixture(null, ['depend' => '2014-12'])->gt('2014-12');
+        that($validate)->getFixture(null, ['depend' => '2014-12-31'])->gt('2014-12-31');
+        that($validate)->getFixture(null, ['depend' => '2014-12-31T23:59'])->gt('2014-12-31T23:59');
+        that($validate)->getFixture(null, ['depend' => '2014-12-31T23:59:59'])->gt('2014-12-31T23:59:59');
+        that($validate)->getFixture(null, ['depend' => 'hoge'])->is(null);
+
+        $validate = new Compare('<', 'depend');
+        that($validate)->getFixture(null, [])->isSame(null);
+        that($validate)->getFixture(null, ['depend' => '2014'])->lt('2014');
+        that($validate)->getFixture(null, ['depend' => '2014-01'])->lt('2014-01');
+        that($validate)->getFixture(null, ['depend' => '2014-01-01'])->lt('2014-01-01');
+        that($validate)->getFixture(null, ['depend' => '2014-01-01T00:00'])->lt('2014-01-01T00:00');
+        that($validate)->getFixture(null, ['depend' => '2014-01-01T00:00:00'])->lt('2014-01-01T00:00:00');
+        that($validate)->getFixture(null, ['depend' => 'hoge'])->is(null);
+
+        $validate = new Compare('!=', 'depend');
+        that($validate)->getFixture(null, [])->isSame(null);
+        that($validate)->getFixture(null, ['depend' => 'DEPEND'])->is(null);
+        that($validate)->getFixture(null, ['depend' => '123'])->is(null);
+        that($validate)->getFixture(null, ['depend' => '2014-12-24'])->is(null);
+        that($validate)->getFixture(null, ['depend' => '2014-12-24T12:34'])->is(null);
+        that($validate)->getFixture(null, ['depend' => 'hoge'])->is(null);
+    }
 }

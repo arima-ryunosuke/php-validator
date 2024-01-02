@@ -39,4 +39,9 @@ class ArrayExclusion extends AbstractCondition
             $error($consts['INVALID_INCLUSION']);
         }
     }
+
+    public function getFixture($value, $fields)
+    {
+        return array_flip(array_diff_key(array_flip($value), $this->_set));
+    }
 }

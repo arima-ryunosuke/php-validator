@@ -31,4 +31,10 @@ class FileNameTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new FileName();
         that($validate)->getImeMode()->is(FileName::DISABLED);
     }
+
+    function test_getFixture()
+    {
+        $validate = new FileName('txt');
+        that($validate)->getFixture(null, [])->stringEndsWith('.txt');
+    }
 }

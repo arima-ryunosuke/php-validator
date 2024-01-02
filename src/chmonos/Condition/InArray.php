@@ -49,4 +49,17 @@ class InArray extends AbstractCondition
             }
         }
     }
+
+    public function getFixture($value, $fields)
+    {
+        $haystack = $this->_haystack;
+        if ($this->_strict !== null) {
+            $haystack = array_flip($haystack);
+        }
+        unset($haystack['']);
+        if (!isset($haystack[$value])) {
+            $value = $this->fixtureArray(array_flip($haystack));
+        }
+        return $value;
+    }
 }

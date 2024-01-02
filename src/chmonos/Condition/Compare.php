@@ -1,6 +1,8 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
+use function ryunosuke\chmonos\date_modulate;
+
 /**
  * 項目比較バリデータ
  *
@@ -107,5 +109,46 @@ class Compare extends AbstractCondition implements Interfaces\Propagation
         if ($params['operator'] === '>=' && $field1 < $field2) {
             return $error($consts['GREATER_THAN']);
         }
+    }
+
+    public function getFixture($value, $fields)
+    {
+        $operand = $this->_direct ? $this->_operand : $fields[$this->_operand] ?? null;
+
+        if (!strlen($operand ?? '')) {
+            return $value;
+        }
+
+        // 等価系はその値を入れてしまえばよい
+        if (in_array($this->_operator, ['===', '=='], true)) {
+            return $operand;
+        }
+
+        // 比較は推移律のある数値か日時が圧倒的に多いので日時だけ特別扱いする
+        if (in_array($this->_operator, ['>', '>=', '<', '<='], true)) {
+            $plusminus = function ($value, $delta) {
+                if (is_numeric($value)) {
+                    return $value + $delta;
+                }
+
+                try {
+                    return date_modulate($value, $delta);
+                }
+                catch (\Exception $t) {
+                    // through
+                }
+
+                return null;
+            };
+            if (strpos($this->_operator, '>') !== false) {
+                return $plusminus($operand, +rand(10, 24));
+            }
+            if (strpos($this->_operator, '<') !== false) {
+                return $plusminus($operand, -rand(10, 24));
+            }
+        }
+
+        // 否定系は算出できない
+        return $value;
     }
 }

@@ -84,4 +84,13 @@ class DigitsTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Digits();
         that($validate)->getType()->is("number");
     }
+
+    function test_getFixture()
+    {
+        $validate = new Digits();
+        that($validate)->getFixture(null, [])->isBetween(-9999, 9999);
+
+        $validate = new Digits('-', 3);
+        that($validate)->getFixture(null, [])->isBetween(-999, 0);
+    }
 }

@@ -174,4 +174,11 @@ class DateTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getValue("")->is("");
         that($validate)->getValue("invalid")->is("invalid");
     }
+
+    function test_getFixture()
+    {
+        $validate = new Date('Y-m-d\TH:i:s');
+        $year11 = 60 * 60 * 24 * 365 * 11;
+        that($validate)->getFixture(null, [])->isBetween(date('Y-m-d\TH:i:s', time() - $year11), date('Y-m-d\TH:i:s', time() + $year11));
+    }
 }

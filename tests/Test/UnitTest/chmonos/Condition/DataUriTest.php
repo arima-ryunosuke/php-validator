@@ -2,6 +2,7 @@
 namespace ryunosuke\Test\UnitTest\chmonos\Condition;
 
 use ryunosuke\chmonos\Condition\DataUri;
+use function ryunosuke\chmonos\dataurl_decode;
 
 class DataUriTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
@@ -42,5 +43,14 @@ class DataUriTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getValue("data:text/plain,$base64_hello_world")->is("data:text/plain,$base64_hello_world");
         that($validate)->getValue("data:text/plain;charset=utf-8,$base64_hello_world")->is("data:text/plain;charset=utf-8,$base64_hello_world");
         that($validate)->getValue("data:text/plain;charset=utf-8;base64,$base64_hello_world")->is("data:text/plain;charset=utf-8;base64,$base64_hello_world");
+    }
+
+    function test_getFixture()
+    {
+        $validate = new DataUri(['size' => 128, 'type' => ['png', 'jpg']]);
+        $datauri = $validate->getFixture(null, []);
+        $raw = dataurl_decode($datauri, $metadata);
+        that(strlen($raw))->is(128);
+        that($metadata['mimetype'])->isAny(['image/png', 'image/jpeg']);
     }
 }

@@ -66,4 +66,21 @@ class RequiresChild extends AbstractParentCondition
             }
         }, $params['inputs'], $consts, $error, $context);
     }
+
+    public function getFixture($value, $fields)
+    {
+        foreach ($this->_inputs as $name => $input) {
+            $operator = $input[0];
+            $operands = $input[1];
+            if ($operator === 'any') {
+                $value[array_rand($value)][$name] = $this->fixtureArray($operands);
+            }
+            if ($operator === 'all') {
+                foreach ($value as $i => $v) {
+                    $value[$i][$name] = $this->fixtureArray($operands);
+                }
+            }
+        }
+        return $value;
+    }
 }

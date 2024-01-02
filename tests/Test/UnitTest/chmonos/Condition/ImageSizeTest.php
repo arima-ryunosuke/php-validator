@@ -36,4 +36,12 @@ class ImageSizeTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new ImageSize(200, 200);
         that($validate)->getType()->is("file");
     }
+
+    function test_getFixture()
+    {
+        $validate = new ImageSize(64, 48);
+        $imagesize = getimagesize($validate->getFixture(null, []));
+        that($imagesize[0])->lte(64);
+        that($imagesize[1])->lte(48);
+    }
 }

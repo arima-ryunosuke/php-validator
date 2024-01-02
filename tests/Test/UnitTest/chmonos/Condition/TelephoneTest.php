@@ -75,4 +75,10 @@ class TelephoneTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Telephone(false, ',');
         that($validate)->getMaxLength()->is(null);
     }
+
+    function test_getFixture()
+    {
+        $validate = new Telephone(true);
+        that($validate)->getFixture('abcd', [])->matches('#^\d{3}-\d{4}-\d{4}$#');
+    }
 }

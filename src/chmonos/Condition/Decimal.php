@@ -96,4 +96,9 @@ class Decimal extends AbstractCondition implements Interfaces\MaxLength, Interfa
     {
         return 'number';
     }
+
+    public function getFixture($value, $fields)
+    {
+        return $this->fixtureDecimal($this->_int, $this->_dec);
+    }
 }

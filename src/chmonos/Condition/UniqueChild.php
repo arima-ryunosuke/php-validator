@@ -58,4 +58,11 @@ class UniqueChild extends AbstractParentCondition
             $error($consts['NO_UNIQUE']);
         }
     }
+
+    public function getFixture($value, $fields)
+    {
+        // 値が重複していたからと言って代替値を提供できるわけではないのでできることはない
+        // もっと言うと例えば options が2つの時に3行あったら必ず重複する
+        return $value;
+    }
 }

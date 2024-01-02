@@ -54,4 +54,12 @@ class ImageSize extends AbstractCondition implements Interfaces\InferableType
     {
         return 'file';
     }
+
+    public function getFixture($value, $fields)
+    {
+        $value = tempnam(sys_get_temp_dir(), 'imagesize');
+        $image = imagecreatetruecolor($this->fixtureInt(1, $this->_width ?? 256), $this->fixtureInt(1, $this->_height ?? 256));
+        imagepng($image, $value);
+        return $value;
+    }
 }

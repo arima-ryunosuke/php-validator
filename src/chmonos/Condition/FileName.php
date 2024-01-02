@@ -79,4 +79,13 @@ class FileName extends AbstractCondition implements Interfaces\ImeMode
     {
         return Interfaces\ImeMode::DISABLED;
     }
+
+    public function getFixture($value, $fields)
+    {
+        $value = tempnam(sys_get_temp_dir(), 'filename');
+        if ($this->_extensions) {
+            $value .= '.' . $this->fixtureArray($this->_extensions);
+        }
+        return $value;
+    }
 }

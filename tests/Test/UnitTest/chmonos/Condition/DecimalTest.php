@@ -67,4 +67,16 @@ class DecimalTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Decimal(1, 2);
         that($validate)->getType()->is("number");
     }
+
+    function test_getFixture()
+    {
+        $validate = new Decimal(0, 2);
+        that($validate)->getFixture(null, [])->matches('#^-?0\.\d{1,2}$#');
+
+        $validate = new Decimal(2, 0);
+        that($validate)->getFixture(null, [])->matches('#^-?\d{1,2}$#');
+
+        $validate = new Decimal(2, 3);
+        that($validate)->getFixture(null, [])->matches('#^-?\d{1,2}\.\d{1,3}$#');
+    }
 }

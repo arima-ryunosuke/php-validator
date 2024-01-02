@@ -85,4 +85,10 @@ class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new FileType([]);
         that($validate)->getType()->is("file");
     }
+
+    function test_getFixture()
+    {
+        $validate = new FileType([]);
+        that($validate)->getFixture(null, [])->isSame(null);
+    }
 }

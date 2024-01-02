@@ -110,10 +110,10 @@ class HostnameTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_ipv6()
     {
         $validate = new Hostname([6]);
-        that($validate)->isValid('127.0.0.1')  ->isFalse();
-        that($validate)->isValid('::')         ->isTrue();
+        that($validate)->isValid('127.0.0.1')->isFalse();
+        that($validate)->isValid('::')->isTrue();
         that($validate)->isValid('example.com')->isFalse();
-        that($validate)->isValid('localhost')  ->isFalse();
+        that($validate)->isValid('localhost')->isFalse();
     }
 
     function test_multiple()
@@ -128,5 +128,26 @@ class HostnameTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Hostname();
         that($validate)->getImeMode()->is(Hostname::DISABLED);
+    }
+
+    function test_getFixture()
+    {
+        $validate = new Hostname([''], null);
+        that($validate)->getFixture(null, [])->isValidDomain();
+
+        $validate = new Hostname(['4']);
+        that($validate)->getFixture(null, [])->isValidIpv4();
+
+        $validate = new Hostname(['6']);
+        that($validate)->getFixture(null, [])->isValidIpv6();
+
+        $validate = new Hostname(['6'], true);
+        that($validate)->getFixture(null, [])->matches('#^\[[0-9a-z:]+\]:\d{1,5}$#');
+
+        $validate = new Hostname(['cidr']);
+        that($validate)->getFixture(null, [])->matches('#^192\.168\.\d+\.\d+/16$#');
+
+        $validate = new Hostname(['cidr'], true);
+        that($validate)->getFixture(null, [])->matches('#^192\.168\.\d+\.\d+/16:\d{1,5}$#');
     }
 }

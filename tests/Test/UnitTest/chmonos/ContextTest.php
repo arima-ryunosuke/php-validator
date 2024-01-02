@@ -1,6 +1,7 @@
 <?php
 namespace ryunosuke\Test\UnitTest\chmonos;
 
+use ryunosuke\chmonos\Condition;
 use ryunosuke\chmonos\Condition\Decimal;
 use ryunosuke\chmonos\Context;
 use ryunosuke\chmonos\Input;
@@ -647,5 +648,360 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ])->isTrue();
         that($context)->getMessages()->isEmpty();
+    }
+
+    function test_getFixture()
+    {
+        $rule = [
+            'fixture'          => [
+                'fixture' => fn() => rand(127, 255),
+            ],
+            'ajax'             => [
+                'condition' => [
+                    new Condition\Ajax('/'),
+                ],
+            ],
+            'array-exclustion' => [
+                'condition' => [
+                    new Condition\ArrayExclusion(['a' => null, 'b' => null]),
+                ],
+            ],
+            'array-length'     => [
+                'condition' => [
+                    new Condition\ArrayLength(2, 5),
+                ],
+            ],
+            'aruiha'           => [
+                'condition' => [
+                    new Condition\Aruiha([
+                        new Condition\Uri(),
+                        new Condition\Hostname(),
+                        new Condition\EmailAddress(),
+                    ]),
+                ],
+            ],
+            'callback'         => [
+                'condition' => [
+                    new Condition\Callback(fn() => null),
+                ],
+            ],
+            'compare_eq'       => [
+                'condition' => [
+                    new Condition\Compare('==', 'date'),
+                ],
+            ],
+            'compare_gt'       => [
+                'condition' => [
+                    new Condition\Compare('>', 'date'),
+                ],
+            ],
+            'data-uri'         => [
+                'condition' => [
+                    new Condition\DataUri(['size' => 128, 'type' => ['txt']]),
+                ],
+            ],
+            'date'             => [
+                'condition' => [
+                    new Condition\Date('Y-m-d\TH:i:s'),
+                ],
+            ],
+            'decimal'          => [
+                'condition' => [
+                    new Condition\Decimal(3, 5),
+                ],
+            ],
+            'digits'           => [
+                'condition' => [
+                    new Condition\Digits(),
+                ],
+            ],
+            'email-address'    => [
+                'condition' => [
+                    new Condition\EmailAddress(),
+                ],
+            ],
+            'file-name'        => [
+                'condition' => [
+                    new Condition\FileName('txt'),
+                ],
+            ],
+            'file-size'        => [
+                'condition' => [
+                    new Condition\FileSize(100),
+                ],
+            ],
+            'file-type'        => [
+                'condition' => [
+                    new Condition\FileType(['plain' => 'txt']),
+                ],
+            ],
+            'hostname'         => [
+                'condition' => [
+                    new Condition\Hostname(['', 'cidr', '4'], null),
+                ],
+            ],
+            'image-size'       => [
+                'condition' => [
+                    new Condition\ImageSize(64, 48),
+                ],
+            ],
+            'in-array'         => [
+                'condition' => [
+                    new Condition\InArray(['a', 'b', 'c'], null),
+                ],
+            ],
+            'json'             => [
+                'condition' => [
+                    new Condition\Json([]),
+                ],
+            ],
+            'not-in-array'     => [
+                'condition' => [
+                    new Condition\NotInArray(['a', 'b', 'c'], null),
+                ],
+            ],
+            'number'           => [
+                'condition' => [
+                    new Condition\Number("-99.999", "99.999"),
+                ],
+            ],
+            'password'         => [
+                'condition' => [
+                    new Condition\Password(),
+                ],
+            ],
+            'range'            => [
+                'condition' => [
+                    new Condition\Range(null, 99),
+                ],
+            ],
+            'regex'            => [
+                'condition' => [
+                    new Condition\Regex('#.*#'),
+                ],
+            ],
+            'requires'         => [
+                'condition' => [
+                    new Condition\Requires(),
+                ],
+            ],
+            'step'             => [
+                'condition' => [
+                    new Condition\Step(0.7),
+                ],
+            ],
+            'steptime'         => [
+                'condition' => [
+                    new Condition\Step(15 * 60, 'ja-jp'),
+                ],
+            ],
+            'string-length'    => [
+                'condition' => [
+                    new Condition\StringLength(2, 5),
+                ],
+            ],
+            'string-width'     => [
+                'condition' => [
+                    new Condition\StringWidth(2, 5),
+                ],
+            ],
+            'telephone'        => [
+                'condition' => [
+                    new Condition\Telephone(),
+                ],
+            ],
+            'uri'              => [
+                'condition' => [
+                    new Condition\Uri(),
+                ],
+            ],
+        ];
+
+        $context = new Context($rule);
+        $fixtures = $context->getFixture([
+            'array-exclustion' => ['a', 'b', 'c'],
+            'array-length'     => ['x'],
+            'not-in-array'     => 'a',
+        ]);
+        that($fixtures['fixture'])->isBetween(127, 255);
+        that($fixtures['array-exclustion'])->is(['c']);
+        that($fixtures['array-length'])->is(['x', 'x']);
+        that($fixtures['not-in-array'])->is(null);
+        $context->validate($fixtures);
+        that($context->getMessages())->is([]);
+
+        $context = new Context([
+            'children' => [
+                'condition' => [
+                    new Condition\ArrayLength(2, 3),
+                    new Condition\RequiresChild(['child1' => ['all', [3, 4]]]),
+                    new Condition\UniqueChild(['child2']),
+                ],
+                'inputs'    => array_replace($rule, [
+                    'child1' => [
+                        'condition' => [
+                            new Condition\Number("-9", "9"),
+                        ],
+                    ],
+                    'child2' => [
+                        'condition' => [
+                            new Condition\InArray(['x', 'y', 'z'], null),
+                        ],
+                    ],
+                ]),
+            ],
+        ]);
+        $fixtures = $context->getFixture([
+            'children' => [
+                [
+                    'array-exclustion' => ['a', 'b', 'c'],
+                    'array-length'     => ['x'],
+                    'not-in-array'     => 'a',
+                ],
+            ],
+        ]);
+        that($fixtures['children'][0]['fixture'])->isBetween(127, 255);
+        that($fixtures['children'][0]['array-exclustion'])->is(['c']);
+        that($fixtures['children'][0]['array-length'])->is(['x', 'x']);
+        that($fixtures['children'][0]['not-in-array'])->is(null);
+        $context->validate($fixtures);
+        that($context->getMessages())->is([]);
+    }
+
+    function test_getFixture_misc()
+    {
+        $context = new Context([
+            'multiple'      => [
+                'condition' => [
+                    new Condition\ArrayLength(2, 5),
+                    new Condition\InArray(['a', 'b', 'c'], null),
+                ],
+                'multiple'  => true,
+            ],
+            'auto_in-array' => [
+                'options' => [
+                    1 => 'A',
+                    2 => 'B',
+                    3 => 'C',
+                ],
+                'default' => [],
+            ],
+            'mutual_since'  => [
+                'condition' => [
+                    new Condition\Date('Y-m-d H:i:s'),
+                    new Condition\Compare('<=', 'mutual_until'),
+                ],
+            ],
+            'mutual_until'  => [
+                'condition' => [
+                    new Condition\Date('Y-m-d H:i:s'),
+                    new Condition\Compare('>=', 'mutual_since'),
+                ],
+            ],
+        ]);
+        $fixtures = $context->getFixture();
+        that($fixtures['auto_in-array'])->isNotEmpty();
+        that($fixtures['mutual_since'])->isNotEmpty();
+        that($fixtures['mutual_until'])->isNotEmpty();
+        $context->validate($fixtures);
+        that($context->getMessages())->is([]);
+    }
+
+    function test_getFixture_order()
+    {
+        $rule = [
+            'array'     => [
+                'inputs' => [
+                    'dummy' => [],
+                ],
+            ],
+            'compare'   => [
+                'condition' => [
+                    new Condition\Compare('==', 'dummy'),
+                ],
+            ],
+            'requires'  => [
+                'condition' => [
+                    new Condition\Requires('dummy'),
+                ],
+            ],
+            'dummy'     => [
+                'default'   => 'DUMMY',
+                'dependent' => 'undefined',
+            ],
+            'dependent' => [
+                'dependent' => 'phantom',
+            ],
+            'loop1'     => [
+                'dependent' => 'loop2',
+            ],
+            'loop2'     => [
+                'dependent' => 'loop1',
+            ],
+            'phantom'   => [
+                'phantom' => ['%s-%s-%s', 'p1', 'p2', 'p3'],
+            ],
+            'p1'        => [
+                'default' => 'P1',
+            ],
+            'p2'        => [
+                'default' => 'P2',
+            ],
+            'p3'        => [
+                'default' => 'P3',
+            ],
+        ];
+
+        $context = new Context(array_replace($rule, [
+            'children' => [
+                'inputs' => array_replace($rule, [
+                    'child2' => [
+                        'condition' => [
+                            new Condition\Compare('==', 'child1'),
+                        ],
+                    ],
+                    'child3' => [
+                        'phantom' => ['', 'child1', 'child2'],
+                    ],
+                    'child1' => [],
+                ]),
+            ],
+        ]));
+        $fixtures = $context->getFixture();
+
+        $assertGTIndex = function ($array, $key1, $key2) {
+            $keys = array_keys($array);
+            $index1 = array_search($key1, $keys);
+            $index2 = array_search($key2, $keys);
+            $this->assertGreaterThan($index1, $index2);
+        };
+
+        $assertGTIndex($fixtures, 'p1', 'phantom');
+        $assertGTIndex($fixtures, 'p2', 'phantom');
+        $assertGTIndex($fixtures, 'p3', 'phantom');
+        $assertGTIndex($fixtures, 'phantom', 'dependent');
+        $assertGTIndex($fixtures, 'dummy', 'compare');
+        $assertGTIndex($fixtures, 'dummy', 'requires');
+        $assertGTIndex($fixtures, 'dummy', 'array');
+        $assertGTIndex($fixtures, 'dummy', 'children');
+
+        that($fixtures['compare'])->is('DUMMY');
+        that($fixtures['requires'])->is('required');
+        that($fixtures['phantom'])->is('P1-P2-P3');
+
+        foreach ($fixtures['children'] as $child) {
+            $assertGTIndex($child, 'child1', 'child2');
+            $assertGTIndex($child, 'child2', 'child3');
+            $assertGTIndex($child, 'p1', 'phantom');
+            $assertGTIndex($child, 'p2', 'phantom');
+            $assertGTIndex($child, 'p3', 'phantom');
+            $assertGTIndex($child, 'phantom', 'dependent');
+            $assertGTIndex($child, 'dummy', 'compare');
+            $assertGTIndex($child, 'dummy', 'requires');
+
+            that($child['compare'])->is('DUMMY');
+            that($child['requires'])->is('required');
+            that($child['phantom'])->is('P1-P2-P3');
+        }
     }
 }

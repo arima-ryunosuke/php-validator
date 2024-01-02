@@ -179,4 +179,10 @@ class RequiresTest extends \ryunosuke\Test\AbstractUnitTestCase
             'dependent2' => '456',
         ])->isTrue();
     }
+
+    function test_getFixture()
+    {
+        $validate = new Requires();
+        that($validate)->getFixture(null, [])->isSame(null);
+    }
 }

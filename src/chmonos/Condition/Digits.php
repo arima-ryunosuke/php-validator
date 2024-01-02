@@ -69,4 +69,9 @@ class Digits extends AbstractCondition implements Interfaces\MaxLength, Interfac
     {
         return 'number';
     }
+
+    public function getFixture($value, $fields)
+    {
+        return $this->fixtureArray(str_split($this->_sign)) . $this->fixtureString($this->_digit ?? 4, '0123456789');
+    }
 }

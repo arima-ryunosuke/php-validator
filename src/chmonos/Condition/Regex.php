@@ -51,4 +51,13 @@ class Regex extends AbstractCondition
             $error($consts['NEGATION']);
         }
     }
+
+    public function getFixture($value, $fields)
+    {
+        // 「ある正規表現にマッチする適当な文字列」を生成するのは多くの場合困難で、用途が決まっているなら専用の Consition を設けるべき
+        // ここでは assert や notice で通知することを想定して親実装をそのままではなく明示的に記述している
+        // e.g. assert("#[0-9]+#", Digits で十分)
+        // e.g. assert("#[a-z-]+\.[a-z-0-9]#u", Hostname で十分)
+        return $value;
+    }
 }

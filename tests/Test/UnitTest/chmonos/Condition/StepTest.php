@@ -196,4 +196,23 @@ class StepTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Step(1);
         that($validate)->getType()->is("number");
     }
+
+    function test_getFixture()
+    {
+        $validate = new Step(0.7);
+        that($validate)->getFixture(-3, [])->is('-2.8');
+        that($validate)->getFixture(-2, [])->is('-1.4');
+        that($validate)->getFixture(-1, [])->is('-0.7');
+        that($validate)->getFixture(0, [])->is('0');
+        that($validate)->getFixture(1, [])->is('0.7');
+        that($validate)->getFixture(2, [])->is('1.4');
+        that($validate)->getFixture(3, [])->is('2.8');
+
+        $validate = new Step(3 * 3600, ['h' => 'H', 'i' => 'I', 's' => 'S']);
+        that($validate)->getFixture(-3, [])->matches('#\d\d:\d\d:\d\d#');
+        $validate = new Step(3 * 60, ['i' => 'I', 's' => 'S']);
+        that($validate)->getFixture(-3, [])->matches('#\d\d:\d\d#');
+        $validate = new Step(3 * 60, ['h' => 'H', 'i' => 'I']);
+        that($validate)->getFixture(-3, [])->matches('#\d\d:\d\d#');
+    }
 }

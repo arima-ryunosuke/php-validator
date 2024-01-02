@@ -174,4 +174,11 @@ class Requires extends AbstractCondition implements Interfaces\Propagation
             $nofify($value, $error, $consts);
         }
     }
+
+    public function getFixture($value, $fields)
+    {
+        // 必須エラーだからと言って代替値を用意するのは不可能
+        // ただし値を入れないと必須エラーになるのは間違いないので Input の方で最後に代入している
+        return $value;
+    }
 }

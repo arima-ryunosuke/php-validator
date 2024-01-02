@@ -49,4 +49,11 @@ class FileSize extends AbstractCondition implements Interfaces\InferableType
     {
         return 'file';
     }
+
+    public function getFixture($value, $fields)
+    {
+        $value = tempnam(sys_get_temp_dir(), 'filesize');
+        file_put_contents($value, 'X');
+        return $value;
+    }
 }

@@ -91,4 +91,32 @@ class Hostname extends AbstractCondition implements Interfaces\ImeMode
     {
         return Interfaces\ImeMode::DISABLED;
     }
+
+    public function getFixture($value, $fields)
+    {
+        $type = (string) $this->fixtureArray($this->_types);
+        if ($type === '') {
+            $value = "h" . $this->fixtureString(4) . ".example.jp";
+        }
+        elseif ($type === 'cidr') {
+            $value = "192.168." . $this->fixtureInt(0, 255) . '.' . $this->fixtureInt(0, 255) . '/16';
+        }
+        elseif ($type === '4') {
+            $value = "192.168." . $this->fixtureInt(0, 255) . '.' . $this->fixtureInt(0, 255);
+        }
+        elseif ($type === '6') {
+            $value = "2001:db8::" . dechex($this->fixtureInt(0, 255));
+        }
+
+        if ($this->_require_port === true || ($this->_require_port !== false && $this->fixtureBool())) {
+            if ($type === '6') {
+                $value = "[$value]:" . $this->fixtureInt(1, 65535);
+            }
+            else {
+                $value .= ':' . $this->fixtureInt(1, 65535);
+            }
+        }
+
+        return $value;
+    }
 }

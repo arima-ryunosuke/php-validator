@@ -185,4 +185,10 @@ class Date extends AbstractCondition implements Interfaces\Range, Interfaces\Max
         }
         return $value;
     }
+
+    public function getFixture($value, $fields)
+    {
+        $year10 = 60 * 60 * 24 * 365 * 10;
+        return date($this->_format, time() + rand(-$year10, $year10));
+    }
 }

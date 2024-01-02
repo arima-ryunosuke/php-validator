@@ -75,4 +75,9 @@ class Range extends AbstractCondition implements Interfaces\ImeMode, Interfaces\
         // number でもいいがそれは Digits の仕事だろう
         return 'range';
     }
+
+    public function getFixture($value, $fields)
+    {
+        return (string) $this->fixtureFloat($this->_min ?? -1000, $this->_max ?? 1000);
+    }
 }

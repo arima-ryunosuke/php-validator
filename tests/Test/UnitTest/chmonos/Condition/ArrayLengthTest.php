@@ -48,4 +48,12 @@ class ArrayLengthTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid($this->array_create(10))->isTrue();
         that($validate)->isValid($this->array_create(11))->isFalse();
     }
+
+    function test_getFixture()
+    {
+        $validate = new ArrayLength(2, 5);
+        that($validate)->getFixture([1, 2, 3], [])->isSame([1, 2, 3]);
+        that($validate)->getFixture([1], [])->isSame([1, 1]);
+        that($validate)->getFixture([1, 2, 3, 4, 5, 6], [])->isSame([1, 2, 3, 4, 5]);
+    }
 }

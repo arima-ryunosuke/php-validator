@@ -368,6 +368,34 @@ class Context implements \IteratorAggregate
         return false;
     }
 
+    public function getFixture($defaults = [])
+    {
+        $scores = [];
+        $score = function ($name) use (&$score, &$scores) {
+            if (!isset($this->inputs[$name])) {
+                return 0;
+            }
+            if (isset($scores[$name])) {
+                return $scores[$name];
+            }
+            if ($this->inputs[$name]->getType() === 'arrays') {
+                return $scores[$name] = 9999999;
+            }
+            $scores[$name] = 0;
+            return $scores[$name] = array_sum(array_map(fn($name) => $score($name), $this->inputs[$name]->getDependent())) + 1;
+        };
+        $inputs = kvsort($this->inputs, fn($a, $b, $ak, $bk) => $score($ak) <=> $score($bk));
+
+        $fixtures = [];
+        foreach ($inputs as $name => $input) {
+            $fixtures[$name] = $input->fixture($defaults[$name] ?? null, $fixtures);
+        }
+        foreach ($inputs as $name => $input) {
+            $fixtures[$name] = $input->normalize($fixtures);
+        }
+        return $fixtures;
+    }
+
     /**
      * ネスト要素も含めて全ての Input を返す
      *

@@ -51,4 +51,12 @@ class StringWidthTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new StringWidth(3);
         that($validate)->getMaxLength()->isNull();
     }
+
+    function test_getFixture()
+    {
+        $validate = new StringWidth(2, 5);
+        that($validate)->getFixture('abcd', [])->is('abcd');
+        that($validate)->getFixture('abcdefg', [])->is('abcde');
+        that($validate)->getFixture('a', [])->is('aX');
+    }
 }

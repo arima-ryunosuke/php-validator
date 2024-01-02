@@ -2,6 +2,7 @@
 namespace ryunosuke\chmonos\Condition;
 
 use ryunosuke\chmonos\Condition\Traits\File;
+use function ryunosuke\chmonos\dataurl_encode;
 use function ryunosuke\chmonos\si_prefix;
 
 /**
@@ -85,5 +86,12 @@ class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
             return base64_decode(preg_replace('#^data:(.+?/.+?)?(;charset=.+?)?(;base64)?,#iu', '', $value), true);
         }
         return $value;
+    }
+
+    public function getFixture($value, $fields)
+    {
+        $data = str_pad($value ?? '', $this->_size, 'X', STR_PAD_RIGHT);
+        $type = $this->fixtureArray($this->_allowTypes);
+        return dataurl_encode($data, ['mimetype' => $type]);
     }
 }

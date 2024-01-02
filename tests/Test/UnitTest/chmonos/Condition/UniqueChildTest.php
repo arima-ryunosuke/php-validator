@@ -72,4 +72,10 @@ class UniqueChildTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate1)->isValid($values['values'])->isFalse();
         that($validate2)->isValid($values['values'])->isFalse();
     }
+
+    function test_getFixture()
+    {
+        $validate = new UniqueChild(['k1', 'k2']);
+        that($validate)->getFixture([['k1' => 'a', 'k2' => 'b']], [])->is([['k1' => 'a', 'k2' => 'b']]);
+    }
 }

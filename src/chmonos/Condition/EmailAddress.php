@@ -71,4 +71,9 @@ class EmailAddress extends AbstractCondition implements Interfaces\MaxLength, In
         // type=email のメールアドレスチェックは綿密すぎるのでとりあえず text
         return 'text';
     }
+
+    public function getFixture($value, $fields)
+    {
+        return "u" . $this->fixtureString(4) . "@example.jp";
+    }
 }

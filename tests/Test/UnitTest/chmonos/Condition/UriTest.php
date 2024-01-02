@@ -64,4 +64,13 @@ class UriTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Uri();
         that($validate)->getType()->is("url");
     }
+
+    function test_getFixture()
+    {
+        $validate = new Uri();
+        that($validate)->getFixture(null, [])->isValidUrl();
+
+        $validate = new Uri(['http']);
+        that($validate)->getFixture(null, [])->stringStartsWith('http://');
+    }
 }

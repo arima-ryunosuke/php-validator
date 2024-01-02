@@ -126,4 +126,14 @@ class Telephone extends AbstractCondition implements Interfaces\MaxLength, Inter
         // type=tel はマーカー的なもので入力規則的なものはない（スマホなどのために指定しておいたほうが良い）
         return 'tel';
     }
+
+    public function getFixture($value, $fields)
+    {
+        $hyphen = ($this->_hyphen === true || ($this->_hyphen !== false && $this->fixtureBool())) ? '-' : '';
+        return implode($hyphen, [
+            '0' . $this->fixtureInt(10, 99),
+            '1' . $this->fixtureInt(100, 999),
+            '2' . $this->fixtureInt(100, 999),
+        ]);
+    }
 }

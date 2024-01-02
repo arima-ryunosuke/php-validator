@@ -72,4 +72,28 @@ class Uri extends AbstractCondition implements Interfaces\ImeMode, Interfaces\In
     {
         return 'url';
     }
+
+    public function getFixture($value, $fields)
+    {
+        switch ($this->fixtureInt(0, 1)) {
+            case 0:
+                $value = "h" . $this->fixtureString(4) . ".example.jp";
+                break;
+            case 1:
+                $value = "192.168." . $this->fixtureInt(0, 255) . '.' . $this->fixtureInt(0, 255);
+                break;
+        }
+        if ($this->fixtureBool()) {
+            $value .= ':' . $this->fixtureInt(1, 65535);
+        }
+        $value .= '/path/to/file';
+        if ($this->_schemes) {
+            $scheme = $this->fixtureArray($this->_schemes);
+        }
+        else {
+            $scheme = 's' . $this->fixtureString(4);
+        }
+        $value = "$scheme://$value";
+        return $value;
+    }
 }

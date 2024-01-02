@@ -102,4 +102,9 @@ JS;
         }
         return max($lengths);
     }
+
+    public function getFixture($value, $fields)
+    {
+        return $this->fixtureArray($this->conditions)->getFixture($value, $fields);
+    }
 }

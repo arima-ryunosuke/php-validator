@@ -111,4 +111,13 @@ class Step extends AbstractCondition implements Interfaces\ImeMode, Interfaces\I
     {
         return 'number';
     }
+
+    public function getFixture($value, $fields)
+    {
+        if ($this->_timeunit) {
+            $timestamp = ((int) (rand() / $this->_step)) * $this->_step;
+            return (new \DateTime("@$timestamp"))->format(implode(':', array_keys($this->_timeunit)));
+        }
+        return sprintf('%g', ((int) ((float) ($value) / $this->_step)) * $this->_step);
+    }
 }

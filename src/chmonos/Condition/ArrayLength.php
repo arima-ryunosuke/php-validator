@@ -55,4 +55,11 @@ class ArrayLength extends AbstractCondition
             $error($consts['TOO_LONG']);
         }
     }
+
+    public function getFixture($value, $fields)
+    {
+        $value = array_slice($value, 0, $this->_max ?? PHP_INT_MAX);
+        $value = array_pad($value, $this->_min ?? 0, reset($value) ?: 'X');
+        return $value;
+    }
 }

@@ -25,4 +25,10 @@ class FileSizeTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new FileSize(10240);
         that($validate)->getType()->is("file");
     }
+
+    function test_getFixture()
+    {
+        $validate = new FileSize(100);
+        that($validate)->getFixture(null, [])->fileSizeIs(1);
+    }
 }

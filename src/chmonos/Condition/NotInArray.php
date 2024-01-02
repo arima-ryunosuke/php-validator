@@ -59,4 +59,17 @@ class NotInArray extends AbstractCondition
             }
         }
     }
+
+    public function getFixture($value, $fields)
+    {
+        $haystack = $this->_haystack;
+        if ($this->_strict !== null) {
+            $haystack = array_flip($haystack);
+        }
+        unset($haystack['']);
+        if (isset($haystack[$value])) {
+            $value = null;
+        }
+        return $value;
+    }
 }

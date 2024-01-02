@@ -56,4 +56,12 @@ class PasswordTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Password();
         that($validate)->getType()->is("password");
     }
+
+    function test_getFixture()
+    {
+        $validate = new Password(['az', '19', '+-'], 2);
+        that($validate)->getFixture(null, [])->containsAny(['a', 'z']);
+        that($validate)->getFixture(null, [])->containsAny(['1', '9']);
+        that($validate)->getFixture(null, [])->containsAny(['+', '-']);
+    }
 }

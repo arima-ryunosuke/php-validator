@@ -22,4 +22,11 @@ class JsonTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('[1,2,3')->isFalse();
         that($validate)->isValid('{"a": "A"')->isFalse();
     }
+
+    function test_getFixture()
+    {
+        $validate = new Json();
+        that($validate)->getFixture(null, [])->is(json_encode(null));
+        that($validate)->getFixture([1, 2, 3], [])->is(json_encode([1, 2, 3]));
+    }
 }

@@ -68,4 +68,11 @@ class StringLength extends AbstractCondition implements Interfaces\MaxLength
         }
         return $this->_max;
     }
+
+    public function getFixture($value, $fields)
+    {
+        $value = mb_substr($value, 0, $this->_max ?? PHP_INT_MAX);
+        $value = str_pad($value, $this->_min ?? 0, 'X'); // mb_str_pad in future scope
+        return $value;
+    }
 }

@@ -35,4 +35,10 @@ class Json extends AbstractCondition
             return;
         }
     }
+
+    public function getFixture($value, $fields)
+    {
+        // JSON Schema に対応したらこの値も埋められる
+        return json_encode($value);
+    }
 }

@@ -88,4 +88,10 @@ class FileType extends AbstractCondition implements Interfaces\InferableType
     {
         return 'file';
     }
+
+    public function getFixture($value, $fields)
+    {
+        // minetype が一致するようなファイルを生成するのは困難（todo /etc/magic あたりで逆引きする？）
+        return $value;
+    }
 }

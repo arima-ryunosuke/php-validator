@@ -102,4 +102,13 @@ class Password extends AbstractCondition implements Interfaces\ImeMode, Interfac
     {
         return 'password';
     }
+
+    public function getFixture($value, $fields)
+    {
+        $result = '';
+        foreach ($this->_charlists as $chars) {
+            $result .= $this->fixtureString($this->_repeat, $chars);
+        }
+        return str_shuffle($result);
+    }
 }

@@ -42,4 +42,21 @@ class InArrayTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid("101")->isFalse();
         that($validate)->isValid("50str")->isFalse();
     }
+
+    function test_getFixture()
+    {
+        $validate = new InArray(['', 2, 3], null);
+        that($validate)->getFixture(null, [])->isAny([2, 3]);
+        that($validate)->getFixture(1, [])->isAny([2, 3]);
+        that($validate)->getFixture("2", [])->is(2);
+        that($validate)->getFixture(3, [])->is(3);
+        that($validate)->getFixture(4, [])->isAny([2, 3]);
+
+        $validate = new InArray(['', 2, 3], true);
+        that($validate)->getFixture(null, [])->isAny([2, 3]);
+        that($validate)->getFixture(1, [])->isAny([2, 3]);
+        that($validate)->getFixture("2", [])->is(2);
+        that($validate)->getFixture(3, [])->is(3);
+        that($validate)->getFixture(4, [])->isAny([2, 3]);
+    }
 }

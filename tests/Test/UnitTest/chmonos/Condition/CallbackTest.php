@@ -30,4 +30,10 @@ class CallbackTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Callback(function () { }, ['another']);
         that($validate)->getPropagation()->is(["another"]);
     }
+
+    function test_getFixture()
+    {
+        $validate = new Callback(function () { });
+        that($validate)->getFixture(null, [])->isSame(null);
+    }
 }

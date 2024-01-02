@@ -1,6 +1,7 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
+use ryunosuke\chmonos\Mixin\Fixturable;
 use ryunosuke\chmonos\Mixin\Jsonable;
 use function ryunosuke\chmonos\array_each;
 use function ryunosuke\chmonos\array_map_key;
@@ -20,6 +21,7 @@ use function ryunosuke\chmonos\str_exists;
  */
 abstract class AbstractCondition
 {
+    use Fixturable;
     use Jsonable;
 
     public const INVALID = 'InvalidAbstract';
@@ -404,6 +406,27 @@ JS;
     }
 
     /**
+     * 値を検証する（内部用）
+     *
+     * @internal
+     */
+    public function isValidInternal($value, $fields = [])
+    {
+        $level = $this->level;
+        $messages = $this->messages;
+
+        $this->level = '';
+        $this->messages = [];
+        try {
+            return $this->isValid($value, $fields);
+        }
+        finally {
+            $this->level = $level;
+            $this->messages = $messages;
+        }
+    }
+
+    /**
      * 配列を対象にしたクラスかを返す
      *
      * @return bool
@@ -580,5 +603,10 @@ JS;
     public function getMessages()
     {
         return $this->messages;
+    }
+
+    public function getFixture($value, $fields)
+    {
+        return $value;
     }
 }

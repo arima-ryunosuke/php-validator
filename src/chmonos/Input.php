@@ -49,7 +49,8 @@ class Input
         'multiple'              => null,
         'pseudo'                => true,
         'nullable'              => true,
-        // 'default'    => null, // あるかないかでデフォルト値を決めるのでコメントアウト
+        // 'default'               => null, // あるかないかでdefault値を決めるのでコメントアウト
+        // 'fixture'               => null, // あるかないかでfixture値を決めるのでコメントアウト
     ];
 
     /** @var Input */
@@ -737,7 +738,14 @@ class Input
 
         // 配列の許可/未許可。通常フローではほぼありえないので例外で良い(=親切じゃなくて良い)
         if ((!$this->multiple && is_array($value)) || ($this->multiple && !is_array($value))) {
-            throw new ValidationException(null, sprintf("'%s' invalid type (%s).", $this->name, gettype($value)));
+            // for compatible. ArrayableValidation を持ってる時は特別に許可する（本来は multiple にしてしまえば良いが影響がでかすぎる）
+            $has_arrayable_validation = false;
+            foreach ($this->condition as $condition) {
+                $has_arrayable_validation = $has_arrayable_validation || $condition->isArrayableValidation();
+            }
+            if (!$has_arrayable_validation) {
+                throw new ValidationException(null, sprintf("'%s' invalid type (%s).", $this->name, gettype($value)));
+            }
         }
 
         $fields = $values + $original;
@@ -910,6 +918,85 @@ class Input
         $attrs['name'] = $name;
         $attrs['id'] = $attrs['id'] ?? $this->_concatString($this->id, [$name]);
         return $this->$method($attrs);
+    }
+
+    public function fixture($default, $fields = [])
+    {
+        if (array_key_exists('fixture', $this->rule)) {
+            $value = $this->rule['fixture'];
+            if ($value instanceof \Closure) {
+                $value = $value($this);
+            }
+            return $value;
+        }
+
+        $value = $default;
+        $fields += array_fill_keys($this->getDependent(), null);
+
+        $fixture_condition = function (AbstractCondition $condition, $value) use ($fields) {
+            // null, 空文字, あるいは空配列の時に「空」と定義し、「空」の場合は検証をしない
+            if (!($value === null || $value === '' || $value === []) && $condition->isValidInternal($value, $fields)) {
+                return $value;
+            }
+            return $condition->getFixture($value, $fields);
+        };
+
+        if ($this->getType() === 'arrays') {
+            // 歴史的な経緯により ArrayLength は親・子の両方に対応していて fixture がスカラー値を返すので前もって埋める必要がある
+            $param = [];
+            foreach ($this->condition as $condition) {
+                if ($condition instanceof Condition\ArrayLength) {
+                    $param = $condition->getValidationParam();
+                    break;
+                }
+            }
+
+            $values = array_pad((array) $value, rand($param['min'] ?? 1, $param['max'] ?? 5), []);
+            foreach ($values as $i => $value) {
+                $values[$i] = $this->context->getFixture($value);
+            }
+
+            foreach ($this->condition as $condition) {
+                if ($condition instanceof Condition\AbstractParentCondition) {
+                    $values = $fixture_condition($condition, $values);
+                }
+            }
+            return $values;
+        }
+
+        // 実値が配列/非配列、条件が受け付ける値が配列/非配列、変換を伴うかどうか、などの負債が凄く、統一できないため明確に分ける
+        // リファクタ対象。値はすべて配列として扱って意識しないようにすればいい
+        if ($this->multiple || is_array($value)) {
+            $value = (array) $value;
+            foreach ($this->condition as $condition) {
+                $value = $condition->isArrayableValidation() ? [$value] : (arrayize($value) ?: [null]);
+                $values = [];
+                foreach ($value as $v) {
+                    $values = array_merge($values, arrayize($fixture_condition($condition, $v)));
+                }
+                $value = $values;
+            }
+        }
+        else {
+            foreach ($this->condition as $condition) {
+                // Requires が ArrayableValidation なのは歴史的経緯の設計ミスなので除外
+                $value = !$condition instanceof Condition\Requires && $condition->isArrayableValidation() ? (array) $value : $value;
+                $value = $fixture_condition($condition, $value);
+            }
+        }
+
+        if ($value === null || $value === '' || $value === []) {
+            $value = $this->default;
+            if ($value === null || $value === '' || $value === []) {
+                foreach ($this->condition as $condition) {
+                    if ($condition instanceof Condition\Requires) {
+                        $value = 'required';
+                        break;
+                    }
+                }
+            }
+        }
+        return $value;
     }
 
     protected function _inputArrays($attrs)

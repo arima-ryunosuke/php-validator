@@ -64,4 +64,19 @@ class RequiresChildTest extends \ryunosuke\Test\AbstractUnitTestCase
         ];
         that($validate)->isValid($values['values'])->isTrue();
     }
+
+    function test_getFixture()
+    {
+        $validate = new RequiresChild([
+            'k1' => ['all', ['val1', 'val3', 'val7']],
+            'k2' => ['any', ['val8']],
+        ]);
+        $fixture = $validate->getFixture([
+            ['k1' => null, 'k2' => null],
+            ['k1' => null, 'k2' => null],
+            ['k1' => null, 'k2' => null],
+        ], []);
+        that(array_column($fixture, 'k1'))->is(['val1', 'val3', 'val7'], null, true);
+        that(array_column($fixture, 'k2'))->is([null, null, 'val8'], null, true);
+    }
 }

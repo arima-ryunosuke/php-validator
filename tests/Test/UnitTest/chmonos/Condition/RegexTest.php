@@ -26,4 +26,10 @@ class RegexTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Regex('/(?:\D+|<\d+>)*[!?]/');
         that($validate)->isValid('foobar foobar foobar')->isFalse();
     }
+
+    function test_getFixture()
+    {
+        $validate = new Regex('/(?:\D+|<\d+>)*[!?]/');
+        that($validate)->getFixture(null, [])->isSame(null);
+    }
 }

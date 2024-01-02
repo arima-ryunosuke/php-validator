@@ -123,6 +123,12 @@ class AjaxTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getFields()->is(["another"]);
     }
 
+    function test_getFixture()
+    {
+        $validate = new Ajax('hoge', ['another'], [$this, '_method']);
+        that($validate)->getFixture(null, [])->isSame(null);
+    }
+
     public function _method($value)
     {
         if ($value === 'trust') {

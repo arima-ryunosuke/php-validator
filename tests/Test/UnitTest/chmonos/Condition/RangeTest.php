@@ -64,4 +64,10 @@ class RangeTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getMax()->is(999);
         that($validate)->getStep()->isNull();
     }
+
+    function test_getFixture()
+    {
+        $validate = new Range(-999, 999);
+        that($validate)->getFixture(null, [])->isBetween(-999, 999);
+    }
 }

@@ -35,4 +35,11 @@ class ArrayExclusionTest extends \ryunosuke\Test\AbstractUnitTestCase
             "ArrayExclusionInclusion" => 'aとbは同時選択できません',
         ]);
     }
+
+    function test_getFixture()
+    {
+        $validate = new ArrayExclusion([1 => 'a', 2 => 'b']);
+        that($validate)->getFixture([1, 2, 3], [])->isSame([2 => 3]);
+        that($validate)->getFixture([3, 4, 5], [])->isSame([3, 4, 5]);
+    }
 }

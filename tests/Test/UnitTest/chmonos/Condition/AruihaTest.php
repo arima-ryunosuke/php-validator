@@ -5,6 +5,9 @@ use ryunosuke\chmonos\Condition\Aruiha;
 use ryunosuke\chmonos\Condition\Compare;
 use ryunosuke\chmonos\Condition\EmailAddress;
 use ryunosuke\chmonos\Condition\Range;
+use ryunosuke\chmonos\Condition\Uri;
+use ryunosuke\PHPUnit\Constraint\IsValid;
+use ryunosuke\PHPUnit\Constraint\LogicalOr;
 
 class AruihaTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
@@ -93,5 +96,17 @@ class AruihaTest extends \ryunosuke\Test\AbstractUnitTestCase
                 ],
             ],
         ]);
+    }
+
+    function test_getFixture()
+    {
+        $validate = new Aruiha([
+            new EmailAddress(),
+            new Uri(),
+        ]);
+        $emailORuri = LogicalOr::fromConstraints(new IsValid('email'), new IsValid('url'));
+        that($validate)->getFixture(null, [])->eval($emailORuri);
+        that($validate)->getFixture(null, [])->eval($emailORuri);
+        that($validate)->getFixture(null, [])->eval($emailORuri);
     }
 }

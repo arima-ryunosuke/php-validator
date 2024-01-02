@@ -57,4 +57,10 @@ class EmailAddressTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new EmailAddress(null, ',');
         that($validate)->getMaxLength()->is(null);
     }
+
+    function test_getFixture()
+    {
+        $validate = new EmailAddress();
+        that($validate)->getFixture(null, [])->isValidEmail();
+    }
 }

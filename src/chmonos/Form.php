@@ -16,6 +16,7 @@ use ryunosuke\chmonos\Exception\ValidationException;
  * @method array getMessages()
  * @method array getFlatMessages($format = '[%s] %s', $childformat = '%s %d行目 - %s')
  * @method Input[] getAllInput()
+ * @method array getFixture($defaults = [])
  */
 class Form
 {

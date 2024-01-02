@@ -106,4 +106,19 @@ class NumberTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getMax()->isSame('999');
         that($validate)->getStep()->isSame('1');
     }
+
+    function test_getFixture()
+    {
+        $validate = new Number("-9", "-8");
+        that($validate)->getFixture(null, [])->isBetween(-9, -8);
+
+        $validate = new Number("-9", "9");
+        that($validate)->getFixture(null, [])->isBetween(-9.9, 9);
+
+        $validate = new Number("-9.9", "-8.9");
+        that($validate)->getFixture(null, [])->isBetween(-9.9, -8.9);
+
+        $validate = new Number("-9.9", "9.9");
+        that($validate)->getFixture(null, [])->isBetween(-9.9, 9.9);
+    }
 }
