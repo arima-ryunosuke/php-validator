@@ -270,7 +270,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('digits', '2.1');
         that($driver)->getErrors()->count(1);
-        $driver->setValue('digits', '2');
+        $driver->setValue('digits', '10000');
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('digits', '0002');
+        that($driver)->getErrors()->count(0);
+        $driver->setValue('digits', '-0002');
         that($driver)->getErrors()->count(0);
     }
 
@@ -290,6 +294,19 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_alphadigit(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('alphadigit', '123hoge');
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('alphadigit', '_hoge_');
+        that($driver)->getErrors()->count(0);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_email(WebDriver $driver)
     {
         $driver->path('/example/index.php');
@@ -301,7 +318,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('email_multiple', 'test@hostname,aaa');
         that($driver)->getErrors()->count(1);
-        $driver->setValue('email_multiple', 'test@hostname');
+        $driver->setValue('email_multiple', 'test@hostname,test@hostname');
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('email_multiple', 'test1@hostname,test2@hostname');
         that($driver)->getErrors()->count(0);
     }
 
@@ -477,6 +496,19 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('step', '1.4');
         that($driver)->getErrors()->count(1);
         $driver->setValue('step', '1.5');
+        that($driver)->getErrors()->count(0);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
+    function test_steptime(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('step15minute', '00:14AM');
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('step15minute', '00:15AM');
         that($driver)->getErrors()->count(0);
     }
 

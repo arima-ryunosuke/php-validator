@@ -29,7 +29,7 @@ $dynamic_rule = [
                     'unique' => ['any', ['99', '98']],
                 ]
             ],
-            'UniqueChild'   => [['title', 'checkbox']],
+            'UniqueChild'   => [['title', 'checkbox'], true],
             'ArrayLength'   => [1, 3]
         ],
         'inputs'    => [
@@ -38,7 +38,8 @@ $dynamic_rule = [
                 'condition' => [
                     'Requires' => '/require_address', // "/" を付けると親を辿れる
                     'Compare'  => ['!=', '/parent_mail'], // Compare も同じ
-                ]
+                ],
+                'default'   => '',
             ],
             'checkbox'       => [
                 'title'     => 'ただの選択肢',
@@ -293,7 +294,10 @@ $dynamic_rule = [
                 <tr class="item" v-for="(row, index) in rows">
                     <?= $vuejs_form->vuefor('rows', 'row', 'index') ?>
                     <th><?= $vuejs_form->label('title') ?></th>
-                    <td><?= $vuejs_form->input('title') ?></td>
+                    <td>
+                        <?= $vuejs_form->input('title', ['type' => 'textarea']) ?>
+                        文字数<span>{{row.title.length}}</span>
+                    </td>
                     <th>選択肢</th>
                     <td><?= $vuejs_form->input('checkbox', ['type' => 'checkbox']) ?><?= $vuejs_form->input('multiple', ['type' => 'select']) ?></td>
                     <th>兄弟内の重複禁止</th>

@@ -195,13 +195,19 @@ $condition_form = new \ryunosuke\chmonos\Form([
     'digits'                => [
         'title'     => '整数',
         'condition' => [
-            'Digits' => null
+            'Digits' => [null, 4]
         ]
     ],
     'number'                => [
         'title'     => '数値',
         'condition' => [
             'Number' => [-9.9, 999.999],
+        ]
+    ],
+    'alphadigit'            => [
+        'title'     => '識別子',
+        'condition' => [
+            'AlphaDigit' => [false],
         ]
     ],
     'email'                 => [
@@ -214,7 +220,8 @@ $condition_form = new \ryunosuke\chmonos\Form([
     'email_multiple'        => [
         'title'     => 'メールアドレス（カンマで複数値）',
         'condition' => [
-            'EmailAddress' => [null, '#,#']
+            'EmailAddress' => [null, '#(,|\r?\n)#'],
+            'Distinct'     => null,
         ],
         'event'     => ['input'],
     ],
@@ -263,7 +270,7 @@ $condition_form = new \ryunosuke\chmonos\Form([
     'hostname_multiple'     => [
         'title'     => 'ホスト名（カンマで複数値）',
         'condition' => [
-            'Hostname' => ['', null, '#,#']
+            'Hostname' => ['', null, '#,|\s#']
         ]
     ],
     'hostname_v4'           => [
@@ -343,6 +350,12 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'Decimal' => [3, 1],
             'Range'   => [0, 99.9],
             'Step'    => 0.5,
+        ]
+    ],
+    'step15minute'                  => [
+        'title'     => '15分単位',
+        'condition' => [
+            'Step'    => [60 * 15, 'ja-jp'],
         ]
     ],
     'range'                 => [
@@ -524,7 +537,7 @@ $condition_form = new \ryunosuke\chmonos\Form([
     'telephone-multiple'             => [
         'title'     => '電話番号（カンマで複数値）',
         'condition' => [
-            'Telephone' => [true, '#,#']
+            'Telephone' => [true, '#,|\s#']
         ]
     ],
     'url'                   => [
@@ -619,7 +632,7 @@ resetForm($condition_form, 'condition_form');
         <td></td>
     </tr>
     <tr>
-        <th>整数</th>
+        <th>整数（4桁固定）</th>
         <td><?= $condition_form->input('digits') ?></td>
         <td></td>
     </tr>
@@ -629,9 +642,14 @@ resetForm($condition_form, 'condition_form');
         <td></td>
     </tr>
     <tr>
+        <th>識別子</th>
+        <td><?= $condition_form->input('alphadigit') ?></td>
+        <td></td>
+    </tr>
+    <tr>
         <th>メールアドレス（input でエラー | 複数値）</th>
         <td><?= $condition_form->input('email') ?></td>
-        <td><?= $condition_form->input('email_multiple') ?></td>
+        <td><?= $condition_form->input('email_multiple', ['type' => 'textarea']) ?></td>
     </tr>
     <tr>
         <th>メールアドレス（input でエラーなし、chage でエラー）</th>
@@ -687,6 +705,11 @@ resetForm($condition_form, 'condition_form');
     <tr>
         <th>倍数(0.5)</th>
         <td><?= $condition_form->input('step') ?></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>倍数(15分)</th>
+        <td><?= $condition_form->input('step15minute', ['type' => 'time']) ?></td>
         <td></td>
     </tr>
     <tr>
