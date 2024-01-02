@@ -563,6 +563,39 @@ class Input
     }
 
     /**
+     * Distinct の delimiter を自動設定する
+     *
+     * ただし、すでに delimiter が設定されていたら何もしない。
+     */
+    protected function _setAutoDistinctDelimiter()
+    {
+        $distinct = null;
+        foreach ($this->condition as $condition) {
+            if ($condition instanceof Condition\Distinct) {
+                $distinct = $condition;
+                break;
+            }
+        }
+
+        if ($distinct === null || $distinct->getDelimiter() !== null) {
+            return;
+        }
+
+        $delimiters = [];
+        foreach ($this->condition as $condition) {
+            if ($condition instanceof Condition\Interfaces\MultipleValue) {
+                $delimiters[] = $condition->getDelimiter();
+            }
+        }
+
+        $delimiters = array_filter($delimiters, fn($v) => $v !== null);
+        if (count($delimiters) !== 1) {
+            throw new \UnexpectedValueException('AutoDistinctDelimiter failed. notfound delimiter');
+        }
+        $distinct->setDelimiter(reset($delimiters));
+    }
+
+    /**
      * number 用の min/max/step を算出する
      *
      * @return array ['min'=>$min, 'max'=>$max, 'step'=>$step]

@@ -13,7 +13,7 @@ namespace ryunosuke\chmonos\Condition;
  *   - 非 null を渡すと複数値が許容され、指定文字がデリミタ（正規表現）として使用される
  *   - どのような文字を渡しても空白文字は取り除かれる（"," と ", " は実質同じ意味になる）
  */
-class Telephone extends AbstractCondition implements Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\InferableType
+class Telephone extends AbstractCondition implements Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\InferableType, Interfaces\MultipleValue
 {
     public const INVALID             = 'InvalidTelephone';
     public const INVALID_TELEPHONE   = 'InvalidTelephoneNumber';
@@ -69,7 +69,7 @@ class Telephone extends AbstractCondition implements Interfaces\MaxLength, Inter
             $value = $context['cast']('array', $value);
         }
         else {
-            $value = array_filter(array_map(fn($v) => trim($v), preg_split($params['delimiter'], $value)), fn($v) => strlen($v));
+            $value = preg_split($params['delimiter'], $value, -1, PREG_SPLIT_NO_EMPTY);
         }
 
         $context['foreach']($value, function ($key, $value, $params, $error, $consts) {
@@ -125,6 +125,11 @@ class Telephone extends AbstractCondition implements Interfaces\MaxLength, Inter
     {
         // type=tel はマーカー的なもので入力規則的なものはない（スマホなどのために指定しておいたほうが良い）
         return 'tel';
+    }
+
+    public function getDelimiter()
+    {
+        return $this->_delimiter;
     }
 
     public function getFixture($value, $fields)

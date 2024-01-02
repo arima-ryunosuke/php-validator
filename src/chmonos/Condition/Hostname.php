@@ -14,7 +14,7 @@ namespace ryunosuke\chmonos\Condition;
  *   - 非 null を渡すと複数値が許容され、指定文字がデリミタ（正規表現）として使用される
  *   - どのような文字を渡しても空白文字は取り除かれる（"," と ", " は実質同じ意味になる）
  */
-class Hostname extends AbstractCondition implements Interfaces\ImeMode
+class Hostname extends AbstractCondition implements Interfaces\ImeMode, Interfaces\MultipleValue
 {
     public const INVALID      = 'InvalidHostname';
     public const INVALID_PORT = 'InvalidHostnamePort';
@@ -63,7 +63,7 @@ class Hostname extends AbstractCondition implements Interfaces\ImeMode
             $value = $context['cast']('array', $value);
         }
         else {
-            $value = array_filter(array_map(fn($v) => trim($v), preg_split($params['delimiter'], $value)), fn($v) => strlen($v));
+            $value = preg_split($params['delimiter'], $value, -1, PREG_SPLIT_NO_EMPTY);
         }
 
         $context['foreach']($value, function ($key, $value, $params, $checkport, $error, $consts) {
@@ -90,6 +90,11 @@ class Hostname extends AbstractCondition implements Interfaces\ImeMode
     public function getImeMode()
     {
         return Interfaces\ImeMode::DISABLED;
+    }
+
+    public function getDelimiter()
+    {
+        return $this->_delimiter;
     }
 
     public function getFixture($value, $fields)

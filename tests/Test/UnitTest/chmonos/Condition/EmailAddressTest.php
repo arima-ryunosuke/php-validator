@@ -31,7 +31,7 @@ class EmailAddressTest extends \ryunosuke\Test\AbstractUnitTestCase
 
     function test_multiple()
     {
-        $validate = new EmailAddress(null, '#\\n|,#');
+        $validate = new EmailAddress(null, '#\\n|,|\\s#');
         that($validate)->isValid('')->isTrue();
         that($validate)->isValid("test@test.com, test@test.com,\ntest@test.com")->isTrue();
         that($validate)->isValid("test@test.com, test@test.com,\naaa")->isFalse();
@@ -56,6 +56,15 @@ class EmailAddressTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $validate = new EmailAddress(null, ',');
         that($validate)->getMaxLength()->is(null);
+    }
+
+    function test_getDelimiter()
+    {
+        $validate = new EmailAddress();
+        that($validate)->getDelimiter()->is(null);
+
+        $validate = new EmailAddress(null, ',');
+        that($validate)->getDelimiter()->is(',');
     }
 
     function test_getFixture()

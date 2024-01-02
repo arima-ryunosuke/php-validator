@@ -46,7 +46,7 @@ class TelephoneTest extends \ryunosuke\Test\AbstractUnitTestCase
 
     function test_multiple()
     {
-        $validate = new Telephone(true, '#,#');
+        $validate = new Telephone(true, '#,|\\s#');
         that($validate)->isValid('')->isTrue();
         that($validate)->isValid('070-1234-5678, 080-1234-5678,090-1234-5678')->isTrue();
         that($validate)->isValid('070-1234-5678, 080-1234-5678,090-1234-5678, 123456789')->isFalse();
@@ -74,6 +74,15 @@ class TelephoneTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $validate = new Telephone(false, ',');
         that($validate)->getMaxLength()->is(null);
+    }
+
+    function test_getDelimiter()
+    {
+        $validate = new Telephone();
+        that($validate)->getDelimiter()->is(null);
+
+        $validate = new Telephone(false, ',');
+        that($validate)->getDelimiter()->is(',');
     }
 
     function test_getFixture()

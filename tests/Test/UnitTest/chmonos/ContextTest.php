@@ -715,6 +715,11 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                     new Condition\Digits(),
                 ],
             ],
+            'distinct'         => [
+                'condition' => [
+                    new Condition\Distinct('#,#'),
+                ],
+            ],
             'email-address'    => [
                 'condition' => [
                     new Condition\EmailAddress(),

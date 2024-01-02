@@ -12,7 +12,7 @@ namespace ryunosuke\chmonos\Condition;
  *   - 非 null を渡すと複数値が許容され、指定文字がデリミタ（正規表現）として使用される
  *   - どのような文字を渡しても空白文字は取り除かれる（"," と ", " は実質同じ意味になる）
  */
-class EmailAddress extends AbstractCondition implements Interfaces\MaxLength, Interfaces\ImeMode
+class EmailAddress extends AbstractCondition implements Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\MultipleValue
 {
     public const INVALID        = 'emailAddressInvalid';
     public const INVALID_FORMAT = 'emailAddressInvalidFormat';
@@ -39,7 +39,7 @@ class EmailAddress extends AbstractCondition implements Interfaces\MaxLength, In
             $value = $context['cast']('array', $value);
         }
         else {
-            $value = array_filter(array_map(fn($v) => trim($v), preg_split($params['delimiter'], $value)), fn($v) => strlen($v));
+            $value = preg_split($params['delimiter'], $value, -1, PREG_SPLIT_NO_EMPTY);
         }
 
         $context['foreach']($value, function ($key, $value, $params, $error, $consts) {
@@ -70,6 +70,11 @@ class EmailAddress extends AbstractCondition implements Interfaces\MaxLength, In
         // @task InferableType を implement してないので有効になっていない
         // type=email のメールアドレスチェックは綿密すぎるのでとりあえず text
         return 'text';
+    }
+
+    public function getDelimiter()
+    {
+        return $this->_delimiter;
     }
 
     public function getFixture($value, $fields)

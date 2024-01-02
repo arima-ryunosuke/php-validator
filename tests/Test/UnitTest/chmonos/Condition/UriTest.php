@@ -47,7 +47,7 @@ class UriTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Uri([
             'http',
             'https'
-        ], '#,#');
+        ], '#,|\\s#');
         that($validate)->isValid('')->isTrue();
         that($validate)->isValid('http://example.com, https://example.com,https://example.com:80')->isTrue();
         that($validate)->isValid('http://example.com, https://example.com,ftp://example.com')->isFalse();
@@ -63,6 +63,15 @@ class UriTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Uri();
         that($validate)->getType()->is("url");
+    }
+
+    function test_getDelimiter()
+    {
+        $validate = new Uri();
+        that($validate)->getDelimiter()->is(null);
+
+        $validate = new Uri([], ',');
+        that($validate)->getDelimiter()->is(',');
     }
 
     function test_getFixture()

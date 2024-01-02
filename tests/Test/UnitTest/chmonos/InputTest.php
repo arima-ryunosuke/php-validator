@@ -476,6 +476,41 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that(spl_object_hash($input->condition[0]))->is(spl_object_hash($in_array));
     }
 
+    function test_setAutoDistinctDelimiter()
+    {
+        $rule = [
+            'condition' => [
+                'Hostname' => ['', false, '#,#'],
+                'Distinct' => [],
+            ],
+        ];
+        $input = new Input($rule);
+        that($input)->_setAutoDistinctDelimiter()->isNull();
+
+        // delimiter が設定されているはず
+        that($input)->condition['Distinct']->getDelimiter()->is('#,#');
+
+        $rule = [
+            'condition' => [
+                'Hostname' => ['', false, '#,#'],
+                'Distinct' => ['/\n/'],
+            ],
+        ];
+        $input = new Input($rule);
+        that($input)->_setAutoDistinctDelimiter()->isNull();
+
+        // 変わらないはず
+        that($input)->condition['Distinct']->getDelimiter()->is('/\n/');
+
+        $rule = [
+            'condition' => [
+                'Hostname' => [],
+                'Distinct' => [],
+            ],
+        ];
+        that(Input::class)->new($rule)->wasThrown('notfound delimiter');
+    }
+
     function test_getRange()
     {
         $rule = [

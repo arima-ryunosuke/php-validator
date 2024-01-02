@@ -118,7 +118,7 @@ class HostnameTest extends \ryunosuke\Test\AbstractUnitTestCase
 
     function test_multiple()
     {
-        $validate = new Hostname(['', 4], false, '#,#');
+        $validate = new Hostname(['', 4], false, '#,|\\s#');
         that($validate)->isValid('')->isTrue();
         that($validate)->isValid('example.com, 127.0.0.1,example.com')->isTrue();
         that($validate)->isValid('example.com, 127.0.0.1,example.com:80')->isFalse();
@@ -128,6 +128,15 @@ class HostnameTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Hostname();
         that($validate)->getImeMode()->is(Hostname::DISABLED);
+    }
+
+    function test_getDelimiter()
+    {
+        $validate = new Hostname();
+        that($validate)->getDelimiter()->is(null);
+
+        $validate = new Hostname('', false, ',');
+        that($validate)->getDelimiter()->is(',');
     }
 
     function test_getFixture()
