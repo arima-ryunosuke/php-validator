@@ -47,5 +47,29 @@ class UniqueChildTest extends \ryunosuke\Test\AbstractUnitTestCase
             'k2' => ['val2'],
         ];
         that($validate)->isValid($values['values'])->isFalse();
+
+        $empty_values = [
+            'values' => [
+                [
+                    'k1' => '',
+                    'k2' => '',
+                ],
+                [
+                    'k1' => '',
+                    'k2' => '',
+                ],
+            ]
+        ];
+
+        $validate1 = new UniqueChild(['k1', 'k2'], true);
+        $validate2 = new UniqueChild(['k1', 'k2'], false);
+        $values = $empty_values;
+        that($validate1)->isValid($values['values'])->isTrue();
+        that($validate2)->isValid($values['values'])->isFalse();
+        $values = $empty_values;
+        $values['values'][0]['k1'] = 'valE';
+        $values['values'][1]['k1'] = 'valE';
+        that($validate1)->isValid($values['values'])->isFalse();
+        that($validate2)->isValid($values['values'])->isFalse();
     }
 }

@@ -1,7 +1,6 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
-use ryunosuke\chmonos\Context;
 use function ryunosuke\chmonos\array_kmap;
 use function ryunosuke\chmonos\arrayize;
 
@@ -13,9 +12,11 @@ use function ryunosuke\chmonos\arrayize;
  * type=arrays 要素に設定される前提。なぜならフラットならば Compare/Unique 等で事足りるから。
  * つまり列の串刺し配列に対して Compare/Unique を適用できるイメージ。
  *
+ * $ignore_empty を true にすると串刺し結果が空の場合にスルーされる。
+ *
  * ```php
  * // elem1 と elem2 の結合結果が他と重複するときにエラーになる
- * ['elem1', 'elem2'],
+ * ['elem1', 'elem2'], false
  * ```
  */
 class UniqueChild extends AbstractParentCondition
@@ -29,10 +30,12 @@ class UniqueChild extends AbstractParentCondition
     ];
 
     protected $_inputs;
+    protected $_ignore_empty;
 
-    public function __construct($inputs)
+    public function __construct($inputs, $ignore_empty = false)
     {
         $this->_inputs = arrayize($inputs);
+        $this->_ignore_empty = $ignore_empty;
 
         parent::__construct($this->_inputs);
     }
@@ -46,6 +49,10 @@ class UniqueChild extends AbstractParentCondition
             }, $context));
             return implode("\x1e", $row);
         }, array_flip($params['children']), $context));
+
+        if ($params['ignore_empty']) {
+            $rows = array_filter($rows, fn($row) => strlen(trim($row, "\x1e")));
+        }
 
         if (count($rows) !== count(array_unique($rows))) {
             $error($consts['NO_UNIQUE']);
