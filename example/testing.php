@@ -1,4 +1,8 @@
-<?php require_once __DIR__ . '/+include.php' ?>
+<?php
+
+use function ryunosuke\chmonos\callable_code;
+
+require_once __DIR__ . '/+include.php' ?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -192,33 +196,52 @@
         });
 
         describe('chmonos.function', function () {
-            it('array_kmap', function () {
-                expect(chmonos.array_kmap([1, 2, 3], (v, k, n) => '' + (v + k + n))).toEqual(['100', '211', '322']);
-                expect(chmonos.array_kmap({1: 1, 2: 2, 3: 3}, (v, k, n) => '' + (v + k + n))).toEqual({1: '110', 2: '221', 3: '332'});
-            });
+            <?php
+            $expect = function ($callable, $matcher = 'toEqual') {
+                [, $code] = callable_code($callable);
+                $actual = json_encode($callable());
+                return "expect($code).$matcher($actual)";
+            };
+            ?>
+            with (chmonos) {
+                it('array_kmap', function () {
+                    expect(array_kmap([1, 2, 3], (v, k, n) => '' + (v + k + n))).toEqual(['100', '211', '322']);
+                    expect(array_kmap({1: 1, 2: 2, 3: 3}, (v, k, n) => '' + (v + k + n))).toEqual({1: '110', 2: '221', 3: '332'});
+                });
 
-            it('array_reduce', function () {
-                expect(chmonos.array_reduce([1, 2, 3], (c, v) => c + v, 0)).toEqual(6);
-                expect(chmonos.array_reduce([1, 2, 3], (c, v) => c + v, 100)).toEqual(106);
-                expect(chmonos.array_reduce([1, 2, 3], (c, v) => c + v, '')).toEqual('123');
-                expect(chmonos.array_reduce([1, 2, 3], (c, v) => c + v, 'x')).toEqual('x123');
-            });
+                it('array_reduce', function () {
+                    expect(array_reduce([1, 2, 3], (c, v) => c + v, 0)).toEqual(6);
+                    expect(array_reduce([1, 2, 3], (c, v) => c + v, 100)).toEqual(106);
+                    expect(array_reduce([1, 2, 3], (c, v) => c + v, '')).toEqual('123');
+                    expect(array_reduce([1, 2, 3], (c, v) => c + v, 'x')).toEqual('x123');
+                });
 
-            it('preg_match', function () {
-                var matches = [];
-                expect(chmonos.preg_match('/^[a-z]+$/', 'hoge')).toEqual(1);
-                expect(chmonos.preg_match('/^[a-z]+$/', 'hoge123')).toEqual(0);
-                expect(chmonos.preg_match('/^([a-z]+)(\\d+)/', 'hoge123X', matches)).toEqual(1);
-                expect(matches).toEqual(['hoge123', 'hoge', '123']);
-            });
+                it('preg_match', function () {
+                    var matches = [];
+                    expect(preg_match('#^\\d\\d\\d$#', 123)).toEqual(1);
+                    expect(preg_match('#^\nN$#', '\nN')).toEqual(1);
+                    expect(preg_match('#^a\\nz$#', 'a\nz')).toEqual(1);
+                    expect(preg_match('/^[a-z]+$/', 'hoge')).toEqual(1);
+                    expect(preg_match('/^[a-z]+$/', 'hoge123')).toEqual(0);
+                    expect(preg_match('/^([a-z]+)(\\d+)/', 'hoge123X', matches)).toEqual(1);
+                    expect(matches).toEqual(['hoge123', 'hoge', '123']);
+                    expect(preg_match('/^([a-z]+)(\\d+)?/', 'hogeX', matches, PREG_UNMATCHED_AS_NULL)).toEqual(1);
+                    expect(matches).toEqual(['hoge', 'hoge', null]);
+                });
 
-            it('preg_split', function () {
-                expect(chmonos.preg_split('/,/', 'a,b,c')).toEqual(['a', 'b', 'c']);
-                expect(chmonos.preg_split('/,/', ',a,b,c,')).toEqual(['', 'a', 'b', 'c', '']);
-                expect(chmonos.preg_split('/,/', ',a,b,c,', 3)).toEqual(['', 'a', 'b,c,']);
-                expect(chmonos.preg_split('/,|-/', ',h-o--g,-,e-')).toEqual(['', 'h', 'o', '', 'g', '', '', 'e', '']);
-                expect(chmonos.preg_split('/,|-/', ',h-o--g,-,e-', 4)).toEqual(['', 'h', 'o', '-g,-,e-']);
-            });
+                it('preg_split', function () {
+                    <?= $expect(fn() => preg_split('/0/', 10203)) ?>;
+                    <?= $expect(fn() => preg_split('/,/', 'a,b,c')) ?>;
+                    <?= $expect(fn() => preg_split('/,/', ',a,b,c,')) ?>;
+                    <?= $expect(fn() => preg_split('/,/', ',a,b,c,', 3)) ?>;
+                    <?= $expect(fn() => preg_split('/,/', ',,a,,b,,c,,', -1, PREG_SPLIT_NO_EMPTY)) ?>;
+                    <?= $expect(fn() => preg_split('/,/', ',,a,,b,,c,,', 1, PREG_SPLIT_NO_EMPTY)) ?>;
+                    <?= $expect(fn() => preg_split('/,/', ',,a,,b,,c,,', 2, PREG_SPLIT_NO_EMPTY)) ?>;
+                    <?= $expect(fn() => preg_split('/,/', ',,a,,b,,c,,', 3, PREG_SPLIT_NO_EMPTY)) ?>;
+                    <?= $expect(fn() => preg_split('/,|-/', ',h-o--g,-,e-')) ?>;
+                    <?= $expect(fn() => preg_split('/,|-/', ',h-o--g,-,e-', 4)) ?>;
+                });
+            }
         });
 
         describe('chmonos.dom', function () {
