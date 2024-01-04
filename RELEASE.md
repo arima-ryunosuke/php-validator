@@ -24,6 +24,22 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.2.5
+
+- [fixbug] vuejs の警告対応
+- [fixbug] エラー通知の不具合を修正
+- [feature] js 側の改善
+- [refactor] js 生成処理を変更
+- [feature] inputs 検証の開始・終了イベントを追加
+- [feature] AlphaDigit Condition を追加
+- [feature] Distinct Condition を追加
+- [feature] getFixture を実装
+- [feature] Step の時刻対応
+- [feature] Digits に符号と桁数のチェックを実装
+- [feature] UniqueChild の空文字重複対応
+- [feature] FileName の Windows フルパス対応
+- [refactor] promise のための特別扱いを廃止
+
 ## 1.2.4
 
 - [feature] maxlength の有効モードを追加

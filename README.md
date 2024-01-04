@@ -105,6 +105,7 @@ $form = new Form([
         'pseudo'                => true,       // ダミー hidden を生成するかを指定します（後述）
         'nullable'              => false,      // 値が null の場合でも default 値を使用するか指定します
         // 'default'               => null,       // 値が飛んでこなかった時のデフォルト値を指定します（後述）
+        // 'fixture'               => null,       // Form/Context の getFixture が呼ばれた時に固定値として使用されます（後述）
     ],
     'element_name2' => [/* 構造は同じ */],
     // ・・・
@@ -455,6 +456,14 @@ pseudo と default の違いは下記となります。
 
 - pseudo: checkbox/select で選択されなかったときの既定値
 - default: setValues の初期値、飛んでこなかったときの初期値、template/context での初期値
+
+##### fixture
+
+Form/Context には `getFixture` というメソッドが生えており、「その Form/Context の検証をパスするであろう値」を自動生成できます。
+ただあくまで自動生成であるため、そのままでは検証を通らないことも多いです。
+
+この `fixture` を指定すると自動生成ではなく、その指定した値が明示的に使用されるようになります。
+クロージャを渡すとコールされます。これは「fixture なんてテストでしか使わないのに値を生成したくない」という状況を満たすためです。
 
 ##### その他のルール
 
