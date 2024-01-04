@@ -438,11 +438,24 @@ function Chmonos(form, options) {
                 var parts = eventName.split('.');
                 if (e.type === parts[0]) {
                     e.chmonosSubtypes = parts.slice(1);
-                    validateInputs(resolveDepend(e.target, {
+                    const inputs = resolveDepend(e.target, {
                         group: true,
                         phantom: true,
                         propagate: true,
-                    }), e);
+                    });
+                    form.dispatchEvent(new CustomEvent('validation-start', {
+                        bubbles: true,
+                        detail: {
+                            inputs: inputs,
+                        },
+                    }));
+                    validateInputs(inputs, e);
+                    form.dispatchEvent(new CustomEvent('validation-end', {
+                        bubbles: true,
+                        detail: {
+                            inputs: inputs,
+                        },
+                    }));
                     break;
                 }
             }
@@ -533,7 +546,21 @@ function Chmonos(form, options) {
             promises.push(true);
             return Promise.all(promises);
         }
+
+        form.dispatchEvent(new CustomEvent('validation-start', {
+            bubbles: true,
+            detail: {
+                inputs: inputs,
+            },
+        }));
         promises.push(validateInputs(inputs, evt));
+        form.dispatchEvent(new CustomEvent('validation-end', {
+            bubbles: true,
+            detail: {
+                inputs: inputs,
+            },
+        }));
+
         if (chmonos.customValidation.after.some(function (f) { return f.call(form, promises) === false })) {
             promises.push(true);
         }
@@ -567,9 +594,21 @@ function Chmonos(form, options) {
         inputs.forEach(function (input) {
             addError(input, {error: errorTypes[input.dataset.vinputId] || {}});
         });
+        form.dispatchEvent(new CustomEvent('validation-start', {
+            bubbles: true,
+            detail: {
+                inputs: inputs,
+            },
+        }));
         inputs.forEach(function (input) {
             notifyError(input);
         });
+        form.dispatchEvent(new CustomEvent('validation-end', {
+            bubbles: true,
+            detail: {
+                inputs: inputs,
+            },
+        }));
     };
 
     chmonos.clearErrors = function () {
