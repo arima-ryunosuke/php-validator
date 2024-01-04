@@ -4,7 +4,14 @@
  * 基本的に validated イベントを listen することだけが唯一の仕事で、ここでは toast 表示にしている。
  */
 (function () {
-    // エラー
+    // 実質同じ要素だが、個別要素で飛んでくることがあるので Map でまとめる
+    var chmonosMessages = new Map();
+    var chmonosMessageTimerId = null;
+    var chmonosFormElements = [];
+
+    document.addEventListener('validation-start', function (e) {
+        chmonosFormElements = e.target.querySelectorAll('.validatable, [data-vinput-group]');
+    });
     document.addEventListener('validated', function (e) {
         toast.call(e.target, {
             title: e.detail.title,
@@ -26,10 +33,6 @@
             });
         }
     }, 111);
-
-    // 実質同じ要素だが、個別要素で飛んでくることがあるので Map でまとめる
-    var chmonosMessages = new Map();
-    var chmonosMessageTimerId = null;
 
     function toast(result) {
         var showToast = function (options) {
@@ -81,7 +84,7 @@
                 while (e !== null && e.offsetParent === null) {
                     e = e.parentElement;
                 }
-                if (e !== null && e.getAttribute('type') === 'dummy') {
+                if (e !== null && e === input && e.getAttribute('type') === 'dummy') {
                     if (e.dataset.vinputSelector) {
                         e = e.closest('form')?.querySelector(e.dataset.vinputSelector);
                     }
@@ -105,6 +108,7 @@
         var messages = chmonosMessages.get(input) ?? {};
         for (const type of ['error', 'warning']) {
             messages.title = result.title;
+            messages.phantoms = (messages.phantoms ?? []).concat(result.phantoms);
             messages[type] = (messages[type] ?? []).concat(result[type].toArray ? result[type].toArray() : result[type]);
         }
         chmonosMessages.set(input, messages);
@@ -120,7 +124,7 @@
                             title: messages.title || '',
                             message: "",
                             onClick: function (e) {
-                                scrollAndBlink(input, result.phantoms, type);
+                                scrollAndBlink(input, [...new Set(messages.phantoms)], type);
                                 return false;
                             },
                             onHidden: function (e) {
@@ -128,7 +132,7 @@
                             },
                         });
                         toast.querySelector('.toast-message').innerHTML = [...new Set(messages[type])].join('\n');
-                        toast.style.order = Array.prototype.indexOf.call(document.querySelectorAll('.validation_warning, .validation_error'), this) + 1;
+                        toast.style.order = Array.prototype.indexOf.call(chmonosFormElements, input) + 1;
                         toast.chmonos_vinput = input;
                         input[TOAST_NAME] = toast;
                     }
