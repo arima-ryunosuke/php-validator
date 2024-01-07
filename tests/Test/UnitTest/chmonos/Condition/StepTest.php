@@ -134,6 +134,47 @@ class StepTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid(-3)->isFalse();
         that($validate)->isValid(-4)->isTrue();
         that($validate)->isValid(-5)->isFalse();
+
+        $validate = new Step(15, 'ja-jp');
+        that($validate)->isValid("00:00:00")->isTrue();
+        that($validate)->isValid("00:00:15")->isTrue();
+        that($validate)->isValid("00:00:16")->isFalse();
+
+        $validate = new Step(15 * 60, 'ja-jp');
+        that($validate)->isValid("00:00:00")->isTrue();
+        that($validate)->isValid("00:15:00")->isTrue();
+        that($validate)->isValid("00:16:00")->isFalse();
+        that($validate)->isValid("00:00")->isTrue();
+        that($validate)->isValid("00:15")->isTrue();
+        that($validate)->isValid("00:16")->isFalse();
+
+        $validate = new Step(15 * 60 * 60, 'ja-jp');
+        that($validate)->isValid("00:00:00")->isTrue();
+        that($validate)->isValid("15:00:00")->isTrue();
+        that($validate)->isValid("16:00:00")->isFalse();
+        that($validate)->isValid("00:00")->isTrue();
+        that($validate)->isValid("15:00")->isTrue();
+        that($validate)->isValid("16:00")->isFalse();
+
+        $validate = new Step(15 * 60 * 60, 'ja-jp');
+        that($validate)->isValid("000000")->isTrue();
+        that($validate)->isValid("150000")->isTrue();
+        that($validate)->isValid("160000")->isFalse();
+        that($validate)->isValid("hhmmss")->isFalse();
+        that($validate)->isValid("0000")->isTrue();
+        that($validate)->isValid("1500")->isTrue();
+        that($validate)->isValid("1600")->isFalse();
+        that($validate)->isValid("hhmm")->isFalse();
+
+        $validate = new Step(15 * 60, ['i' => 'I', 's' => 'S']);
+        that($validate)->isValid("000000")->isTrue();
+        that($validate)->isValid("001500")->isTrue();
+        that($validate)->isValid("001600")->isFalse();
+        that($validate)->isValid("hhmmss")->isFalse();
+        that($validate)->isValid("0000")->isTrue();
+        that($validate)->isValid("1500")->isTrue();
+        that($validate)->isValid("1600")->isFalse();
+        that($validate)->isValid("mmss")->isFalse();
     }
 
     function test_getRange()
