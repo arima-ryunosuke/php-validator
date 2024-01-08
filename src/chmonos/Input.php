@@ -864,7 +864,7 @@ class Input
         }
         $attrs['for'] = $attrs['for'] ?? $this->_concatString("{$this->id}{$name}");
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable_label';
-        $attr = $this->createHtmlAttr($attrs);
+        $attr = $this->createHtmlAttr($attrs, null, 'label');
         return "<label $attr>$label</label>";
     }
 
@@ -1082,7 +1082,7 @@ class Input
 
         $wrapper = array_unset($attrs, 'wrapper');
         array_unset($attrs, 'grouper');
-        $attr = $this->createHtmlAttr($attrs);
+        $attr = $this->createHtmlAttr($attrs, null, $attrs['type']);
         return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $attrs['name'], '', "<input $attr>");
     }
 
@@ -1137,7 +1137,7 @@ class Input
 
         $wrapper = array_unset($attrs, 'wrapper');
         array_unset($attrs, 'grouper');
-        $attr = $this->createHtmlAttr($attrs);
+        $attr = $this->createHtmlAttr($attrs, null, 'select');
         return $hidden . $this->_wrapInput('wrapper', $wrapper, 'select', $attrs['name'], $value, "<select $attr>" . implode('', $result) . "</select>");
     }
 
@@ -1192,7 +1192,7 @@ class Input
 
         $wrapper = array_unset($attrs, 'wrapper');
         array_unset($attrs, 'grouper');
-        $attr = $this->createHtmlAttr($attrs);
+        $attr = $this->createHtmlAttr($attrs, null, $attrs['type']);
         return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $attrs['name'], $attrs['value'], "<input $attr>$datalist");
     }
 
@@ -1211,8 +1211,9 @@ class Input
 
         $wrapper = array_unset($attrs, 'wrapper');
         array_unset($attrs, 'grouper');
-        $attr = $this->createHtmlAttr($attrs);
-        return $this->_wrapInput('wrapper', $wrapper, 'textarea', $attrs['name'], $value, '<textarea ' . $attr . ">\n{$this->escapeHtml($value)}</textarea>");
+        $attr = $this->createHtmlAttr($attrs, null, 'textarea');
+        $content = $this->vuemode ? "" : "\n" . $this->escapeHtml($value);
+        return $this->_wrapInput('wrapper', $wrapper, 'textarea', $attrs['name'], $value, "<textarea $attr>$content</textarea>");
     }
 
     protected function _inputChoice($attrs)
@@ -1259,12 +1260,12 @@ class Input
             $label_attrs['for'] = $params['id'];
 
             // 属性値を生成（input と label）
-            $attr = $this->createHtmlAttr($params);
+            $attr = $this->createHtmlAttr($params, null, $attrs['type']);
 
             // html 生成
             $html = "<input $attr>";
             if ($labeled) {
-                $lattrs = $this->createHtmlAttr($label_attrs, $key);
+                $lattrs = $this->createHtmlAttr($label_attrs, $key, 'label');
                 if ($labeled === 'left') {
                     $html = "<label $lattrs>{$this->escapeHtml($text)}</label>$html";
                 }
@@ -1304,7 +1305,7 @@ class Input
             $option_attrs['selected'] = 'selected';
         }
         $option_attrs['value'] = $key;
-        $oattrs = $this->createHtmlAttr($option_attrs, $key);
+        $oattrs = $this->createHtmlAttr($option_attrs, $key, 'option');
 
         return "<option $oattrs>{$this->escapeHtml($text)}</option>";
     }
@@ -1351,7 +1352,7 @@ class Input
             'name'               => $name,
             'value'              => '',
             'data-vinput-pseudo' => 'true',
-        ]);
+        ], null, null);
         return "<input $hiddenAttr>";
     }
 
@@ -1411,9 +1412,21 @@ class Input
         return implode('+', $expression);
     }
 
-    public function createHtmlAttr($attrs, $arg = null)
+    public function createHtmlAttr($attrs, $arg = null, $type = null)
     {
         if ($this->vuemode) {
+            if ($type !== null) {
+                if (in_array($type, ['checkbox', 'radio'])) {
+                    unset($attrs['checked']);
+                }
+                elseif (in_array($type, ['option'])) {
+                    unset($attrs['selected']);
+                }
+                else {
+                    unset($attrs['value']);
+                }
+            }
+
             $vueattrs = ['^id$', '^for$', '^name$', '^data-vlabel-', '^data-vinput-'];
             foreach ($attrs as $k => $v) {
                 if (preg_match("#" . implode('|', $vueattrs) . "#u", $k)) {

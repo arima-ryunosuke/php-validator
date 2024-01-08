@@ -575,7 +575,56 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'data-validation-title' => 'parent-title',
                     'type'                  => 'number',
                     'class'                 => 'validatable',
-                    'value'                 => 'hoge',
+                ],
+            ]);
+
+            // vue に任せるものは伏せられる
+            that($form)->input('parent', ['type' => 'text', 'value' => 'hoge', 'vuejs' => false])->htmlMatchesArray([
+                'input' => [
+                    "value" => "hoge",
+                ],
+            ]);
+            that($form)->input('parent', ['type' => 'text', 'value' => 'hoge', 'vuejs' => true])->htmlMatchesArray([
+                'input' => [
+                    "value" => "",
+                ],
+            ]);
+            that($form)->input('parent', ['type' => 'checkbox', 'value' => 'hoge', 'options' => ['hoge' => 'HOGE'], 'vuejs' => false])->htmlMatchesArray([
+                'input[2]' => [
+                    "value"   => "hoge",
+                    "checked" => "checked",
+                ],
+            ]);
+            that($form)->input('parent', ['type' => 'checkbox', 'value' => 'hoge', 'options' => ['hoge' => 'HOGE'], 'vuejs' => true])->htmlMatchesArray([
+                'input[2]' => [
+                    "value"   => "hoge",
+                    "checked" => null,
+                ],
+            ]);
+            that($form)->input('parent', ['type' => 'select', 'value' => 'hoge', 'options' => ['hoge' => 'HOGE'], 'vuejs' => false])->htmlMatchesArray([
+                'select' => [
+                    'option' => [
+                        "selected" => "selected",
+                        "value"    => "hoge",
+                    ],
+                ],
+            ]);
+            that($form)->input('parent', ['type' => 'select', 'value' => 'hoge', 'options' => ['hoge' => 'HOGE'], 'vuejs' => true])->htmlMatchesArray([
+                'select' => [
+                    'option' => [
+                        "selected" => null,
+                        "value"    => "hoge",
+                    ],
+                ],
+            ]);
+            that($form)->input('parent', ['type' => 'textarea', 'value' => 'hoge', 'vuejs' => false])->htmlMatchesArray([
+                'textarea' => [
+                    "hoge"
+                ],
+            ]);
+            that($form)->input('parent', ['type' => 'textarea', 'value' => 'hoge', 'vuejs' => true])->htmlMatchesArray([
+                'textarea' => [
+                    "",
                 ],
             ]);
         }
@@ -741,7 +790,6 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             that($form)->input('child1')->htmlMatchesArray([
                 'input' => [
                     ':id'                   => "'cx{$prefix}_children-'+i+'-child1'",
-                    'value'                 => 'def1',
                     'data-validation-title' => '',
                     ':data-vinput-id'       => "'children'+'/'+i+'/'+'child1'",
                     ':data-vinput-class'    => "'children'+'/'+'child1'",
@@ -755,7 +803,6 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             that($form)->input('child2')->htmlMatchesArray([
                 'input' => [
                     ':id'                   => "'cx{$prefix}_'+'children['+i+'][child2]'+'_0'",
-                    'value'                 => 'def2',
                     'data-validation-title' => '',
                     ':data-vinput-id'       => "'children'+'/'+i+'/'+'child2'",
                     ':data-vinput-class'    => "'children'+'/'+'child2'",
