@@ -42,7 +42,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'condition' => [
                 null,
             ],
-            'options' => [
+            'options'   => [
                 'group' => [
                     '1' => 'groupoption.1'
                 ],
@@ -1217,7 +1217,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_input_datalist()
     {
         $input = new Input([
-            'name'    => 'name',
+            'name'     => 'name',
             'datalist' => [
                 '2014-12-23' => 'yesterday',
                 '2014-12-24' => 'today',

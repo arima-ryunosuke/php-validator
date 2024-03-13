@@ -33,7 +33,7 @@ class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
         ];
         $validate = new FileType($types);
         that($validate)->isValid($dir . 'png.jpg')->isFalse(); // 判別可能で異なる場合はダメ
-        that($validate)->isValid($dir . 'dmesg')  ->isTrue();  // 判別不能を許容する
+        that($validate)->isValid($dir . 'dmesg')->isTrue();  // 判別不能を許容する
 
         // csv と txt のみ受けつける
         $types = [
