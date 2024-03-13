@@ -786,35 +786,54 @@ if (!function_exists('ryunosuke\\chmonos\\array_pos_key')) {
     /**
      * 配列の指定キーの位置を返す
      *
+     * $key に配列を与えるとその全ての位置を返す。
+     *
      * Example:
      * ```php
      * that(array_pos_key(['a' => 'A', 'b' => 'B', 'c' => 'C'], 'c'))->isSame(2);
      * that(array_pos_key(['a' => 'A', 'b' => 'B', 'c' => 'C'], 'x', -1))->isSame(-1);
+     *  that(array_pos_key(['a' => 'A', 'b' => 'B', 'c' => 'C'], ['a', 'c']))->isSame(['a' => 0, 'c' => 2]);
      * ```
      *
      * @package ryunosuke\Functions\Package\array
      *
      * @param array $array 対象配列
-     * @param string|int $key 取得する位置
-     * @param mixed $default 見つからなかったときのデフォルト値。指定しないと例外
-     * @return mixed 指定キーの位置
+     * @param string|int|array $key 取得したい位置のキー
+     * @param mixed $default 見つからなかったときのデフォルト値。指定しないと例外。$key が配列の場合は見つからなかったキー全てに代入される
+     * @return int|int[] 指定キーの位置
      */
     function array_pos_key($array, $key, $default = null)
     {
         // very slow
         // return array_flip(array_keys($array))[$key];
 
+        $is_array = is_array($key);
+        $key = array_flip((array) $key);
+
+        $result = [];
         $n = 0;
         foreach ($array as $k => $v) {
-            if ($k === $key) {
-                return $n;
+            if (isset($key[$k])) {
+                if (!$is_array) {
+                    return $n;
+                }
+                else {
+                    $result[$k] = $n;
+                }
             }
             $n++;
         }
 
         if (func_num_args() === 2) {
-            throw new \OutOfBoundsException("$key is not found.");
+            if (count($result) !== count($key)) {
+                throw new \OutOfBoundsException(implode(',', $key) . " is not found.");
+            }
         }
+
+        if ($is_array) {
+            return $result + array_fill_keys(array_keys($key), $default);
+        }
+
         return $default;
     }
 }
@@ -1170,6 +1189,10 @@ if (!function_exists('ryunosuke\\chmonos\\is_hasharray')) {
      */
     function is_hasharray(array $array)
     {
+        if (function_exists('array_is_list')) {
+            return !array_is_list($array); // @codeCoverageIgnore
+        }
+
         $i = 0;
         foreach ($array as $k => $dummy) {
             if ($k !== $i++) {
@@ -2702,7 +2725,7 @@ if (!function_exists('ryunosuke\\chmonos\\evaluate')) {
     {
         $cachefile = null;
         if ($cachesize && strlen($phpcode) >= $cachesize) {
-            $cachefile = function_configure('cachedir') . '/' . rawurlencode(__FUNCTION__) . '-' . sha1($phpcode) . '.php';
+            $cachefile = function_configure('storagedir') . '/' . rawurlencode(__FUNCTION__) . '-' . sha1($phpcode) . '.php';
             if (!file_exists($cachefile)) {
                 file_put_contents($cachefile, "<?php $phpcode", LOCK_EX);
             }
@@ -3879,7 +3902,7 @@ if (!function_exists('ryunosuke\\chmonos\\function_configure')) {
      *
      * @package ryunosuke\Functions\Package\utility
      *
-     * @param array|string $option 設定。文字列指定時はその値を返す
+     * @param array|?string $option 設定。文字列指定時はその値を返す
      * @return array|string 設定値
      */
     function function_configure($option)
@@ -3888,6 +3911,7 @@ if (!function_exists('ryunosuke\\chmonos\\function_configure')) {
 
         // default
         $config['cachedir'] ??= sys_get_temp_dir() . DIRECTORY_SEPARATOR . strtr(__NAMESPACE__, ['\\' => '%']);
+        $config['storagedir'] ??= DIRECTORY_SEPARATOR === '/' ? '/var/tmp/rf' : (getenv('ALLUSERSPROFILE') ?: sys_get_temp_dir()) . '\\rf';
         $config['placeholder'] ??= '';
         $config['var_stream'] ??= get_cfg_var('rfunc.var_stream') ?: 'VarStreamV010000';          // for compatible
         $config['memory_stream'] ??= get_cfg_var('rfunc.memory_stream') ?: 'MemoryStreamV010000'; // for compatible
@@ -3903,6 +3927,7 @@ if (!function_exists('ryunosuke\\chmonos\\function_configure')) {
                         $config[$name] = $entry;
                         break;
                     case 'cachedir':
+                    case 'storagedir':
                         $entry ??= $config[$name];
                         if (!file_exists($entry)) {
                             @mkdir($entry, 0777 & (~umask()), true);
@@ -3915,7 +3940,7 @@ if (!function_exists('ryunosuke\\chmonos\\function_configure')) {
                             if (!defined($entry)) {
                                 define($entry, tmpfile() ?: [] ?: '' ?: 0.0 ?: null ?: false);
                             }
-                            if (!is_resource(constant($entry))) {
+                            if (!is_resourcable(constant($entry))) {
                                 // もしリソースじゃないと一意性が保てず致命的になるので例外を投げる
                                 throw new \RuntimeException('placeholder is not resource'); // @codeCoverageIgnore
                             }
@@ -3928,11 +3953,15 @@ if (!function_exists('ryunosuke\\chmonos\\function_configure')) {
         }
 
         // getting
+        if ($option === null) {
+            return $config;
+        }
         if (is_string($option)) {
             switch ($option) {
                 default:
                     return $config[$option] ?? null;
                 case 'cachedir':
+                case 'storagedir':
                     $dirname = $config[$option];
                     if (!file_exists($dirname)) {
                         @mkdir($dirname, 0777 & (~umask()), true); // @codeCoverageIgnore
@@ -4120,7 +4149,44 @@ if (!function_exists('ryunosuke\\chmonos\\is_primitive')) {
      */
     function is_primitive($var)
     {
-        return is_scalar($var) || is_null($var) || is_resource($var);
+        return is_scalar($var) || is_null($var) || is_resourcable($var);
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\is_resourcable') || (new \ReflectionFunction('ryunosuke\\chmonos\\is_resourcable'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\is_resourcable')) {
+    /**
+     * 閉じたリソースでも true を返す is_resource
+     *
+     * マニュアル（ https://www.php.net/manual/ja/function.is-resource.php ）に記載の通り、 isresource は閉じたリソースで false を返す。
+     * リソースはリソースであり、それでは不便なこともあるので、閉じていようとリソースなら true を返す関数。
+     *
+     * Example:
+     * ```php
+     * // 閉じたリソースを用意
+     * $resource = tmpfile();
+     * fclose($resource);
+     * // is_resource は false を返すが・・・
+     * that(is_resource($resource))->isFalse();
+     * // is_resourcable は true を返す
+     * that(is_resourcable($resource))->isTrue();
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\var
+     *
+     * @param mixed $var 調べる値
+     * @return bool リソースなら true
+     */
+    function is_resourcable($var)
+    {
+        if (is_resource($var)) {
+            return true;
+        }
+        // もっといい方法があるかもしれないが、簡単に調査したところ gettype するしか術がないような気がする
+        if (strpos(gettype($var), 'resource') === 0) {
+            return true;
+        }
+        return false;
     }
 }
 
