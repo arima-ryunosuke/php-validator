@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.2.6
+
+- [feature] error.js の改善
+
 ## 1.2.5
 
 - [fixbug] vuejs の警告対応
