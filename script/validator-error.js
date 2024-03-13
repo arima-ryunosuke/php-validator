@@ -7,10 +7,20 @@
     // 実質同じ要素だが、個別要素で飛んでくることがあるので Map でまとめる
     var chmonosMessages = new Map();
     var chmonosMessageTimerId = null;
-    var chmonosFormElements = [];
+    var chmonosFormElements = new WeakMap();
+    var alternateInput = function (input) {
+        for (const [selector, fn] of Object.entries(Chmonos.alternativeInput)) {
+            if (input?.matches(selector)) {
+                input = fn(input) ?? input;
+            }
+        }
+        return input;
+    };
 
     document.addEventListener('validation-start', function (e) {
-        chmonosFormElements = e.target.querySelectorAll('.validatable, [data-vinput-group]');
+        e.target.querySelectorAll('.validatable, [data-vinput-group]').forEach(function (e, i) {
+            chmonosFormElements.set(alternateInput(e), i + 1);
+        });
     });
     document.addEventListener('validated', function (e) {
         toast.call(e.target, {
@@ -65,26 +75,16 @@
         };
         // 指定要素までスクロールして目立たせる
         var scrollAndBlink = function (input, phantoms, type) {
-            var blinker = new IntersectionObserver(function (entries, observer) {
-                entries.forEach(function (entry) {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('validatable_blink_' + type);
-                        entry.target.addEventListener('animationend', function (e) {
-                            e.target.classList.remove('validatable_blink_' + type);
-                        }, {
-                            once: true,
-                        });
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, {
-                threshold: 1.0,
-            });
             var blinkee = [input].concat(phantoms).map(function (e) {
                 while (e !== null && e.offsetParent === null) {
                     e = e.parentElement;
                 }
-                if (e !== null && e === input && e.getAttribute('type') === 'dummy') {
+                if (e === null || !e.classList.contains('validation_' + type)) {
+                    return null;
+                }
+
+                e = alternateInput(e);
+                if (e === input && e.getAttribute('type') === 'dummy') {
                     if (e.dataset.vinputSelector) {
                         e = e.closest('form')?.querySelector(e.dataset.vinputSelector);
                     }
@@ -94,17 +94,35 @@
                 }
                 return e;
             }).filter(e => e !== null);
-            blinkee.forEach(e => blinker.observe(e));
 
-            blinkee[0]?.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-            });
+            blinkee = [...new Set(blinkee)];
+            if (blinkee[0]) {
+                var blinker = new IntersectionObserver(function (entries, observer) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            for (const target of blinkee) {
+                                target.classList.add('validatable_blink_' + type);
+                                target.addEventListener('animationend', function (e) {
+                                    e.target.classList.remove('validatable_blink_' + type);
+                                }, {
+                                    once: true,
+                                });
+                            }
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    threshold: 1.0,
+                });
+                blinker.observe(blinkee[0]);
+                blinkee[0].scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                });
+            }
         };
 
-        // group 単位で toast を共用する（radio や checkbox でその分表示されても嬉しくない）
-        var input = this.closest('[data-vinput-group]') || this;
-
+        var input = alternateInput(this);
         var messages = chmonosMessages.get(input) ?? {};
         for (const type of ['error', 'warning']) {
             messages.title = result.title;
@@ -132,7 +150,7 @@
                             },
                         });
                         toast.querySelector('.toast-message').innerHTML = [...new Set(messages[type])].join('\n');
-                        toast.style.order = Array.prototype.indexOf.call(chmonosFormElements, input) + 1;
+                        toast.style.order = chmonosFormElements.get(input) ?? 0;
                         toast.chmonos_vinput = input;
                         input[TOAST_NAME] = toast;
                     }
@@ -148,4 +166,11 @@
             chmonosMessages.clear();
         });
     }
+
+    // グローバル設定
+    Chmonos.notifyValidation = toast;
+    Chmonos.alternativeInput = {
+        "*": e => e.closest('[data-vinput-group]') ?? e,
+        // "example-selector": e => e.closest('.selector-wrapper'),
+    };
 })();
