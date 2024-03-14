@@ -12,6 +12,9 @@ namespace ryunosuke\chmonos\Condition;
  * - digit: ?int
  *   - 全体の桁数。0埋め必須な場合等に使う。 null だと桁数をチェックしない
  *   - この桁数制限は sign 分は含まない（Number+StringLength で代替できない最大の理由）
+ * - mustDigit: bool
+ *   - digit ピッタリを要求するか。 false にすると digit 未満も許容される
+ *   - false にすると type が text で推測される（本来の意味合いとしては逆というか常に text でも良いくらいだが後方互換のため）
  */
 class Digits extends AbstractCondition implements Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\InferableType
 {
@@ -27,11 +30,13 @@ class Digits extends AbstractCondition implements Interfaces\MaxLength, Interfac
 
     protected $_sign;
     protected $_digit;
+    protected $_mustDigit;
 
-    public function __construct($sign = null, $digit = null)
+    public function __construct($sign = null, $digit = null, $mustDigit = true)
     {
         $this->_sign = $sign ?? '+-';
         $this->_digit = $digit;
+        $this->_mustDigit = $mustDigit;
 
         parent::__construct();
     }
@@ -44,8 +49,11 @@ class Digits extends AbstractCondition implements Interfaces\MaxLength, Interfac
             $error($consts['NOT_DIGITS']);
             return;
         }
-
-        if ($params['digit'] !== null && $params['digit'] !== strlen($value)) {
+        if ($params['mustDigit'] && $params['digit'] !== null && $params['digit'] !== strlen($value)) {
+            $error($consts['INVALID_DIGIT']);
+            return;
+        }
+        if (!$params['mustDigit'] && $params['digit'] !== null && $params['digit'] < strlen($value)) {
             $error($consts['INVALID_DIGIT']);
             return;
         }
@@ -67,11 +75,15 @@ class Digits extends AbstractCondition implements Interfaces\MaxLength, Interfac
 
     public function getType()
     {
-        return 'number';
+        // for compatible
+        if ($this->_mustDigit) {
+            return 'number';
+        }
+        return 'text';
     }
 
     public function getFixture($value, $fields)
     {
-        return $this->fixtureArray(str_split($this->_sign)) . $this->fixtureString($this->_digit ?? 4, '0123456789');
+        return $this->fixtureArray(str_split($this->_sign)) . $this->fixtureString($this->_digit ?? rand(1, 4), '0123456789');
     }
 }

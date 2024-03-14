@@ -72,6 +72,29 @@ class DigitsTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('+009901')->isFalse();
     }
 
+    function test_valid_must_digit()
+    {
+        $validate = new Digits(null, 5, false);
+        that($validate)->isValid(10001)->isTrue();
+        that($validate)->isValid(-10001)->isTrue();
+        that($validate)->isValid(+10001)->isTrue();
+        that($validate)->isValid('00001')->isTrue();
+        that($validate)->isValid('-00001')->isTrue();
+        that($validate)->isValid('+00001')->isTrue();
+        that($validate)->isValid(1001)->isTrue();
+        that($validate)->isValid(-1001)->isTrue();
+        that($validate)->isValid(+1001)->isTrue();
+        that($validate)->isValid('0001')->isTrue();
+        that($validate)->isValid('-0001')->isTrue();
+        that($validate)->isValid('+0001')->isTrue();
+        that($validate)->isValid(109901)->isFalse();
+        that($validate)->isValid(-109901)->isFalse();
+        that($validate)->isValid(+109901)->isFalse();
+        that($validate)->isValid('009901')->isFalse();
+        that($validate)->isValid('-009901')->isFalse();
+        that($validate)->isValid('+009901')->isFalse();
+    }
+
     function test_getMaxLength()
     {
         $validate = new Digits();
@@ -97,6 +120,9 @@ class DigitsTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Digits();
         that($validate)->getType()->is("number");
+
+        $validate = new Digits('', 3, false);
+        that($validate)->getType()->is("text");
     }
 
     function test_getFixture()
