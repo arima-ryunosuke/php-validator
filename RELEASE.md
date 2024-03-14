@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.2.7
+
+- [feature] Digits で桁数未満も許す設定
+- [fixbug] Digits で +- を与えると1桁多く入力できる不具合を修正
+
 ## 1.2.6
 
 - [feature] error.js の改善
