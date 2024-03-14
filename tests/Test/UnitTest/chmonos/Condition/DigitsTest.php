@@ -39,6 +39,14 @@ class DigitsTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid(0x2)->isTrue();
         that($validate)->isValid('0x2')->isFalse();
         that($validate)->isValid(+5)->isTrue();
+
+        $validate = new Digits('+-', 3);
+        that($validate)->isValid('003')->isTrue();
+        that($validate)->isValid('+003')->isTrue();
+        that($validate)->isValid('-003')->isTrue();
+        that($validate)->isValid('0004')->isFalse();
+        that($validate)->isValid('+0004')->isFalse();
+        that($validate)->isValid('-0004')->isFalse();
     }
 
     function test_valid_digit()
@@ -69,7 +77,13 @@ class DigitsTest extends \ryunosuke\Test\AbstractUnitTestCase
         $validate = new Digits();
         that($validate)->getMaxLength()->is(null);
 
+        $validate = new Digits('', 5);
+        that($validate)->getMaxLength()->is(5);
+
         $validate = new Digits('-', 5);
+        that($validate)->getMaxLength()->is(6);
+
+        $validate = new Digits('+-', 5);
         that($validate)->getMaxLength()->is(6);
     }
 

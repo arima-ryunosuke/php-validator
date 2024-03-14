@@ -57,7 +57,7 @@ class Digits extends AbstractCondition implements Interfaces\MaxLength, Interfac
             return null;
         }
 
-        return $this->_digit + strlen($this->_sign);
+        return $this->_digit + (strlen($this->_sign) ? 1 : 0);
     }
 
     public function getImeMode()
