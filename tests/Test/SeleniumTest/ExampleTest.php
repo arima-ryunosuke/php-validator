@@ -276,6 +276,13 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         that($driver)->getErrors()->count(0);
         $driver->setValue('digits', '-0002');
         that($driver)->getErrors()->count(0);
+
+        $driver->setValue('digits5', '000006');
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('digits5', '00005');
+        that($driver)->getErrors()->count(0);
+        $driver->setValue('digits5', '0004');
+        that($driver)->getErrors()->count(0);
     }
 
     /**

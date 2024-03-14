@@ -198,6 +198,12 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'Digits' => [null, 4]
         ]
     ],
+    'digits5'               => [
+        'title'     => '整数',
+        'condition' => [
+            'Digits' => [null, 5, false]
+        ]
+    ],
     'number'                => [
         'title'     => '数値',
         'condition' => [
@@ -632,9 +638,9 @@ resetForm($condition_form, 'condition_form');
         <td></td>
     </tr>
     <tr>
-        <th>整数（4桁固定）</th>
+        <th>整数（4桁固定|5桁まで）</th>
         <td><?= $condition_form->input('digits') ?></td>
-        <td></td>
+        <td><?= $condition_form->input('digits5') ?></td>
     </tr>
     <tr>
         <th>数値</th>
