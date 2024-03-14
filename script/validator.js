@@ -4700,8 +4700,11 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
             $error($consts['NOT_DIGITS']);
             return;
         }
-
-        if ($params['digit'] !== null && $params['digit'] !== strlen($value)) {
+        if ($params['mustDigit'] && $params['digit'] !== null && $params['digit'] !== strlen($value)) {
+            $error($consts['INVALID_DIGIT']);
+            return;
+        }
+        if (!$params['mustDigit'] && $params['digit'] !== null && $params['digit'] < strlen($value)) {
             $error($consts['INVALID_DIGIT']);
             return;
         }},"Distinct":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
