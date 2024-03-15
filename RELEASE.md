@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.2.8
+
+- [feature] AlphaDigit で任意の記号を許可する機能
+
 ## 1.2.7
 
 - [feature] Digits で桁数未満も許す設定
