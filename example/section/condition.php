@@ -213,7 +213,7 @@ $condition_form = new \ryunosuke\chmonos\Form([
     'alphadigit'            => [
         'title'     => '識別子',
         'condition' => [
-            'AlphaDigit' => [false],
+            'AlphaDigit' => [false, '_-'],
         ]
     ],
     'email'                 => [
@@ -648,7 +648,7 @@ resetForm($condition_form, 'condition_form');
         <td></td>
     </tr>
     <tr>
-        <th>識別子</th>
+        <th>識別子（先頭数字NGで半角英数字_-）</th>
         <td><?= $condition_form->input('alphadigit') ?></td>
         <td></td>
     </tr>

@@ -307,7 +307,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('alphadigit', '123hoge');
         that($driver)->getErrors()->count(1);
-        $driver->setValue('alphadigit', '_hoge_');
+        $driver->setValue('alphadigit', '_hoge-');
         that($driver)->getErrors()->count(0);
     }
 
