@@ -44,15 +44,201 @@ var PREG_SPLIT_NO_EMPTY = this.PREG_SPLIT_NO_EMPTY = 1;
 var PREG_UNMATCHED_AS_NULL = this.PREG_UNMATCHED_AS_NULL = 512;
 /**/
     /**/
+var _phpCastString = this._phpCastString = (function(){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+module.exports = function _phpCastString(value) {
+  // original by: Rafał Kukawski
+  //   example 1: _phpCastString(true)
+  //   returns 1: '1'
+  //   example 2: _phpCastString(false)
+  //   returns 2: ''
+  //   example 3: _phpCastString('foo')
+  //   returns 3: 'foo'
+  //   example 4: _phpCastString(0/0)
+  //   returns 4: 'NAN'
+  //   example 5: _phpCastString(1/0)
+  //   returns 5: 'INF'
+  //   example 6: _phpCastString(-1/0)
+  //   returns 6: '-INF'
+  //   example 7: _phpCastString(null)
+  //   returns 7: ''
+  //   example 8: _phpCastString(undefined)
+  //   returns 8: ''
+  //   example 9: _phpCastString([])
+  //   returns 9: 'Array'
+  //   example 10: _phpCastString({})
+  //   returns 10: 'Object'
+  //   example 11: _phpCastString(0)
+  //   returns 11: '0'
+  //   example 12: _phpCastString(1)
+  //   returns 12: '1'
+  //   example 13: _phpCastString(3.14)
+  //   returns 13: '3.14'
+
+  var type = typeof value === 'undefined' ? 'undefined' : _typeof(value);
+
+  switch (type) {
+    case 'boolean':
+      return value ? '1' : '';
+    case 'string':
+      return value;
+    case 'number':
+      if (isNaN(value)) {
+        return 'NAN';
+      }
+
+      if (!isFinite(value)) {
+        return (value < 0 ? '-' : '') + 'INF';
+      }
+
+      return value + '';
+    case 'undefined':
+      return '';
+    case 'object':
+      if (Array.isArray(value)) {
+        return 'Array';
+      }
+
+      if (value !== null) {
+        return 'Object';
+      }
+
+      return '';
+    case 'function':
+    // fall through
+    default:
+      throw new Error('Unsupported value type');
+  }
+};
+return module.exports;
+})();
+/**/
+var _php_cast_float = this._php_cast_float = (function(){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+module.exports = function _php_cast_float(value) {
+  // original by: Rafał Kukawski
+  //   example 1: _php_cast_float(false)
+  //   returns 1: 0
+  //   example 2: _php_cast_float(true)
+  //   returns 2: 1
+  //   example 3: _php_cast_float(0)
+  //   returns 3: 0
+  //   example 4: _php_cast_float(1)
+  //   returns 4: 1
+  //   example 5: _php_cast_float(3.14)
+  //   returns 5: 3.14
+  //   example 6: _php_cast_float('')
+  //   returns 6: 0
+  //   example 7: _php_cast_float('0')
+  //   returns 7: 0
+  //   example 8: _php_cast_float('abc')
+  //   returns 8: 0
+  //   example 9: _php_cast_float(null)
+  //   returns 9: 0
+  //  example 10: _php_cast_float(undefined)
+  //  returns 10: 0
+  //  example 11: _php_cast_float('123abc')
+  //  returns 11: 123
+  //  example 12: _php_cast_float('123e4')
+  //  returns 12: 1230000
+  //  example 13: _php_cast_float(0x200000001)
+  //  returns 13: 8589934593
+  //  example 14: _php_cast_float('3.14abc')
+  //  returns 14: 3.14
+
+  var type = typeof value === 'undefined' ? 'undefined' : _typeof(value);
+
+  switch (type) {
+    case 'number':
+      return value;
+    case 'string':
+      return parseFloat(value) || 0;
+    case 'boolean':
+    // fall through
+    default:
+      // PHP docs state, that for types other than string
+      // conversion is {input type}->int->float
+      return require('./_php_cast_int')(value);
+  }
+};
+return module.exports;
+})();
+/**/
+var _php_cast_int = this._php_cast_int = (function(){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+module.exports = function _php_cast_int(value) {
+  // original by: Rafał Kukawski
+  //   example 1: _php_cast_int(false)
+  //   returns 1: 0
+  //   example 2: _php_cast_int(true)
+  //   returns 2: 1
+  //   example 3: _php_cast_int(0)
+  //   returns 3: 0
+  //   example 4: _php_cast_int(1)
+  //   returns 4: 1
+  //   example 5: _php_cast_int(3.14)
+  //   returns 5: 3
+  //   example 6: _php_cast_int('')
+  //   returns 6: 0
+  //   example 7: _php_cast_int('0')
+  //   returns 7: 0
+  //   example 8: _php_cast_int('abc')
+  //   returns 8: 0
+  //   example 9: _php_cast_int(null)
+  //   returns 9: 0
+  //  example 10: _php_cast_int(undefined)
+  //  returns 10: 0
+  //  example 11: _php_cast_int('123abc')
+  //  returns 11: 123
+  //  example 12: _php_cast_int('123e4')
+  //  returns 12: 123
+  //  example 13: _php_cast_int(0x200000001)
+  //  returns 13: 8589934593
+
+  var type = typeof value === 'undefined' ? 'undefined' : _typeof(value);
+
+  switch (type) {
+    case 'number':
+      if (isNaN(value) || !isFinite(value)) {
+        // from PHP 7, NaN and Infinity are casted to 0
+        return 0;
+      }
+
+      return value < 0 ? Math.ceil(value) : Math.floor(value);
+    case 'string':
+      return parseInt(value, 10) || 0;
+    case 'boolean':
+    // fall through
+    default:
+      // Behaviour for types other than float, string, boolean
+      // is undefined and can change any time.
+      // To not invent complex logic
+      // that mimics PHP 7.0 behaviour
+      // casting value->bool->number is used
+      return +!!value;
+  }
+};
+return module.exports;
+})();
+/**/
 var abs = this.abs = (function(){
 "use strict";
 
 module.exports = function abs(mixedNumber) {
-  //  discuss at: http://locutus.io/php/abs/
-  // original by: Waldo Malqui Silva (http://waldo.malqui.info)
+  //  discuss at: https://locutus.io/php/abs/
+  // original by: Waldo Malqui Silva (https://waldo.malqui.info)
   // improved by: Karol Kowalski
-  // improved by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: Jonas Raoni Soares Silva (http://www.jsfromhell.com)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: Jonas Raoni Soares Silva (https://www.jsfromhell.com)
   //   example 1: abs(4.2)
   //   returns 1: 4.2
   //   example 2: abs(-4.2)
@@ -74,8 +260,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 module.exports = function array_column(input, ColumnKey) {
   var IndexKey = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-  // eslint-disable-line camelcase
-  //   discuss at: http://locutus.io/php/array_column/
+
+  //   discuss at: https://locutus.io/php/array_column/
   //   original by: Enzo Dañobeytía
   //   example 1: array_column([{name: 'Alex', value: 1}, {name: 'Elvis', value: 2}, {name: 'Michael', value: 3}], 'name')
   //   returns 1: {0: "Alex", 1: "Elvis", 2: "Michael"}
@@ -167,14 +353,13 @@ var array_count_values = this.array_count_values = (function(){
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function array_count_values(array) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/array_count_values/
-  // original by: Ates Goral (http://magnetiq.com)
-  // improved by: Michael White (http://getsprink.com)
-  // improved by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/array_count_values/
+  // original by: Ates Goral (https://magnetiq.com)
+  // improved by: Michael White (https://getsprink.com)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
   //    input by: sankai
   //    input by: Shingo
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
   //   example 1: array_count_values([ 3, 5, 3, "foo", "bar", "foo" ])
   //   returns 1: {3:2, 5:1, "foo":2, "bar":1}
   //   example 2: array_count_values({ p1: 3, p2: 5, p3: 3, p4: "foo", p5: "bar", p6: "foo" })
@@ -230,11 +415,10 @@ var array_filter = this.array_filter = (function(){
 'use strict';
 
 module.exports = function array_filter(arr, func) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/array_filter/
-  // original by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/array_filter/
+  // original by: Brett Zamir (https://brett-zamir.me)
   //    input by: max4ever
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   //      note 1: Takes a function as an argument, not a function's name
   //   example 1: var odd = function (num) {return (num & 1);}
   //   example 1: array_filter({"a": 1, "b": 2, "c": 3, "d": 4, "e": 5}, odd)
@@ -246,7 +430,7 @@ module.exports = function array_filter(arr, func) {
   //   returns 3: {"a":1, "c":-1}
 
   var retObj = {};
-  var k;
+  var k = void 0;
 
   func = func || function (v) {
     return v;
@@ -272,15 +456,14 @@ var array_flip = this.array_flip = (function(){
 "use strict";
 
 module.exports = function array_flip(trans) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/array_flip/
-  // original by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: Pier Paolo Ramon (http://www.mastersoup.com/)
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/array_flip/
+  // original by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: Pier Paolo Ramon (https://www.mastersoup.com/)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   //   example 1: array_flip( {a: 1, b: 1, c: 2} )
   //   returns 1: {1: 'b', 2: 'c'}
 
-  var key;
+  var key = void 0;
   var tmpArr = {};
 
   for (key in trans) {
@@ -299,9 +482,8 @@ var array_intersect_key = this.array_intersect_key = (function(){
 'use strict';
 
 module.exports = function array_intersect_key(arr1) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/array_intersect_key/
-  // original by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/array_intersect_key/
+  // original by: Brett Zamir (https://brett-zamir.me)
   //      note 1: These only output associative arrays (would need to be
   //      note 1: all numeric and counting from zero to be numeric)
   //   example 1: var $array1 = {a: 'green', b: 'brown', c: 'blue', 0: 'red'}
@@ -318,12 +500,10 @@ module.exports = function array_intersect_key(arr1) {
   var k = '';
 
   arr1keys: for (k1 in arr1) {
-    // eslint-disable-line no-labels
     if (!arr1.hasOwnProperty(k1)) {
       continue;
     }
     arrs: for (i = 1; i < argl; i++) {
-      // eslint-disable-line no-labels
       arr = arguments[i];
       for (k in arr) {
         if (!arr.hasOwnProperty(k)) {
@@ -352,15 +532,14 @@ var array_keys = this.array_keys = (function(){
 'use strict';
 
 module.exports = function array_keys(input, searchValue, argStrict) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/array_keys/
-  // original by: Kevin van Zonneveld (http://kvz.io)
-  //    input by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/array_keys/
+  // original by: Kevin van Zonneveld (https://kvz.io)
+  //    input by: Brett Zamir (https://brett-zamir.me)
   //    input by: P
-  // bugfixed by: Kevin van Zonneveld (http://kvz.io)
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
+  // bugfixed by: Kevin van Zonneveld (https://kvz.io)
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
   // improved by: jd
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   //   example 1: array_keys( {firstname: 'Kevin', surname: 'van Zonneveld'} )
   //   returns 1: [ 'firstname', 'surname' ]
 
@@ -411,11 +590,10 @@ var array_merge = this.array_merge = (function(){
 'use strict';
 
 module.exports = function array_merge() {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/array_merge/
-  // original by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/array_merge/
+  // original by: Brett Zamir (https://brett-zamir.me)
   // bugfixed by: Nate
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
   //    input by: josh
   //   example 1: var $arr1 = {"color": "red", 0: 2, 1: 4}
   //   example 1: var $arr2 = {0: "a", 1: "b", "color": "green", "shape": "trapezoid", 2: 4}
@@ -428,7 +606,7 @@ module.exports = function array_merge() {
 
   var args = Array.prototype.slice.call(arguments);
   var argl = args.length;
-  var arg;
+  var arg = void 0;
   var retObj = {};
   var k = '';
   var argil = 0;
@@ -502,15 +680,14 @@ var array_unique = this.array_unique = (function(){
 'use strict';
 
 module.exports = function array_unique(inputArr) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/array_unique/
-  // original by: Carlos R. L. Rodrigues (http://www.jsfromhell.com)
+  //  discuss at: https://locutus.io/php/array_unique/
+  // original by: Carlos R. L. Rodrigues (https://www.jsfromhell.com)
   //    input by: duncan
-  //    input by: Brett Zamir (http://brett-zamir.me)
-  // bugfixed by: Kevin van Zonneveld (http://kvz.io)
+  //    input by: Brett Zamir (https://brett-zamir.me)
+  // bugfixed by: Kevin van Zonneveld (https://kvz.io)
   // bugfixed by: Nate
-  // bugfixed by: Kevin van Zonneveld (http://kvz.io)
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
+  // bugfixed by: Kevin van Zonneveld (https://kvz.io)
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
   // improved by: Michael Grier
   //      note 1: The second argument, sort_flags is not implemented;
   //      note 1: also should be sorted (asort?) first according to docs
@@ -572,9 +749,9 @@ var basename = this.basename = (function(){
 'use strict';
 
 module.exports = function basename(path, suffix) {
-  //  discuss at: http://locutus.io/php/basename/
-  // original by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: Ash Searle (http://hexmen.com/blog/)
+  //  discuss at: https://locutus.io/php/basename/
+  // original by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: Ash Searle (https://hexmen.com/blog/)
   // improved by: Lincoln Ramsay
   // improved by: djmix
   // improved by: Dmitry Gorelenkov
@@ -609,19 +786,19 @@ var count = this.count = (function(){
 'use strict';
 
 module.exports = function count(mixedVar, mode) {
-  //  discuss at: http://locutus.io/php/count/
-  // original by: Kevin van Zonneveld (http://kvz.io)
-  //    input by: Waldo Malqui Silva (http://waldo.malqui.info)
+  //  discuss at: https://locutus.io/php/count/
+  // original by: Kevin van Zonneveld (https://kvz.io)
+  //    input by: Waldo Malqui Silva (https://waldo.malqui.info)
   //    input by: merabi
   // bugfixed by: Soren Hansen
-  // bugfixed by: Olivier Louvignes (http://mg-crea.com/)
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  // bugfixed by: Olivier Louvignes (https://mg-crea.com/)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   //   example 1: count([[0,0],[0,-4]], 'COUNT_RECURSIVE')
   //   returns 1: 6
   //   example 2: count({'one' : [1,2,3,4,5]}, 'COUNT_RECURSIVE')
   //   returns 2: 6
 
-  var key;
+  var key = void 0;
   var cnt = 0;
 
   if (mixedVar === null || typeof mixedVar === 'undefined') {
@@ -655,9 +832,8 @@ var ctype_digit = this.ctype_digit = (function(){
 'use strict';
 
 module.exports = function ctype_digit(text) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/ctype_digit/
-  // original by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/ctype_digit/
+  // original by: Brett Zamir (https://brett-zamir.me)
   //   example 1: ctype_digit('150')
   //   returns 1: true
 
@@ -682,37 +858,37 @@ var date = this.date = (function(){
 'use strict';
 
 module.exports = function date(format, timestamp) {
-  //  discuss at: http://locutus.io/php/date/
-  // original by: Carlos R. L. Rodrigues (http://www.jsfromhell.com)
+  //  discuss at: https://locutus.io/php/date/
+  // original by: Carlos R. L. Rodrigues (https://www.jsfromhell.com)
   // original by: gettimeofday
-  //    parts by: Peter-Paul Koch (http://www.quirksmode.org/js/beat.html)
-  // improved by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: MeEtc (http://yass.meetcweb.com)
+  //    parts by: Peter-Paul Koch (https://www.quirksmode.org/js/beat.html)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: MeEtc (https://yass.meetcweb.com)
   // improved by: Brad Touesnard
   // improved by: Tim Wiel
   // improved by: Bryan Elliott
   // improved by: David Randall
   // improved by: Theriault (https://github.com/Theriault)
   // improved by: Theriault (https://github.com/Theriault)
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   // improved by: Theriault (https://github.com/Theriault)
-  // improved by: Thomas Beaucourt (http://www.webapp.fr)
+  // improved by: Thomas Beaucourt (https://www.webapp.fr)
   // improved by: JT
   // improved by: Theriault (https://github.com/Theriault)
-  // improved by: Rafał Kukawski (http://blog.kukawski.pl)
+  // improved by: Rafał Kukawski (https://blog.kukawski.pl)
   // improved by: Theriault (https://github.com/Theriault)
-  //    input by: Brett Zamir (http://brett-zamir.me)
+  //    input by: Brett Zamir (https://brett-zamir.me)
   //    input by: majak
   //    input by: Alex
   //    input by: Martin
   //    input by: Alex Wilson
   //    input by: Haravikk
-  // bugfixed by: Kevin van Zonneveld (http://kvz.io)
+  // bugfixed by: Kevin van Zonneveld (https://kvz.io)
   // bugfixed by: majak
-  // bugfixed by: Kevin van Zonneveld (http://kvz.io)
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
-  // bugfixed by: omid (http://locutus.io/php/380:380#comment_137122)
-  // bugfixed by: Chris (http://www.devotis.nl/)
+  // bugfixed by: Kevin van Zonneveld (https://kvz.io)
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
+  // bugfixed by: omid (https://locutus.io/php/380:380#comment_137122)
+  // bugfixed by: Chris (https://www.devotis.nl/)
   //      note 1: Uses global: locutus to store the default timezone
   //      note 1: Although the function potentially allows timezone info
   //      note 1: (see notes), it currently does not set
@@ -743,7 +919,8 @@ module.exports = function date(format, timestamp) {
   //   returns 9: '52 2011-01-02'
   //        test: skip-1 skip-2 skip-5
 
-  var jsdate, f;
+  var jsdate = void 0,
+      f = void 0;
   // Keep this here (works, but for code commented-out below for file size reasons)
   // var tal= [];
   var txtWords = ['Sun', 'Mon', 'Tues', 'Wednes', 'Thurs', 'Fri', 'Satur', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -989,8 +1166,7 @@ module.exports = function date(format, timestamp) {
   var _date = function _date(format, timestamp) {
     jsdate = timestamp === undefined ? new Date() // Not provided
     : timestamp instanceof Date ? new Date(timestamp) // JS Date()
-    : new Date(timestamp * 1000) // UNIX timestamp (auto-convert to int)
-    ;
+    : new Date(timestamp * 1000); // UNIX timestamp (auto-convert to int)
     return format.replace(formatChr, formatChrCb);
   };
 
@@ -1005,8 +1181,8 @@ var explode = this.explode = (function(){
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function explode(delimiter, string, limit) {
-  //  discuss at: http://locutus.io/php/explode/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/explode/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   //   example 1: explode(' ', 'Kevin van Zonneveld')
   //   returns 1: [ 'Kevin', 'van', 'Zonneveld' ]
 
@@ -1074,8 +1250,8 @@ var getenv = this.getenv = (function(){
 'use strict';
 
 module.exports = function getenv(varname) {
-  //  discuss at: http://locutus.io/php/getenv/
-  // original by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/getenv/
+  // original by: Brett Zamir (https://brett-zamir.me)
   //   example 1: getenv('LC_ALL')
   //   returns 1: false
 
@@ -1128,11 +1304,11 @@ var gettype = this.gettype = (function(){
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function gettype(mixedVar) {
-  //  discuss at: http://locutus.io/php/gettype/
+  //  discuss at: https://locutus.io/php/gettype/
   // original by: Paulo Freitas
-  // improved by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: Douglas Crockford (http://javascript.crockford.com)
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: Douglas Crockford (https://javascript.crockford.com)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   //    input by: KELAN
   //      note 1: 1.0 is simplified to 1 before it can be accessed by the function, this makes
   //      note 1: it different from the PHP implementation. We can't fix this unfortunately.
@@ -1154,7 +1330,7 @@ module.exports = function gettype(mixedVar) {
   var isFloat = require('../var/is_float');
 
   var s = typeof mixedVar === 'undefined' ? 'undefined' : _typeof(mixedVar);
-  var name;
+  var name = void 0;
   var _getFuncName = function _getFuncName(fn) {
     var name = /\W*function\s+([\w$]+)\s*\(/.exec(fn);
     if (!name) {
@@ -1165,7 +1341,7 @@ module.exports = function gettype(mixedVar) {
 
   if (s === 'object') {
     if (mixedVar !== null) {
-      // From: http://javascript.crockford.com/remedial.html
+      // From: https://javascript.crockford.com/remedial.html
       // @todo: Break up this lengthy if statement
       if (typeof mixedVar.length === 'number' && !mixedVar.propertyIsEnumerable('length') && typeof mixedVar.splice === 'function') {
         s = 'array';
@@ -1212,11 +1388,11 @@ var implode = this.implode = (function(){
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function implode(glue, pieces) {
-  //  discuss at: http://locutus.io/php/implode/
-  // original by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: Waldo Malqui Silva (http://waldo.malqui.info)
-  // improved by: Itsacon (http://www.itsacon.net/)
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/implode/
+  // original by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: Waldo Malqui Silva (https://waldo.malqui.info)
+  // improved by: Itsacon (https://www.itsacon.net/)
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
   //   example 1: implode(' ', ['Kevin', 'van', 'Zonneveld'])
   //   returns 1: 'Kevin van Zonneveld'
   //   example 2: implode(' ', {first:'Kevin', last: 'van Zonneveld'})
@@ -1251,13 +1427,12 @@ var in_array = this.in_array = (function(){
 'use strict';
 
 module.exports = function in_array(needle, haystack, argStrict) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/in_array/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/in_array/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   // improved by: vlado houba
   // improved by: Jonas Sciangula Street (Joni2Back)
   //    input by: Billy
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
   //   example 1: in_array('van', ['Kevin', 'van', 'Zonneveld'])
   //   returns 1: true
   //   example 2: in_array('vlado', {0: 'Kevin', vlado: 'van', 1: 'Zonneveld'})
@@ -1283,8 +1458,8 @@ module.exports = function in_array(needle, haystack, argStrict) {
     }
   } else {
     for (key in haystack) {
+      // eslint-disable-next-line eqeqeq
       if (haystack[key] == needle) {
-        // eslint-disable-line eqeqeq
         return true;
       }
     }
@@ -1299,9 +1474,8 @@ var ini_get = this.ini_get = (function(){
 'use strict';
 
 module.exports = function ini_get(varname) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/ini_get/
-  // original by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/ini_get/
+  // original by: Brett Zamir (https://brett-zamir.me)
   //      note 1: The ini values must be set by ini_set or manually within an ini file
   //   example 1: ini_set('date.timezone', 'Asia/Hong_Kong')
   //   example 1: ini_get('date.timezone')
@@ -1331,12 +1505,12 @@ var intval = this.intval = (function(){
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function intval(mixedVar, base) {
-  //  discuss at: http://locutus.io/php/intval/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/intval/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   // improved by: stensi
-  // bugfixed by: Kevin van Zonneveld (http://kvz.io)
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
-  // bugfixed by: Rafał Kukawski (http://blog.kukawski.pl)
+  // bugfixed by: Kevin van Zonneveld (https://kvz.io)
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
+  // bugfixed by: Rafał Kukawski (https://blog.kukawski.pl)
   //    input by: Matteo
   //   example 1: intval('Kevin van Zonneveld')
   //   returns 1: 0
@@ -1355,7 +1529,8 @@ module.exports = function intval(mixedVar, base) {
   //   example 8: intval('010', 0)
   //   returns 8: 8
 
-  var tmp, match;
+  var tmp = void 0,
+      match = void 0;
 
   var type = typeof mixedVar === 'undefined' ? 'undefined' : _typeof(mixedVar);
 
@@ -1383,17 +1558,16 @@ var is_array = this.is_array = (function(){
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function is_array(mixedVar) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/is_array/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/is_array/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   // improved by: Legaev Andrey
   // improved by: Onno Marsman (https://twitter.com/onnomarsman)
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   // improved by: Nathan Sepulveda
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   // bugfixed by: Cord
   // bugfixed by: Manish
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
   //      note 1: In Locutus, javascript objects are like php associative arrays,
   //      note 1: thus JavaScript objects will also
   //      note 1: return true in this function (except for objects which inherit properties,
@@ -1482,12 +1656,11 @@ var is_float = this.is_float = (function(){
 "use strict";
 
 module.exports = function is_float(mixedVar) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/is_float/
+  //  discuss at: https://locutus.io/php/is_float/
   // original by: Paulo Freitas
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
-  // improved by: WebDevHobo (http://webdevhobo.blogspot.com/)
-  // improved by: Rafał Kukawski (http://blog.kukawski.pl)
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
+  // improved by: WebDevHobo (https://webdevhobo.blogspot.com/)
+  // improved by: Rafał Kukawski (https://blog.kukawski.pl)
   //      note 1: 1.0 is simplified to 1 before it can be accessed by the function, this makes
   //      note 1: it different from the PHP implementation. We can't fix this unfortunately.
   //   example 1: is_float(186.31)
@@ -1502,14 +1675,13 @@ var is_int = this.is_int = (function(){
 "use strict";
 
 module.exports = function is_int(mixedVar) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/is_int/
+  //  discuss at: https://locutus.io/php/is_int/
   // original by: Alex
-  // improved by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: WebDevHobo (http://webdevhobo.blogspot.com/)
-  // improved by: Rafał Kukawski (http://blog.kukawski.pl)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: WebDevHobo (https://webdevhobo.blogspot.com/)
+  // improved by: Rafał Kukawski (https://blog.kukawski.pl)
   //  revised by: Matt Bradley
-  // bugfixed by: Kevin van Zonneveld (http://kvz.io)
+  // bugfixed by: Kevin van Zonneveld (https://kvz.io)
   //      note 1: 1.0 is simplified to 1 before it can be accessed by the function, this makes
   //      note 1: it different from the PHP implementation. We can't fix this unfortunately.
   //   example 1: is_int(23)
@@ -1530,9 +1702,8 @@ var is_null = this.is_null = (function(){
 "use strict";
 
 module.exports = function is_null(mixedVar) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/is_null/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/is_null/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   //   example 1: is_null('23')
   //   returns 1: false
   //   example 2: is_null(null)
@@ -1547,9 +1718,8 @@ var is_string = this.is_string = (function(){
 'use strict';
 
 module.exports = function is_string(mixedVar) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/is_string/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/is_string/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   //   example 1: is_string('23')
   //   returns 1: true
   //   example 2: is_string(23.5)
@@ -1564,11 +1734,11 @@ var isset = this.isset = (function(){
 'use strict';
 
 module.exports = function isset() {
-  //  discuss at: http://locutus.io/php/isset/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/isset/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   // improved by: FremyCompany
   // improved by: Onno Marsman (https://twitter.com/onnomarsman)
-  // improved by: Rafał Kukawski (http://blog.kukawski.pl)
+  // improved by: Rafał Kukawski (https://blog.kukawski.pl)
   //   example 1: isset( undefined, true)
   //   returns 1: false
   //   example 2: isset( 'Kevin van Zonneveld' )
@@ -1577,7 +1747,7 @@ module.exports = function isset() {
   var a = arguments;
   var l = a.length;
   var i = 0;
-  var undef;
+  var undef = void 0;
 
   if (l === 0) {
     throw new Error('Empty isset');
@@ -1599,8 +1769,8 @@ var join = this.join = (function(){
 'use strict';
 
 module.exports = function join(glue, pieces) {
-  //  discuss at: http://locutus.io/php/join/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/join/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   //   example 1: join(' ', ['Kevin', 'van', 'Zonneveld'])
   //   returns 1: 'Kevin van Zonneveld'
 
@@ -1616,10 +1786,9 @@ var json_decode = this.json_decode = (function(){
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function json_decode(strJson) {
-  // eslint-disable-line camelcase
-  //       discuss at: http://phpjs.org/functions/json_decode/
-  //      original by: Public Domain (http://www.json.org/json2.js)
-  // reimplemented by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  //       discuss at: https://phpjs.org/functions/json_decode/
+  //      original by: Public Domain (https://www.json.org/json2.js)
+  // reimplemented by: Kevin van Zonneveld (https://kevin.vanzonneveld.net)
   //      improved by: T.J. Leahy
   //      improved by: Michael White
   //           note 1: If node or the browser does not offer JSON.parse,
@@ -1629,11 +1798,11 @@ module.exports = function json_decode(strJson) {
   //        returns 1: [1]
 
   /*
-    http://www.JSON.org/json2.js
+    https://www.JSON.org/json2.js
     2008-11-19
     Public Domain.
     NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
-    See http://www.JSON.org/js.html
+    See https://www.JSON.org/js.html
   */
 
   var $global = typeof window !== 'undefined' ? window : global;
@@ -1658,7 +1827,7 @@ module.exports = function json_decode(strJson) {
 
   var chars = ['\0', '\xAD', '\u0600-\u0604', '\u070F', '\u17B4', '\u17B5', '\u200C-\u200F', '\u2028-\u202F', '\u2060-\u206F', '\uFEFF', '\uFFF0-\uFFFF'].join('');
   var cx = new RegExp('[' + chars + ']', 'g');
-  var j;
+  var j = void 0;
   var text = strJson;
 
   // Parsing happens in four stages. In the first stage, we replace certain
@@ -1705,9 +1874,9 @@ var log = this.log = (function(){
 'use strict';
 
 module.exports = function log(arg, base) {
-  //  discuss at: http://locutus.io/php/log/
+  //  discuss at: https://locutus.io/php/log/
   // original by: Onno Marsman (https://twitter.com/onnomarsman)
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   //   example 1: log(8723321.4, 7)
   //   returns 1: 8.212871815082147
 
@@ -1720,10 +1889,10 @@ var ltrim = this.ltrim = (function(){
 'use strict';
 
 module.exports = function ltrim(str, charlist) {
-  //  discuss at: http://locutus.io/php/ltrim/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/ltrim/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   //    input by: Erkekjetter
-  // improved by: Kevin van Zonneveld (http://kvz.io)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
   // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
   //   example 1: ltrim('    Kevin van Zonneveld    ')
   //   returns 1: 'Kevin van Zonneveld    '
@@ -1839,21 +2008,20 @@ var parse_str = this.parse_str = (function(){
 'use strict';
 
 module.exports = function parse_str(str, array) {
-  // eslint-disable-line camelcase
-  //       discuss at: http://locutus.io/php/parse_str/
+  //       discuss at: https://locutus.io/php/parse_str/
   //      original by: Cagri Ekin
-  //      improved by: Michael White (http://getsprink.com)
+  //      improved by: Michael White (https://getsprink.com)
   //      improved by: Jack
-  //      improved by: Brett Zamir (http://brett-zamir.me)
+  //      improved by: Brett Zamir (https://brett-zamir.me)
   //      bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
-  //      bugfixed by: Brett Zamir (http://brett-zamir.me)
+  //      bugfixed by: Brett Zamir (https://brett-zamir.me)
   //      bugfixed by: stag019
-  //      bugfixed by: Brett Zamir (http://brett-zamir.me)
-  //      bugfixed by: MIO_KODUKI (http://mio-koduki.blogspot.com/)
+  //      bugfixed by: Brett Zamir (https://brett-zamir.me)
+  //      bugfixed by: MIO_KODUKI (https://mio-koduki.blogspot.com/)
   // reimplemented by: stag019
   //         input by: Dreamer
-  //         input by: Zaide (http://zaidesthings.com/)
-  //         input by: David Pesta (http://davidpesta.com/)
+  //         input by: Zaide (https://zaidesthings.com/)
+  //         input by: David Pesta (https://davidpesta.com/)
   //         input by: jeicquest
   //      bugfixed by: Rafał Kukawski
   //           note 1: When no argument is specified, will put variables in global scope.
@@ -1883,19 +2051,19 @@ module.exports = function parse_str(str, array) {
 
   var strArr = String(str).replace(/^&/, '').replace(/&$/, '').split('&');
   var sal = strArr.length;
-  var i;
-  var j;
-  var ct;
-  var p;
-  var lastObj;
-  var obj;
-  var chr;
-  var tmp;
-  var key;
-  var value;
-  var postLeftBracketPos;
-  var keys;
-  var keysLen;
+  var i = void 0;
+  var j = void 0;
+  var ct = void 0;
+  var p = void 0;
+  var lastObj = void 0;
+  var obj = void 0;
+  var chr = void 0;
+  var tmp = void 0;
+  var key = void 0;
+  var value = void 0;
+  var postLeftBracketPos = void 0;
+  var keys = void 0;
+  var keysLen = void 0;
 
   var _fixStr = function _fixStr(str) {
     return decodeURIComponent(str.replace(/\+/g, '%20'));
@@ -1914,6 +2082,10 @@ module.exports = function parse_str(str, array) {
     tmp = strArr[i].split('=');
     key = _fixStr(tmp[0]);
     value = tmp.length < 2 ? '' : _fixStr(tmp[1]);
+
+    if (key.includes('__proto__') || key.includes('constructor') || key.includes('prototype')) {
+      break;
+    }
 
     while (key.charAt(0) === ' ') {
       key = key.slice(1);
@@ -2002,32 +2174,31 @@ var parse_url = this.parse_url = (function(){
 'use strict';
 
 module.exports = function parse_url(str, component) {
-  // eslint-disable-line camelcase
-  //       discuss at: http://locutus.io/php/parse_url/
-  //      original by: Steven Levithan (http://blog.stevenlevithan.com)
-  // reimplemented by: Brett Zamir (http://brett-zamir.me)
+  //       discuss at: https://locutus.io/php/parse_url/
+  //      original by: Steven Levithan (https://blog.stevenlevithan.com)
+  // reimplemented by: Brett Zamir (https://brett-zamir.me)
   //         input by: Lorenzo Pisani
   //         input by: Tony
-  //      improved by: Brett Zamir (http://brett-zamir.me)
-  //           note 1: original by http://stevenlevithan.com/demo/parseuri/js/assets/parseuri.js
-  //           note 1: blog post at http://blog.stevenlevithan.com/archives/parseuri
-  //           note 1: demo at http://stevenlevithan.com/demo/parseuri/js/assets/parseuri.js
+  //      improved by: Brett Zamir (https://brett-zamir.me)
+  //           note 1: original by https://stevenlevithan.com/demo/parseuri/js/assets/parseuri.js
+  //           note 1: blog post at https://blog.stevenlevithan.com/archives/parseuri
+  //           note 1: demo at https://stevenlevithan.com/demo/parseuri/js/assets/parseuri.js
   //           note 1: Does not replace invalid characters with '_' as in PHP,
   //           note 1: nor does it return false with
   //           note 1: a seriously malformed URL.
   //           note 1: Besides function name, is essentially the same as parseUri as
   //           note 1: well as our allowing
   //           note 1: an extra slash after the scheme/protocol (to allow file:/// as in PHP)
-  //        example 1: parse_url('http://user:pass@host/path?a=v#a')
-  //        returns 1: {scheme: 'http', host: 'host', user: 'user', pass: 'pass', path: '/path', query: 'a=v', fragment: 'a'}
-  //        example 2: parse_url('http://en.wikipedia.org/wiki/%22@%22_%28album%29')
-  //        returns 2: {scheme: 'http', host: 'en.wikipedia.org', path: '/wiki/%22@%22_%28album%29'}
+  //        example 1: parse_url('https://user:pass@host/path?a=v#a')
+  //        returns 1: {scheme: 'https', host: 'host', user: 'user', pass: 'pass', path: '/path', query: 'a=v', fragment: 'a'}
+  //        example 2: parse_url('https://en.wikipedia.org/wiki/%22@%22_%28album%29')
+  //        returns 2: {scheme: 'https', host: 'en.wikipedia.org', path: '/wiki/%22@%22_%28album%29'}
   //        example 3: parse_url('https://host.domain.tld/a@b.c/folder')
   //        returns 3: {scheme: 'https', host: 'host.domain.tld', path: '/a@b.c/folder'}
   //        example 4: parse_url('https://gooduser:secretpassword@www.example.com/a@b.c/folder?foo=bar')
   //        returns 4: { scheme: 'https', host: 'www.example.com', path: '/a@b.c/folder', query: 'foo=bar', user: 'gooduser', pass: 'secretpassword' }
 
-  var query;
+  var query = void 0;
 
   var mode = (typeof require !== 'undefined' ? require('../info/ini_get')('locutus.parse_url.mode') : undefined) || 'php';
 
@@ -2076,10 +2247,10 @@ var pathinfo = this.pathinfo = (function(){
 'use strict';
 
 module.exports = function pathinfo(path, options) {
-  //  discuss at: http://locutus.io/php/pathinfo/
+  //  discuss at: https://locutus.io/php/pathinfo/
   // original by: Nate
-  //  revised by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  //  revised by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   // improved by: Dmitry Gorelenkov
   //    input by: Timo
   //      note 1: Inspired by actual PHP source: php5-5.2.6/ext/standard/string.c line #1559
@@ -2133,14 +2304,13 @@ module.exports = function pathinfo(path, options) {
   // Initialize binary arguments. Both the string & integer (constant) input is
   // allowed
   var OPTS = {
-    'PATHINFO_DIRNAME': 1,
-    'PATHINFO_BASENAME': 2,
-    'PATHINFO_EXTENSION': 4,
-    'PATHINFO_FILENAME': 8,
-    'PATHINFO_ALL': 0
-  };
-  // PATHINFO_ALL sums up all previously defined PATHINFOs (could just pre-calculate)
-  for (optName in OPTS) {
+    PATHINFO_DIRNAME: 1,
+    PATHINFO_BASENAME: 2,
+    PATHINFO_EXTENSION: 4,
+    PATHINFO_FILENAME: 8,
+    PATHINFO_ALL: 0
+    // PATHINFO_ALL sums up all previously defined PATHINFOs (could just pre-calculate)
+  };for (optName in OPTS) {
     if (OPTS.hasOwnProperty(optName)) {
       OPTS.PATHINFO_ALL = OPTS.PATHINFO_ALL | OPTS[optName];
     }
@@ -2225,7 +2395,7 @@ var pow = this.pow = (function(){
 "use strict";
 
 module.exports = function pow(base, exp) {
-  //  discuss at: http://locutus.io/php/pow/
+  //  discuss at: https://locutus.io/php/pow/
   // original by: Onno Marsman (https://twitter.com/onnomarsman)
   // improved by: Waldo Malqui Silva (https://fayr.us/waldo/)
   //   example 1: pow(8723321.4, 7)
@@ -2334,22 +2504,31 @@ return module.exports;
 var round = this.round = (function(){
 'use strict';
 
-module.exports = function round(value, precision, mode) {
-  //  discuss at: http://locutus.io/php/round/
+function roundToInt(value, mode) {
+  var tmp = Math.floor(Math.abs(value) + 0.5);
+
+  if (mode === 'PHP_ROUND_HALF_DOWN' && value === tmp - 0.5 || mode === 'PHP_ROUND_HALF_EVEN' && value === 0.5 + 2 * Math.floor(tmp / 2) || mode === 'PHP_ROUND_HALF_ODD' && value === 0.5 + 2 * Math.floor(tmp / 2) - 1) {
+    tmp -= 1;
+  }
+
+  return value < 0 ? -tmp : tmp;
+}
+
+module.exports = function round(value) {
+  var precision = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+  var mode = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'PHP_ROUND_HALF_UP';
+
+  //  discuss at: https://locutus.io/php/round/
   // original by: Philip Peterson
   //  revised by: Onno Marsman (https://twitter.com/onnomarsman)
   //  revised by: T.Wild
-  //  revised by: Rafał Kukawski (http://blog.kukawski.pl)
+  //  revised by: Rafał Kukawski (https://blog.kukawski.pl)
   //    input by: Greenseed
   //    input by: meo
   //    input by: William
-  //    input by: Josep Sanz (http://www.ws3.es/)
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
-  //      note 1: Great work. Ideas for improvement:
-  //      note 1: - code more compliant with developer guidelines
-  //      note 1: - for implementing PHP constant arguments look at
-  //      note 1: the pathinfo() function, it offers the greatest
-  //      note 1: flexibility & compatibility possible
+  //    input by: Josep Sanz (https://www.ws3.es/)
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
+  //  revised by: Rafał Kukawski
   //   example 1: round(1241757, -3)
   //   returns 1: 1242000
   //   example 2: round(3.6)
@@ -2360,38 +2539,44 @@ module.exports = function round(value, precision, mode) {
   //   returns 4: 1.17
   //   example 5: round(58551.799999999996, 2)
   //   returns 5: 58551.8
+  //   example 6: round(4096.485, 2)
+  //   returns 6: 4096.49
 
-  var m, f, isHalf, sgn; // helper variables
-  // making sure precision is integer
-  precision |= 0;
-  m = Math.pow(10, precision);
-  value *= m;
-  // sign of the number
-  sgn = value > 0 | -(value < 0);
-  isHalf = value % 1 === 0.5 * sgn;
-  f = Math.floor(value);
+  var floatCast = require('../_helpers/_php_cast_float');
+  var intCast = require('../_helpers/_php_cast_int');
+  var p = void 0;
 
-  if (isHalf) {
-    switch (mode) {
-      case 'PHP_ROUND_HALF_DOWN':
-        // rounds .5 toward zero
-        value = f + (sgn < 0);
-        break;
-      case 'PHP_ROUND_HALF_EVEN':
-        // rouds .5 towards the next even integer
-        value = f + f % 2 * sgn;
-        break;
-      case 'PHP_ROUND_HALF_ODD':
-        // rounds .5 towards the next odd integer
-        value = f + !(f % 2);
-        break;
-      default:
-        // rounds .5 away from zero
-        value = f + (sgn > 0);
-    }
+  // the code is heavily based on the native PHP implementation
+  // https://github.com/php/php-src/blob/PHP-7.4/ext/standard/math.c#L355
+
+  value = floatCast(value);
+  precision = intCast(precision);
+  p = Math.pow(10, precision);
+
+  if (isNaN(value) || !isFinite(value)) {
+    return value;
   }
 
-  return (isHalf ? value : Math.round(value)) / m;
+  // if value already integer and positive precision
+  // then nothing to do, return early
+  if (Math.trunc(value) === value && precision >= 0) {
+    return value;
+  }
+
+  // PHP does a pre-rounding before rounding to desired precision
+  // https://wiki.php.net/rfc/rounding#pre-rounding_to_the_value_s_precision_if_possible
+  var preRoundPrecision = 14 - Math.floor(Math.log10(Math.abs(value)));
+
+  if (preRoundPrecision > precision && preRoundPrecision - 15 < precision) {
+    value = roundToInt(value * Math.pow(10, preRoundPrecision), mode);
+    value /= Math.pow(10, Math.abs(precision - preRoundPrecision));
+  } else {
+    value *= p;
+  }
+
+  value = roundToInt(value, mode);
+
+  return value / p;
 };
 return module.exports;
 })();
@@ -2402,15 +2587,15 @@ var setlocale = this.setlocale = (function(){
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function setlocale(category, locale) {
-  //  discuss at: http://locutus.io/php/setlocale/
-  // original by: Brett Zamir (http://brett-zamir.me)
-  // original by: Blues (http://hacks.bluesmoon.info/strftime/strftime.js)
-  // original by: YUI Library (http://developer.yahoo.com/yui/docs/YAHOO.util.DateLocale.html)
+  //  discuss at: https://locutus.io/php/setlocale/
+  // original by: Brett Zamir (https://brett-zamir.me)
+  // original by: Blues (https://hacks.bluesmoon.info/strftime/strftime.js)
+  // original by: YUI Library (https://developer.yahoo.com/yui/docs/YAHOO.util.DateLocale.html)
   //      note 1: Is extensible, but currently only implements locales en,
   //      note 1: en_US, en_GB, en_AU, fr, and fr_CA for LC_TIME only; C for LC_CTYPE;
   //      note 1: C and en for LC_MONETARY/LC_NUMERIC; en for LC_COLLATE
   //      note 1: Uses global: locutus to store locale info
-  //      note 1: Consider using http://demo.icu-project.org/icu-bin/locexp as basis for localization (as in i18n_loc_set_default())
+  //      note 1: Consider using https://demo.icu-project.org/icu-bin/locexp as basis for localization (as in i18n_loc_set_default())
   //      note 2: This function tries to establish the locale via the `window` global.
   //      note 2: This feature will not work in Node and hence is Browser-only
   //   example 1: setlocale('LC_ALL', 'en_US')
@@ -2429,25 +2614,25 @@ module.exports = function setlocale(category, locale) {
       return new Date(orig);
     }
     var newObj = {};
-    for (var i in orig) {
-      if (_typeof(orig[i]) === 'object') {
-        newObj[i] = _copy(orig[i]);
+    for (var _i in orig) {
+      if (_typeof(orig[_i]) === 'object') {
+        newObj[_i] = _copy(orig[_i]);
       } else {
-        newObj[i] = orig[i];
+        newObj[_i] = orig[_i];
       }
     }
     return newObj;
   };
 
   // Function usable by a ngettext implementation (apparently not an accessible part of setlocale(),
-  // but locale-specific) See http://www.gnu.org/software/gettext/manual/gettext.html#Plural-forms
+  // but locale-specific) See https://www.gnu.org/software/gettext/manual/gettext.html#Plural-forms
   // though amended with others from https://developer.mozilla.org/En/Localization_and_Plurals (new
   // categories noted with "MDC" below, though not sure of whether there is a convention for the
   // relative order of these newer groups as far as ngettext) The function name indicates the number
-  // of plural forms (nplural) Need to look into http://cldr.unicode.org/ (maybe future JavaScript);
+  // of plural forms (nplural) Need to look into https://cldr.unicode.org/ (maybe future JavaScript);
   // Dojo has some functions (under new BSD), including JSON conversions of LDML XML from CLDR:
-  // http://bugs.dojotoolkit.org/browser/dojo/trunk/cldr and docs at
-  // http://api.dojotoolkit.org/jsdoc/HEAD/dojo.cldr
+  // https://bugs.dojotoolkit.org/browser/dojo/trunk/cldr and docs at
+  // https://api.dojotoolkit.org/jsdoc/HEAD/dojo.cldr
 
   // var _nplurals1 = function (n) {
   //   // e.g., Japanese
@@ -2475,12 +2660,12 @@ module.exports = function setlocale(category, locale) {
     $locutus.php.locales = {};
 
     $locutus.php.locales.en = {
-      'LC_COLLATE': function LC_COLLATE(str1, str2) {
+      LC_COLLATE: function LC_COLLATE(str1, str2) {
         // @todo: This one taken from strcmp, but need for other locales; we don't use localeCompare
         // since its locale is not settable
         return str1 === str2 ? 0 : str1 > str2 ? 1 : -1;
       },
-      'LC_CTYPE': {
+      LC_CTYPE: {
         // Need to change any of these for English as opposed to C?
         an: /^[A-Za-z\d]+$/g,
         al: /^[A-Za-z]+$/g,
@@ -2498,7 +2683,7 @@ module.exports = function setlocale(category, locale) {
         lower: 'abcdefghijklmnopqrstuvwxyz',
         upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
       },
-      'LC_TIME': {
+      LC_TIME: {
         // Comments include nl_langinfo() constant equivalents and any
         // changes from Blues' implementation
         a: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -2521,7 +2706,7 @@ module.exports = function setlocale(category, locale) {
         // D_FMT // switched order of %m and %d; changed %y to %Y (C uses %y)
         X: '%r',
         // T_FMT // changed from %T to %r  (%T is default for C, not English US)
-        // Following are from nl_langinfo() or http://www.cptec.inpe.br/sx4/sx4man2/g1ab02e/strftime.4.html
+        // Following are from nl_langinfo() or https://www.cptec.inpe.br/sx4/sx4man2/g1ab02e/strftime.4.html
         alt_digits: '',
         // e.g., ordinal
         ERA: '',
@@ -2532,7 +2717,7 @@ module.exports = function setlocale(category, locale) {
       },
       // Assuming distinction between numeric and monetary is thus:
       // See below for C locale
-      'LC_MONETARY': {
+      LC_MONETARY: {
         // based on Windows "english" (English_United States.1252) locale
         int_curr_symbol: 'USD',
         currency_symbol: '$',
@@ -2563,13 +2748,13 @@ module.exports = function setlocale(category, locale) {
         // succeeds curr. symbol
         n_sign_posn: 0 // see p_sign_posn
       },
-      'LC_NUMERIC': {
+      LC_NUMERIC: {
         // based on Windows "english" (English_United States.1252) locale
         decimal_point: '.',
         thousands_sep: ',',
         grouping: [3] // see mon_grouping, but for non-monetary values (use thousands_sep)
       },
-      'LC_MESSAGES': {
+      LC_MESSAGES: {
         YESEXPR: '^[yY].*',
         NOEXPR: '^[nN].*',
         YESSTR: '',
@@ -2617,9 +2802,8 @@ module.exports = function setlocale(category, locale) {
       decimal_point: '.',
       thousands_sep: '',
       grouping: []
-    };
-    // D_T_FMT
-    $locutus.php.locales.C.LC_TIME.c = '%a %b %e %H:%M:%S %Y';
+      // D_T_FMT
+    };$locutus.php.locales.C.LC_TIME.c = '%a %b %e %H:%M:%S %Y';
     // D_FMT
     $locutus.php.locales.C.LC_TIME.x = '%m/%d/%y';
     // T_FMT
@@ -2647,8 +2831,8 @@ module.exports = function setlocale(category, locale) {
     // Try to establish the locale via the `window` global
     if (typeof window !== 'undefined' && window.document) {
       var d = window.document;
-      var NS_XHTML = 'http://www.w3.org/1999/xhtml';
-      var NS_XML = 'http://www.w3.org/XML/1998/namespace';
+      var NS_XHTML = 'https://www.w3.org/1999/xhtml';
+      var NS_XML = 'https://www.w3.org/XML/1998/namespace';
       if (d.getElementsByTagNameNS && d.getElementsByTagNameNS(NS_XHTML, 'html')[0]) {
         if (d.getElementsByTagNameNS(NS_XHTML, 'html')[0].getAttributeNS && d.getElementsByTagNameNS(NS_XHTML, 'html')[0].getAttributeNS(NS_XML, 'lang')) {
           $locutus.php.locale = d.getElementsByTagName(NS_XHTML, 'html')[0].getAttributeNS(NS_XML, 'lang');
@@ -2672,18 +2856,18 @@ module.exports = function setlocale(category, locale) {
 
   if (!$locutus.php.localeCategories) {
     $locutus.php.localeCategories = {
-      'LC_COLLATE': $locutus.php.locale,
+      LC_COLLATE: $locutus.php.locale,
       // for string comparison, see strcoll()
-      'LC_CTYPE': $locutus.php.locale,
+      LC_CTYPE: $locutus.php.locale,
       // for character classification and conversion, for example strtoupper()
-      'LC_MONETARY': $locutus.php.locale,
+      LC_MONETARY: $locutus.php.locale,
       // for localeconv()
-      'LC_NUMERIC': $locutus.php.locale,
+      LC_NUMERIC: $locutus.php.locale,
       // for decimal separator (See also localeconv())
-      'LC_TIME': $locutus.php.locale,
+      LC_TIME: $locutus.php.locale,
       // for date and time formatting with strftime()
       // for system responses (available if PHP was compiled with libintl):
-      'LC_MESSAGES': $locutus.php.locale
+      LC_MESSAGES: $locutus.php.locale
     };
   }
 
@@ -2738,8 +2922,8 @@ var split = this.split = (function(){
 'use strict';
 
 module.exports = function split(delimiter, string) {
-  //  discuss at: http://locutus.io/php/split/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/split/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   //   example 1: split(' ', 'Kevin van Zonneveld')
   //   returns 1: ['Kevin', 'van', 'Zonneveld']
 
@@ -2753,18 +2937,18 @@ var sprintf = this.sprintf = (function(){
 'use strict';
 
 module.exports = function sprintf() {
-  //  discuss at: http://locutus.io/php/sprintf/
-  // original by: Ash Searle (http://hexmen.com/blog/)
-  // improved by: Michael White (http://getsprink.com)
+  //  discuss at: https://locutus.io/php/sprintf/
+  // original by: Ash Searle (https://hexmen.com/blog/)
+  // improved by: Michael White (https://getsprink.com)
   // improved by: Jack
-  // improved by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: Kevin van Zonneveld (http://kvz.io)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
   // improved by: Dj
   // improved by: Allidylls
   //    input by: Paulo Freitas
-  //    input by: Brett Zamir (http://brett-zamir.me)
-  // improved by: Rafał Kukawski (http://kukawski.pl)
+  //    input by: Brett Zamir (https://brett-zamir.me)
+  // improved by: Rafał Kukawski (https://kukawski.pl)
   //   example 1: sprintf("%01.2f", 123.1)
   //   returns 1: '123.10'
   //   example 2: sprintf("[%10s]", 'monkey')
@@ -2829,7 +3013,11 @@ module.exports = function sprintf() {
 
   // doFormat()
   var doFormat = function doFormat(substring, argIndex, modifiers, minWidth, precision, specifier) {
-    var number, prefix, method, textTransform, value;
+    var number = void 0,
+        prefix = void 0,
+        method = void 0,
+        textTransform = void 0,
+        value = void 0;
 
     if (substring === '%%') {
       return '%';
@@ -2839,7 +3027,8 @@ module.exports = function sprintf() {
     var padChar = ' '; // pad with spaces by default
     var leftJustify = false;
     var positiveNumberPrefix = '';
-    var j, l;
+    var j = void 0,
+        l = void 0;
 
     for (j = 0, l = modifiers.length; j < l; j++) {
       switch (modifiers.charAt(j)) {
@@ -2949,14 +3138,13 @@ var str_split = this.str_split = (function(){
 'use strict';
 
 module.exports = function str_split(string, splitLength) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/str_split/
+  //  discuss at: https://locutus.io/php/str_split/
   // original by: Martijn Wieringa
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
   //  revised by: Theriault (https://github.com/Theriault)
-  //  revised by: Rafał Kukawski (http://blog.kukawski.pl)
-  //    input by: Bjorn Roesbeke (http://www.bjornroesbeke.be/)
+  //  revised by: Rafał Kukawski (https://blog.kukawski.pl)
+  //    input by: Bjorn Roesbeke (https://www.bjornroesbeke.be/)
   //   example 1: str_split('Hello Friend', 3)
   //   returns 1: ['Hel', 'lo ', 'Fri', 'end']
 
@@ -2985,13 +3173,13 @@ var strlen = this.strlen = (function(){
 'use strict';
 
 module.exports = function strlen(string) {
-  //  discuss at: http://locutus.io/php/strlen/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/strlen/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   // improved by: Sakimori
-  // improved by: Kevin van Zonneveld (http://kvz.io)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
   //    input by: Kirk Strobeck
   // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
-  //  revised by: Brett Zamir (http://brett-zamir.me)
+  //  revised by: Brett Zamir (https://brett-zamir.me)
   //      note 1: May look like overkill, but in order to be truly faithful to handling all Unicode
   //      note 1: characters and to this function in PHP which does not count the number of bytes
   //      note 1: but counts the number of characters, something like this is really necessary.
@@ -3015,24 +3203,24 @@ module.exports = function strlen(string) {
     var code = str.charCodeAt(i);
     var next = '';
     var prev = '';
-    if (code >= 0xD800 && code <= 0xDBFF) {
+    if (code >= 0xd800 && code <= 0xdbff) {
       // High surrogate (could change last hex to 0xDB7F to
       // treat high private surrogates as single characters)
       if (str.length <= i + 1) {
         throw new Error('High surrogate without following low surrogate');
       }
       next = str.charCodeAt(i + 1);
-      if (next < 0xDC00 || next > 0xDFFF) {
+      if (next < 0xdc00 || next > 0xdfff) {
         throw new Error('High surrogate without following low surrogate');
       }
       return str.charAt(i) + str.charAt(i + 1);
-    } else if (code >= 0xDC00 && code <= 0xDFFF) {
+    } else if (code >= 0xdc00 && code <= 0xdfff) {
       // Low surrogate
       if (i === 0) {
         throw new Error('Low surrogate without preceding high surrogate');
       }
       prev = str.charCodeAt(i - 1);
-      if (prev < 0xD800 || prev > 0xDBFF) {
+      if (prev < 0xd800 || prev > 0xdbff) {
         // (could change last hex to 0xDB7F to treat high private surrogates
         // as single characters)
         throw new Error('Low surrogate without preceding high surrogate');
@@ -3064,8 +3252,8 @@ var strtolower = this.strtolower = (function(){
 'use strict';
 
 module.exports = function strtolower(str) {
-  //  discuss at: http://locutus.io/php/strtolower/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/strtolower/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   // improved by: Onno Marsman (https://twitter.com/onnomarsman)
   //   example 1: strtolower('Kevin van Zonneveld')
   //   returns 1: 'kevin van zonneveld'
@@ -3113,8 +3301,11 @@ var reMonthroman = 'i[vx]|vi{0,3}|xi{0,2}|i{1,3}';
 var reMonthText = '(' + reMonthFull + '|' + reMonthAbbr + '|' + reMonthroman + ')';
 
 var reTzCorrection = '((?:GMT)?([+-])' + reHour24 + ':?' + reMinute + '?)';
+var reTzAbbr = '\\(?([a-zA-Z]{1,6})\\)?';
 var reDayOfYear = '(00[1-9]|0[1-9][0-9]|[12][0-9][0-9]|3[0-5][0-9]|36[0-6])';
 var reWeekOfYear = '(0[1-9]|[1-4][0-9]|5[0-3])';
+
+var reDateNoYear = reMonthText + '[ .\\t-]*' + reDay + '[,.stndrh\\t ]*';
 
 function processMeridian(hour, meridian) {
   meridian = meridian && meridian.toLowerCase();
@@ -3246,7 +3437,7 @@ function processTzCorrection(tzOffset, oldValue) {
     return oldValue;
   }
 
-  var sign = tzOffset[1] === '-' ? 1 : -1;
+  var sign = tzOffset[1] === '-' ? -1 : 1;
   var hours = +tzOffset[2];
   var minutes = +tzOffset[4];
 
@@ -3255,8 +3446,157 @@ function processTzCorrection(tzOffset, oldValue) {
     hours = Math.floor(hours / 100);
   }
 
-  return sign * (hours * 60 + minutes);
+  // timezone offset in seconds
+  return sign * (hours * 60 + minutes) * 60;
 }
+
+// tz abbrevation : tz offset in seconds
+var tzAbbrOffsets = {
+  acdt: 37800,
+  acst: 34200,
+  addt: -7200,
+  adt: -10800,
+  aedt: 39600,
+  aest: 36000,
+  ahdt: -32400,
+  ahst: -36000,
+  akdt: -28800,
+  akst: -32400,
+  amt: -13840,
+  apt: -10800,
+  ast: -14400,
+  awdt: 32400,
+  awst: 28800,
+  awt: -10800,
+  bdst: 7200,
+  bdt: -36000,
+  bmt: -14309,
+  bst: 3600,
+  cast: 34200,
+  cat: 7200,
+  cddt: -14400,
+  cdt: -18000,
+  cemt: 10800,
+  cest: 7200,
+  cet: 3600,
+  cmt: -15408,
+  cpt: -18000,
+  cst: -21600,
+  cwt: -18000,
+  chst: 36000,
+  dmt: -1521,
+  eat: 10800,
+  eddt: -10800,
+  edt: -14400,
+  eest: 10800,
+  eet: 7200,
+  emt: -26248,
+  ept: -14400,
+  est: -18000,
+  ewt: -14400,
+  ffmt: -14660,
+  fmt: -4056,
+  gdt: 39600,
+  gmt: 0,
+  gst: 36000,
+  hdt: -34200,
+  hkst: 32400,
+  hkt: 28800,
+  hmt: -19776,
+  hpt: -34200,
+  hst: -36000,
+  hwt: -34200,
+  iddt: 14400,
+  idt: 10800,
+  imt: 25025,
+  ist: 7200,
+  jdt: 36000,
+  jmt: 8440,
+  jst: 32400,
+  kdt: 36000,
+  kmt: 5736,
+  kst: 30600,
+  lst: 9394,
+  mddt: -18000,
+  mdst: 16279,
+  mdt: -21600,
+  mest: 7200,
+  met: 3600,
+  mmt: 9017,
+  mpt: -21600,
+  msd: 14400,
+  msk: 10800,
+  mst: -25200,
+  mwt: -21600,
+  nddt: -5400,
+  ndt: -9052,
+  npt: -9000,
+  nst: -12600,
+  nwt: -9000,
+  nzdt: 46800,
+  nzmt: 41400,
+  nzst: 43200,
+  pddt: -21600,
+  pdt: -25200,
+  pkst: 21600,
+  pkt: 18000,
+  plmt: 25590,
+  pmt: -13236,
+  ppmt: -17340,
+  ppt: -25200,
+  pst: -28800,
+  pwt: -25200,
+  qmt: -18840,
+  rmt: 5794,
+  sast: 7200,
+  sdmt: -16800,
+  sjmt: -20173,
+  smt: -13884,
+  sst: -39600,
+  tbmt: 10751,
+  tmt: 12344,
+  uct: 0,
+  utc: 0,
+  wast: 7200,
+  wat: 3600,
+  wemt: 7200,
+  west: 3600,
+  wet: 0,
+  wib: 25200,
+  wita: 28800,
+  wit: 32400,
+  wmt: 5040,
+  yddt: -25200,
+  ydt: -28800,
+  ypt: -28800,
+  yst: -32400,
+  ywt: -28800,
+  a: 3600,
+  b: 7200,
+  c: 10800,
+  d: 14400,
+  e: 18000,
+  f: 21600,
+  g: 25200,
+  h: 28800,
+  i: 32400,
+  k: 36000,
+  l: 39600,
+  m: 43200,
+  n: -3600,
+  o: -7200,
+  p: -10800,
+  q: -14400,
+  r: -18000,
+  s: -21600,
+  t: -25200,
+  u: -28800,
+  v: -32400,
+  w: -36000,
+  x: -39600,
+  y: -43200,
+  z: 0
+};
 
 var formats = {
   yesterday: {
@@ -3355,6 +3695,28 @@ var formats = {
     name: 'mssqltime',
     callback: function callback(match, hour, minute, second, frac, meridian) {
       return this.time(processMeridian(+hour, meridian), +minute, +second, +frac.substr(0, 3));
+    }
+  },
+
+  oracledate: {
+    regex: /^(\d{2})-([A-Z]{3})-(\d{2})$/i,
+    name: 'd-M-y',
+    callback: function callback(match, day, monthText, year) {
+      var month = {
+        JAN: 0,
+        FEB: 1,
+        MAR: 2,
+        APR: 3,
+        MAY: 4,
+        JUN: 5,
+        JUL: 6,
+        AUG: 7,
+        SEP: 8,
+        OCT: 9,
+        NOV: 10,
+        DEC: 11
+      }[monthText.toUpperCase()];
+      return this.ymd(2000 + parseInt(year, 10), month, parseInt(day, 10));
     }
   },
 
@@ -3555,10 +3917,22 @@ var formats = {
   },
 
   gnuNoColon: {
-    regex: RegExp('^t' + reHour24lz + reMinutelz, 'i'),
+    regex: RegExp('^t?' + reHour24lz + reMinutelz, 'i'),
     name: 'gnunocolon',
     callback: function callback(match, hour, minute) {
-      return this.time(+hour, +minute, 0, this.f);
+      // this rule is a special case
+      // if time was already set once by any preceding rule, it sets the captured value as year
+      switch (this.times) {
+        case 0:
+          return this.time(+hour, +minute, 0, this.f);
+        case 1:
+          this.y = hour * 100 + +minute;
+          this.times++;
+
+          return true;
+        default:
+          return false;
+      }
     }
   },
 
@@ -3613,7 +3987,7 @@ var formats = {
   },
 
   dateNoYear: {
-    regex: RegExp('^' + reMonthText + '[ .\\t-]*' + reDay + '[,.stndrh\\t ]*', 'i'),
+    regex: RegExp('^' + reDateNoYear, 'i'),
     name: 'datenoyear',
     callback: function callback(match, month, day) {
       return this.ymd(this.y, lookupMonth(month), +day);
@@ -3697,13 +4071,20 @@ var formats = {
         case 'years':
           this.ry += amount;
           break;
-        case 'mon':case 'monday':
-        case 'tue':case 'tuesday':
-        case 'wed':case 'wednesday':
-        case 'thu':case 'thursday':
-        case 'fri':case 'friday':
-        case 'sat':case 'saturday':
-        case 'sun':case 'sunday':
+        case 'mon':
+        case 'monday':
+        case 'tue':
+        case 'tuesday':
+        case 'wed':
+        case 'wednesday':
+        case 'thu':
+        case 'thursday':
+        case 'fri':
+        case 'friday':
+        case 'sat':
+        case 'saturday':
+        case 'sun':
+        case 'sunday':
           this.resetTime();
           this.weekday = lookupWeekday(relUnit, 7);
           this.weekdayBehavior = 1;
@@ -3764,13 +4145,20 @@ var formats = {
         case 'years':
           this.ry += amount;
           break;
-        case 'mon':case 'monday':
-        case 'tue':case 'tuesday':
-        case 'wed':case 'wednesday':
-        case 'thu':case 'thursday':
-        case 'fri':case 'friday':
-        case 'sat':case 'saturday':
-        case 'sun':case 'sunday':
+        case 'mon':
+        case 'monday':
+        case 'tue':
+        case 'tuesday':
+        case 'wed':
+        case 'wednesday':
+        case 'thu':
+        case 'thursday':
+        case 'fri':
+        case 'friday':
+        case 'sat':
+        case 'saturday':
+        case 'sun':
+        case 'sunday':
           this.resetTime();
           this.weekday = lookupWeekday(relUnit, 7);
           this.weekdayBehavior = 1;
@@ -3838,6 +4226,20 @@ var formats = {
     }
   },
 
+  tzAbbr: {
+    regex: RegExp('^' + reTzAbbr),
+    name: 'tzabbr',
+    callback: function callback(match, abbr) {
+      var offset = tzAbbrOffsets[abbr.toLowerCase()];
+
+      if (isNaN(offset)) {
+        return false;
+      }
+
+      return this.zone(offset);
+    }
+  },
+
   ago: {
     regex: /^ago/i,
     name: 'ago',
@@ -3849,18 +4251,6 @@ var formats = {
       this.ri = -this.ri;
       this.rs = -this.rs;
       this.rf = -this.rf;
-    }
-  },
-
-  gnuNoColon2: {
-    // second instance of gnunocolon, without leading 't'
-    // it's down here, because it is very generic (4 digits in a row)
-    // thus conflicts with many rules above
-    // only year4 should come afterwards
-    regex: RegExp('^' + reHour24lz + reMinutelz, 'i'),
-    name: 'gnunocolon',
-    callback: function callback(match, hour, minute) {
-      return this.time(+hour, +minute, 0, this.f);
     }
   },
 
@@ -3879,11 +4269,35 @@ var formats = {
     // do nothing
   },
 
-  any: {
-    regex: /^[\s\S]+/,
-    name: 'any',
-    callback: function callback() {
-      return false;
+  dateShortWithTimeLong: {
+    regex: RegExp('^' + reDateNoYear + 't?' + reHour24 + '[:.]' + reMinute + '[:.]' + reSecond, 'i'),
+    name: 'dateshortwithtimelong',
+    callback: function callback(match, month, day, hour, minute, second) {
+      return this.ymd(this.y, lookupMonth(month), +day) && this.time(+hour, +minute, +second, 0);
+    }
+  },
+
+  dateShortWithTimeLong12: {
+    regex: RegExp('^' + reDateNoYear + reHour12 + '[:.]' + reMinute + '[:.]' + reSecondlz + reSpaceOpt + reMeridian, 'i'),
+    name: 'dateshortwithtimelong12',
+    callback: function callback(match, month, day, hour, minute, second, meridian) {
+      return this.ymd(this.y, lookupMonth(month), +day) && this.time(processMeridian(+hour, meridian), +minute, +second, 0);
+    }
+  },
+
+  dateShortWithTimeShort: {
+    regex: RegExp('^' + reDateNoYear + 't?' + reHour24 + '[:.]' + reMinute, 'i'),
+    name: 'dateshortwithtimeshort',
+    callback: function callback(match, month, day, hour, minute) {
+      return this.ymd(this.y, lookupMonth(month), +day) && this.time(+hour, +minute, 0, 0);
+    }
+  },
+
+  dateShortWithTimeShort12: {
+    regex: RegExp('^' + reDateNoYear + reHour12 + '[:.]' + reMinutelz + reSpaceOpt + reMeridian, 'i'),
+    name: 'dateshortwithtimeshort12',
+    callback: function callback(match, month, day, hour, minute, meridian) {
+      return this.ymd(this.y, lookupMonth(month), +day) && this.time(processMeridian(+hour, meridian), +minute, 0, 0);
     }
   }
 };
@@ -4087,7 +4501,7 @@ var resultProto = {
     if (!isNaN(this.z) && result.getTimezoneOffset() !== this.z) {
       result.setUTCFullYear(result.getFullYear(), result.getMonth(), result.getDate());
 
-      result.setUTCHours(result.getHours(), result.getMinutes() + this.z, result.getSeconds(), result.getMilliseconds());
+      result.setUTCHours(result.getHours(), result.getMinutes(), result.getSeconds() - this.z, result.getMilliseconds());
     }
 
     return result;
@@ -4095,18 +4509,18 @@ var resultProto = {
 };
 
 module.exports = function strtotime(str, now) {
-  //       discuss at: http://locutus.io/php/strtotime/
-  //      original by: Caio Ariede (http://caioariede.com)
-  //      improved by: Kevin van Zonneveld (http://kvz.io)
-  //      improved by: Caio Ariede (http://caioariede.com)
-  //      improved by: A. Matías Quezada (http://amatiasq.com)
+  //       discuss at: https://locutus.io/php/strtotime/
+  //      original by: Caio Ariede (https://caioariede.com)
+  //      improved by: Kevin van Zonneveld (https://kvz.io)
+  //      improved by: Caio Ariede (https://caioariede.com)
+  //      improved by: A. Matías Quezada (https://amatiasq.com)
   //      improved by: preuter
-  //      improved by: Brett Zamir (http://brett-zamir.me)
+  //      improved by: Brett Zamir (https://brett-zamir.me)
   //      improved by: Mirko Faber
   //         input by: David
   //      bugfixed by: Wagner B. Soares
   //      bugfixed by: Artur Tchernychev
-  //      bugfixed by: Stephan Bösch-Plepelits (http://github.com/plepe)
+  //      bugfixed by: Stephan Bösch-Plepelits (https://github.com/plepe)
   // reimplemented by: Rafał Kukawski
   //           note 1: Examples all have a fixed timestamp to prevent
   //           note 1: tests to fail because of variable time(zones)
@@ -4120,41 +4534,48 @@ module.exports = function strtotime(str, now) {
   //        returns 4: 1241425800
   //        example 5: strtotime('2009-05-04 08:30:00+02:00')
   //        returns 5: 1241418600
+  //        example 6: strtotime('2009-05-04 08:30:00 YWT')
+  //        returns 6: 1241454600
+  //        example 7: strtotime('10-JUL-17')
+  //        returns 7: 1499644800
+
   if (now == null) {
     now = Math.floor(Date.now() / 1000);
   }
 
-  // the rule order is very fragile
-  // as many formats are similar to others
-  // so small change can cause
-  // input misinterpretation
+  // the rule order is important
+  // if multiple rules match, the longest match wins
+  // if multiple rules match the same string, the first match wins
   var rules = [formats.yesterday, formats.now, formats.noon, formats.midnightOrToday, formats.tomorrow, formats.timestamp, formats.firstOrLastDay, formats.backOrFrontOf,
   // formats.weekdayOf, // not yet implemented
-  formats.mssqltime, formats.timeLong12, formats.timeShort12, formats.timeTiny12, formats.soap, formats.wddx, formats.exif, formats.xmlRpc, formats.xmlRpcNoColon, formats.clf, formats.iso8601long, formats.dateTextual, formats.pointedDate4, formats.pointedDate2, formats.timeLong24, formats.dateNoColon, formats.pgydotd, formats.timeShort24, formats.iso8601noColon,
-  // iso8601dateSlash needs to come before dateSlash
-  formats.iso8601dateSlash, formats.dateSlash, formats.american, formats.americanShort, formats.gnuDateShortOrIso8601date2, formats.iso8601date4, formats.gnuNoColon, formats.gnuDateShorter, formats.pgTextReverse, formats.dateFull, formats.dateNoDay, formats.dateNoDayRev, formats.pgTextShort, formats.dateNoYear, formats.dateNoYearRev, formats.isoWeekDay, formats.relativeText, formats.relative, formats.dayText, formats.relativeTextWeek, formats.monthFullOrMonthAbbr, formats.tzCorrection, formats.ago, formats.gnuNoColon2, formats.year4,
-  // note: the two rules below
-  // should always come last
-  formats.whitespace, formats.any];
+  formats.timeTiny12, formats.timeShort12, formats.timeLong12, formats.mssqltime, formats.oracledate, formats.timeShort24, formats.timeLong24, formats.iso8601long, formats.gnuNoColon, formats.iso8601noColon, formats.americanShort, formats.american, formats.iso8601date4, formats.iso8601dateSlash, formats.dateSlash, formats.gnuDateShortOrIso8601date2, formats.gnuDateShorter, formats.dateFull, formats.pointedDate4, formats.pointedDate2, formats.dateNoDay, formats.dateNoDayRev, formats.dateTextual, formats.dateNoYear, formats.dateNoYearRev, formats.dateNoColon, formats.xmlRpc, formats.xmlRpcNoColon, formats.soap, formats.wddx, formats.exif, formats.pgydotd, formats.isoWeekDay, formats.pgTextShort, formats.pgTextReverse, formats.clf, formats.year4, formats.ago, formats.dayText, formats.relativeTextWeek, formats.relativeText, formats.monthFullOrMonthAbbr, formats.tzCorrection, formats.tzAbbr, formats.dateShortWithTimeShort12, formats.dateShortWithTimeLong12, formats.dateShortWithTimeShort, formats.dateShortWithTimeLong, formats.relative, formats.whitespace];
 
   var result = Object.create(resultProto);
 
   while (str.length) {
+    var longestMatch = null;
+    var finalRule = null;
+
     for (var i = 0, l = rules.length; i < l; i++) {
       var format = rules[i];
 
       var match = str.match(format.regex);
 
       if (match) {
-        // care only about false results. Ignore other values
-        if (format.callback && format.callback.apply(result, match) === false) {
-          return false;
+        if (!longestMatch || match[0].length > longestMatch[0].length) {
+          longestMatch = match;
+          finalRule = format;
         }
-
-        str = str.substr(match[0].length);
-        break;
       }
     }
+
+    if (!finalRule || finalRule.callback && finalRule.callback.apply(result, longestMatch) === false) {
+      return false;
+    }
+
+    str = str.substr(longestMatch[0].length);
+    finalRule = null;
+    longestMatch = null;
   }
 
   return Math.floor(result.toDate(new Date(now * 1000)) / 1000);
@@ -4166,8 +4587,8 @@ var strtoupper = this.strtoupper = (function(){
 'use strict';
 
 module.exports = function strtoupper(str) {
-  //  discuss at: http://locutus.io/php/strtoupper/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/strtoupper/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   // improved by: Onno Marsman (https://twitter.com/onnomarsman)
   //   example 1: strtoupper('Kevin van Zonneveld')
   //   returns 1: 'KEVIN VAN ZONNEVELD'
@@ -4181,10 +4602,10 @@ var strval = this.strval = (function(){
 'use strict';
 
 module.exports = function strval(str) {
-  //  discuss at: http://locutus.io/php/strval/
-  // original by: Brett Zamir (http://brett-zamir.me)
-  // improved by: Kevin van Zonneveld (http://kvz.io)
-  // bugfixed by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/strval/
+  // original by: Brett Zamir (https://brett-zamir.me)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
   //   example 1: strval({red: 1, green: 2, blue: 3, white: 4})
   //   returns 1: 'Object'
 
@@ -4219,13 +4640,14 @@ return module.exports;
 var substr = this.substr = (function(){
 'use strict';
 
-module.exports = function substr(str, start, len) {
-  //  discuss at: http://locutus.io/php/substr/
+module.exports = function substr(input, start, len) {
+  //  discuss at: https://locutus.io/php/substr/
   // original by: Martijn Wieringa
   // bugfixed by: T.Wild
   // improved by: Onno Marsman (https://twitter.com/onnomarsman)
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   //  revised by: Theriault (https://github.com/Theriault)
+  //  revised by: Rafał Kukawski
   //      note 1: Handles rare Unicode characters if 'unicode.semantics' ini (PHP6) is set to 'on'
   //   example 1: substr('abcdef', 0, -1)
   //   returns 1: 'abcde'
@@ -4248,97 +4670,41 @@ module.exports = function substr(str, start, len) {
   //   returns 7: '\uD801\uDC00z'
   //        test: skip-3 skip-4 skip-5 skip-6 skip-7
 
-  str += '';
-  var end = str.length;
+  var _php_cast_string = require('../_helpers/_phpCastString'); // eslint-disable-line camelcase
 
-  var iniVal = (typeof require !== 'undefined' ? require('../info/ini_get')('unicode.emantics') : undefined) || 'off';
+  input = _php_cast_string(input);
 
-  if (iniVal === 'off') {
-    // assumes there are no non-BMP characters;
-    // if there may be such characters, then it is best to turn it on (critical in true XHTML/XML)
-    if (start < 0) {
-      start += end;
-    }
-    if (typeof len !== 'undefined') {
-      if (len < 0) {
-        end = len + end;
-      } else {
-        end = len + start;
-      }
-    }
+  var ini_get = require('../info/ini_get'); // eslint-disable-line camelcase
+  var multibyte = ini_get('unicode.semantics') === 'on';
 
-    // PHP returns false if start does not fall within the string.
-    // PHP returns false if the calculated end comes before the calculated start.
-    // PHP returns an empty string if start and end are the same.
-    // Otherwise, PHP returns the portion of the string from start to end.
-    if (start >= str.length || start < 0 || start > end) {
-      return false;
-    }
-
-    return str.slice(start, end);
+  if (multibyte) {
+    input = input.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\s\S]/g) || [];
   }
 
-  // Full-blown Unicode including non-Basic-Multilingual-Plane characters
-  var i = 0;
-  var allBMP = true;
-  var es = 0;
-  var el = 0;
-  var se = 0;
-  var ret = '';
+  var inputLength = input.length;
+  var end = inputLength;
 
-  for (i = 0; i < str.length; i++) {
-    if (/[\uD800-\uDBFF]/.test(str.charAt(i)) && /[\uDC00-\uDFFF]/.test(str.charAt(i + 1))) {
-      allBMP = false;
-      break;
-    }
+  if (start < 0) {
+    start += end;
   }
 
-  if (!allBMP) {
-    if (start < 0) {
-      for (i = end - 1, es = start += end; i >= es; i--) {
-        if (/[\uDC00-\uDFFF]/.test(str.charAt(i)) && /[\uD800-\uDBFF]/.test(str.charAt(i - 1))) {
-          start--;
-          es--;
-        }
-      }
-    } else {
-      var surrogatePairs = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g;
-      while (surrogatePairs.exec(str) !== null) {
-        var li = surrogatePairs.lastIndex;
-        if (li - 2 < start) {
-          start++;
-        } else {
-          break;
-        }
-      }
-    }
-
-    if (start >= end || start < 0) {
-      return false;
-    }
+  if (typeof len !== 'undefined') {
     if (len < 0) {
-      for (i = end - 1, el = end += len; i >= el; i--) {
-        if (/[\uDC00-\uDFFF]/.test(str.charAt(i)) && /[\uD800-\uDBFF]/.test(str.charAt(i - 1))) {
-          end--;
-          el--;
-        }
-      }
-      if (start > end) {
-        return false;
-      }
-      return str.slice(start, end);
+      end = len + end;
     } else {
-      se = start + len;
-      for (i = start; i < se; i++) {
-        ret += str.charAt(i);
-        if (/[\uD800-\uDBFF]/.test(str.charAt(i)) && /[\uDC00-\uDFFF]/.test(str.charAt(i + 1))) {
-          // Go one further, since one of the "characters" is part of a surrogate pair
-          se++;
-        }
-      }
-      return ret;
+      end = len + start;
     }
   }
+
+  if (start > inputLength || start < 0 || start > end) {
+    return false;
+  }
+
+  if (multibyte) {
+    return input.slice(start, end).join('');
+  }
+
+  return input.slice(start, end);
 };
 return module.exports;
 })();
@@ -4347,12 +4713,12 @@ var trim = this.trim = (function(){
 'use strict';
 
 module.exports = function trim(str, charlist) {
-  //  discuss at: http://locutus.io/php/trim/
-  // original by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: mdsjack (http://www.mdsjack.bo.it)
-  // improved by: Alexander Ermolaev (http://snippets.dzone.com/user/AlexanderErmolaev)
-  // improved by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: Steven Levithan (http://blog.stevenlevithan.com)
+  //  discuss at: https://locutus.io/php/trim/
+  // original by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: mdsjack (https://www.mdsjack.bo.it)
+  // improved by: Alexander Ermolaev (https://snippets.dzone.com/user/AlexanderErmolaev)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: Steven Levithan (https://blog.stevenlevithan.com)
   // improved by: Jack
   //    input by: Erkekjetter
   //    input by: DxGx
@@ -4398,7 +4764,7 @@ var vsprintf = this.vsprintf = (function(){
 'use strict';
 
 module.exports = function vsprintf(format, args) {
-  //  discuss at: http://locutus.io/php/vsprintf/
+  //  discuss at: https://locutus.io/php/vsprintf/
   // original by: ejsanders
   //   example 1: vsprintf('%04d-%02d-%02d', [1988, 8, 1])
   //   returns 1: '1988-08-01'
@@ -5596,6 +5962,54 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         ['change', 'keyup', 'keydown', 'input', 'click', 'focusin', 'focusout'].forEach(function (event) {
             form.addEventListener(event, handler);
         });
+        // ファイルドロップイベントも組み込みで実装する
+        form.addEventListener('dragenter', function (e) {
+            if (e.target.matches('.vfile-dropzone')) {
+                e.preventDefault();
+
+                e.target.classList.add('vfile-dragging');
+            }
+        });
+        form.addEventListener('dragover', function (e) {
+            if (e.target.matches('.vfile-dropzone')) {
+                e.preventDefault();
+
+                const file = e.target.querySelector('input[type=file]') ?? document.getElementById(e.target.getAttribute('for'));
+                if (!file || file.multiple || e.dataTransfer.items.length <= 1) {
+                    e.dataTransfer.dropEffect = e.target.dataset.dropEffect ?? 'copy';
+                }
+                else {
+                    e.dataTransfer.dropEffect = 'none';
+                }
+            }
+        });
+        form.addEventListener('dragleave', function (e) {
+            if (e.target.matches('.vfile-dropzone')) {
+                e.preventDefault();
+
+                e.target.classList.remove('vfile-dragging');
+            }
+        });
+        form.addEventListener('drop', function (e) {
+            if (e.target.matches('.vfile-dropzone')) {
+                e.preventDefault();
+
+                e.target.classList.remove('vfile-dragging');
+
+                e.target.dispatchEvent(new CustomEvent('filedrop', {
+                    bubbles: true,
+                    detail: {
+                        files: e.dataTransfer.files,
+                    },
+                }));
+
+                const file = e.target.querySelector('input[type=file]') ?? document.getElementById(e.target.getAttribute('for'));
+                if (file && (file.multiple || e.dataTransfer.items.length <= 1)) {
+                    file.files = e.dataTransfer.files;
+                    file.dispatchEvent(new Event('change', {bubbles: true}));
+                }
+            }
+        });
 
         // サブミット時にバリデーション
         form.addEventListener('submit', function submit(e) {
@@ -5988,6 +6402,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         }
         var elemName = input.dataset.vinputClass;
         var condition = options.allrules[elemName]['condition'];
+        var needless = options.allrules[elemName]['needless'];
         var rkey = Object.keys(condition).find(function (key) {
             return condition[key].cname === 'Requires';
         });
@@ -5998,9 +6413,11 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
             label.setAttribute('data-vlevel', condition[rkey]['level']);
             input.classList.remove('required');
             label.classList.remove('required');
+            Object.entries(needless).forEach(([attrname, attrvalue]) => input.setAttribute(attrname, attrvalue));
             chmonos.condition['Requires'](input, '', fields, condition[rkey]['param'], chmonos.constants['Requires'], function () {
                 input.classList.add('required');
                 label.classList.add('required');
+                Object.keys(needless).forEach(attrname => input.removeAttribute(attrname));
             }, chmonos.context);
         }
     };
