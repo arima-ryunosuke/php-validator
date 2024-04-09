@@ -498,23 +498,31 @@ $condition_form = new \ryunosuke\chmonos\Form([
     ],
     'require_array'         => [
         'options' => [
-            1 => 'これを選ぶと必須になる',
-            2 => 'これは必須にならない',
-            3 => 'これを選ぶと必須になる',
+            1 => '1.これを選ぶと必須になる',
+            2 => '2.これは必須にならない',
+            3 => '3.これを選ぶと必須になる',
+            4 => '4.これを選ぶと必須になる/選ばないと非活性になる',
         ],
         'default' => [],
     ],
     'require_any'           => [
-        'title'     => '依存チェックボックス',
+        'title'     => '依存チェックボックス(1 || 3)',
         'condition' => [
             new Requires(['require_array' => ['any', [1, '3']],]),
         ]
     ],
     'require_in'            => [
-        'title'     => '依存チェックボックス',
+        'title'     => '依存チェックボックス(1 && 3)',
         'condition' => [
             (new Requires(['require_array' => ['in', [1, '3']],]))->setValidationLevel('warning'),
         ]
+    ],
+    'require_needless'      => [
+        'title'     => '依存チェックボックス(4)',
+        'condition' => [
+            new Requires(['require_array' => ['==', 4],]),
+        ],
+        'needless'  => 'disabled',
     ],
     'stringlength'          => [
         'title'     => '文字長',
@@ -589,8 +597,11 @@ resetForm($condition_form, 'condition_form');
             <?= $condition_form->input('array_length_select', ['type' => 'select']) ?><br>
         </td>
         <td>
-            <?= $condition_form->input('array_length_text', ['type' => 'text']) ?><br>
-            <?= $condition_form->input('array_length_file', ['type' => 'file']) ?><br>
+            <?= $condition_form->input('array_length_text', ['type' => 'text']) ?>
+            <div class="vfile-dropzone">
+                ドロップエリア
+                <?= $condition_form->input('array_length_file', ['type' => 'file']) ?>
+            </div>
         </td>
     </tr>
     <tr>
@@ -664,8 +675,13 @@ resetForm($condition_form, 'condition_form');
     </tr>
     <tr>
         <th>画像ファイル(ファイルタイプ/ファイルサイズ/画像タイプ)</th>
-        <td><?= $condition_form->input('image_file_require') ?></td>
-        <td><?= $condition_form->input('image_type') ?><?= $condition_form->input('image_file', ['type' => 'file']) ?></td>
+        <td>
+            <?= $condition_form->input('image_file_require') ?>
+            <div class="vfile-dropzone" for="image_file">
+                ドロップエリアです
+            </div>
+        </td>
+        <td><?= $condition_form->input('image_type') ?><?= $condition_form->input('image_file', ['id' => 'image_file', 'type' => 'file']) ?></td>
     </tr>
     <tr>
         <th>ホスト名：ホスト名のみ | ホスト名、IPv4、cidrのみ | ホスト名、ポート必須 | 複数値</th>
@@ -769,6 +785,8 @@ resetForm($condition_form, 'condition_form');
             <?= $condition_form->input('require_any') ?>
             <?= $condition_form->label('require_in') ?>
             <?= $condition_form->input('require_in') ?>
+            <?= $condition_form->label('require_needless') ?>
+            <?= $condition_form->input('require_needless') ?>
         </td>
     </tr>
     <tr>
@@ -800,11 +818,13 @@ resetForm($condition_form, 'condition_form');
         <th>DataURI</th>
         <td colspan="2">
             <?= $condition_form->input('data-uri', ['type' => 'textarea', 'style' => 'width:100%']) ?>
-            <input id="data-uri-file" type="file">
+            <div id="data-uri-filedrop"  class="vfile-dropzone">
+                ドロップエリアです
+            </div>
             <script>
-                $$('#data-uri-file').addEventListener('change', async function () {
+                $$('#data-uri-filedrop').addEventListener('filedrop', async function (e) {
                     const textarea = $$('[data-vinput-id=data-uri]');
-                    textarea.value = await this.files[0].toDataURL();
+                    textarea.value = await e.detail.files[0].toDataURL();
                     textarea.dispatchEvent(new Event('change', {bubbles: true}));
                 });
             </script>

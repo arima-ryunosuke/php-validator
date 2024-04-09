@@ -129,7 +129,12 @@ $dynamic_rule = [
             <dt>兄弟内の重複禁止</dt>
             <dd><?= $template_form->input('unique_require') ?> <?= $template_form->input('unique') ?></dd>
             <dt>ファイル要素</dt>
-            <dd><?= $template_form->input('array_file') ?></dd>
+            <dd>
+                <div class="vfile-dropzone">
+                    ドロップエリア
+                    <?= $template_form->input('array_file') ?>
+                </div>
+            </dd>
             <dd>
                 <input class="delete_row1 btn btn-danger" type="button" value="削除">
             </dd>
@@ -213,7 +218,12 @@ $dynamic_rule = [
                 <th>兄弟内の重複禁止</th>
                 <td><?= $context_form->input('unique_require') ?> <?= $context_form->input('unique') ?></td>
                 <th>ファイル要素</th>
-                <td><?= $context_form->input('array_file') ?></td>
+                <td>
+                    <div class="vfile-dropzone">
+                        ドロップエリア
+                        <?= $context_form->input('array_file') ?>
+                    </div>
+                </td>
                 <td>
                     <input class="delete_row2 btn btn-danger" type="button" value="削除">
                 </td>
@@ -230,7 +240,12 @@ $dynamic_rule = [
                 <th>兄弟内の重複禁止</th>
                 <td><?= $context_form->input('unique_require') ?> <?= $context_form->input('unique') ?></td>
                 <th>ファイル要素</th>
-                <td><?= $context_form->input('array_file') ?></td>
+                <td>
+                    <div class="vfile-dropzone">
+                        ドロップエリア
+                        <?= $context_form->input('array_file') ?>
+                    </div>
+                </td>
                 <td>
                     <input class="delete_row2 btn btn-danger" type="button" value="削除">
                 </td>
@@ -303,7 +318,12 @@ $dynamic_rule = [
                     <th>兄弟内の重複禁止</th>
                     <td><?= $vuejs_form->input('unique_require') ?> <?= $vuejs_form->input('unique') ?></td>
                     <th>ファイル要素</th>
-                    <td><?= $vuejs_form->input('array_file') ?></td>
+                    <td>
+                        <div class="vfile-dropzone">
+                            ドロップエリア
+                            <?= $vuejs_form->input('array_file') ?>
+                        </div>
+                    </td>
                     <td>
                         <input class="delete_row3 btn btn-danger" v-on:click="remove(index)" type="button" value="削除">
                     </td>

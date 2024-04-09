@@ -49,6 +49,10 @@ $appendmtime = function ($filename) {
             vertical-align: middle;
         }
 
+        .vfile-dragging {
+            background: pink;
+        }
+
         #dummy-focus {
             opacity: 0;
             width: 1px;
