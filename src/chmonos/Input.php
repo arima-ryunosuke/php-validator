@@ -43,6 +43,7 @@ class Input
         'invisible'             => false,
         'ignore'                => false,
         'trimming'              => true,
+        'needless'              => [],
         'ime-mode'              => true,
         'maxlength'             => true,
         'autocond'              => true,
@@ -100,6 +101,7 @@ class Input
         $rule['propagate'] = arrayize($rule['propagate']);
         $rule['dependent'] = arrayize($rule['dependent']);
         $rule['attribute'] = arrayize($rule['attribute']);
+        $rule['needless'] = arrayize($rule['needless']);
         $rule['event'] = arrayize($rule['event']);
 
         // 文字列指定の Condition をオブジェクト化する
@@ -120,6 +122,12 @@ class Input
         foreach ($rule['attribute'] as $name => $attribute) {
             if (is_int($name)) {
                 throw new \InvalidArgumentException("attribute requires hash array");
+            }
+        }
+        foreach ($rule['needless'] as $name => $attribute) {
+            if (is_int($name)) {
+                unset($rule['needless'][$name]);
+                $rule['needless'][$attribute] = $attribute;
             }
         }
 
@@ -702,6 +710,7 @@ class Input
             'phantom'   => (array) $this->phantom,
             'invisible' => (bool) $this->invisible,
             'trimming'  => (bool) $this->trimming,
+            'needless'  => (array) $this->needless,
         ];
     }
 

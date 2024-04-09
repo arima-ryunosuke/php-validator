@@ -882,7 +882,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'string' => '"</script>',
                 'array'  => [1, 2, 3],
                 'hash'   => (object) ['a' => 'A', 'b' => 'B', 'c' => 'C'],
-            ]
+            ],
+            'needless'  => 'readonly',
         ]);
 
         that($input)->input([])->htmlMatchesArray([
@@ -924,6 +925,10 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'class'                 => 'validatable',
                 'value'                 => '',
             ],
+        ]);
+
+        that($input)->getValidationRule()['needless']->is([
+            'readonly' => 'readonly',
         ]);
 
         that(Input::class)->new(['attribute' => ''])->wasThrown(new \InvalidArgumentException('attribute requires hash array'));

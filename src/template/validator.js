@@ -857,6 +857,7 @@ function Chmonos(form, options) {
         }
         var elemName = input.dataset.vinputClass;
         var condition = options.allrules[elemName]['condition'];
+        var needless = options.allrules[elemName]['needless'];
         var rkey = Object.keys(condition).find(function (key) {
             return condition[key].cname === 'Requires';
         });
@@ -867,9 +868,11 @@ function Chmonos(form, options) {
             label.setAttribute('data-vlevel', condition[rkey]['level']);
             input.classList.remove('required');
             label.classList.remove('required');
+            Object.entries(needless).forEach(([attrname, attrvalue]) => input.setAttribute(attrname, attrvalue));
             chmonos.condition['Requires'](input, '', fields, condition[rkey]['param'], chmonos.constants['Requires'], function () {
                 input.classList.add('required');
                 label.classList.add('required');
+                Object.keys(needless).forEach(attrname => input.removeAttribute(attrname));
             }, chmonos.context);
         }
     };
