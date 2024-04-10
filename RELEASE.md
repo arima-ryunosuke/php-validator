@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.2.9
+
+- [refactor] npm の更新とメンテ
+- [feature] ファイルドロップイベントを組み込みで用意
+- [feature] needless オプションを新設
+
 ## 1.2.8
 
 - [feature] AlphaDigit で任意の記号を許可する機能
