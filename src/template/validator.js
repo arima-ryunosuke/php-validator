@@ -465,6 +465,54 @@ function Chmonos(form, options) {
         ['change', 'keyup', 'keydown', 'input', 'click', 'focusin', 'focusout'].forEach(function (event) {
             form.addEventListener(event, handler);
         });
+        // ファイルドロップイベントも組み込みで実装する
+        form.addEventListener('dragenter', function (e) {
+            if (e.target.matches('.vfile-dropzone')) {
+                e.preventDefault();
+
+                e.target.classList.add('vfile-dragging');
+            }
+        });
+        form.addEventListener('dragover', function (e) {
+            if (e.target.matches('.vfile-dropzone')) {
+                e.preventDefault();
+
+                const file = e.target.querySelector('input[type=file]') ?? document.getElementById(e.target.getAttribute('for'));
+                if (!file || file.multiple || e.dataTransfer.items.length <= 1) {
+                    e.dataTransfer.dropEffect = e.target.dataset.dropEffect ?? 'copy';
+                }
+                else {
+                    e.dataTransfer.dropEffect = 'none';
+                }
+            }
+        });
+        form.addEventListener('dragleave', function (e) {
+            if (e.target.matches('.vfile-dropzone')) {
+                e.preventDefault();
+
+                e.target.classList.remove('vfile-dragging');
+            }
+        });
+        form.addEventListener('drop', function (e) {
+            if (e.target.matches('.vfile-dropzone')) {
+                e.preventDefault();
+
+                e.target.classList.remove('vfile-dragging');
+
+                e.target.dispatchEvent(new CustomEvent('filedrop', {
+                    bubbles: true,
+                    detail: {
+                        files: e.dataTransfer.files,
+                    },
+                }));
+
+                const file = e.target.querySelector('input[type=file]') ?? document.getElementById(e.target.getAttribute('for'));
+                if (file && (file.multiple || e.dataTransfer.items.length <= 1)) {
+                    file.files = e.dataTransfer.files;
+                    file.dispatchEvent(new Event('change', {bubbles: true}));
+                }
+            }
+        });
 
         // サブミット時にバリデーション
         form.addEventListener('submit', function submit(e) {
