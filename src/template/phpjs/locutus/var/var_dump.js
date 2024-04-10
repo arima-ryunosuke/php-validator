@@ -2,16 +2,20 @@
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+var visitedObjects = new Map(); // Initialize a map to track visited objects
+
 module.exports = function var_dump() {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/var_dump/
-  // original by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/var_dump/
+  // original by: Brett Zamir (https://brett-zamir.me)
   // improved by: Zahlii
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   //      note 1: For returning a string, use var_export() with the second argument set to true
-  //        test: skip-all
   //   example 1: var_dump(1)
   //   returns 1: 'int(1)'
+  //   example 2: const simpleCircular = {}
+  //   example 2: simpleCircular.self = simpleCircular
+  //   example 2: var_dump(simpleCircular)
+  //   returns 2: 'array(1) {\n    [self] =>\n    Circular Reference Detected\n}\n'
 
   var echo = require('../strings/echo');
   var output = '';
@@ -30,7 +34,7 @@ module.exports = function var_dump() {
 
   var _repeatChar = function _repeatChar(len, padChar) {
     var str = '';
-    for (var i = 0; i < len; i++) {
+    for (var _i = 0; _i < len; _i++) {
       str += padChar;
     }
     return str;
@@ -56,8 +60,8 @@ module.exports = function var_dump() {
     } else if (typeof val === 'function') {
       var funcLines = val.toString().split('\n');
       ret = '';
-      for (var i = 0, fll = funcLines.length; i < fll; i++) {
-        ret += (i !== 0 ? '\n' + thickPad : '') + funcLines[i];
+      for (var _i2 = 0, fll = funcLines.length; _i2 < fll; _i2++) {
+        ret += (_i2 !== 0 ? '\n' + thickPad : '') + funcLines[_i2];
       }
     } else if (val instanceof Date) {
       ret = 'Date(' + val + ')';
@@ -67,7 +71,7 @@ module.exports = function var_dump() {
       // Different than PHP's DOMElement
       switch (val.nodeType) {
         case 1:
-          if (typeof val.namespaceURI === 'undefined' || val.namespaceURI === 'http://www.w3.org/1999/xhtml') {
+          if (typeof val.namespaceURI === 'undefined' || val.namespaceURI === 'https://www.w3.org/1999/xhtml') {
             // Undefined namespace could be plain XML, but namespaceURI not widely supported
             ret = 'HTMLElement("' + val.nodeName + '")';
           } else {
@@ -112,7 +116,7 @@ module.exports = function var_dump() {
     return ret;
   };
 
-  var _formatArray = function _formatArray(obj, curDepth, padVal, padChar) {
+  var _formatArray = function _formatArray(obj, curDepth, padVal, padChar, visitedObjects) {
     if (curDepth > 0) {
       curDepth++;
     }
@@ -123,6 +127,14 @@ module.exports = function var_dump() {
     var val = '';
 
     if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && obj !== null) {
+      if (visitedObjects.has(obj)) {
+        // Circular reference detected, return a placeholder or a message
+        return 'Circular Reference Detected\n';
+      } else {
+        // Mark this object as visited by adding it to the map
+        visitedObjects.set(obj, true);
+      }
+
       if (obj.constructor && _getFuncName(obj.constructor) === 'LOCUTUS_Resource') {
         return obj.var_dump();
       }
@@ -141,7 +153,7 @@ module.exports = function var_dump() {
           str += key;
           str += '] =>\n';
           str += thickPad;
-          str += _formatArray(objVal, curDepth + 1, padVal, padChar);
+          str += _formatArray(objVal, curDepth + 1, padVal, padChar, visitedObjects);
         } else {
           val = _getInnerVal(objVal, thickPad);
           str += thickPad;
@@ -160,9 +172,9 @@ module.exports = function var_dump() {
     return str;
   };
 
-  output = _formatArray(arguments[0], 0, padVal, padChar);
+  output = _formatArray(arguments[0], 0, padVal, padChar, visitedObjects);
   for (i = 1; i < arguments.length; i++) {
-    output += '\n' + _formatArray(arguments[i], 0, padVal, padChar);
+    output += '\n' + _formatArray(arguments[i], 0, padVal, padChar, visitedObjects);
   }
 
   echo(output);

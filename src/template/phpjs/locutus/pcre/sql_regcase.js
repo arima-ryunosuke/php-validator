@@ -1,9 +1,8 @@
 'use strict';
 
 module.exports = function sql_regcase(str) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/sql_regcase/
-  // original by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/sql_regcase/
+  // original by: Brett Zamir (https://brett-zamir.me)
   //   example 1: sql_regcase('Foo - bar.')
   //   returns 1: '[Ff][Oo][Oo] - [Bb][Aa][Rr].'
 

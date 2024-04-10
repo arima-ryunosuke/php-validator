@@ -3,11 +3,10 @@
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function is_object(mixedVar) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/is_object/
-  // original by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/is_object/
+  // original by: Kevin van Zonneveld (https://kvz.io)
   // improved by: Legaev Andrey
-  // improved by: Michael White (http://getsprink.com)
+  // improved by: Michael White (https://getsprink.com)
   //   example 1: is_object('23')
   //   returns 1: false
   //   example 2: is_object({foo: 'bar'})

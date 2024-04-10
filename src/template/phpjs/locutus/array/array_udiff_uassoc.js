@@ -1,9 +1,8 @@
 'use strict';
 
 module.exports = function array_udiff_uassoc(arr1) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/array_udiff_uassoc/
-  // original by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/array_udiff_uassoc/
+  // original by: Brett Zamir (https://brett-zamir.me)
   //   example 1: var $array1 = {a: 'green', b: 'brown', c: 'blue', 0: 'red'}
   //   example 1: var $array2 = {a: 'GREEN', B: 'brown', 0: 'yellow', 1: 'red'}
   //   example 1: array_udiff_uassoc($array1, $array2, function (f_string1, f_string2){var string1 = (f_string1+'').toLowerCase(); var string2 = (f_string2+'').toLowerCase(); if (string1 > string2) return 1; if (string1 === string2) return 0; return -1;}, function (f_string1, f_string2){var string1 = (f_string1+'').toLowerCase(); var string2 = (f_string2+'').toLowerCase(); if (string1 > string2) return 1; if (string1 === string2) return 0; return -1;})
@@ -26,7 +25,6 @@ module.exports = function array_udiff_uassoc(arr1) {
   cb0 = typeof cb0 === 'string' ? $global[cb0] : Object.prototype.toString.call(cb0) === '[object Array]' ? $global[cb0[0]][cb0[1]] : cb0;
 
   arr1keys: for (k1 in arr1) {
-    // eslint-disable-line no-labels
     for (i = 1; i < arglm2; i++) {
       arr = arguments[i];
       for (k in arr) {

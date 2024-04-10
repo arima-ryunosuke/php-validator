@@ -1,18 +1,18 @@
 'use strict';
 
 module.exports = function sha1(str) {
-  //  discuss at: http://locutus.io/php/sha1/
-  // original by: Webtoolkit.info (http://www.webtoolkit.info/)
-  // improved by: Michael White (http://getsprink.com)
-  // improved by: Kevin van Zonneveld (http://kvz.io)
-  //    input by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/sha1/
+  // original by: Webtoolkit.info (https://www.webtoolkit.info/)
+  // improved by: Michael White (https://getsprink.com)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
+  //    input by: Brett Zamir (https://brett-zamir.me)
   //      note 1: Keep in mind that in accordance with PHP, the whole string is buffered and then
   //      note 1: hashed. If available, we'd recommend using Node's native crypto modules directly
   //      note 1: in a steaming fashion for faster and more efficient hashing
   //   example 1: sha1('Kevin van Zonneveld')
   //   returns 1: '54916d2e62f65b3afa6e192e6a601cdbe5cb5897'
 
-  var hash;
+  var hash = void 0;
   try {
     var crypto = require('crypto');
     var sha1sum = crypto.createHash('sha1');
@@ -33,8 +33,8 @@ module.exports = function sha1(str) {
 
   var _cvtHex = function _cvtHex(val) {
     var str = '';
-    var i;
-    var v;
+    var i = void 0;
+    var v = void 0;
 
     for (i = 7; i >= 0; i--) {
       v = val >>> i * 4 & 0x0f;
@@ -43,16 +43,21 @@ module.exports = function sha1(str) {
     return str;
   };
 
-  var blockstart;
-  var i, j;
+  var blockstart = void 0;
+  var i = void 0,
+      j = void 0;
   var W = new Array(80);
   var H0 = 0x67452301;
-  var H1 = 0xEFCDAB89;
-  var H2 = 0x98BADCFE;
+  var H1 = 0xefcdab89;
+  var H2 = 0x98badcfe;
   var H3 = 0x10325476;
-  var H4 = 0xC3D2E1F0;
-  var A, B, C, D, E;
-  var temp;
+  var H4 = 0xc3d2e1f0;
+  var A = void 0,
+      B = void 0,
+      C = void 0,
+      D = void 0,
+      E = void 0;
+  var temp = void 0;
 
   // utf8_encode
   str = unescape(encodeURIComponent(str));
@@ -103,7 +108,7 @@ module.exports = function sha1(str) {
     E = H4;
 
     for (i = 0; i <= 19; i++) {
-      temp = _rotLeft(A, 5) + (B & C | ~B & D) + E + W[i] + 0x5A827999 & 0x0ffffffff;
+      temp = _rotLeft(A, 5) + (B & C | ~B & D) + E + W[i] + 0x5a827999 & 0x0ffffffff;
       E = D;
       D = C;
       C = _rotLeft(B, 30);
@@ -112,7 +117,7 @@ module.exports = function sha1(str) {
     }
 
     for (i = 20; i <= 39; i++) {
-      temp = _rotLeft(A, 5) + (B ^ C ^ D) + E + W[i] + 0x6ED9EBA1 & 0x0ffffffff;
+      temp = _rotLeft(A, 5) + (B ^ C ^ D) + E + W[i] + 0x6ed9eba1 & 0x0ffffffff;
       E = D;
       D = C;
       C = _rotLeft(B, 30);
@@ -121,7 +126,7 @@ module.exports = function sha1(str) {
     }
 
     for (i = 40; i <= 59; i++) {
-      temp = _rotLeft(A, 5) + (B & C | B & D | C & D) + E + W[i] + 0x8F1BBCDC & 0x0ffffffff;
+      temp = _rotLeft(A, 5) + (B & C | B & D | C & D) + E + W[i] + 0x8f1bbcdc & 0x0ffffffff;
       E = D;
       D = C;
       C = _rotLeft(B, 30);
@@ -130,7 +135,7 @@ module.exports = function sha1(str) {
     }
 
     for (i = 60; i <= 79; i++) {
-      temp = _rotLeft(A, 5) + (B ^ C ^ D) + E + W[i] + 0xCA62C1D6 & 0x0ffffffff;
+      temp = _rotLeft(A, 5) + (B ^ C ^ D) + E + W[i] + 0xca62c1d6 & 0x0ffffffff;
       E = D;
       D = C;
       C = _rotLeft(B, 30);

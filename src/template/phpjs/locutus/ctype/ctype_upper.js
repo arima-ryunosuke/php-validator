@@ -1,9 +1,8 @@
 'use strict';
 
 module.exports = function ctype_upper(text) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/ctype_upper/
-  // original by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/ctype_upper/
+  // original by: Brett Zamir (https://brett-zamir.me)
   //   example 1: ctype_upper('AZ')
   //   returns 1: true
 

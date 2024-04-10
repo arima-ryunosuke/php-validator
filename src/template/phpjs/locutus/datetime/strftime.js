@@ -3,12 +3,12 @@
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function strftime(fmt, timestamp) {
-  //       discuss at: http://locutus.io/php/strftime/
-  //      original by: Blues (http://tech.bluesmoon.info/)
-  // reimplemented by: Brett Zamir (http://brett-zamir.me)
+  //       discuss at: https://locutus.io/php/strftime/
+  //      original by: Blues (https://tech.bluesmoon.info/)
+  // reimplemented by: Brett Zamir (https://brett-zamir.me)
   //         input by: Alex
-  //      bugfixed by: Brett Zamir (http://brett-zamir.me)
-  //      improved by: Brett Zamir (http://brett-zamir.me)
+  //      bugfixed by: Brett Zamir (https://brett-zamir.me)
+  //      improved by: Brett Zamir (https://brett-zamir.me)
   //           note 1: Uses global: locutus to store locale info
   //        example 1: strftime("%A", 1062462400); // Return value will depend on date and locale
   //        returns 1: 'Tuesday'
@@ -168,10 +168,9 @@ module.exports = function strftime(fmt, timestamp) {
     T: '%H:%M:%S',
     x: 'locale',
     X: 'locale'
-  };
 
-  // First replace aggregates (run in a loop because an agg may be made up of other aggs)
-  while (fmt.match(/%[cDFhnrRtTxX]/)) {
+    // First replace aggregates (run in a loop because an agg may be made up of other aggs)
+  };while (fmt.match(/%[cDFhnrRtTxX]/)) {
     fmt = fmt.replace(/%([cDFhnrRtTxX])/g, function (m0, m1) {
       var f = _aggregates[m1];
       return f === 'locale' ? lcTime[m1] : f;

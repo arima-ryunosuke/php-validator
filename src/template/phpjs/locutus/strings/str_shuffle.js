@@ -1,9 +1,8 @@
 'use strict';
 
 module.exports = function str_shuffle(str) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/str_shuffle/
-  // original by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/str_shuffle/
+  // original by: Brett Zamir (https://brett-zamir.me)
   //   example 1: var $shuffled = str_shuffle("abcdef")
   //   example 1: var $result = $shuffled.length
   //   returns 1: 6
@@ -19,7 +18,7 @@ module.exports = function str_shuffle(str) {
   str += '';
 
   var newStr = '';
-  var rand;
+  var rand = void 0;
   var i = str.length;
 
   while (i) {

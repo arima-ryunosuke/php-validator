@@ -13,7 +13,7 @@ file_put_contents("$npmdir/package.json", json_encode([
     "repository"   => "dummy",
     "license"      => "MIT",
     "dependencies" => [
-        "locutus" => "*",
+        "locutus" => "2.0.32",
     ],
 ], JSON_PRETTY_PRINT));
 
@@ -23,3 +23,4 @@ set_include_path(getenv('PATH'));
 fwrite(STDOUT, $stdout);
 fwrite(STDERR, $stderr);
 \ryunosuke\chmonos\cp_rf("$npmdir/node_modules/locutus/php", dirname(__DIR__) . "/src/template/phpjs/locutus");
+array_map('unlink', \ryunosuke\chmonos\globstar(dirname(__DIR__) . "/src/template/phpjs/locutus/**.map"));

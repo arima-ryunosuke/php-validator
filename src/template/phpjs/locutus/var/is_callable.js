@@ -3,11 +3,10 @@
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function is_callable(mixedVar, syntaxOnly, callableName) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/is_callable/
-  // original by: Brett Zamir (http://brett-zamir.me)
+  //  discuss at: https://locutus.io/php/is_callable/
+  // original by: Brett Zamir (https://brett-zamir.me)
   //    input by: François
-  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Brett Zamir (https://brett-zamir.me)
   // improved by: KnightYoshi
   // improved by: Waldo Malqui Silva (https://fayr.us/waldo/)
   //      note 1: The variable callableName cannot work as a string variable passed by
@@ -78,8 +77,8 @@ module.exports = function is_callable(mixedVar, syntaxOnly, callableName) {
   }
 
   // validFunctionName avoids exploits
+  // eslint-disable-next-line no-eval
   if (validFunctionName && typeof eval(method) === 'function') {
-    // eslint-disable-line no-eval
     if (callableName) {
       $global[callableName] = name;
     }

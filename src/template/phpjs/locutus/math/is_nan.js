@@ -3,8 +3,7 @@
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function is_nan(val) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/is_nan/
+  //  discuss at: https://locutus.io/php/is_nan/
   // original by: Onno Marsman (https://twitter.com/onnomarsman)
   //    input by: Robin
   //   example 1: is_nan(NaN)

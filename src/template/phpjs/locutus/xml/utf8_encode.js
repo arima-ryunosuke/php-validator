@@ -1,10 +1,9 @@
 'use strict';
 
 module.exports = function utf8_encode(argString) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/utf8_encode/
-  // original by: Webtoolkit.info (http://www.webtoolkit.info/)
-  // improved by: Kevin van Zonneveld (http://kvz.io)
+  //  discuss at: https://locutus.io/php/utf8_encode/
+  // original by: Webtoolkit.info (https://www.webtoolkit.info/)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
   // improved by: sowberry
   // improved by: Jack
   // improved by: Yves Sucaet
@@ -12,7 +11,7 @@ module.exports = function utf8_encode(argString) {
   // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
   // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
   // bugfixed by: Ulrich
-  // bugfixed by: Rafał Kukawski (http://blog.kukawski.pl)
+  // bugfixed by: Rafał Kukawski (https://blog.kukawski.pl)
   // bugfixed by: kirilloid
   //   example 1: utf8_encode('Kevin van Zonneveld')
   //   returns 1: 'Kevin van Zonneveld'
@@ -24,8 +23,8 @@ module.exports = function utf8_encode(argString) {
   // .replace(/\r\n/g, "\n").replace(/\r/g, "\n");
   var string = argString + '';
   var utftext = '';
-  var start;
-  var end;
+  var start = void 0;
+  var end = void 0;
   var stringl = 0;
 
   start = end = 0;
@@ -38,18 +37,18 @@ module.exports = function utf8_encode(argString) {
       end++;
     } else if (c1 > 127 && c1 < 2048) {
       enc = String.fromCharCode(c1 >> 6 | 192, c1 & 63 | 128);
-    } else if ((c1 & 0xF800) !== 0xD800) {
+    } else if ((c1 & 0xf800) !== 0xd800) {
       enc = String.fromCharCode(c1 >> 12 | 224, c1 >> 6 & 63 | 128, c1 & 63 | 128);
     } else {
       // surrogate pairs
-      if ((c1 & 0xFC00) !== 0xD800) {
+      if ((c1 & 0xfc00) !== 0xd800) {
         throw new RangeError('Unmatched trail surrogate at ' + n);
       }
       var c2 = string.charCodeAt(++n);
-      if ((c2 & 0xFC00) !== 0xDC00) {
+      if ((c2 & 0xfc00) !== 0xdc00) {
         throw new RangeError('Unmatched lead surrogate at ' + (n - 1));
       }
-      c1 = ((c1 & 0x3FF) << 10) + (c2 & 0x3FF) + 0x10000;
+      c1 = ((c1 & 0x3ff) << 10) + (c2 & 0x3ff) + 0x10000;
       enc = String.fromCharCode(c1 >> 18 | 240, c1 >> 12 & 63 | 128, c1 >> 6 & 63 | 128, c1 & 63 | 128);
     }
     if (enc !== null) {

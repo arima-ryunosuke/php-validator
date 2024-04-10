@@ -1,15 +1,18 @@
 'use strict';
 
 module.exports = function fmod(x, y) {
-  //  discuss at: http://locutus.io/php/fmod/
+  //  discuss at: https://locutus.io/php/fmod/
   // original by: Onno Marsman (https://twitter.com/onnomarsman)
-  //    input by: Brett Zamir (http://brett-zamir.me)
-  // bugfixed by: Kevin van Zonneveld (http://kvz.io)
+  //    input by: Brett Zamir (https://brett-zamir.me)
+  // bugfixed by: Kevin van Zonneveld (https://kvz.io)
+  // bugfixed by: Irina (https://github.com/dekairi)
   //   example 1: fmod(5.7, 1.3)
   //   returns 1: 0.5
+  //   example 2: fmod(10, 1)
+  //   returns 2: 0
 
-  var tmp;
-  var tmp2;
+  var tmp = void 0;
+  var tmp2 = void 0;
   var p = 0;
   var pY = 0;
   var l = 0.0;
@@ -33,7 +36,7 @@ module.exports = function fmod(x, y) {
 
     return (tmp2 / l2).toFixed(l - p) * l2;
   } else {
-    return parseFloat(tmp2.toFixed(-p));
+    return parseFloat(tmp2.toFixed(Math.abs(p)));
   }
 };
 //# sourceMappingURL=fmod.js.map

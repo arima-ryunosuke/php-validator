@@ -1,12 +1,11 @@
 'use strict';
 
 module.exports = function version_compare(v1, v2, operator) {
-  // eslint-disable-line camelcase
-  //       discuss at: http://locutus.io/php/version_compare/
-  //      original by: Philippe Jausions (http://pear.php.net/user/jausions)
-  //      original by: Aidan Lister (http://aidanlister.com/)
-  // reimplemented by: Kankrelune (http://www.webfaktory.info/)
-  //      improved by: Brett Zamir (http://brett-zamir.me)
+  //       discuss at: https://locutus.io/php/version_compare/
+  //      original by: Philippe Jausions (https://pear.php.net/user/jausions)
+  //      original by: Aidan Lister (https://aidanlister.com/)
+  // reimplemented by: Kankrelune (https://www.webfaktory.info/)
+  //      improved by: Brett Zamir (https://brett-zamir.me)
   //      improved by: Scott Baker
   //      improved by: Theriault (https://github.com/Theriault)
   //        example 1: version_compare('8.2.5rc', '8.2.5a')
@@ -19,8 +18,8 @@ module.exports = function version_compare(v1, v2, operator) {
   //        returns 4: 1
 
   // Important: compare must be initialized at 0.
-  var i;
-  var x;
+  var i = void 0;
+  var x = void 0;
   var compare = 0;
 
   // vm maps textual PHP versions to negatives so they're less than 0.
@@ -31,28 +30,27 @@ module.exports = function version_compare(v1, v2, operator) {
   // If a non-numerical value can't be mapped to this table, it receives
   // -7 as its value.
   var vm = {
-    'dev': -6,
-    'alpha': -5,
-    'a': -5,
-    'beta': -4,
-    'b': -4,
-    'RC': -3,
-    'rc': -3,
+    dev: -6,
+    alpha: -5,
+    a: -5,
+    beta: -4,
+    b: -4,
+    RC: -3,
+    rc: -3,
     '#': -2,
-    'p': 1,
-    'pl': 1
-  };
+    p: 1,
+    pl: 1
 
-  // This function will be called to prepare each version argument.
-  // It replaces every _, -, and + with a dot.
-  // It surrounds any nonsequence of numbers/dots with dots.
-  // It replaces sequences of dots with a single dot.
-  //    version_compare('4..0', '4.0') === 0
-  // Important: A string of 0 length needs to be converted into a value
-  // even less than an unexisting value in vm (-7), hence [-8].
-  // It's also important to not strip spaces because of this.
-  //   version_compare('', ' ') === 1
-  var _prepVersion = function _prepVersion(v) {
+    // This function will be called to prepare each version argument.
+    // It replaces every _, -, and + with a dot.
+    // It surrounds any nonsequence of numbers/dots with dots.
+    // It replaces sequences of dots with a single dot.
+    //    version_compare('4..0', '4.0') === 0
+    // Important: A string of 0 length needs to be converted into a value
+    // even less than an unexisting value in vm (-7), hence [-8].
+    // It's also important to not strip spaces because of this.
+    //   version_compare('', ' ') === 1
+  };var _prepVersion = function _prepVersion(v) {
     v = ('' + v).replace(/[_\-+]/g, '.');
     v = v.replace(/([^.\d]+)/g, '.$1.').replace(/\.{2,}/g, '.');
     return !v.length ? [-8] : v.split('.');

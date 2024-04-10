@@ -1,12 +1,12 @@
 'use strict';
 
 module.exports = function pack(format) {
-  //  discuss at: http://locutus.io/php/pack/
-  // original by: Tim de Koning (http://www.kingsquare.nl)
-  //    parts by: Jonas Raoni Soares Silva (http://www.jsfromhell.com)
-  // bugfixed by: Tim de Koning (http://www.kingsquare.nl)
+  //  discuss at: https://locutus.io/php/pack/
+  // original by: Tim de Koning (https://www.kingsquare.nl)
+  //    parts by: Jonas Raoni Soares Silva (https://www.jsfromhell.com)
+  // bugfixed by: Tim de Koning (https://www.kingsquare.nl)
   //      note 1: Float encoding by: Jonas Raoni Soares Silva
-  //      note 1: Home: http://www.kingsquare.nl/blog/12-12-2009/13507444
+  //      note 1: Home: https://www.kingsquare.nl/blog/12-12-2009/13507444
   //      note 1: Feedback: phpjs-pack@kingsquare.nl
   //      note 1: "machine dependent byte order and size" aren't
   //      note 1: applicable for JavaScript; pack works as on a 32bit,
@@ -27,26 +27,31 @@ module.exports = function pack(format) {
   var argument = '';
   var i = 0;
   var r = [];
-  var instruction, quantifier, word, precisionBits, exponentBits, extraNullCount;
+  var instruction = void 0,
+      quantifier = void 0,
+      word = void 0,
+      precisionBits = void 0,
+      exponentBits = void 0,
+      extraNullCount = void 0;
 
   // vars used by float encoding
-  var bias;
-  var minExp;
-  var maxExp;
-  var minUnnormExp;
-  var status;
-  var exp;
-  var len;
-  var bin;
-  var signal;
-  var n;
-  var intPart;
-  var floatPart;
-  var lastBit;
-  var rounded;
-  var j;
-  var k;
-  var tmpResult;
+  var bias = void 0;
+  var minExp = void 0;
+  var maxExp = void 0;
+  var minUnnormExp = void 0;
+  var status = void 0;
+  var exp = void 0;
+  var len = void 0;
+  var bin = void 0;
+  var signal = void 0;
+  var n = void 0;
+  var intPart = void 0;
+  var floatPart = void 0;
+  var lastBit = void 0;
+  var rounded = void 0;
+  var j = void 0;
+  var k = void 0;
+  var tmpResult = void 0;
 
   while (formatPointer < format.length) {
     instruction = format.charAt(formatPointer);
@@ -153,8 +158,8 @@ module.exports = function pack(format) {
         }
 
         for (i = 0; i < quantifier; i++) {
-          result += String.fromCharCode(arguments[argumentPointer] & 0xFF);
-          result += String.fromCharCode(arguments[argumentPointer] >> 8 & 0xFF);
+          result += String.fromCharCode(arguments[argumentPointer] & 0xff);
+          result += String.fromCharCode(arguments[argumentPointer] >> 8 & 0xff);
           argumentPointer++;
         }
         break;
@@ -169,8 +174,8 @@ module.exports = function pack(format) {
         }
 
         for (i = 0; i < quantifier; i++) {
-          result += String.fromCharCode(arguments[argumentPointer] >> 8 & 0xFF);
-          result += String.fromCharCode(arguments[argumentPointer] & 0xFF);
+          result += String.fromCharCode(arguments[argumentPointer] >> 8 & 0xff);
+          result += String.fromCharCode(arguments[argumentPointer] & 0xff);
           argumentPointer++;
         }
         break;
@@ -193,10 +198,10 @@ module.exports = function pack(format) {
         }
 
         for (i = 0; i < quantifier; i++) {
-          result += String.fromCharCode(arguments[argumentPointer] & 0xFF);
-          result += String.fromCharCode(arguments[argumentPointer] >> 8 & 0xFF);
-          result += String.fromCharCode(arguments[argumentPointer] >> 16 & 0xFF);
-          result += String.fromCharCode(arguments[argumentPointer] >> 24 & 0xFF);
+          result += String.fromCharCode(arguments[argumentPointer] & 0xff);
+          result += String.fromCharCode(arguments[argumentPointer] >> 8 & 0xff);
+          result += String.fromCharCode(arguments[argumentPointer] >> 16 & 0xff);
+          result += String.fromCharCode(arguments[argumentPointer] >> 24 & 0xff);
           argumentPointer++;
         }
 
@@ -211,10 +216,10 @@ module.exports = function pack(format) {
         }
 
         for (i = 0; i < quantifier; i++) {
-          result += String.fromCharCode(arguments[argumentPointer] >> 24 & 0xFF);
-          result += String.fromCharCode(arguments[argumentPointer] >> 16 & 0xFF);
-          result += String.fromCharCode(arguments[argumentPointer] >> 8 & 0xFF);
-          result += String.fromCharCode(arguments[argumentPointer] & 0xFF);
+          result += String.fromCharCode(arguments[argumentPointer] >> 24 & 0xff);
+          result += String.fromCharCode(arguments[argumentPointer] >> 16 & 0xff);
+          result += String.fromCharCode(arguments[argumentPointer] >> 8 & 0xff);
+          result += String.fromCharCode(arguments[argumentPointer] & 0xff);
           argumentPointer++;
         }
         break;
@@ -328,7 +333,7 @@ module.exports = function pack(format) {
       case 'x':
         // NUL byte
         if (quantifier === '*') {
-          throw new Error('Warning: pack(): Type x: \'*\' ignored');
+          throw new Error("Warning: pack(): Type x: '*' ignored");
         }
         for (i = 0; i < quantifier; i++) {
           result += String.fromCharCode(0);
@@ -338,7 +343,7 @@ module.exports = function pack(format) {
       case 'X':
         // Back up one byte
         if (quantifier === '*') {
-          throw new Error('Warning: pack(): Type X: \'*\' ignored');
+          throw new Error("Warning: pack(): Type X: '*' ignored");
         }
         for (i = 0; i < quantifier; i++) {
           if (result.length === 0) {
@@ -352,7 +357,7 @@ module.exports = function pack(format) {
       case '@':
         // NUL-fill to absolute position
         if (quantifier === '*') {
-          throw new Error('Warning: pack(): Type X: \'*\' ignored');
+          throw new Error("Warning: pack(): Type X: '*' ignored");
         }
         if (quantifier > result.length) {
           extraNullCount = quantifier - result.length;

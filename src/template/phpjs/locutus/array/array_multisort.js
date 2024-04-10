@@ -3,8 +3,7 @@
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 module.exports = function array_multisort(arr) {
-  // eslint-disable-line camelcase
-  //  discuss at: http://locutus.io/php/array_multisort/
+  //  discuss at: https://locutus.io/php/array_multisort/
   // original by: Theriault (https://github.com/Theriault)
   // improved by: Oleg Andreyev (https://github.com/oleg-andreyev)
   //   example 1: array_multisort([1, 2, 1, 2, 1, 2], [1, 2, 3, 4, 5, 6])
@@ -18,22 +17,24 @@ module.exports = function array_multisort(arr) {
   //   example 3: var $president = [ 39, 6, 5, 10, 4, 35, 2 ]
   //   example 3: array_multisort($firstnames, 'SORT_DESC', 'SORT_STRING', $lastnames, 'SORT_ASC', 'SORT_STRING', $president, 'SORT_NUMERIC')
   //   returns 3: true
+  //   example 4: array_multisort(["productIds[]", "_"], 'SORT_ASC', ["productIds[]=977385529", "_=1502965788347"])
+  //   returns 4: true
   //      note 1: flags: Translation table for sort arguments.
   //      note 1: Each argument turns on certain bits in the flag byte through addition.
   //      note 1: bits: HGFE DCBA
   //      note 1: args: Holds pointer to arguments for reassignment
 
-  var g;
-  var i;
-  var j;
-  var k;
-  var l;
-  var sal;
-  var vkey;
-  var elIndex;
-  var lastSorts;
-  var tmpArray;
-  var zlast;
+  var g = void 0;
+  var i = void 0;
+  var j = void 0;
+  var k = void 0;
+  var l = void 0;
+  var sal = void 0;
+  var vkey = void 0;
+  var elIndex = void 0;
+  var lastSorts = void 0;
+  var tmpArray = void 0;
+  var zlast = void 0;
 
   var sortFlag = [0];
   var thingsToSort = [];
@@ -43,11 +44,11 @@ module.exports = function array_multisort(arr) {
   var args = arguments;
 
   var flags = {
-    'SORT_REGULAR': 16,
-    'SORT_NUMERIC': 17,
-    'SORT_STRING': 18,
-    'SORT_ASC': 32,
-    'SORT_DESC': 40
+    SORT_REGULAR: 16,
+    SORT_NUMERIC: 17,
+    SORT_STRING: 18,
+    SORT_ASC: 32,
+    SORT_DESC: 40
   };
 
   var sortDuplicator = function sortDuplicator(a, b) {
