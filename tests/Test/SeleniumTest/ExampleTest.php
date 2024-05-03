@@ -10,6 +10,22 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_short_array(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->click('#action_form_submit2');
+        $result = $driver->findElement(WebDriverBy::cssSelector('#action-section .var_pretty'))->getText();
+        that($result)->contains('checkboxes: "2"');
+        that($result)->contains('selects: "1,3"');
+        that($result)->contains('texts: "a\nb\nc"');
+        that($result)->contains('checkboxes: "1"');
+        that($result)->contains('checkboxes: "2,3"');
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_ignore_invisible(WebDriver $driver)
     {
         $driver->path('/example/index.php');
@@ -432,7 +448,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('inarray_invalid', 'x');
         that($driver)->getErrors()->count(0);
         $driver->setValue('inarray_invalid', 'y');
-        that($driver)->getErrors()->count(3);
+        that($driver)->getWarnings()->count(3);
         $driver->setValue('inarray_invalid', 'z');
         that($driver)->getErrors()->count(0);
     }
@@ -444,11 +460,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     {
         $driver->path('/example/index.php');
 
-        $driver->setValue('inarray_invalid2', 'x');
+        $driver->setValue('inarray_invalid2[]', 'x');
         that($driver)->getErrors()->count(0);
-        $driver->setValue('inarray_invalid2', 'y');
-        that($driver)->getWarnings()->count(1);
-        $driver->setValue('inarray_invalid2', 'z');
+        $driver->setValue('inarray_invalid2[]', 'y');
+        that($driver)->getErrors()->count(3);
+        $driver->setValue('inarray_invalid2[]', 'z');
         that($driver)->getErrors()->count(0);
     }
 
@@ -657,14 +673,6 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         that($driver)->getErrors()->count(1);
         $driver->setValue('stringlength', 'xxx');
         that($driver)->getErrors()->count(0);
-
-        // unknown error: ChromeDriver only supports characters in the BMP
-//        $driver->setValue('stringlength_grapheme', '🥺');
-//        that($driver)->getErrors()->count(1);
-//        $driver->setValue('stringlength_grapheme', '🥺🥺🥺🥺🥺🥺🥺');
-//        that($driver)->getErrors()->count(1);
-//        $driver->setValue('stringlength', '🥺🥺🥺🥺🥺🥺');
-//        that($driver)->getErrors()->count(0);
     }
 
     /**
@@ -678,6 +686,16 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         that($driver)->getErrors()->count(1);
         $driver->setValue('stringwidth', 'あ');
         that($driver)->getErrors()->count(0);
+
+        // unknown error: ChromeDriver only supports characters in the BMP
+//        $driver->setValue('stringwidth', '👨👨👨');
+//        that($driver)->getErrors()->count(0);
+//        $driver->setValue('stringwidth', 'x👨👨👨');
+//        that($driver)->getErrors()->count(1);
+//        $driver->setValue('stringwidth', '👨‍👩‍👧‍👦');
+//        that($driver)->getErrors()->count(0);
+//        $driver->setValue('stringwidth', 'あ👨‍👩‍👧‍👦');
+//        that($driver)->getErrors()->count(1);
     }
 
     /**

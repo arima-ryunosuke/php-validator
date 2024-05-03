@@ -20,8 +20,8 @@ $basic_form = new \ryunosuke\chmonos\Form([
         ],
     ],
     'datalist'              => [
-        'title'   => 'date要素（datalist 付き）',
-        'options' => [
+        'title'    => 'date要素（datalist 付き）',
+        'datalist' => [
             '2014-12-24' => 'クリスマス前日',
             '2014-12-25' => 'クリスマス当日',
             '2014-12-26' => 'クリスマス後日'

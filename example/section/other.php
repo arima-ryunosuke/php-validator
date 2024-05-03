@@ -1,8 +1,20 @@
 <?php
 
-use ryunosuke\chmonos\Form;
+use ryunosuke\chmonos\Condition\Regex;use ryunosuke\chmonos\Form;
+use ryunosuke\chmonos\HtmlString;
 
 $other_form = new Form([
+    'html-input'          => [
+        'title'     => new HtmlString('<strong>STRONG</strong> title'),
+        'condition' => [
+        ],
+        'options'   => [
+            1 => '<i>I</i>',
+        ],
+        'attribute' => [
+            'data-hoge' => '<a>A</a>',
+        ],
+    ],
     'require-mark'        => [
         'condition' => [],
         'options'   => [1 => '必須']
@@ -73,9 +85,9 @@ $other_form = new Form([
     'custom_message'      => [
         'title'     => 'カスタムメッセージ',
         'condition' => [
-            'Regex("/^[a-z]*$/")' => [
+            (new Regex("/^[a-z]*$/"))->setMessageTemplates([
                 'regexNotMatch' => 'a～zで入力しろ'
-            ]
+            ]),
         ]
     ],
     'validated'           => [
@@ -107,6 +119,12 @@ if (resetForm($other_form, 'other_form')) {
 <input type="hidden" name="formid" value="other_form">
 <input type="hidden" id="cutom-input">
 <table class="table">
+    <tr>
+        <th><?= $other_form->label('html-input') ?></th>
+        <td>
+            <?= $other_form->input('html-input') ?>
+        </td>
+    </tr>
     <tr>
         <th><?= $other_form->label('require-depend') ?></th>
         <td>

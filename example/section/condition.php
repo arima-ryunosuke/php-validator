@@ -1,6 +1,8 @@
 <?php
 
-use ryunosuke\chmonos\Condition\AbstractCondition;use ryunosuke\chmonos\Condition\Requires;
+use ryunosuke\chmonos\Condition\AbstractCondition;
+use ryunosuke\chmonos\Condition\Range;
+use ryunosuke\chmonos\Condition\Requires;
 
 $condition_form = new \ryunosuke\chmonos\Form([
     'ajax1'                 => [
@@ -112,8 +114,8 @@ $condition_form = new \ryunosuke\chmonos\Form([
         'condition' => [
             'Aruiha' => [
                 [
-                    'min' => 'Range(-3, -1)',
-                    'max' => 'Range(1, 3)',
+                    'min' => new Range(-3, -1),
+                    'max' => new Range(1, 3),
                 ]
             ]
         ],
@@ -147,6 +149,7 @@ $condition_form = new \ryunosuke\chmonos\Form([
         ]
     ],
     'compare'               => [
+        'title'     => '比較元',
         'condition' => []
     ],
     'compare_confirm'       => [
@@ -195,13 +198,13 @@ $condition_form = new \ryunosuke\chmonos\Form([
     'digits'                => [
         'title'     => '整数',
         'condition' => [
-            'Digits' => [null, 4]
+            'Digits' => ['+-', 4]
         ]
     ],
     'digits5'               => [
         'title'     => '整数',
         'condition' => [
-            'Digits' => [null, 5, false]
+            'Digits' => ['+-', 5, false]
         ]
     ],
     'number'                => [
@@ -262,7 +265,7 @@ $condition_form = new \ryunosuke\chmonos\Form([
                     'JPG' => ['jpg', 'jpeg',]
                 ]
             ],
-            'FileSize'   => [1024 * 200],
+            'FileSize'   => ['200K'],
             'ImageSize'  => [100, 120],
             'DependFile' => ['image_type'],
         ],
@@ -308,21 +311,7 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'InArray' => [["1", 2, 3], true,]
         ]
     ],
-    'inarray_invalid'       => [
-        'options'    => [
-            'x' => 'hoge',
-            'z' => 'piyo',
-        ],
-        'suboptions' => [
-            'y' => 'invalid',
-        ],
-        'subposition' => function ($options, $invalids) {
-            $result = $options + $invalids;
-            ksort($result);
-            return $result;
-        },
-    ],
-    'inarray_invalid2'      => [
+    'inarray_invalid'      => [
         'options'    => [
             'x' => 'hoge',
             'y' => "\x18warning",
@@ -330,6 +319,16 @@ $condition_form = new \ryunosuke\chmonos\Form([
         ],
         'autocond'   => [
             'NotInArray' => fn(AbstractCondition $cond) => $cond->setValidationLevel('warning')->setMessageTemplate('選択できません', 'valueInArray'),
+        ],
+    ],
+    'inarray_invalid2'      => [
+        'options'    => [
+            'x' => 'hoge',
+            'y' => "warning",
+            'z' => 'piyo',
+        ],
+        'invalids' => [
+            'y' => "warning(無効状態)",
         ],
     ],
     'json'                  => [
@@ -530,12 +529,6 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'StringLength' => [2, 6]
         ]
     ],
-    'stringlength_grapheme' => [
-        'title'     => '文字長（grapheme）',
-        'condition' => [
-            'StringLength' => [2, 6, true]
-        ]
-    ],
     'stringwidth'           => [
         'title'     => '文字幅',
         'condition' => [
@@ -575,8 +568,9 @@ $condition_form = new \ryunosuke\chmonos\Form([
     'data-uri'                => [
         'title'     => 'DataURI',
         'condition' => [
-            'DataUri' => [['size' => 256 * 1024, 'type' => ['txt', 'csv']]]
-        ]
+            'DataUri' => [['size' => '256K', 'type' => ['txt', 'csv']]]
+        ],
+        'default' => "a,b,c\na1,b1,c1\na2,b2,c2\n",
     ]
 ]);
 resetForm($condition_form, 'condition_form');
@@ -707,7 +701,8 @@ resetForm($condition_form, 'condition_form');
     <tr>
         <th>Array：InArrayInvalid("x", "z", current "y")</th>
         <td><?= $condition_form->input('inarray_invalid', ['value' => 'y']) ?></td>
-        <td><?= $condition_form->input('inarray_invalid2', ['type' => 'select', 'value' => 'y']) ?></td>
+        <td><?= $condition_form->input('inarray_invalid2', ['type' => 'checkbox', 'value' => 'y']) ?></td>
+        <td></td>
     </tr>
     <tr>
         <th>JSON 文字列</th>
@@ -790,9 +785,9 @@ resetForm($condition_form, 'condition_form');
         </td>
     </tr>
     <tr>
-        <th>文字長： mb_strlen | grapheme_strlen</th>
+        <th>文字長</th>
         <td><?= $condition_form->input('stringlength') ?></td>
-        <td><?= $condition_form->input('stringlength_grapheme') ?></td>
+        <td></td>
     </tr>
     <tr>
         <th>文字幅</th>

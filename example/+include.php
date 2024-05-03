@@ -41,6 +41,17 @@ $ajax = new ryunosuke\chmonos\Condition\Ajax('ajax.php', ['ajax1', 'ajax2'], fun
  */
 function resetForm(Form $form, $id)
 {
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if (($_GET['formid'] ?? '') === $id) {
+            $gets = $_GET;
+            $values = $gets;
+            if (!$form->validate($values)) {
+                http_response_code(422);
+            }
+            echo var_pretty(['query' => $_SERVER['QUERY_STRING'], 'gets' => $gets, 'values' => $values], ['return' => true, 'table' => false]);
+            return true;
+        }
+    }
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (($_POST['formid'] ?? '') === $id) {
             $posts = $_POST;
@@ -48,7 +59,7 @@ function resetForm(Form $form, $id)
             if (!$form->validate($values)) {
                 http_response_code(422);
             }
-            echo var_pretty(['posts' => $posts, 'values' => $values], ['return' => true]);
+            echo var_pretty(['posts' => $posts, 'values' => $values], ['return' => true, 'table' => false]);
             return true;
         }
     }

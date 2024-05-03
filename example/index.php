@@ -142,22 +142,27 @@ $appendmtime = function ($filename) {
     <ul></ul>
 </nav>
 
-<section>
+<section id="action-section">
+    <h2 id="action">GET フォーム</h2>
+    <?php include __DIR__ . '/section/action.php' ?>
+</section>
+
+<section id="basic-section">
     <h2 id="basic">基本要素サンプル</h2>
     <?php include __DIR__ . '/section/basic.php' ?>
 </section>
 
-<section>
+<section id="condition-section">
     <h2 id="condition">各種条件サンプル</h2>
     <?php include __DIR__ . '/section/condition.php' ?>
 </section>
 
-<section>
+<section id="dynamic-section">
     <h2 id="dynamic">動的追加サンプル</h2>
     <?php include __DIR__ . '/section/dynamic.php' ?>
 </section>
 
-<section>
+<section id="other-section">
     <h2 id="other">その他の細々としたサンプル</h2>
     <?php include __DIR__ . '/section/other.php' ?>
 </section>

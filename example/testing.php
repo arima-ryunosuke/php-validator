@@ -204,9 +204,14 @@ require_once __DIR__ . '/+include.php' ?>
             };
             ?>
             with (chmonos) {
-                it('array_kmap', function () {
-                    expect(array_kmap([1, 2, 3], (v, k, n) => '' + (v + k + n))).toEqual(['100', '211', '322']);
-                    expect(array_kmap({1: 1, 2: 2, 3: 3}, (v, k, n) => '' + (v + k + n))).toEqual({1: '110', 2: '221', 3: '332'});
+                it('array_map', function () {
+                    expect(array_map((v) => v + 1, [1, 2, 3])).toEqual([2, 3, 4]);
+                    expect(array_map((v) => v + 1, {1: 1, 2: 2, 3: 3})).toEqual({1: 2, 2: 3, 3: 4});
+                    expect(array_map((v) => v + 1, {a: 1, b: 2, c: 3})).toEqual({a: 2, b: 3, c: 4});
+
+                    expect(array_map((v1, v2) => v1 + v2, {a: 1, b: 2, c: 3}, {x: 7, y: 8, z: 9})).toEqual([8, 10, 12]);
+                    expect(array_map((v1, v2) => [v1, v2], {a: 1, b: 2}, {x: 7, y: 8, z: 9})).toEqual([[1, 7], [2, 8], [null, 9]]);
+                    expect(array_map((v1, v2) => [v1, v2], {a: 1, b: 2, c: 3}, {x: 7, y: 8})).toEqual([[1, 7], [2, 8], [3, null]]);
                 });
 
                 it('array_reduce', function () {
@@ -214,6 +219,28 @@ require_once __DIR__ . '/+include.php' ?>
                     expect(array_reduce([1, 2, 3], (c, v) => c + v, 100)).toEqual(106);
                     expect(array_reduce([1, 2, 3], (c, v) => c + v, '')).toEqual('123');
                     expect(array_reduce([1, 2, 3], (c, v) => c + v, 'x')).toEqual('x123');
+                });
+
+                it('ini_parse_quantity', function () {
+                    expect(ini_parse_quantity('')).toEqual(0);
+                    expect(ini_parse_quantity(100)).toEqual(100);
+                    expect(ini_parse_quantity('1K')).toEqual(1 * 1024);
+                    expect(ini_parse_quantity('2M')).toEqual(2 * 1024 * 1024);
+                    expect(ini_parse_quantity('3G')).toEqual(3 * 1024 * 1024 * 1024);
+                });
+
+                it('strlen', function () {
+                    expect(strlen('')).toEqual(0);
+                    expect(strlen('abc')).toEqual(3);
+                    expect(strlen('あいう')).toEqual(9);
+                    expect(strlen('aあ👨👨‍👩‍👧‍👦')).toEqual(33);
+                });
+
+                it('mb_str_split', function () {
+                    expect(mb_str_split('')).toEqual([]);
+                    expect(mb_str_split('abc')).toEqual(['a', 'b', 'c']);
+                    expect(mb_str_split('あいう')).toEqual(['あ', 'い', 'う']);
+                    expect(mb_str_split('aあ👨👨‍👩‍👧‍👦')).toEqual(['a', 'あ', '👨', '👨', '‍', '👩', '‍', '👧', '‍', '👦']);
                 });
 
                 it('preg_match', function () {

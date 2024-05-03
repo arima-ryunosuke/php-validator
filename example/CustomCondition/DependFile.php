@@ -38,7 +38,7 @@ class DependFile extends AbstractCondition implements Interfaces\InferableType, 
     {
         $mime = mime_content_type($value);
         if ($mime !== $fields[$params['field']]) {
-            return $error($consts['INVALID']);
+            return $error($consts['INVALID'], []);
         }
     }
 
