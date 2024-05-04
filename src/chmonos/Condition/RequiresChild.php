@@ -1,8 +1,6 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
-use function ryunosuke\chmonos\array_kmap;
-
 /**
  * 子供必須バリデータ
  *
@@ -41,13 +39,12 @@ class RequiresChild extends AbstractParentCondition
 
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
-        $cols = array_kmap(array_flip($params['children']), $context['function'](function ($_, $k, $n, $value, $context) {
-            $col = array_column($value, $k);
-            $col = array_reduce($col, $context['function'](function ($carry, $c, $context) {
-                return array_merge($carry, $context['cast']('array', $c));
-            }, $context), []);
-            return $col;
-        }, $value, $context));
+        $flipped = array_combine(array_values($params['children']), array_values($params['children']));
+        $cols = array_map($context['function'](function ($v, $value, $context) {
+            $col = array_column($value, $v);
+            $cb = fn($carry, $c) => array_merge($carry, $context['cast']('array', $c));
+            return array_reduce($col, $context['function']($cb, $context), []);
+        }, $value, $context), $flipped);
 
         $context['foreach']($cols, function ($name, $values, $inputs, $consts, $error, $context) {
             $operator = $inputs[$name][0];

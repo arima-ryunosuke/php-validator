@@ -1,7 +1,6 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
-use function ryunosuke\chmonos\array_kmap;
 use function ryunosuke\chmonos\arrayize;
 
 /**
@@ -42,13 +41,12 @@ class UniqueChild extends AbstractParentCondition
 
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
-        $rows = array_kmap($value, $context['function'](function ($row, $k, $n, $children, $context) {
+        $rows = array_map($context['function'](function ($row, $children, $context) {
             $row = array_intersect_key($row, $children);
-            $row = array_kmap($row, $context['function'](function ($v, $k, $n, $context) {
-                return implode("\x1f", $context['cast']('array', $v));
-            }, $context));
+            $cb = fn($v, $context) => implode("\x1f", $context['cast']('array', $v));
+            $row = array_map($context['function']($cb, $context), $row);
             return implode("\x1e", $row);
-        }, array_flip($params['children']), $context));
+        }, array_flip($params['children']), $context), $value);
 
         if ($params['ignore_empty']) {
             $rows = array_filter($rows, fn($row) => strlen(trim($row, "\x1e")));

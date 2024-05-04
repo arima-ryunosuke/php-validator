@@ -7,16 +7,16 @@ use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Remote\RemoteWebElement;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverSelect;
-use function ryunosuke\chmonos\build_uri;
-use function ryunosuke\chmonos\parse_uri;
+use function ryunosuke\chmonos\uri_build;
+use function ryunosuke\chmonos\uri_parse;
 
 class WebDriver extends RemoteWebDriver
 {
     public function path($path)
     {
-        $parts = parse_uri($this->getCurrentURL());
+        $parts = uri_parse($this->getCurrentURL());
         $parts['path'] = $path;
-        return $this->get(build_uri($parts));
+        return $this->get(uri_build($parts));
     }
 
     public function click($select)

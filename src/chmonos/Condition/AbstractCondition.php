@@ -7,9 +7,9 @@ use function ryunosuke\chmonos\array_each;
 use function ryunosuke\chmonos\array_map_key;
 use function ryunosuke\chmonos\array_unset;
 use function ryunosuke\chmonos\callable_code;
+use function ryunosuke\chmonos\class_constants;
 use function ryunosuke\chmonos\class_shorten;
 use function ryunosuke\chmonos\dirmtime;
-use function ryunosuke\chmonos\get_class_constants;
 use function ryunosuke\chmonos\paml_import;
 use function ryunosuke\chmonos\str_exists;
 
@@ -409,7 +409,7 @@ JS;
         }
 
         static $constants = [];
-        $constants[static::class] = $constants[static::class] ?? get_class_constants($this);
+        $constants[static::class] = $constants[static::class] ?? class_constants($this);
 
         $params = $this->getValidationParam();
         $error = function ($messageKey, $message = null) use ($constants) {
