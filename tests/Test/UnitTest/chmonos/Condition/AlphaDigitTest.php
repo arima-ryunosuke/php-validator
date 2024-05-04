@@ -5,41 +5,6 @@ use ryunosuke\chmonos\Condition\AlphaDigit;
 
 class AlphaDigitTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
-    function test_valid_regression()
-    {
-        $validate = new AlphaDigit(true, true, null);
-        that($validate)->isValid('hoge')->isTrue();
-        that($validate)->isValid('HOGE')->isTrue();
-        that($validate)->isValid('0hoge')->isTrue();
-        that($validate)->isValid('hoge_')->isTrue();
-        that($validate)->isValid('0HOGE_')->isTrue();
-        that($validate)->isValid('hoge+')->isFalse();
-
-        $validate = new AlphaDigit(false, false, null);
-        that($validate)->isValid('hoge')->isTrue();
-        that($validate)->isValid('HOGE')->isTrue();
-        that($validate)->isValid('0hoge')->isFalse();
-        that($validate)->isValid('hoge_')->isFalse();
-        that($validate)->isValid('0HOGE_')->isFalse();
-        that($validate)->isValid('hoge+')->isFalse();
-
-        $validate = new AlphaDigit(false, true, null);
-        that($validate)->isValid('hoge')->isTrue();
-        that($validate)->isValid('HOGE')->isTrue();
-        that($validate)->isValid('0hoge')->isFalse();
-        that($validate)->isValid('hoge_')->isTrue();
-        that($validate)->isValid('0HOGE_')->isFalse();
-        that($validate)->isValid('hoge+')->isFalse();
-
-        $validate = new AlphaDigit(true, false, null);
-        that($validate)->isValid('hoge')->isTrue();
-        that($validate)->isValid('HOGE')->isTrue();
-        that($validate)->isValid('0hoge')->isTrue();
-        that($validate)->isValid('hoge_')->isFalse();
-        that($validate)->isValid('0HOGE_')->isFalse();
-        that($validate)->isValid('hoge+')->isFalse();
-    }
-
     function test_valid()
     {
         $validate = new AlphaDigit(true, '_-', null);

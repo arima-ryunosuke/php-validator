@@ -82,9 +82,8 @@ class AruihaTest extends \ryunosuke\Test\AbstractUnitTestCase
                 [
                     "class" => "StringLength",
                     "param" => [
-                        "min"      => 0,
-                        "max"      => 10,
-                        'grapheme' => false,
+                        "min" => 0,
+                        "max" => 10,
                     ],
                 ],
                 [

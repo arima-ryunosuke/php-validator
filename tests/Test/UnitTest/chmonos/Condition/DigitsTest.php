@@ -51,7 +51,7 @@ class DigitsTest extends \ryunosuke\Test\AbstractUnitTestCase
 
     function test_valid_digit()
     {
-        $validate = new Digits(null, 5);
+        $validate = new Digits('+-', 5);
         that($validate)->isValid(10001)->isTrue();
         that($validate)->isValid(-10001)->isTrue();
         that($validate)->isValid(+10001)->isTrue();
@@ -74,7 +74,7 @@ class DigitsTest extends \ryunosuke\Test\AbstractUnitTestCase
 
     function test_valid_must_digit()
     {
-        $validate = new Digits(null, 5, false);
+        $validate = new Digits('+-', 5, false);
         that($validate)->isValid(10001)->isTrue();
         that($validate)->isValid(-10001)->isTrue();
         that($validate)->isValid(+10001)->isTrue();
@@ -114,15 +114,6 @@ class DigitsTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Digits();
         that($validate)->getImeMode()->is(Digits::DISABLED);
-    }
-
-    function test_getType()
-    {
-        $validate = new Digits();
-        that($validate)->getType()->is("number");
-
-        $validate = new Digits('', 3, false);
-        that($validate)->getType()->is("text");
     }
 
     function test_getFixture()

@@ -430,10 +430,6 @@ class Input
             if (array_key_exists('', $this->options)) {
                 return 'select';
             }
-            // options が通常配列なら combobox の場合が*多い*
-            if (!is_hasharray($this->options)) {
-                return 'combobox';
-            }
             // options が 1つなら単 checkbox
             if (count($this->options) === 1) {
                 return 'checkbox';
@@ -488,10 +484,6 @@ class Input
      */
     protected function _setAutoInArray()
     {
-        if ($this->type === 'combobox') {
-            return;
-        }
-
         foreach ($this->condition as $condition) {
             if ($condition instanceof Condition\InArray) {
                 return;
@@ -531,10 +523,6 @@ class Input
      */
     protected function _setAutoNotInArray()
     {
-        if ($this->type === 'combobox') {
-            return;
-        }
-
         foreach ($this->condition as $condition) {
             if ($condition instanceof Condition\NotInArray) {
                 return;
@@ -779,15 +767,8 @@ class Input
         $value = $values[$this->name];
 
         // 配列の許可/未許可。通常フローではほぼありえないので例外で良い(=親切じゃなくて良い)
-        if ((!$this->multiple && is_array($value)) || ($this->multiple && !is_array($value))) {
-            // for compatible. ArrayableValidation を持ってる時は特別に許可する（本来は multiple にしてしまえば良いが影響がでかすぎる）
-            $has_arrayable_validation = false;
-            foreach ($this->condition as $condition) {
-                $has_arrayable_validation = $has_arrayable_validation || $condition->isArrayableValidation();
-            }
-            if (!$has_arrayable_validation) {
-                throw new ValidationException(null, sprintf("'%s' invalid type (%s).", $this->name, gettype($value)));
-            }
+        if (!$this->getType() === 'arrays' && (!$this->multiple && is_array($value)) || ($this->multiple && !is_array($value))) {
+            throw new ValidationException(null, sprintf("'%s' invalid type (%s).", $this->name, gettype($value)));
         }
 
         $fields = $values + $original;

@@ -20,14 +20,12 @@ class AlphaDigit extends AbstractCondition implements Interfaces\ImeMode
 {
     public const INVALID              = 'AlphaNumericInvalid';
     public const INVALID_FIRST_NUMBER = 'AlphaNumericFirstNumber';
-    public const INVALID_UNDERSCORE   = 'AlphaNumericUnderscore'; // for compatible. delete in future scope
     public const INVALID_UPPERCASE    = 'AlphaNumericUpperCase';
     public const INVALID_LOWERCASE    = 'AlphaNumericLowerCase';
 
     protected static $messageTemplates = [
         self::INVALID              => '使用できない文字が含まれています',
         self::INVALID_FIRST_NUMBER => '先頭に数値は使えません',
-        self::INVALID_UNDERSCORE   => 'アンダースコアは使えません',
         self::INVALID_UPPERCASE    => '大文字は使えません',
         self::INVALID_LOWERCASE    => '小文字は使えません',
     ];
@@ -39,11 +37,6 @@ class AlphaDigit extends AbstractCondition implements Interfaces\ImeMode
 
     public function __construct($first_number = false, $allow_signs = '_', $case = null)
     {
-        // for compatible
-        if (is_bool($allow_signs)) {
-            $allow_signs = $allow_signs ? '_' : '';
-        }
-
         $this->_first_number = $first_number;
         $this->_allow_signs = $allow_signs;
         $this->_case = $case;

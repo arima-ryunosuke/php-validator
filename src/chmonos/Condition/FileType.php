@@ -12,7 +12,6 @@ use ryunosuke\chmonos\Condition\Traits\File;
  *   - 例えば PNG と JPG を許可するなら下記のように指定する
  *     - ['PNG' => 'png', 'JPG' => ['jpg', 'jpeg']]
  *     - ['画像' => ['jpg', 'jpeg', 'png']]
- *   - '*' は「mime type 不明」を表し、「すべての拡張子」ではない
  * - mimetype: array
  *   - 許容する mimetype
  */
@@ -69,18 +68,12 @@ class FileType extends AbstractCondition implements Interfaces\InferableType
         $exts = [...array_merge(...array_values($this->_allowTypes))];
         $mimetype = $this->getMimeTypes($exts, $this->_mimeTypes);
 
-        // for compatible
-        if (in_array('*', $exts, true)) {
-            $mimetype = array_merge($mimetype, ['*', 'application/octet-stream']);
-        }
         return ['mimetype' => $mimetype, 'type' => $this->_type];
     }
 
     public function getAccepts()
     {
         $exts = [...array_merge(...array_values($this->_allowTypes))];
-        // for compatible
-        $exts = array_filter($exts, fn($ext) => $ext !== '*');
         return array_merge(array_map(fn($ext) => ".$ext", $exts), $this->getMimeTypes($exts, $this->_mimeTypes));
     }
 

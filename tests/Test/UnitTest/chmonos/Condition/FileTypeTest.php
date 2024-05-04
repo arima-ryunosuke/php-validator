@@ -27,14 +27,6 @@ class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid($dir . 'csv.csv')->is(PHP_VERSION_ID >= 80000); // csv と plain の判別は難しいのでダメになる
         that($validate)->isValid($dir . 'dmesg')->isFalse();                     // 判別不能はダメ
 
-        // csv、あるいはよくわからないものを受け付ける
-        $types = [
-            'CSV' => ['csv', '*']
-        ];
-        $validate = new FileType($types);
-        that($validate)->isValid($dir . 'png.jpg')->isFalse(); // 判別可能で異なる場合はダメ
-        that($validate)->isValid($dir . 'dmesg')->isTrue();  // 判別不能を許容する
-
         // csv と txt のみ受けつける
         $types = [
             'CSV' => ['csv', 'txt']
@@ -70,12 +62,6 @@ class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
         // 画像系
         $validate = new FileType([
             'image' => ['gif', 'png', 'jpg'],
-        ]);
-        that($validate)->getAccepts()->is([".gif", ".png", ".jpg", "image/gif", "image/jpeg", "image/png"]);
-
-        // * は無視される
-        $validate = new FileType([
-            'image' => ['*', 'gif', 'png', 'jpg'],
         ]);
         that($validate)->getAccepts()->is([".gif", ".png", ".jpg", "image/gif", "image/jpeg", "image/png"]);
     }

@@ -43,20 +43,6 @@ class StringLengthTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($messages)[StringLength::DIFFERENT]->contains('3文字で');
     }
 
-    function test_grapheme()
-    {
-        $validate = new StringLength(2, 4, true);
-
-        that($validate)->getMaxLength('')->is(null);
-
-        that($validate)->isValid('')->isFalse();
-        that($validate)->isValid('👨‍👩‍👧‍👦')->isFalse();
-        that($validate)->isValid('👨‍👩‍👧‍👦a')->isTrue();
-        that($validate)->isValid('👨‍👩‍👧‍👦👨‍👩‍👧‍👦')->isTrue();
-        that($validate)->isValid('👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦')->isTrue();
-        that($validate)->isValid('👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦a')->isFalse();
-    }
-
     function test_getFixture()
     {
         $validate = new StringLength(2, 5);

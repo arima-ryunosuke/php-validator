@@ -534,8 +534,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $rule = [
             'condition' => [
                 'EmailAddress' => null,
-                'StringLength' => [
-                    null,
+                'Digits' => [
+                    '',
                     20
                 ]
             ],
@@ -555,8 +555,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $rule = [
             'condition' => [
-                'StringLength' => [
-                    null,
+                'Digits' => [
+                    '',
                     20
                 ],
                 'EmailAddress' => null
@@ -2306,7 +2306,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'data-vinput-index'     => '',
                 'name'                  => 'name',
                 'id'                    => 'name',
-                'type'                  => 'number',
+                'type'                  => 'text',
                 'class'                 => 'validatable',
                 'value'                 => '',
                 'min'                   => '10',
@@ -2376,7 +2376,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'condition' => [
                 'StringLength' => [
                     null,
-                    1000
+                    1000,
+                    false,
                 ]
             ]
         ]);
@@ -2394,38 +2395,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'class'                 => 'validatable',
                 'maxlength'             => '1000',
             ],
-        ]);
-    }
-
-    function test_inputCombobox()
-    {
-        // for compatible delete in future scope
-        $input = new Input([
-            'name'    => 'name',
-            'options' => [
-                'option.1',
-                'option.2',
-            ]
-        ]);
-
-        that($input)->input([
-            'type' => 'combobox'
-        ])->htmlMatchesArray([
-            'input'    => [
-                'data-validation-title' => '',
-                'data-vinput-id'        => 'name',
-                'data-vinput-class'     => 'name',
-                'data-vinput-index'     => '',
-                'name'                  => 'name',
-                'id'                    => 'name',
-                'class'                 => 'validatable',
-                'type'                  => 'combobox',
-                'list'                  => 'name-datalist',
-                'value'                 => '0',
-            ],
-            'datalist' => [
-                'id' => 'name-datalist',
-            ]
         ]);
     }
 }

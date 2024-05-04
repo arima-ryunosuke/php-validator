@@ -2,14 +2,14 @@
 namespace ryunosuke\Test\SeleniumTest;
 
 use Facebook\WebDriver\Remote\DesiredCapabilities;
-use function ryunosuke\chmonos\parse_uri;
 use function ryunosuke\chmonos\ping;
+use function ryunosuke\chmonos\uri_parse;
 
 abstract class AbstractSeleniumTestCase extends \ryunosuke\Test\AbstractUnitTestCase
 {
     private static function getDrivers()
     {
-        $parts = parse_uri(SELENIUM_URL);
+        $parts = uri_parse(SELENIUM_URL);
         if (ping($parts['host'], $parts['port']) === false) {
             return [];
         }
@@ -17,11 +17,11 @@ abstract class AbstractSeleniumTestCase extends \ryunosuke\Test\AbstractUnitTest
         static $drivers = null;
         if ($drivers === null) {
             $drivers = [];
-            $parts = parse_uri(TESTWEB_URL);
+            $parts = uri_parse(TESTWEB_URL);
             if (ping($parts['host'], $parts['port']) === false) {
                 self::markTestSkipped('testweb server is not running.');
             }
-            $parts = parse_uri(SELENIUM_URL);
+            $parts = uri_parse(SELENIUM_URL);
             if (ping($parts['host'], $parts['port']) === false) {
                 self::markTestSkipped('selenium server is not running.');
             }
