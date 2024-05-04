@@ -1,7 +1,7 @@
 {
   "config": {
     "platform": {
-      "php": "7.4"
+      "php": "8.0"
     },
     "process-timeout": 0
   },
@@ -16,12 +16,13 @@
     }
   ],
   "require": {
-    "php": ">=7.4"
+    "php": ">=8.0",
+    "symfony/polyfill-php82": "*"
   },
   "require-dev": {
-    "ryunosuke/functions": "1.6.*",
+    "ryunosuke/functions": "2.0.*",
     "phpunit/phpunit": "9.*",
-    "ryunosuke/phpunit-extension": "3.*",
+    "ryunosuke/phpunit-extension": "4.*",
     "php-webdriver/webdriver": "1.*"
   },
   "autoload": {
