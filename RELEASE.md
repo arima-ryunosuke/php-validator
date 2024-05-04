@@ -24,6 +24,41 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.0.0
+
+- [change] php>=8.0
+- [*change] getAllInput の返り値を Generator に変更
+- [*change] delimiter オプションを実装
+  - 実質的な非互換は js の submit で e.stopPropagation() しなくなったのみ
+- [feature] invalids 属性の追加
+- [*fixbug] DataUri の convertible が逆だったので修正
+- [*change] Condition の生成バリエーションを削除
+  - ネイティブの名前付き引数で十分
+- [*change] 原則としてすべて自動エスケープとする
+  - 実質的には title がエスケープされるようになった
+- [*change] 動的メッセージを実装
+  - メッセージテンプレートの記法が変わっている
+- [*change] StringLength にあった書記素単位を StringWidth に再実装
+- [*change] datalist の専用属性化
+  - これまでは options を指定すると datalist として扱われていたが、明示的に datalist として指定するようになった
+- [*change] レガシーな仕様を削除
+  - suboption/subposition を削除
+    - invalid-option-prefix で代替可能
+  - 属性口出し系の削除
+    - ime-mode: もはや息をしていない
+    - maxlength: 検証がちゃんと走るなら邪魔なことが多い
+    - いずれにせよ設定したいなら html で明示的に与えればよい（あくまで自動設定の削除である）
+- [*change] 後方互換用のコードを削除
+  - 配列判定が厳密になった
+    - 配列を飛ばすためには明示的な multiple:true が必須
+  - combobox の廃止
+  - StringLength の grapheme を廃止
+    - 少し実装を変えて StringWidth に移譲
+  - FileType の * による mimetype 不明判定を廃止
+  - Digits の sign:null を廃止
+    - 明示的な指定が必要（とはいえデフォルト '+-' なので実質的には影響なし）
+  - AlphaDigit のアンダースコア特別扱いを廃止
+
 ## 1.2.9
 
 - [refactor] npm の更新とメンテ
