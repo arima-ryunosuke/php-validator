@@ -18,7 +18,7 @@ class Regex extends AbstractCondition
 
     protected static $messageTemplates = [
         self::INVALID   => 'Invalid value given',
-        self::ERROROUS  => 'There was%pattern%\'',
+        self::ERROROUS  => 'There was${_pattern}',
         self::NOT_MATCH => 'パターンに一致しません',
         self::NEGATION  => '使用できない文字が含まれています',
     ];
@@ -37,18 +37,18 @@ class Regex extends AbstractCondition
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
         if (!is_string($value) && !is_int($value) && !is_float($value)) {
-            return $error($consts['INVALID']);
+            return $error($consts['INVALID'], []);
         }
 
         $status = preg_match($params['pattern'], $value);
         if (false === $status) {
-            $error($consts['ERROROUS']);
+            $error($consts['ERROROUS'], []);
         }
         else if (!$params['negation'] && !$status) {
-            $error($consts['NOT_MATCH']);
+            $error($consts['NOT_MATCH'], []);
         }
         else if ($params['negation'] && $status) {
-            $error($consts['NEGATION']);
+            $error($consts['NEGATION'], []);
         }
     }
 

@@ -1,16 +1,19 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
+use ryunosuke\chmonos\Input;
 use ryunosuke\chmonos\Mixin\Fixturable;
 use ryunosuke\chmonos\Mixin\Jsonable;
 use function ryunosuke\chmonos\array_each;
 use function ryunosuke\chmonos\array_map_key;
+use function ryunosuke\chmonos\array_strpad;
 use function ryunosuke\chmonos\array_unset;
 use function ryunosuke\chmonos\callable_code;
 use function ryunosuke\chmonos\class_constants;
 use function ryunosuke\chmonos\class_shorten;
 use function ryunosuke\chmonos\dirmtime;
 use function ryunosuke\chmonos\paml_import;
+use function ryunosuke\chmonos\render_template;
 use function ryunosuke\chmonos\str_exists;
 
 /**
@@ -190,7 +193,11 @@ abstract class AbstractCondition
             ksort($jsconsts);
 
             // 使用されている関数を導出
-            $allcode = implode(';', $contents) . file_get_contents("$template_dir/validator.js");
+            $allcode = implode(';', [
+                ...array_values(array_map(fn($v) => implode(';', $v), $messages)),
+                ...array_values($contents),
+                file_get_contents("$template_dir/validator.js"),
+            ]);
             $jsfuncs = [];
             $gather = function ($funcname) use (&$gather, &$jsfuncs, $jsfiles) {
                 if (isset($jsfuncs[$funcname])) {
@@ -215,12 +222,12 @@ abstract class AbstractCondition
 
             $echo_constant = function ($array) {
                 foreach ($array as $key => $value) {
-                    echo "*/\nvar $key = this.$key = " . self::encodeJson($value) . ";\n/*";
+                    echo "*/\nvar $key = this.$key = this.phpjs.$key = " . self::encodeJson($value) . ";\n/*";
                 }
             };
             $echo_function = function ($array) {
                 foreach ($array as $key => $value) {
-                    echo "*/\nvar $key = this.$key = (function(){\n" . self::encodeJson($value) . "\nreturn module.exports;\n})();\n/*";
+                    echo "*/\nvar $key = this.$key = this.phpjs.$key = (function(){\n" . self::encodeJson($value) . "\nreturn module.exports;\n})();\n/*";
                 }
             };
             $echo_keyvalue = function ($key, $value) {
@@ -393,9 +400,10 @@ JS;
      *
      * @param mixed $value 検証する値自身
      * @param array $fields 依存フィールド配列
+     * @param Input $input 保持 Input
      * @return bool
      */
-    public function isValid($value, $fields = [])
+    public function isValid($value, $fields = [], ?Input $input = null)
     {
         $this->messages = [];
 
@@ -412,12 +420,37 @@ JS;
         $constants[static::class] = $constants[static::class] ?? class_constants($this);
 
         $params = $this->getValidationParam();
-        $error = function ($messageKey, $message = null) use ($constants) {
+        $error = function ($messageKey = null, $vars = []) use ($constants, $value, $fields, $input) {
+            // @codeCoverageIgnoreStart js の処理を模倣しているだけで php サイドでは実質意味がない
+            if (!func_get_args()) {
+                return;
+            }
+            if ($messageKey === null) {
+                $this->messages = [];
+                return;
+            }
+            if (is_array($messageKey)) {
+                $this->messages = $messageKey;
+                return;
+            }
+            // @codeCoverageIgnoreEnd
+
+            $message = null;
             if (!in_array($messageKey, $constants[static::class], true)) {
                 $message = $messageKey;
                 $messageKey = static::INVALID;
             }
-            $this->addMessage($messageKey, $message);
+
+            $context = $fields;
+            foreach ($vars as [$key, $val]) {
+                $context[$key] = $val;
+            }
+            $context = array_replace($context, [
+                'value'        => $value,
+                'resolveTitle' => static fn($member) => $input?->resolveTitle($member),
+                'resolveLabel' => static fn($value) => $input?->resolveLabel($value),
+            ]);
+            $this->addMessage($messageKey, $message, $context);
         };
 
         $context = self::$cache['context'] + static::prevalidate($value, $fields, $params);
@@ -607,18 +640,11 @@ JS;
      * @param string|null $message
      * @return static
      */
-    public function addMessage($messageKey, $message = null)
+    public function addMessage($messageKey, $message = null, $context = [])
     {
         $message = $message ?? $this->changedMessageTemplates[$messageKey] ?? static::$messageTemplates[$messageKey];
 
-        $params = $this->getValidationParam();
-        $message = preg_replace_callback("#%(.+?)%#", function ($match) use ($params) {
-            if (array_key_exists($match[1], $params)) {
-                return is_array($params[$match[1]]) ? implode(',', $params[$match[1]]) : $params[$match[1]];
-            }
-            return $match[0];
-        }, $message);
-
+        $message = render_template($message, $context + array_strpad($this->getValidationParam(), '_'));
         $this->messages[$messageKey] = $message;
         return $this;
     }

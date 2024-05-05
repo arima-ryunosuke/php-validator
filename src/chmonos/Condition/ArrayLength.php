@@ -20,9 +20,9 @@ class ArrayLength extends AbstractCondition
 
     protected static $messageTemplates = [
         self::INVALID   => 'Invalid value given',
-        self::TOO_SHORT => '%min%件以上は入力してください',
-        self::TOO_LONG  => '%max%件以下で入力して下さい',
-        self::SHORTLONG => '%min%件～%max%件を入力して下さい',
+        self::TOO_SHORT => '${_min}件以上は入力してください',
+        self::TOO_LONG  => '${_max}件以下で入力して下さい',
+        self::SHORTLONG => '${_min}件～${_max}件を入力して下さい',
     ];
 
     protected $_min;
@@ -46,13 +46,13 @@ class ArrayLength extends AbstractCondition
         $length = count($value);
 
         if (!is_null($params['max']) && !is_null($params['min']) && ($length > $params['max'] || $length < $params['min'])) {
-            $error($consts['SHORTLONG']);
+            $error($consts['SHORTLONG'], []);
         }
         else if (is_null($params['max']) && !is_null($params['min']) && $length < $params['min']) {
-            $error($consts['TOO_SHORT']);
+            $error($consts['TOO_SHORT'], []);
         }
         else if (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
-            $error($consts['TOO_LONG']);
+            $error($consts['TOO_LONG'], []);
         }
     }
 

@@ -31,7 +31,7 @@ class Json extends AbstractCondition
     {
         $decode = json_decode($value, true);
         if ($decode === null && strtolower(trim($value)) !== 'null') {
-            $error($consts['INVALID']);
+            $error($consts['INVALID'], []);
             return;
         }
     }

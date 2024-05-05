@@ -3,7 +3,6 @@ namespace ryunosuke\chmonos\Condition;
 
 use ryunosuke\chmonos\Condition\Traits\File;
 use function ryunosuke\chmonos\dataurl_encode;
-use function ryunosuke\chmonos\si_prefix;
 
 /**
  * DataUri バリデータ
@@ -11,8 +10,9 @@ use function ryunosuke\chmonos\si_prefix;
  * multipart ではないファイルのアップロードでの使用を想定。
  * デフォルトでは値として得られるのはデコード後の値なので注意。
  *
- * - size: int
+ * - size: int|string
  *   - 許容する文字長（デコード後）
+ *   - 2M のような表記も使える
  * - type: array
  *   - 許容する拡張子（minetype 逆引き）
  * - minetype: array
@@ -28,17 +28,15 @@ class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
 
     protected static $messageTemplates = [
         self::INVALID      => 'Invalid value given',
-        self::INVALID_SIZE => '%size_message%以下で入力してください',
-        self::INVALID_TYPE => '%type_message%形式で入力してください',
+        self::INVALID_SIZE => '${_size}B以下で入力してください',
+        self::INVALID_TYPE => '${implode(",", _type)}形式で入力してください',
     ];
 
     private $convertible;
 
     protected $_size;
-    protected $_size_message;
 
     protected $_type;
-    protected $_type_message;
 
     protected $_allowTypes;
 
@@ -47,10 +45,8 @@ class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
         $this->convertible = $convertible;
 
         $this->_size = $rule['size'] ?? null;
-        $this->_size_message = si_prefix($this->_size, 1024, fn($var, $unit) => number_format($var) . strtoupper($unit) . 'B');
 
         $this->_type = $rule['type'] ?? [];
-        $this->_type_message = implode(', ', $this->_type);
 
         $this->_allowTypes = $this->getMimeTypes($this->_type, $rule['mimetype'] ?? []);
 
@@ -62,21 +58,21 @@ class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
         $matches = [];
 
         if (!preg_match('#^data:(.+?/.+?)?(;charset=.+?)?(;base64)?,#iu', $value, $matches)) {
-            return $error($consts['INVALID']);
+            return $error($consts['INVALID'], []);
         }
 
         $decoded = base64_decode(substr($value, strlen($matches[0])), true);
 
         if ($decoded === false) {
-            return $error($consts['INVALID']);
+            return $error($consts['INVALID'], []);
         }
 
-        if ($params['size'] && $params['size'] < strlen($decoded)) {
-            $error($consts['INVALID_SIZE']);
+        if ($params['size'] && ini_parse_quantity($params['size']) < strlen($decoded)) {
+            $error($consts['INVALID_SIZE'], []);
         }
 
         if ($params['type'] && !in_array($matches[1], $params['allowTypes'], true)) {
-            $error($consts['INVALID_TYPE']);
+            $error($consts['INVALID_TYPE'], []);
         }
     }
 
@@ -90,7 +86,8 @@ class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
 
     public function getFixture($value, $fields)
     {
-        $data = str_pad($value ?? '', $this->_size, 'X', STR_PAD_RIGHT);
+        $size = ini_parse_quantity($this->_size);
+        $data = str_pad($value ?? '', $size, 'X', STR_PAD_RIGHT);
         $type = $this->fixtureArray($this->_allowTypes);
         return dataurl_encode($data, ['mimetype' => $type]);
     }

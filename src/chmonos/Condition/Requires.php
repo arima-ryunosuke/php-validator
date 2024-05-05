@@ -101,10 +101,10 @@ class Requires extends AbstractCondition implements Interfaces\Propagation
     {
         $nofify = function ($value, $error, $consts) {
             if (!is_array($value) && strval($value) === '') {
-                $error($consts['INVALID_TEXT']);
+                $error($consts['INVALID_TEXT'], []);
             }
             else if (is_array($value) && count($value) === 0) {
-                $error($consts['INVALID_MULTIPLE']);
+                $error($consts['INVALID_MULTIPLE'], []);
             }
         };
 

@@ -1,6 +1,7 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
+use ryunosuke\chmonos\Input;
 use function ryunosuke\chmonos\class_shorten;
 
 /**
@@ -14,10 +15,10 @@ use function ryunosuke\chmonos\class_shorten;
  */
 class Aruiha extends AbstractCondition implements Interfaces\MaxLength
 {
-    public const INVALID = 'AruihaInvalid';
+    public const INVALID_ARUIHA = 'AruihaInvalid';
 
     protected static $messageTemplates = [
-        self::INVALID => '必ず呼び出し元で再宣言する',
+        self::INVALID_ARUIHA => '必ず呼び出し元で再宣言する',
     ];
 
     /** @var AbstractCondition[] */
@@ -61,7 +62,7 @@ class Aruiha extends AbstractCondition implements Interfaces\MaxLength
                         return;
                     }
                 }
-                $error($consts['INVALID']);
+                $error($consts['INVALID_ARUIHA'], []);
             })();
 JS;
     }
@@ -75,15 +76,15 @@ JS;
         return array_unique($result);
     }
 
-    public function isValid($value, $fields = [])
+    public function isValid($value, $fields = [], ?Input $input = null)
     {
         $this->messages = [];
         foreach ($this->conditions as $condition) {
-            if ($condition->isValid($value, $fields)) {
+            if ($condition->isValid($value, $fields, $input)) {
                 $this->messages = [];
                 return true;
             }
-            $this->addMessage(self::INVALID);
+            $this->addMessage(self::INVALID_ARUIHA, null, []);
         }
         return !count($this->messages);
     }

@@ -55,6 +55,9 @@ class Input
     /** @var Context */
     protected $context;
 
+    /** @var Context */
+    protected $parentContext;
+
     /** @var string */
     protected $id;
 
@@ -268,8 +271,24 @@ class Input
         $this->rule[$name] = $value;
     }
 
+    public function resolveTitle($member)
+    {
+        return $this->parentContext->$member?->title;
+    }
+
+    public function resolveLabel($value)
+    {
+        $options = [];
+        array_walk_recursive($this->rule['options'], function ($v, $k) use (&$options) {
+            $options[$k] = $v instanceof \stdClass ? $v->label : $v;
+        });
+        return $this->options[$value] ?? $value;
+    }
+
     public function initialize(Context $root, Context $context)
     {
+        $this->parentContext = $context;
+
         foreach ($this->condition as $condition) {
             if ($condition instanceof Condition\Interfaces\Initialize) {
                 $condition->initialize($root, $context, $this->parent->name ?? null, $this->name);
@@ -715,7 +734,7 @@ class Input
                 break;
             }
             $vs = $condition->isArrayableValidation() ? [$value] : arrayize($value);
-            $flag = array_all($vs, function ($v) use ($condition, $fields) { return $condition->isValid($v, $fields); });
+            $flag = array_all($vs, function ($v) use ($condition, $fields) { return $condition->isValid($v, $fields, $this); });
             $mess = $condition->getMessages();
 
             $isvalid = $flag && $isvalid;

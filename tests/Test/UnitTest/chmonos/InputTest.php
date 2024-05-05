@@ -120,6 +120,43 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->try('__set', 'hogera', null)->wasThrown(new \InvalidArgumentException('undefined property'));
     }
 
+    function test_resolve()
+    {
+        $context = new Context([
+            'parent'   => [
+                'title'   => '親項目',
+                'options' => [
+                    'a' => 'A',
+                ],
+            ],
+            'children' => [
+                'title'  => '子項目配列',
+                'inputs' => [
+                    'child1' => [
+                        'title'   => '子項目1',
+                        'options' => [
+                            'c1' => 'C1',
+                        ],
+                    ],
+                    'child2' => [
+                        'title'   => '子項目2',
+                        'options' => [
+                            'c2' => 'C2',
+                        ],
+                    ]
+                ]
+            ]
+        ]);
+        $context->initialize();
+
+        that($context)->parent->resolveTitle('parent')->is('親項目');
+        that($context)->parent->resolveTitle('children/child1')->is('子項目1');
+        that($context)->parent->resolveLabel('a')->is('A');
+
+        that($context)->children->context->child1->resolveTitle('child2')->is('子項目2');
+        that($context)->children->context->child1->resolveLabel('c1')->is('C1');
+    }
+
     function test_initialize()
     {
         $context = new Context([

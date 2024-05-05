@@ -75,22 +75,22 @@ class Telephone extends AbstractCondition implements Interfaces\MaxLength, Inter
         $context['foreach']($value, function ($key, $value, $params, $error, $consts) {
             // 明らかに電話番号っぽくない場合のチェック
             if (mb_strlen($value) > $params['maxlength']) {
-                $error($consts['INVALID']);
+                $error($consts['INVALID'], []);
                 return false;
             }
 
             // 電話番号っぽいが細部がおかしい場合
             if (!preg_match($params['pattern'], $value)) {
                 if ($params['hyphen'] === null) {
-                    $error($consts['INVALID_TELEPHONE']);
+                    $error($consts['INVALID_TELEPHONE'], []);
                     return false;
                 }
                 else if ($params['hyphen'] === true) {
-                    $error($consts['INVALID_WITH_HYPHEN']);
+                    $error($consts['INVALID_WITH_HYPHEN'], []);
                     return false;
                 }
                 else if ($params['hyphen'] === false) {
-                    $error($consts['INVALID_NONE_HYPHEN']);
+                    $error($consts['INVALID_NONE_HYPHEN'], []);
                     return false;
                 }
             }

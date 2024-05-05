@@ -42,17 +42,17 @@ class Hostname extends AbstractCondition implements Interfaces\MultipleValue
         $checkport = function ($port, $require_port, $error, $consts) {
             if (strlen($port)) {
                 if ($require_port === false) {
-                    $error($consts['INVALID']);
+                    $error($consts['INVALID'], []);
                     return false;
                 }
                 if ($port > 65535) {
-                    $error($consts['INVALID_PORT']);
+                    $error($consts['INVALID_PORT'], []);
                     return false;
                 }
             }
             else {
                 if ($require_port === true) {
-                    $error($consts['INVALID_PORT']);
+                    $error($consts['INVALID_PORT'], []);
                     return false;
                 }
             }
@@ -82,7 +82,7 @@ class Hostname extends AbstractCondition implements Interfaces\MultipleValue
                 return true;
             }
 
-            $error($consts['INVALID']);
+            $error($consts['INVALID'], []);
             return false;
         }, $params, $checkport, $error, $consts);
     }

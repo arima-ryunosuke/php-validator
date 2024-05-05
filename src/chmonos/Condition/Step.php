@@ -21,8 +21,8 @@ class Step extends AbstractCondition implements Interfaces\InferableType, Interf
 
     protected static $messageTemplates = [
         self::INVALID      => 'Invalid value given',
-        self::INVALID_STEP => '%step%の倍数で入力してください',
-        self::INVALID_TIME => '%timemessage%単位で入力してください',
+        self::INVALID_STEP => '${_step}の倍数で入力してください',
+        self::INVALID_TIME => '${_timemessage}単位で入力してください',
     ];
 
     protected $_step;
@@ -62,27 +62,27 @@ class Step extends AbstractCondition implements Interfaces\InferableType, Interf
         $match = [];
         if (isset($params['timeunit']['h']) && isset($params['timeunit']['i'])) {
             if (!preg_match('#(\\d{1,2}):?(\\d{1,2})(:?(\\d{1,2}))?$#u', $value, $match)) {
-                return $error($consts['INVALID']);
+                return $error($consts['INVALID'], []);
             }
             $value = (3600 * $match[1]) + (60 * $match[2]) + intval($match[4] ?? 0);
         }
         else if (isset($params['timeunit']['i']) && isset($params['timeunit']['s'])) {
             if (!preg_match('#(\\d{1,2}):?(\\d{1,2})$#u', $value, $match)) {
-                return $error($consts['INVALID']);
+                return $error($consts['INVALID'], []);
             }
             $value = (60 * $match[1]) + intval($match[2] ?? 0);
         }
         else {
             if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value)) {
-                return $error($consts['INVALID']);
+                return $error($consts['INVALID'], []);
             }
         }
         if (abs(round($value / $params['step']) * $params['step'] - $value) > pow(2, -52)) {
             if (count($params['timeunit'])) {
-                $error($consts['INVALID_TIME']);
+                $error($consts['INVALID_TIME'], []);
             }
             else {
-                $error($consts['INVALID_STEP']);
+                $error($consts['INVALID_STEP'], []);
             }
         }
     }

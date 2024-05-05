@@ -44,7 +44,7 @@ class EmailAddress extends AbstractCondition implements Interfaces\MaxLength, In
 
         $context['foreach']($value, function ($key, $value, $params, $error, $consts) {
             if (!preg_match($params['regex'], $value)) {
-                $error($consts['INVALID_FORMAT']);
+                $error($consts['INVALID_FORMAT'], []);
                 return false;
             }
         }, $params, $error, $consts);

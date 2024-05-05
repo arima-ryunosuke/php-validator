@@ -45,7 +45,7 @@ class Distinct extends AbstractCondition
         $value = preg_split($params['delimiter'], $value, -1, PREG_SPLIT_NO_EMPTY);
 
         if (count($value) !== count(array_unique($value))) {
-            $error($consts['NO_DISTINCT']);
+            $error($consts['NO_DISTINCT'], []);
         }
     }
 }

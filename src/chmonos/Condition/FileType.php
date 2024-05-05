@@ -24,7 +24,7 @@ class FileType extends AbstractCondition implements Interfaces\InferableType
 
     protected static $messageTemplates = [
         self::INVALID      => '入力ファイルが不正です',
-        self::INVALID_TYPE => '%type%形式のファイルを選択して下さい',
+        self::INVALID_TYPE => '${implode(",", array_keys(_allowTypes))}形式のファイルを選択して下さい',
     ];
 
     protected $_allowTypes;
@@ -45,7 +45,6 @@ class FileType extends AbstractCondition implements Interfaces\InferableType
 
         $this->_allowTypes = $filetype;
         $this->_mimeTypes = $mimetype;
-        $this->_type = implode(', ', array_keys($filetype));
 
         parent::__construct();
     }
@@ -55,11 +54,11 @@ class FileType extends AbstractCondition implements Interfaces\InferableType
         $mimetype = mime_content_type($value);
 
         if (!$mimetype && !in_array('*', $params['mimetype'])) {
-            $error($consts['INVALID']);
+            $error($consts['INVALID'], []);
         }
 
         if (!in_array($mimetype, $params['mimetype'])) {
-            $error($consts['INVALID_TYPE']);
+            $error($consts['INVALID_TYPE'], []);
         }
     }
 
@@ -68,7 +67,7 @@ class FileType extends AbstractCondition implements Interfaces\InferableType
         $exts = [...array_merge(...array_values($this->_allowTypes))];
         $mimetype = $this->getMimeTypes($exts, $this->_mimeTypes);
 
-        return ['mimetype' => $mimetype, 'type' => $this->_type];
+        return ['allowTypes' => $this->_allowTypes, 'mimetype' => $mimetype];
     }
 
     public function getAccepts()

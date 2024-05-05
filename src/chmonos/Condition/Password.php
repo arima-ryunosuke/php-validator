@@ -33,8 +33,8 @@ class Password extends AbstractCondition implements Interfaces\InferableType
 
     protected static $messageTemplates = [
         self::INVALID               => 'Invalid value given',
-        self::INVALID_PASSWORD_LESS => '%char_types%を含めてください',
-        self::INVALID_PASSWORD_WEAK => '%char_types%のいずれかを%repeat%文字以上含めてください',
+        self::INVALID_PASSWORD_LESS => '${implode(",", array_keys(_charlists))}を含めてください',
+        self::INVALID_PASSWORD_WEAK => '${implode(",", array_keys(_charlists))}のいずれかを${_repeat}文字以上含めてください',
     ];
 
     private static $preset = [
@@ -49,7 +49,6 @@ class Password extends AbstractCondition implements Interfaces\InferableType
     ];
 
     protected $_charlists;
-    protected $_char_types;
     protected $_regexes;
     protected $_repeat;
 
@@ -67,7 +66,6 @@ class Password extends AbstractCondition implements Interfaces\InferableType
         }
 
         $this->_charlists = $charlists;
-        $this->_char_types = implode(', ', array_keys($charlists));
         $this->_regexes = array_map(function ($v) { return '/[' . preg_quote($v, '/') . ']/'; }, $charlists);
         $this->_repeat = $repeat;
 
@@ -78,7 +76,7 @@ class Password extends AbstractCondition implements Interfaces\InferableType
     {
         $fulfill = $context['foreach']($params['regexes'], function ($key, $regex, $value, $error, $consts) {
             if (!preg_match($regex, $value)) {
-                $error($consts['INVALID_PASSWORD_LESS']);
+                $error($consts['INVALID_PASSWORD_LESS'], []);
                 return false;
             }
         }, $value, $error, $consts);
@@ -89,7 +87,7 @@ class Password extends AbstractCondition implements Interfaces\InferableType
 
         $counts = array_count_values(str_split($value, 1));
         if (count($counts) < count($params['regexes']) * $params['repeat']) {
-            $error($consts['INVALID_PASSWORD_WEAK']);
+            $error($consts['INVALID_PASSWORD_WEAK'], []);
         }
     }
 

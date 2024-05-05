@@ -188,7 +188,7 @@ JS;
         $message = call_user_func($params['method'], $value, $fields);
 
         if ($message !== null) {
-            $error($message);
+            $error($message, []);
         }
     }
 

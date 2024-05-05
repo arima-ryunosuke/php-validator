@@ -20,7 +20,7 @@ class Uri extends AbstractCondition implements Interfaces\InferableType, Interfa
 
     protected static $messageTemplates = [
         self::INVALID        => 'URLをスキームから正しく入力してください',
-        self::INVALID_SCHEME => 'スキームが不正です(%schemes%のみ)',
+        self::INVALID_SCHEME => 'スキームが不正です(${implode(",", _schemes)}のみ)',
         self::INVALID_HOST   => 'ホスト名が不正です',
         self::INVALID_PORT   => 'ポート番号が不正です',
     ];
@@ -49,15 +49,15 @@ class Uri extends AbstractCondition implements Interfaces\InferableType, Interfa
             $parsed = parse_url($value);
 
             if (!$parsed || !isset($parsed['scheme'])) {
-                $error($consts['INVALID']);
+                $error($consts['INVALID'], []);
                 return false;
             }
             else if (count($params['schemes']) && !in_array($parsed['scheme'], $params['schemes'])) {
-                $error($consts['INVALID_SCHEME']);
+                $error($consts['INVALID_SCHEME'], []);
                 return false;
             }
             else if (!isset($parsed['host'])) {
-                $error($consts['INVALID_HOST']);
+                $error($consts['INVALID_HOST'], []);
                 return false;
             }
         }, $params, $error, $consts);

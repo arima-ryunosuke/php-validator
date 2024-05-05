@@ -1,13 +1,12 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
-use function ryunosuke\chmonos\si_prefix;
-
 /**
  * ファイルサイズバリデータ
  *
- * - maxsize: int
+ * - maxsize: int|string
  *   - 許容する最大ファイルサイズ
+ *   - 2M のような表記も使える
  */
 class FileSize extends AbstractCondition implements Interfaces\InferableType
 {
@@ -16,18 +15,14 @@ class FileSize extends AbstractCondition implements Interfaces\InferableType
 
     protected static $messageTemplates = [
         self::INVALID      => '入力ファイルが不正です',
-        self::INVALID_OVER => 'ファイルサイズが大きすぎます。%message%以下のファイルを選択してください',
+        self::INVALID_OVER => '${_maxsize}B以下のファイルを選択してください',
     ];
 
     protected $_maxsize;
-    protected $_message;
 
     public function __construct($maxsize)
     {
         $this->_maxsize = $maxsize;
-        $this->_message = si_prefix($this->_maxsize, 1024, function ($var, $unit) {
-            return number_format($var) . strtoupper($unit) . 'B';
-        });
 
         parent::__construct();
     }
@@ -37,11 +32,11 @@ class FileSize extends AbstractCondition implements Interfaces\InferableType
         $size = filesize($value);
 
         if (!$size) {
-            $error($consts['INVALID']);
+            $error($consts['INVALID'], []);
         }
 
-        if ($size > $params['maxsize']) {
-            $error($consts['INVALID_OVER']);
+        if ($size > ini_parse_quantity($params['maxsize'])) {
+            $error($consts['INVALID_OVER'], []);
         }
     }
 

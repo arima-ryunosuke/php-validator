@@ -53,7 +53,7 @@ class UniqueChild extends AbstractParentCondition
         }
 
         if (count($rows) !== count(array_unique($rows))) {
-            $error($consts['NO_UNIQUE']);
+            $error($consts['NO_UNIQUE'], []);
         }
     }
 

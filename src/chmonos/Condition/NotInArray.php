@@ -18,7 +18,7 @@ class NotInArray extends AbstractCondition
 
     protected static $messageTemplates = [
         self::INVALID        => 'Invalid value given',
-        self::VALUE_IN_ARRAY => '選択値が不正です',
+        self::VALUE_IN_ARRAY => '${$resolveLabel(current)}は不正です',
     ];
 
     protected $_haystack;
@@ -50,12 +50,12 @@ class NotInArray extends AbstractCondition
     {
         if ($params['strict'] === null) {
             if (isset($params['haystack'][$value])) {
-                $error($consts['VALUE_IN_ARRAY']);
+                $error($consts['VALUE_IN_ARRAY'], [['current', $value]]);
             }
         }
         else {
             if (in_array($value, $params['haystack'], $params['strict'])) {
-                $error($consts['VALUE_IN_ARRAY']);
+                $error($consts['VALUE_IN_ARRAY'], [['current', $value]]);
             }
         }
     }

@@ -3,8 +3,11 @@ namespace ryunosuke\Test\UnitTest\chmonos\Condition;
 
 use ryunosuke\chmonos\Condition\AbstractCondition;
 use ryunosuke\chmonos\Condition\Callback;
+use ryunosuke\chmonos\Condition\Compare;
 use ryunosuke\chmonos\Condition\Decimal;
+use ryunosuke\chmonos\Condition\NotInArray;
 use ryunosuke\chmonos\Condition\Range;
+use ryunosuke\chmonos\Context;
 
 class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
@@ -191,13 +194,50 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
 
     function test_isValid()
     {
-        $condition = new Callback(function ($value, $error) { $error('this is error'); }, [], 'userdata');
+        $condition = new Callback(function ($value, $error) { $error('this is ${implode(",", array)}', [['array', [1, 2, 3]]]); }, [], 'userdata');
         that($condition)->isValid(null)->isFalse();
-        that($condition)->getMessages()->is([Callback::INVALID => 'this is error']);
+        that($condition)->getMessages()->is([Callback::INVALID => 'this is 1,2,3']);
 
         $condition->setCheckMode(false);
         that($condition)->isValid(null)->isTrue();
         that($condition)->getMessages()->is([]);
+    }
+
+    function test_isValid_message()
+    {
+        $context = new Context([
+            'parent'   => [
+                'title'     => '親項目',
+                'condition' => [
+                    'NotInArray' => [['a']],
+                ],
+            ],
+            'children' => [
+                'title'  => '子項目配列',
+                'inputs' => [
+                    'child1' => [
+                        'title' => '子項目1',
+                    ],
+                    'child2' => [
+                        'title'     => '子項目2',
+                        'condition' => [
+                            'Compare' => ['==', 'child1'],
+                        ],
+                    ]
+                ]
+            ]
+        ]);
+        $context->initialize();
+
+        $input = $context->parent;
+        $condition = $input->condition['NotInArray'];
+        that($condition)->isValid('a', [], $input)->isFalse();
+        that($condition)->getMessages()->is([NotInArray::VALUE_IN_ARRAY => 'aは不正です']);
+
+        $input = $context->children->context->child2;
+        $condition = $input->condition['Compare'];
+        that($condition)->isValid('a', ['child1' => 'X'], $input)->isFalse();
+        that($condition)->getMessages()->is([Compare::EQUAL => '「子項目1」と同じ値を入力してください']);
     }
 
     function test_isArrayableValidation()
@@ -281,13 +321,13 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_addMessage()
     {
         $condition = new Callback(function () { }, [], 'userdata');
-        $condition->setMessageTemplate('this is %userdata% message', Callback::INVALID);
+        $condition->setMessageTemplate('this is ${_userdata} message', Callback::INVALID);
 
         $condition->addMessage(Callback::INVALID, 'hogera');
         that($condition)->getMessages()->is([Callback::INVALID => 'hogera']);
 
-        $condition->addMessage(Callback::INVALID, '%notfund%');
-        that($condition)->getMessages()->is([Callback::INVALID => '%notfund%']);
+        $condition->addMessage(Callback::INVALID, '${_notfound}');
+        that($condition)->getMessages()->is([Callback::INVALID => '_notfound']);
 
         $condition->addMessage(Callback::INVALID);
         that($condition)->getMessages()->is([Callback::INVALID => 'this is userdata message']);

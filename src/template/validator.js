@@ -37,6 +37,8 @@ function Chmonos(form, options) {
         return chmonos[parts[parts.length - 1]];
     };
 
+    chmonos.phpjs = {};
+
     /// phpjs のインポート
     /*<?php $echo_constant($jsconsts); ?>*/
     /*<?php $echo_function($jsfuncs); ?>*/
@@ -107,6 +109,22 @@ function Chmonos(form, options) {
         }
 
         return already;
+    }
+
+    function templateFunction(vars) {
+        var entries = Object.entries(vars);
+        var args = entries.map(e => e[0]);
+        var vals = entries.map(e => e[1]);
+
+        return function (template, tag) {
+            try {
+                const F = new Function(...args, 'return ' + (tag ?? '') + '`' + template + '`');
+                return F(...vals);
+            }
+            catch (e) {
+                console.error(e);
+            }
+        };
     }
 
     function addError(input, result) {
@@ -261,7 +279,7 @@ function Chmonos(form, options) {
                 let cond = condition[keys[k]];
                 let cname = cond.cname;
                 let level = cond.level;
-                var error = function (err) {
+                var error = function (err, vars) {
                     if (evt.chmonosSubtypes) {
                         if (evt.chmonosSubtypes.includes('noerror')) {
                             return;
@@ -304,12 +322,24 @@ function Chmonos(form, options) {
                         if (errorTypes[level][cname] === undefined) {
                             errorTypes[level][cname] = {};
                         }
-                        errorTypes[level][cname][err] = ret.replace(/%(.+?)%/g, function (p0, p1) {
-                            if (cond['param'][p1] !== undefined) {
-                                return cond['param'][p1];
-                            }
-                            return p0;
-                        });
+
+                        const values = Object.assign({
+                            "$resolveTitle": function (member, target) {
+                                target = target ?? input;
+                                return chmonos.brother(target, member)[0]?.dataset?.validationTitle ?? member;
+                            },
+                            "$resolveLabel": function (value, target) {
+                                target = target ?? input;
+                                if (target.tagName === 'SELECT') {
+                                    return target.querySelector('option[value="' + value + '"]')?.label ?? '';
+                                }
+                                else {
+                                    return form.querySelector('input[name="' + target.name + '"][value="' + value + '"]')?.labels[0]?.textContent ?? '';
+                                }
+                            },
+                            'value': value,
+                        }, chmonos.phpjs, Object.fromEntries(vars ?? []), Object.fromEntries(Object.entries(cond['param']).map(kv => ['_' + kv[0], kv[1]])));
+                        errorTypes[level][cname][err] = templateFunction(values)(ret);
                     }
                 };
                 // 値が空の場合は Requires しか検証しない（空かどうかの制御を他の condition に任せたくない）
@@ -788,20 +818,10 @@ function Chmonos(form, options) {
 
         var node = chmonos.birth(template, values, index);
         if (values) {
-            var entries = Object.entries(values);
-            var args = entries.map(e => e[0]);
-            var vals = entries.map(e => e[1]);
-
+            var F = templateFunction(values);
             node.querySelectorAll('[data-vnode]').forEach(function (e) {
-                try {
-                    const T = e.dataset.vnode;
-                    const F = new Function(...args, 'return ' + T + '`' + e.outerHTML + '`');
-                    e.insertAdjacentHTML('afterend', F(...vals));
-                    e.remove();
-                }
-                catch (e) {
-                    console.error(e);
-                }
+                e.insertAdjacentHTML('afterend', F(e.outerHTML, e.dataset.vnode));
+                e.remove();
             });
         }
         template.dispatchEvent(new CustomEvent('spawn', {

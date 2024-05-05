@@ -19,7 +19,7 @@ class Date extends AbstractCondition implements Interfaces\Range, Interfaces\Max
     protected static $messageTemplates = [
         self::INVALID      => 'Invalid value given',
         self::INVALID_DATE => '有効な日付を入力してください',
-        self::FALSEFORMAT  => '%format%形式で入力してください',
+        self::FALSEFORMAT  => '${_format}形式で入力してください',
     ];
 
     protected $_format;
@@ -79,10 +79,10 @@ class Date extends AbstractCondition implements Interfaces\Range, Interfaces\Max
         }
 
         if ($time === false) {
-            $error($consts['INVALID_DATE']);
+            $error($consts['INVALID_DATE'], []);
         }
         else if (date($params['format'], $time) !== $value) {
-            $error($consts['FALSEFORMAT']);
+            $error($consts['FALSEFORMAT'], []);
         }
     }
 

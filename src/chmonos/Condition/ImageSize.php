@@ -17,8 +17,8 @@ class ImageSize extends AbstractCondition implements Interfaces\InferableType
 
     protected static $messageTemplates = [
         self::INVALID        => '画像ファイルを入力してください',
-        self::INVALID_WIDTH  => '横サイズは%width%ピクセル以下で選択してください',
-        self::INVALID_HEIGHT => '縦サイズは%height%ピクセル以下で選択してください',
+        self::INVALID_WIDTH  => '横サイズは${_width}ピクセル以下で選択してください',
+        self::INVALID_HEIGHT => '縦サイズは${_height}ピクセル以下で選択してください',
     ];
 
     protected $_width;
@@ -37,16 +37,16 @@ class ImageSize extends AbstractCondition implements Interfaces\InferableType
         $size = yield getimagesize($value);
 
         if ($size === false) {
-            $error($consts['INVALID']);
+            $error($consts['INVALID'], []);
             return;
         }
 
         if (!is_null($params['width']) && $params['width'] < $size[0]) {
-            $error($consts['INVALID_WIDTH']);
+            $error($consts['INVALID_WIDTH'], []);
         }
 
         if (!is_null($params['height']) && $params['height'] < $size[1]) {
-            $error($consts['INVALID_HEIGHT']);
+            $error($consts['INVALID_HEIGHT'], []);
         }
     }
 

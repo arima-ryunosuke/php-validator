@@ -18,9 +18,9 @@ class Range extends AbstractCondition implements Interfaces\Range
 
     protected static $messageTemplates = [
         self::INVALID        => 'Invalid value given',
-        self::INVALID_MIN    => '%min%以上で入力して下さい',
-        self::INVALID_MAX    => '%max%以下で入力して下さい',
-        self::INVALID_MINMAX => '%min%以上%max%以下で入力して下さい',
+        self::INVALID_MIN    => '${_min}以上で入力して下さい',
+        self::INVALID_MAX    => '${_max}以下で入力して下さい',
+        self::INVALID_MINMAX => '${_min}以上${_max}以下で入力して下さい',
     ];
 
     protected $_min;
@@ -37,13 +37,13 @@ class Range extends AbstractCondition implements Interfaces\Range
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
         if ((!is_null($params['min']) && !is_null($params['max'])) && !($params['min'] <= $value && $value <= $params['max'])) {
-            $error($consts['INVALID_MINMAX']);
+            $error($consts['INVALID_MINMAX'], []);
         }
         else if ((!is_null($params['min']) && is_null($params['max'])) && ($params['min'] > $value)) {
-            $error($consts['INVALID_MIN']);
+            $error($consts['INVALID_MIN'], []);
         }
         else if ((is_null($params['min']) && !is_null($params['max'])) && ($value > $params['max'])) {
-            $error($consts['INVALID_MAX']);
+            $error($consts['INVALID_MAX'], []);
         }
     }
 

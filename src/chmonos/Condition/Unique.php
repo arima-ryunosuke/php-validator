@@ -21,7 +21,7 @@ class Unique extends AbstractCondition implements Interfaces\Propagation, Interf
 
     protected static $messageTemplates = [
         self::INVALID   => 'Invalid value given',
-        self::NO_UNIQUE => '値が重複しています',
+        self::NO_UNIQUE => '${value}が重複しています',
     ];
 
     protected $_root;
@@ -85,7 +85,7 @@ JS;
     {
         $acv = array_count_values($context['values']);
         if ($acv[$params['strict'] ? $value : strtolower($value)] > 1) {
-            $error($consts['NO_UNIQUE']);
+            $error($consts['NO_UNIQUE'], []);
             return false;
         }
     }

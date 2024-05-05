@@ -24,7 +24,7 @@ class FileName extends AbstractCondition
     protected static $messageTemplates = [
         self::INVALID                   => 'Invalid value given',
         self::INVALID_FILENAME_STR      => '有効なファイル名を入力してください',
-        self::INVALID_FILENAME_EXT      => '%extensions%ファイル名を入力してください',
+        self::INVALID_FILENAME_EXT      => '${implode(",", _extensions)}のファイル名を入力してください',
         self::INVALID_FILENAME_RESERVED => '使用できないファイル名です',
     ];
 
@@ -56,7 +56,7 @@ class FileName extends AbstractCondition
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
         if (!preg_match($params['regex'], $value)) {
-            $error($consts['INVALID_FILENAME_STR']);
+            $error($consts['INVALID_FILENAME_STR'], []);
             return;
         }
 
@@ -65,12 +65,12 @@ class FileName extends AbstractCondition
         $pathinfo['filename'] = isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
 
         if (count($params['extensions']) && !in_array($pathinfo['extension'], $params['extensions'])) {
-            $error($consts['INVALID_FILENAME_EXT']);
+            $error($consts['INVALID_FILENAME_EXT'], []);
             return;
         }
 
         if (count($params['reserved']) && in_array(strtoupper($pathinfo['filename']), $params['reserved'])) {
-            $error($consts['INVALID_FILENAME_RESERVED']);
+            $error($consts['INVALID_FILENAME_RESERVED'], []);
             return;
         }
     }

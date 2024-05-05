@@ -33,10 +33,10 @@ class Compare extends AbstractCondition implements Interfaces\Propagation
 
     protected static $messageTemplates = [
         self::INVALID      => 'Invalid value given',
-        self::EQUAL        => '%operand%と同じ値を入力してください',
-        self::NOT_EQUAL    => '%operand%と異なる値を入力してください',
-        self::LESS_THAN    => "%operand%より小さい値を入力してください",
-        self::GREATER_THAN => '%operand%より大きい値を入力してください',
+        self::EQUAL        => '「${$resolveTitle(_operand)}」と同じ値を入力してください',
+        self::NOT_EQUAL    => '「${$resolveTitle(_operand)}」と異なる値を入力してください',
+        self::LESS_THAN    => '「${$resolveTitle(_operand)}」より小さい値を入力してください',
+        self::GREATER_THAN => '「${$resolveTitle(_operand)}」より大きい値を入力してください',
     ];
 
     protected $_operator;
@@ -86,28 +86,28 @@ class Compare extends AbstractCondition implements Interfaces\Propagation
         }
 
         if ($params['operator'] === '==' && $field1 != $field2) {
-            return $error($consts['EQUAL']);
+            return $error($consts['EQUAL'], []);
         }
         if ($params['operator'] === '===' && $field1 !== $field2) {
-            return $error($consts['EQUAL']);
+            return $error($consts['EQUAL'], []);
         }
         if ($params['operator'] === '!=' && $field1 == $field2) {
-            return $error($consts['NOT_EQUAL']);
+            return $error($consts['NOT_EQUAL'], []);
         }
         if ($params['operator'] === '!==' && $field1 === $field2) {
-            return $error($consts['NOT_EQUAL']);
+            return $error($consts['NOT_EQUAL'], []);
         }
         if ($params['operator'] === '<' && $field1 >= $field2) {
-            return $error($consts['LESS_THAN']);
+            return $error($consts['LESS_THAN'], []);
         }
         if ($params['operator'] === '<=' && $field1 > $field2) {
-            return $error($consts['LESS_THAN']);
+            return $error($consts['LESS_THAN'], []);
         }
         if ($params['operator'] === '>' && $field1 <= $field2) {
-            return $error($consts['GREATER_THAN']);
+            return $error($consts['GREATER_THAN'], []);
         }
         if ($params['operator'] === '>=' && $field1 < $field2) {
-            return $error($consts['GREATER_THAN']);
+            return $error($consts['GREATER_THAN'], []);
         }
     }
 

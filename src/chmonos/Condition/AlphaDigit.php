@@ -18,13 +18,13 @@ namespace ryunosuke\chmonos\Condition;
  */
 class AlphaDigit extends AbstractCondition
 {
-    public const INVALID              = 'AlphaNumericInvalid';
+    public const INVALID_ALPHADIGIT   = 'AlphaNumericInvalid';
     public const INVALID_FIRST_NUMBER = 'AlphaNumericFirstNumber';
     public const INVALID_UPPERCASE    = 'AlphaNumericUpperCase';
     public const INVALID_LOWERCASE    = 'AlphaNumericLowerCase';
 
     protected static $messageTemplates = [
-        self::INVALID              => '使用できない文字が含まれています',
+        self::INVALID_ALPHADIGIT   => '使用できない文字が含まれています',
         self::INVALID_FIRST_NUMBER => '先頭に数値は使えません',
         self::INVALID_UPPERCASE    => '大文字は使えません',
         self::INVALID_LOWERCASE    => '小文字は使えません',
@@ -48,18 +48,18 @@ class AlphaDigit extends AbstractCondition
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
         if (!preg_match($params['regex'], $value)) {
-            $error($consts['INVALID']);
+            $error($consts['INVALID_ALPHADIGIT'], []);
             return;
         }
 
         if (!$params['first_number'] && ctype_digit(substr($value, 0, 1))) {
-            $error($consts['INVALID_FIRST_NUMBER']);
+            $error($consts['INVALID_FIRST_NUMBER'], []);
         }
         if ($params['case'] === false && strtoupper($value) !== $value) {
-            $error($consts['INVALID_LOWERCASE']);
+            $error($consts['INVALID_LOWERCASE'], []);
         }
         if ($params['case'] === true && strtolower($value) !== $value) {
-            $error($consts['INVALID_UPPERCASE']);
+            $error($consts['INVALID_UPPERCASE'], []);
         }
     }
 

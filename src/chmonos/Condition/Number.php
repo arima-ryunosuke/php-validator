@@ -23,12 +23,12 @@ class Number extends AbstractCondition implements Interfaces\MaxLength, Interfac
 
     protected static $messageTemplates = [
         self::INVALID        => '数値を入力してください',
-        self::INVALID_INT    => '整数部分を%int%桁以下で入力してください',
-        self::INVALID_DEC    => '小数部分を%dec%桁以下で入力してください',
-        self::INVALID_INTDEC => '整数部分を%int%桁、小数部分を%dec%桁以下で入力してください',
-        self::INVALID_MIN    => '%min%以上で入力して下さい',
-        self::INVALID_MAX    => '%max%以下で入力して下さい',
-        self::INVALID_MINMAX => '%min%以上%max%以下で入力して下さい',
+        self::INVALID_INT    => '整数部分を${_int}桁以下で入力してください',
+        self::INVALID_DEC    => '小数部分を${_dec}桁以下で入力してください',
+        self::INVALID_INTDEC => '整数部分を${_int}桁、小数部分を${_dec}桁以下で入力してください',
+        self::INVALID_MIN    => '${_min}以上で入力して下さい',
+        self::INVALID_MAX    => '${_max}以下で入力して下さい',
+        self::INVALID_MINMAX => '${_min}以上${_max}以下で入力して下さい',
     ];
 
     protected $_int;
@@ -55,22 +55,22 @@ class Number extends AbstractCondition implements Interfaces\MaxLength, Interfac
         $match = [];
 
         if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value, $match)) {
-            return $error($consts['INVALID']);
+            return $error($consts['INVALID'], []);
         }
 
         $match[2] = (isset($match[2])) ? $match[2] : '';
         if (strlen($match[1]) > $params['int'] && strlen($match[2]) > $params['dec'] + 1) {
-            return $error($consts['INVALID_INTDEC']);
+            return $error($consts['INVALID_INTDEC'], []);
         }
         else if (strlen($match[1]) > $params['int']) {
-            return $error($consts['INVALID_INT']);
+            return $error($consts['INVALID_INT'], []);
         }
         else if (strlen($match[2]) > $params['dec'] + 1) {
-            return $error($consts['INVALID_DEC']);
+            return $error($consts['INVALID_DEC'], []);
         }
 
         if (!(+$params['min'] <= +$value && +$value <= +$params['max'])) {
-            return $error($consts['INVALID_MINMAX']);
+            return $error($consts['INVALID_MINMAX'], []);
         }
     }
 

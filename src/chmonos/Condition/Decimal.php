@@ -20,9 +20,9 @@ class Decimal extends AbstractCondition implements Interfaces\MaxLength, Interfa
 
     protected static $messageTemplates = [
         self::INVALID        => '小数値を入力してください',
-        self::INVALID_INT    => '整数部分を%int%桁以下で入力してください',
-        self::INVALID_DEC    => '小数部分を%dec%桁以下で入力してください',
-        self::INVALID_INTDEC => '整数部分を%int%桁、小数部分を%dec%桁以下で入力してください',
+        self::INVALID_INT    => '整数部分を${_int}桁以下で入力してください',
+        self::INVALID_DEC    => '小数部分を${_dec}桁以下で入力してください',
+        self::INVALID_INTDEC => '整数部分を${_int}桁、小数部分を${_dec}桁以下で入力してください',
     ];
 
     protected $_int;
@@ -41,18 +41,18 @@ class Decimal extends AbstractCondition implements Interfaces\MaxLength, Interfa
         $match = [];
 
         if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value, $match)) {
-            return $error($consts['INVALID']);
+            return $error($consts['INVALID'], []);
         }
 
         $match[2] = (isset($match[2])) ? $match[2] : '';
         if (strlen($match[1]) > $params['int'] && strlen($match[2]) > $params['dec'] + 1) {
-            $error($consts['INVALID_INTDEC']);
+            $error($consts['INVALID_INTDEC'], []);
         }
         else if (strlen($match[1]) > $params['int']) {
-            $error($consts['INVALID_INT']);
+            $error($consts['INVALID_INT'], []);
         }
         else if (strlen($match[2]) > $params['dec'] + 1) {
-            $error($consts['INVALID_DEC']);
+            $error($consts['INVALID_DEC'], []);
         }
     }
 

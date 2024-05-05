@@ -19,10 +19,10 @@ class StringWidth extends AbstractCondition
 
     protected static $messageTemplates = [
         self::INVALID   => 'Invalid value given',
-        self::TOO_SHORT => '%min%文字以上で入力して下さい',
-        self::TOO_LONG  => '%max%文字以下で入力して下さい',
-        self::SHORTLONG => '%min%文字～%max%文字で入力して下さい',
-        self::DIFFERENT => '%min%文字で入力して下さい',
+        self::TOO_SHORT => '${_min}文字以上で入力して下さい',
+        self::TOO_LONG  => '${_max}文字以下で入力して下さい',
+        self::SHORTLONG => '${_min}文字～${_max}文字で入力して下さい',
+        self::DIFFERENT => '${_min}文字で入力して下さい',
     ];
 
     protected $_min;
@@ -47,17 +47,17 @@ class StringWidth extends AbstractCondition
 
         if (!is_null($params['max']) && !is_null($params['min']) && ($length > $params['max'] || $length < $params['min'])) {
             if ($params['min'] === $params['max']) {
-                $error($consts['DIFFERENT']);
+                $error($consts['DIFFERENT'], []);
             }
             else {
-                $error($consts['SHORTLONG']);
+                $error($consts['SHORTLONG'], []);
             }
         }
         else if (is_null($params['max']) && !is_null($params['min']) && $length < $params['min']) {
-            $error($consts['TOO_SHORT']);
+            $error($consts['TOO_SHORT'], []);
         }
         else if (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
-            $error($consts['TOO_LONG']);
+            $error($consts['TOO_LONG'], []);
         }
     }
 

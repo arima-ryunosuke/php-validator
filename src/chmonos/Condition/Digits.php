@@ -24,7 +24,7 @@ class Digits extends AbstractCondition implements Interfaces\MaxLength
     protected static $messageTemplates = [
         self::INVALID       => 'Invalid value given',
         self::NOT_DIGITS    => '整数を入力してください',
-        self::INVALID_DIGIT => '%digit%桁で入力してください',
+        self::INVALID_DIGIT => '${_digit}桁で入力してください',
     ];
 
     protected $_sign;
@@ -45,15 +45,15 @@ class Digits extends AbstractCondition implements Interfaces\MaxLength
         $value = ltrim($value, $params['sign']);
 
         if (!ctype_digit($value)) {
-            $error($consts['NOT_DIGITS']);
+            $error($consts['NOT_DIGITS'], []);
             return;
         }
         if ($params['mustDigit'] && $params['digit'] !== null && $params['digit'] !== strlen($value)) {
-            $error($consts['INVALID_DIGIT']);
+            $error($consts['INVALID_DIGIT'], []);
             return;
         }
         if (!$params['mustDigit'] && $params['digit'] !== null && $params['digit'] < strlen($value)) {
-            $error($consts['INVALID_DIGIT']);
+            $error($consts['INVALID_DIGIT'], []);
             return;
         }
     }

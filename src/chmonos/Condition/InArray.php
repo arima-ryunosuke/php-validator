@@ -40,12 +40,12 @@ class InArray extends AbstractCondition
     {
         if ($params['strict'] === null) {
             if (!isset($params['haystack'][$value])) {
-                $error($consts['NOT_IN_ARRAY']);
+                $error($consts['NOT_IN_ARRAY'], []);
             }
         }
         else {
             if (!in_array($value, $params['haystack'], $params['strict'])) {
-                $error($consts['NOT_IN_ARRAY']);
+                $error($consts['NOT_IN_ARRAY'], []);
             }
         }
     }
