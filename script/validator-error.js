@@ -55,8 +55,8 @@
             container.insertAdjacentHTML('beforeend',
                 '<div class="validation_message" data-toast-type="' + options.type + '" aria-live="assertive">' +
                 '    <button type="button" class="toast-close-button" role="button">&times;</button>' +
-                '    <div class="toast-title">' + options.title + '</div>' +
-                '    <div class="toast-message">' + options.message + '</div>' +
+                '    <div class="toast-title"></div>' +
+                '    <div class="toast-message"></div>' +
                 '</div>');
             var result = container.lastElementChild;
             result.addEventListener('click', function (e) {
@@ -139,8 +139,6 @@
                     if (messages[type].length) {
                         var toast = input[TOAST_NAME] || showToast({
                             type: type,
-                            title: messages.title || '',
-                            message: "",
                             onClick: function (e) {
                                 scrollAndBlink(input, [...new Set(messages.phantoms)], type);
                                 return false;
@@ -149,7 +147,8 @@
                                 delete input[TOAST_NAME];
                             },
                         });
-                        toast.querySelector('.toast-message').innerHTML = [...new Set(messages[type])].join('\n');
+                        toast.querySelector('.toast-title').textContent = messages.title ?? '';
+                        toast.querySelector('.toast-message').textContent = [...new Set(messages[type])].join('\n');
                         toast.style.order = chmonosFormElements.get(input) ?? 0;
                         toast.chmonos_vinput = input;
                         input[TOAST_NAME] = toast;

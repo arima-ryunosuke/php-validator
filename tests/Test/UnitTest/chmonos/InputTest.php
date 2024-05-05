@@ -816,7 +816,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         that($input)->label(['for' => 'input-id'])->contains('for="input-id"');
         that($input)->label(['label' => 'specified-label'])->contains('specified-label');
-        that($input)->label(['label' => fn($title) => "<span>$title</span>"])->contains('<span>hogera</span>');
     }
 
     function test_label_context()

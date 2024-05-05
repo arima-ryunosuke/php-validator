@@ -1,6 +1,7 @@
 <?php
 namespace ryunosuke\chmonos\Mixin;
 
+use ryunosuke\chmonos\HtmlString;
 use function ryunosuke\chmonos\array_sprintf;
 use function ryunosuke\chmonos\css_selector;
 
@@ -50,6 +51,9 @@ trait Htmlable
                 return $value;
             }
             return implode($glue, $value);
+        }
+        if ($value instanceof HtmlString) {
+            return $value;
         }
         if ($value instanceof \stdClass) {
             return htmlspecialchars(self::encodeJson($value), $flags);

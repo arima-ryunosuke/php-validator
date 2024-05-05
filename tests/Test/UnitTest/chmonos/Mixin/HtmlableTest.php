@@ -1,6 +1,7 @@
 <?php
 namespace ryunosuke\Test\UnitTest\chmonos\Mixin;
 
+use ryunosuke\chmonos\HtmlString;
 use ryunosuke\chmonos\Mixin\Htmlable;
 
 class HtmlableTest extends \ryunosuke\Test\AbstractUnitTestCase
@@ -75,5 +76,8 @@ class HtmlableTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($this)->escapeHtml(['<', '>'])->is("&lt; &gt;");
         that($this)->escapeHtml(['<', '>'], '---')->is("&lt;---&gt;");
         that($this)->escapeHtml(['<', '>'], null)->is(["&lt;", "&gt;"]);
+
+        that($this)->escapeHtml(new HtmlString('<&>"'))->is('<&>"');
+        that($this)->escapeHtml([new HtmlString('<'), new HtmlString('>')])->is('< >');
     }
 }
