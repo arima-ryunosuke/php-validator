@@ -79,7 +79,9 @@ class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
     public function getValue($value)
     {
         if ($this->convertible) {
-            return base64_decode(preg_replace('#^data:(.+?/.+?)?(;charset=.+?)?(;base64)?,#iu', '', $value), true);
+            if (!preg_match('#^data:(.+?/.+?)?(;charset=.+?)?(;base64)?,#iu', $value)) {
+                return dataurl_encode($value);
+            }
         }
         return $value;
     }

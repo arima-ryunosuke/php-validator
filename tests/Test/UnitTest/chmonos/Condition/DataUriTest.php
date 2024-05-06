@@ -35,14 +35,11 @@ class DataUriTest extends \ryunosuke\Test\AbstractUnitTestCase
         $base64_hello_world = base64_encode("Hello, world");
 
         $validate = new DataUri([], true);
-        that($validate)->getValue("data:text/plain,$base64_hello_world")->is("Hello, world");
-        that($validate)->getValue("data:text/plain;charset=utf-8,$base64_hello_world")->is("Hello, world");
-        that($validate)->getValue("data:text/plain;charset=utf-8;base64,$base64_hello_world")->is("Hello, world");
+        that($validate)->getValue("Hello, world")->is("data:text/plain;charset=US-ASCII;base64,$base64_hello_world");
+        that($validate)->getValue("data:text/plain;charset=US-ASCII;base64,$base64_hello_world")->is("data:text/plain;charset=US-ASCII;base64,$base64_hello_world");
 
         $validate = new DataUri([], false);
         that($validate)->getValue("data:text/plain,$base64_hello_world")->is("data:text/plain,$base64_hello_world");
-        that($validate)->getValue("data:text/plain;charset=utf-8,$base64_hello_world")->is("data:text/plain;charset=utf-8,$base64_hello_world");
-        that($validate)->getValue("data:text/plain;charset=utf-8;base64,$base64_hello_world")->is("data:text/plain;charset=utf-8;base64,$base64_hello_world");
     }
 
     function test_getFixture()
