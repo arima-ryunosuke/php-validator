@@ -13,7 +13,7 @@ namespace ryunosuke\chmonos\Condition;
  *   - とはいえ煩雑なので文字列で ja-jp のようなロケール文字列を与えるとそれっぽくなるようにしてある（ja-jp のみ対応）
  *   - h,i を与えると hh:mm, i,s を与えると mm:ss の文字列はそれっぽくパースされる
  */
-class Step extends AbstractCondition implements Interfaces\ImeMode, Interfaces\InferableType, Interfaces\Range
+class Step extends AbstractCondition implements Interfaces\InferableType, Interfaces\Range
 {
     public const INVALID      = 'StepInvalid';
     public const INVALID_STEP = 'StepInvalidInt';
@@ -85,11 +85,6 @@ class Step extends AbstractCondition implements Interfaces\ImeMode, Interfaces\I
                 $error($consts['INVALID_STEP']);
             }
         }
-    }
-
-    public function getImeMode()
-    {
-        return Interfaces\ImeMode::DISABLED;
     }
 
     public function getMin()

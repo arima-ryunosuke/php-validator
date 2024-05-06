@@ -9,7 +9,7 @@ namespace ryunosuke\chmonos\Condition;
  * - max: int|null
  *   - 数値の最大数
  */
-class Range extends AbstractCondition implements Interfaces\ImeMode, Interfaces\Range
+class Range extends AbstractCondition implements Interfaces\Range
 {
     public const INVALID        = 'RangeInvalid';
     public const INVALID_MIN    = 'RangeInvalidMin';
@@ -45,11 +45,6 @@ class Range extends AbstractCondition implements Interfaces\ImeMode, Interfaces\
         else if ((is_null($params['min']) && !is_null($params['max'])) && ($value > $params['max'])) {
             $error($consts['INVALID_MAX']);
         }
-    }
-
-    public function getImeMode()
-    {
-        return Interfaces\ImeMode::DISABLED;
     }
 
     public function getMin()

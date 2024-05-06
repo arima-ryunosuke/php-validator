@@ -25,7 +25,7 @@ namespace ryunosuke\chmonos\Condition;
  * が用意されている。
  * 上記を含むような文字列を指定すれば使用される（'alpha_numeric' で半角英数字になる）。
  */
-class Password extends AbstractCondition implements Interfaces\ImeMode, Interfaces\InferableType
+class Password extends AbstractCondition implements Interfaces\InferableType
 {
     public const INVALID               = 'InvalidPassword';
     public const INVALID_PASSWORD_LESS = 'InvalidPasswordLess';
@@ -91,11 +91,6 @@ class Password extends AbstractCondition implements Interfaces\ImeMode, Interfac
         if (count($counts) < count($params['regexes']) * $params['repeat']) {
             $error($consts['INVALID_PASSWORD_WEAK']);
         }
-    }
-
-    public function getImeMode()
-    {
-        return Interfaces\ImeMode::DISABLED;
     }
 
     public function getType()

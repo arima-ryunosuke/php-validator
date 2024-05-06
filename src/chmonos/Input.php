@@ -3,7 +3,6 @@ namespace ryunosuke\chmonos;
 
 use ryunosuke\chmonos\Condition\AbstractCondition;
 use ryunosuke\chmonos\Condition\Interfaces;
-use ryunosuke\chmonos\Condition\NotInArray;
 use ryunosuke\chmonos\Exception\ValidationException;
 
 /**
@@ -27,8 +26,6 @@ class Input
         'condition'             => [],
         'invalid-option-prefix' => "\x18",
         'options'               => [],
-        'suboptions'            => null,
-        'subposition'           => 'prepend',
         'datalist'              => [],
         'event'                 => ['change'],
         'propagate'             => [],
@@ -37,15 +34,13 @@ class Input
         'phantom'               => [],
         'attribute'             => [],
         'inputs'                => [],
-        'checkmode'             => ['server' => true, 'client' => true], // delete or empty in future scope
+        'checkmode'             => ['server' => true, 'client' => true],
         'wrapper'               => null,
         'grouper'               => null,
         'invisible'             => false,
         'ignore'                => false,
         'trimming'              => true,
         'needless'              => [],
-        'ime-mode'              => true,
-        'maxlength'             => true,
         'autocond'              => true,
         'multiple'              => null,
         'pseudo'                => true,
@@ -460,17 +455,25 @@ class Input
      */
     protected function _setAutoStringLength()
     {
+        $lengths = [];
         foreach ($this->condition as $condition) {
             if ($condition instanceof Condition\StringLength) {
                 return;
             }
+            if ($condition instanceof Interfaces\MaxLength) {
+                if (($max_length = $condition->getMaxLength()) !== null) {
+                    $lengths[] = $max_length;
+                }
+            }
         }
 
-        $max = $this->_getMaxlength();
-
-        if ($max === null) {
-            return;
+        // 一つもないなら属性自体を付加しないため null を返す
+        if (count($lengths) === 0) {
+            return null;
         }
+
+        // 指定されているもののうち最も小さい値
+        $max = min($lengths);
 
         $stringlength = new Condition\StringLength(null, $max);
         $this->rule['condition'][class_shorten($stringlength)] = $stringlength;
@@ -623,65 +626,6 @@ class Input
         }
 
         return $range;
-    }
-
-    /**
-     * text 用の maxlength を算出する
-     *
-     * @return int maxlength
-     */
-    protected function _getMaxlength()
-    {
-        $lengths = [];
-        foreach ($this->condition as $condition) {
-            if ($condition instanceof Interfaces\MaxLength) {
-                if (($max_length = $condition->getMaxLength()) !== null) {
-                    $lengths[] = $max_length;
-                }
-            }
-        }
-
-        // 一つもないなら属性自体を付加しないため null を返す
-        if (count($lengths) === 0) {
-            return null;
-        }
-
-        // 指定されているもののうち最も小さい値を返す
-        return min($lengths);
-    }
-
-    /**
-     * text 用の ime-mode を取得する
-     *
-     * @return string ime-mode
-     */
-    protected function _getImeMode()
-    {
-        if (!$this->rule['ime-mode']) {
-            return null;
-        }
-
-        $modes = [];
-        foreach ($this->condition as $condition) {
-            if ($condition instanceof Interfaces\ImeMode) {
-                $modes[] = $condition->getImeMode();
-            }
-        }
-
-        // 一つもないなら属性自体を付加しないため null を返す
-        if (count($modes) === 0) {
-            return null;
-        }
-
-        $values = [
-            Interfaces\ImeMode::AUTO     => 'auto',
-            Interfaces\ImeMode::ACTIVE   => 'active',
-            Interfaces\ImeMode::INACTIVE => 'inactive',
-            Interfaces\ImeMode::DISABLED => 'disabled'
-        ];
-
-        // 最もきつい制限を返す（値に依存してるので変更時は注意）
-        return $values[max($modes)];
     }
 
     /**
@@ -1101,22 +1045,15 @@ class Input
 
         $option_attrs = (array) array_unset($attrs, 'option_attrs', []);
         $options = (array) array_unset($attrs, 'options', $this->options);
-        $invalids = $this->_completeOptions($options, $value);
 
         $result = [];
         foreach ($options as $key => $text) {
             // option
             if (!is_array($text)) {
-                // 不正値の class 付け
-                $option_attrs2 = $option_attrs;
-                if (isset($invalids[$key])) {
-                    $option_attrs2['class'] = ($option_attrs2['class'] ?? '') . " validation_invalid";
-                }
-                $result[] = $this->_inputOption($flipped_value, $key, $text, $option_attrs2);
+                $result[] = $this->_inputOption($flipped_value, $key, $text, $option_attrs);
             }
             // optgroup
             else {
-                // optgroup 不正値の class 付けは対応しない（シチュエーションがまずありえない）
                 $optgroup = '';
                 foreach ($text as $key2 => $text2) {
                     $optgroup .= $this->_inputOption($flipped_value, $key2, $text2, $option_attrs);
@@ -1149,23 +1086,6 @@ class Input
             $attrs['step'] = $ranges['step'];
         }
 
-        // maxlength がない
-        if ($this->maxlength && !isset($attrs['maxlength'])) {
-            $maxlength = $this->_getMaxlength();
-            if ($maxlength !== null) {
-                $attrs['maxlength'] = $maxlength;
-            }
-        }
-
-        // ime-mode がない
-        $style = $attrs['style'] ?? '';
-        if (strpos($style, 'ime-mode') === false) {
-            $imemode = $this->_getImeMode();
-            if ($imemode !== null) {
-                $attrs['style'] = concat($style, ';') . "ime-mode:$imemode;";
-            }
-        }
-
         // datalist
         $datalist = '';
         $options = array_unset($attrs, 'options', $this->options);
@@ -1192,13 +1112,6 @@ class Input
 
         $value = array_unset($attrs, 'value', $this->getValue());
 
-        if ($this->maxlength && !isset($attrs['maxlength'])) {
-            $maxlength = $this->_getMaxlength();
-            if ($maxlength !== null) {
-                $attrs['maxlength'] = $maxlength;
-            }
-        }
-
         $wrapper = array_unset($attrs, 'wrapper');
         array_unset($attrs, 'grouper');
         $attr = $this->createHtmlAttr($attrs, null, 'textarea');
@@ -1218,7 +1131,6 @@ class Input
         $separator = array_unset($attrs, 'separator', '');
 
         $options = (array) array_unset($attrs, 'options', $this->options);
-        $invalids = $this->_completeOptions($options, $value);
 
         $wrapper = array_unset($attrs, 'wrapper');
 
@@ -1238,11 +1150,6 @@ class Input
             // 値が一致するなら checked
             if (isset($flipped_value[$key])) {
                 $params['checked'] = "checked";
-            }
-
-            // 不正値の class 付け
-            if (isset($invalids[$key])) {
-                $params['class'] .= " validation_invalid";
             }
 
             // for id のペア
@@ -1298,41 +1205,6 @@ class Input
         $oattrs = $this->createHtmlAttr($option_attrs, $key, 'option');
 
         return "<option $oattrs>{$this->escapeHtml($text)}</option>";
-    }
-
-    protected function _completeOptions(&$options, $values)
-    {
-        $invalids = [];
-
-        if ($this->suboptions !== null) {
-            $option_values = array_flatten($options, fn($keys) => end($keys));
-
-            foreach ($values as $value) {
-                if (!array_key_exists($value, $option_values)) {
-                    $invalids[$value] = $this->suboptions[$value] ?? $value;
-                }
-            }
-            switch ($this->subposition) {
-                case 'append':
-                    $options = array_replace($options, $invalids);
-                    break;
-                case 'prepend':
-                    $options = array_replace($invalids, $options);
-                    break;
-                default:
-                    $options = ($this->subposition)($options, $invalids);
-                    break;
-            }
-        }
-
-        foreach ($this->condition as $condition) {
-            if ($condition instanceof NotInArray) {
-                $invalids = $condition->getHaystack();
-                break;
-            }
-        }
-
-        return $invalids;
     }
 
     protected function _pseudoHidden($name)

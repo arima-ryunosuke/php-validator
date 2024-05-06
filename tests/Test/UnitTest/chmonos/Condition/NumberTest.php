@@ -72,12 +72,6 @@ class NumberTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getMaxLength()->is(4);
     }
 
-    function test_getImeMode()
-    {
-        $validate = new Number(1, 999);
-        that($validate)->getImeMode()->is(Number::DISABLED);
-    }
-
     function test_getType()
     {
         $validate = new Number(1, 999);

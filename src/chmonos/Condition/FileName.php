@@ -14,7 +14,7 @@ namespace ryunosuke\chmonos\Condition;
  * - windows: bool
  *   - Windows 特有の使用できないファイル名をエラーにするか（null で自動判断）
  */
-class FileName extends AbstractCondition implements Interfaces\ImeMode
+class FileName extends AbstractCondition
 {
     public const INVALID                   = 'InvalidFileName';
     public const INVALID_FILENAME_STR      = 'InvalidFileNameStr';
@@ -73,11 +73,6 @@ class FileName extends AbstractCondition implements Interfaces\ImeMode
             $error($consts['INVALID_FILENAME_RESERVED']);
             return;
         }
-    }
-
-    public function getImeMode()
-    {
-        return Interfaces\ImeMode::DISABLED;
     }
 
     public function getFixture($value, $fields)

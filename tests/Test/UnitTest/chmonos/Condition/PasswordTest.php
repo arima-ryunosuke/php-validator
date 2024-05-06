@@ -45,12 +45,6 @@ class PasswordTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('abcdefghij0Z+')->isTrue();
     }
 
-    function test_getImeMode()
-    {
-        $validate = new Password();
-        that($validate)->getImeMode()->is(Password::DISABLED);
-    }
-
     function test_getType()
     {
         $validate = new Password();

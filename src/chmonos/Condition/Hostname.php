@@ -14,7 +14,7 @@ namespace ryunosuke\chmonos\Condition;
  *   - 非 null を渡すと複数値が許容され、指定文字がデリミタ（正規表現）として使用される
  *   - どのような文字を渡しても空白文字は取り除かれる（"," と ", " は実質同じ意味になる）
  */
-class Hostname extends AbstractCondition implements Interfaces\ImeMode, Interfaces\MultipleValue
+class Hostname extends AbstractCondition implements Interfaces\MultipleValue
 {
     public const INVALID      = 'InvalidHostname';
     public const INVALID_PORT = 'InvalidHostnamePort';
@@ -85,11 +85,6 @@ class Hostname extends AbstractCondition implements Interfaces\ImeMode, Interfac
             $error($consts['INVALID']);
             return false;
         }, $params, $checkport, $error, $consts);
-    }
-
-    public function getImeMode()
-    {
-        return Interfaces\ImeMode::DISABLED;
     }
 
     public function getDelimiter()

@@ -11,7 +11,7 @@ namespace ryunosuke\chmonos\Condition;
  *
  * 整数であれば int でもいいが、小数の場合で有効桁を活かすなら float ではなく string で与えた方が良い。
  */
-class Number extends AbstractCondition implements Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\InferableType, Interfaces\Range
+class Number extends AbstractCondition implements Interfaces\MaxLength, Interfaces\InferableType, Interfaces\Range
 {
     public const INVALID        = 'NumberInvalid';
     public const INVALID_INT    = 'NumberInvalidInt';
@@ -72,11 +72,6 @@ class Number extends AbstractCondition implements Interfaces\MaxLength, Interfac
         if (!(+$params['min'] <= +$value && +$value <= +$params['max'])) {
             return $error($consts['INVALID_MINMAX']);
         }
-    }
-
-    public function getImeMode()
-    {
-        return Interfaces\ImeMode::DISABLED;
     }
 
     public function getMin()

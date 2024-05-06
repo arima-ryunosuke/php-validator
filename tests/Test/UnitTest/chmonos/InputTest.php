@@ -11,7 +11,6 @@ use ryunosuke\chmonos\Condition\StringLength;
 use ryunosuke\chmonos\Context;
 use ryunosuke\chmonos\Exception\ValidationException;
 use ryunosuke\chmonos\Input;
-use function ryunosuke\chmonos\kvsort;
 
 class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
@@ -438,6 +437,33 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->_detectType()->is('unknown');
     }
 
+    function test_setAutoStringLength()
+    {
+        $rule = [
+            'condition' => [
+                'EmailAddress' => null,
+            ],
+        ];
+        $input = new Input($rule);
+        that($input)->_setAutoStringLength()->isNull();
+
+        // StringLength が追加されているはず
+        that($input)->condition['StringLength']->isInstanceOf(StringLength::class);
+
+        $string_length = new StringLength(null, 10);
+        $rule = [
+            'condition' => [
+                'EmailAddress' => null,
+                $string_length
+            ],
+        ];
+        $input = new Input($rule);
+        that($input)->_setAutoStringLength()->isNull();
+
+        // 同じインスタンスのはず
+        that(spl_object_hash($input->condition[0]))->is(spl_object_hash($string_length));
+    }
+
     function test_setAutoInArray()
     {
         $rule = [
@@ -527,74 +553,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'max'  => "99.999", // max は Decimal の 99.999
             'step' => "0.5",    // step は Step の 0.5
         ]);
-    }
-
-    function test_getMaxlength()
-    {
-        $rule = [
-            'condition' => [
-                'EmailAddress' => null,
-                'Digits' => [
-                    '',
-                    20
-                ]
-            ],
-            'maxlength' => true,
-        ];
-        $input = new Input($rule);
-
-        // EmailAddress(256) に負けずに 20 になるはず
-        that($input)->_getMaxlength()->is(20);
-
-        // html 属性にも現れるはず
-        that($input)->input()->htmlMatchesArray([
-            'input' => [
-                'maxlength' => '20',
-            ],
-        ]);
-
-        $rule = [
-            'condition' => [
-                'Digits' => [
-                    '',
-                    20
-                ],
-                'EmailAddress' => null
-            ],
-            'maxlength' => false,
-        ];
-        $input = new Input($rule);
-
-        // 指定順は影響しないはず
-        that($input)->_getMaxlength()->is(20);
-
-        // html 属性には現れないはず
-        that($input)->input()->htmlMatchesArray([
-            'input' => [
-                'maxlength' => null,
-            ],
-        ]);
-    }
-
-    function test_getImeMode()
-    {
-        // ime-mode 自体が無効は null
-        $input = new Input([
-            'ime-mode' => false
-        ]);
-        that($input)->_getImeMode()->isNull();
-
-        // Regex は ImeMode を実装しないので null
-        $input = new Input([
-            'condition' => ['Regex' => '']
-        ]);
-        that($input)->_getImeMode()->isNull();
-
-        // EmailAddress は disabled
-        $input = new Input([
-            'condition' => ['EmailAddress' => null]
-        ]);
-        that($input)->_getImeMode()->is('disabled');
     }
 
     function test_getDependent()
@@ -946,82 +904,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->input()->contains('name="hoge[]" id="hoge_0" value="1"');
         that($input)->input()->contains('name="hoge[]" id="hoge_1" value="2"');
         that($input)->input()->contains('name="hoge[]" id="hoge_2" value="3"');
-    }
-
-    function test_input_subposition()
-    {
-        $rules = [
-            'name'       => 'hoge',
-            'options'    => [
-                'x' => 'X',
-                'z' => 'Z',
-            ],
-            'suboptions' => [
-                'y' => 'Y'
-            ],
-        ];
-
-        $input = new Input($rules + ['subposition' => 'append']);
-        that($input)->input(['type' => 'select', 'value' => 'y'])->htmlMatchesArray([
-            "select" => [
-                "option[1]" => [
-                    "value" => "x",
-                    0       => "X",
-                ],
-                "option[2]" => [
-                    "value" => "z",
-                    0       => "Z",
-                ],
-                "option[3]" => [
-                    "class"    => ["validation_invalid"],
-                    "selected" => "selected",
-                    "value"    => "y",
-                    0          => "Y",
-                ],
-            ],
-        ]);
-
-        $input = new Input($rules + ['subposition' => 'prepend']);
-        that($input)->input(['type' => 'select', 'value' => 'y'])->htmlMatchesArray([
-            "select" => [
-                "option[1]" => [
-                    "class"    => ["validation_invalid"],
-                    "selected" => "selected",
-                    "value"    => "y",
-                    0          => "Y",
-                ],
-                "option[2]" => [
-                    "value" => "x",
-                    0       => "X",
-                ],
-                "option[3]" => [
-                    "value" => "z",
-                    0       => "Z",
-                ],
-            ],
-        ]);
-
-        $input = new Input($rules + [
-                'subposition' => fn($options, $invalids) => kvsort($options + $invalids, fn($av, $bv, $ak, $bk) => $ak <=> $bk)
-            ]);
-        that($input)->input(['type' => 'select', 'value' => 'y'])->htmlMatchesArray([
-            "select" => [
-                "option[1]" => [
-                    "value" => "x",
-                    0       => "X",
-                ],
-                "option[2]" => [
-                    "class"    => ["validation_invalid"],
-                    "selected" => "selected",
-                    "value"    => "y",
-                    0          => "Y",
-                ],
-                "option[3]" => [
-                    "value" => "z",
-                    0       => "Z",
-                ],
-            ],
-        ]);
     }
 
     function test_input_wrapper()
@@ -1459,70 +1341,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
             'label[2]' => [
                 "for" => "name-2",
-            ],
-        ]);
-    }
-
-    function test_inputCheckbox_suboptions()
-    {
-        $input = new Input([
-            'name'       => 'name',
-            'options'    => [
-                0  => 'option.1',
-                '' => 'option.2'
-            ],
-            'suboptions' => [
-                'invalid' => 'option.3'
-            ],
-            'pseudo'     => false,
-        ]);
-
-        that($input)->input([
-            'type'  => 'checkbox',
-            'value' => 'invalid',
-        ])->htmlMatchesArray([
-            'input[1]' => [
-                'type'                  => 'checkbox',
-                'data-validation-title' => '',
-                'data-vinput-id'        => 'name',
-                'data-vinput-class'     => 'name',
-                'data-vinput-index'     => '',
-                'name'                  => 'name[]',
-                'id'                    => 'name-invalid',
-                'class'                 => 'validatable validation_invalid',
-                'value'                 => 'invalid',
-                'checked'               => 'checked',
-            ],
-            'label[1]' => [
-                'for' => 'name-invalid',
-            ],
-            'input[2]' => [
-                'type'                  => 'checkbox',
-                'data-validation-title' => '',
-                'data-vinput-id'        => 'name',
-                'data-vinput-class'     => 'name',
-                'data-vinput-index'     => '',
-                'name'                  => 'name[]',
-                'id'                    => 'name-0',
-                'class'                 => 'validatable',
-                'value'                 => '0',
-            ],
-            'label[2]' => [
-                'for' => 'name-0',
-            ],
-            'input[3]' => [
-                'type'                  => 'checkbox',
-                'data-validation-title' => '',
-                'data-vinput-id'        => 'name',
-                'data-vinput-class'     => 'name',
-                'data-vinput-index'     => '',
-                'name'                  => 'name[]',
-                'id'                    => 'name-',
-                'class'                 => 'validatable',
-                'value'                 => '',
-            ],
-            'label[3]' => [
-                'for' => 'name-',
             ],
         ]);
     }
@@ -1999,7 +1817,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 ],
 
                 'option[2]' => [
-                    "class" => ["validation_invalid"],
                     'value' => '2',
                     'object.2',
                 ],
@@ -2016,76 +1833,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         that($input)->condition['NotInArray']->getValidationParam()['haystack']->is([
             2 => 0,
-        ]);
-    }
-
-    function test_inputSelect_suboptions()
-    {
-        $input = new Input([
-            'name'       => 'name',
-            'options'    => [
-                1       => 'option.1',
-                'group' => [
-                    2 => 'group.1'
-                ]
-            ],
-            'suboptions' => [],
-        ]);
-
-        that($input)->input([
-            'type'  => 'select',
-            'value' => 'invalid',
-        ])->htmlMatchesArray([
-            'select' => [
-                'data-validation-title' => '',
-                'data-vinput-id'        => 'name',
-                'data-vinput-class'     => 'name',
-                'data-vinput-index'     => '',
-                'name'                  => 'name',
-                'id'                    => 'name',
-                'class'                 => 'validatable',
-
-                'option[1]' => [
-                    'value'    => 'invalid',
-                    'selected' => 'selected',
-                    'class'    => ' validation_invalid'
-                ],
-                'option[2]' => [
-                    'value' => '1',
-                ],
-                'optgroup'  => [
-                    "label"  => "group",
-                    'option' => [
-                        'value' => '2',
-                    ],
-                ],
-            ],
-        ]);
-
-        that($input)->input([
-            'type'  => 'select',
-            'value' => '2',
-        ])->htmlMatchesArray([
-            'select' => [
-                'data-validation-title' => '',
-                'data-vinput-id'        => 'name',
-                'data-vinput-class'     => 'name',
-                'data-vinput-index'     => '',
-                'name'                  => 'name',
-                'id'                    => 'name',
-                'class'                 => 'validatable',
-
-                'option[1]'   => [
-                    'value' => '1',
-                ],
-                'optgroup[1]' => [
-                    "label"     => "group",
-                    'option[1]' => [
-                        'value'    => '2',
-                        'selected' => 'selected',
-                    ],
-                ],
-            ],
         ]);
     }
 
@@ -2256,8 +2003,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'type'                  => 'text',
                 'class'                 => 'validatable',
                 'value'                 => '',
-                'maxlength'             => '10',
-                'style'                 => 'ime-mode:disabled;',
             ],
         ]);
 
@@ -2282,8 +2027,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'min'                   => '1000-01-01T00:00:00',
                 'max'                   => '9999-12-31T23:59:59',
                 'step'                  => '1',
-                'maxlength'             => '19',
-                'style'                 => 'ime-mode:disabled;',
             ],
         ]);
 
@@ -2311,7 +2054,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'value'                 => '',
                 'min'                   => '10',
                 'max'                   => '20',
-                'style'                 => 'ime-mode:disabled;',
             ],
         ]);
 
@@ -2339,8 +2081,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'min'                   => '-99.9999',
                 'max'                   => '99.9999',
                 'step'                  => '0.0001',
-                'maxlength'             => '8',
-                'style'                 => 'ime-mode:disabled;',
             ],
         ]);
 
@@ -2363,8 +2103,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'type'                  => 'number',
                 'class'                 => 'validatable',
                 'value'                 => '',
-                'maxlength'             => '8',
-                'style'                 => 'ime-mode:disabled;',
             ],
         ]);
     }
@@ -2393,7 +2131,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'name'                  => 'name',
                 'id'                    => 'name',
                 'class'                 => 'validatable',
-                'maxlength'             => '1000',
             ],
         ]);
     }

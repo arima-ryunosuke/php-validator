@@ -53,12 +53,6 @@ class UriTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('http://example.com, https://example.com,ftp://example.com')->isFalse();
     }
 
-    function test_getImeMode()
-    {
-        $validate = new Uri();
-        that($validate)->getImeMode()->is(Uri::DISABLED);
-    }
-
     function test_getType()
     {
         $validate = new Uri();

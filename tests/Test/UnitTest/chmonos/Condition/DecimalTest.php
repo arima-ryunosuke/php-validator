@@ -48,12 +48,6 @@ class DecimalTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getStep()->is(1);
     }
 
-    function test_getImeMode()
-    {
-        $validate = new Decimal(3, 4);
-        that($validate)->getImeMode()->is(Decimal::DISABLED);
-    }
-
     function test_getMaxLength()
     {
         $validate = new Decimal(3, 4);

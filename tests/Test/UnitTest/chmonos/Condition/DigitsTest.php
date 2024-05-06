@@ -110,12 +110,6 @@ class DigitsTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getMaxLength()->is(6);
     }
 
-    function test_getImeMode()
-    {
-        $validate = new Digits();
-        that($validate)->getImeMode()->is(Digits::DISABLED);
-    }
-
     function test_getFixture()
     {
         $validate = new Digits();

@@ -58,12 +58,6 @@ class AlphaDigitTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getMessages()->is([AlphaDigit::INVALID_LOWERCASE => "小文字は使えません"]);
     }
 
-    function test_getImeMode()
-    {
-        $validate = new AlphaDigit();
-        that($validate)->getImeMode()->is(AlphaDigit::DISABLED);
-    }
-
     function test_getFixture()
     {
         $validate = new AlphaDigit(true);

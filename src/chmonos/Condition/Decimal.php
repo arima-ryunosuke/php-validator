@@ -11,7 +11,7 @@ namespace ryunosuke\chmonos\Condition;
  * - dec: int
  *   - 小数部の桁数
  */
-class Decimal extends AbstractCondition implements Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\InferableType, Interfaces\Range
+class Decimal extends AbstractCondition implements Interfaces\MaxLength, Interfaces\InferableType, Interfaces\Range
 {
     public const INVALID        = 'DecimalInvalid';
     public const INVALID_INT    = 'DecimalInvalidInt';
@@ -60,11 +60,6 @@ class Decimal extends AbstractCondition implements Interfaces\MaxLength, Interfa
     {
         // マイナス記号＋整数部分＋小数点＋小数部分
         return 1 + $this->_int + 1 + $this->_dec;
-    }
-
-    public function getImeMode()
-    {
-        return Interfaces\ImeMode::DISABLED;
     }
 
     public function getMin()

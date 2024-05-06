@@ -43,12 +43,6 @@ class DateTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('12:34:56')->isFalse();
     }
 
-    function test_getImeMode()
-    {
-        $validate = new Date('Y/m/d H:i:s');
-        that($validate)->getImeMode()->is(Date::DISABLED);
-    }
-
     function test_getMin()
     {
         $validate = new Date('Y/m/d H:i:s');

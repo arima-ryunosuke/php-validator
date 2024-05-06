@@ -12,7 +12,7 @@ namespace ryunosuke\chmonos\Condition;
  *   - 非 null を渡すと複数値が許容され、指定文字がデリミタ（正規表現）として使用される
  *   - どのような文字を渡しても空白文字は取り除かれる（"," と ", " は実質同じ意味になる）
  */
-class EmailAddress extends AbstractCondition implements Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\MultipleValue
+class EmailAddress extends AbstractCondition implements Interfaces\MaxLength, Interfaces\MultipleValue
 {
     public const INVALID        = 'emailAddressInvalid';
     public const INVALID_FORMAT = 'emailAddressInvalidFormat';
@@ -58,11 +58,6 @@ class EmailAddress extends AbstractCondition implements Interfaces\MaxLength, In
 
         // メールアドレス最大長は256文字（RFC5321）
         return 256;
-    }
-
-    public function getImeMode()
-    {
-        return Interfaces\ImeMode::DISABLED;
     }
 
     public function getType()

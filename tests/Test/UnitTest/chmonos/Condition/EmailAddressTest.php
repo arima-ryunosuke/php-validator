@@ -37,12 +37,6 @@ class EmailAddressTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid("test@test.com, test@test.com,\naaa")->isFalse();
     }
 
-    function test_getImeMode()
-    {
-        $validate = new EmailAddress();
-        that($validate)->getImeMode()->is(EmailAddress::DISABLED);
-    }
-
     function test_getType()
     {
         $validate = new EmailAddress();

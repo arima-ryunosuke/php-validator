@@ -10,7 +10,7 @@ namespace ryunosuke\chmonos\Condition;
  * - format: string
  *   - 許容する日付フォーマット
  */
-class Date extends AbstractCondition implements Interfaces\Range, Interfaces\MaxLength, Interfaces\ImeMode, Interfaces\InferableType, Interfaces\ConvertibleValue
+class Date extends AbstractCondition implements Interfaces\Range, Interfaces\MaxLength, Interfaces\InferableType, Interfaces\ConvertibleValue
 {
     public const INVALID      = 'dateInvalid';
     public const INVALID_DATE = 'dateInvalidDate';
@@ -141,11 +141,6 @@ class Date extends AbstractCondition implements Interfaces\Range, Interfaces\Max
     {
         // 指定フォーマットで発生しうる最大の日付文字長を返す
         return strlen(date($this->_format, strtotime('2010/10/10 10:10:10')));
-    }
-
-    public function getImeMode()
-    {
-        return Interfaces\ImeMode::DISABLED;
     }
 
     public function getType()

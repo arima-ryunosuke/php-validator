@@ -11,7 +11,7 @@ namespace ryunosuke\chmonos\Condition;
  *   - 非 null を渡すと複数値が許容され、指定文字がデリミタ（正規表現）として使用される
  *   - どのような文字を渡しても空白文字は取り除かれる（"," と ", " は実質同じ意味になる）
  */
-class Uri extends AbstractCondition implements Interfaces\ImeMode, Interfaces\InferableType, Interfaces\MultipleValue
+class Uri extends AbstractCondition implements Interfaces\InferableType, Interfaces\MultipleValue
 {
     public const INVALID        = 'UriInvalid';
     public const INVALID_SCHEME = 'UriInvalidScheme';
@@ -61,11 +61,6 @@ class Uri extends AbstractCondition implements Interfaces\ImeMode, Interfaces\In
                 return false;
             }
         }, $params, $error, $consts);
-    }
-
-    public function getImeMode()
-    {
-        return Interfaces\ImeMode::DISABLED;
     }
 
     public function getType()

@@ -16,7 +16,7 @@ namespace ryunosuke\chmonos\Condition;
  *   - 大文字小文字をどうするか
  *   - null:大文字小文字を区別しない, false:大文字のみ, true: 小文字のみ
  */
-class AlphaDigit extends AbstractCondition implements Interfaces\ImeMode
+class AlphaDigit extends AbstractCondition
 {
     public const INVALID              = 'AlphaNumericInvalid';
     public const INVALID_FIRST_NUMBER = 'AlphaNumericFirstNumber';
@@ -61,11 +61,6 @@ class AlphaDigit extends AbstractCondition implements Interfaces\ImeMode
         if ($params['case'] === true && strtolower($value) !== $value) {
             $error($consts['INVALID_UPPERCASE']);
         }
-    }
-
-    public function getImeMode()
-    {
-        return Interfaces\ImeMode::DISABLED;
     }
 
     public function getFixture($value, $fields)

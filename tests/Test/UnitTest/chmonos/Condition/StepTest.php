@@ -185,12 +185,6 @@ class StepTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getStep()->is('0.05');
     }
 
-    function test_getImeMode()
-    {
-        $validate = new Step(1);
-        that($validate)->getImeMode()->is(Step::DISABLED);
-    }
-
     function test_getType()
     {
         $validate = new Step(1);

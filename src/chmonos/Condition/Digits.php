@@ -15,7 +15,7 @@ namespace ryunosuke\chmonos\Condition;
  * - mustDigit: bool
  *   - digit ピッタリを要求するか。 false にすると digit 未満も許容される
  */
-class Digits extends AbstractCondition implements Interfaces\MaxLength, Interfaces\ImeMode
+class Digits extends AbstractCondition implements Interfaces\MaxLength
 {
     public const INVALID       = 'notDigits';
     public const NOT_DIGITS    = 'digitsInvalid';
@@ -65,11 +65,6 @@ class Digits extends AbstractCondition implements Interfaces\MaxLength, Interfac
         }
 
         return $this->_digit + (strlen($this->_sign) ? 1 : 0);
-    }
-
-    public function getImeMode()
-    {
-        return Interfaces\ImeMode::DISABLED;
     }
 
     public function getFixture($value, $fields)

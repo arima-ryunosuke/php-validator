@@ -124,12 +124,6 @@ class HostnameTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('example.com, 127.0.0.1,example.com:80')->isFalse();
     }
 
-    function test_getImeMode()
-    {
-        $validate = new Hostname();
-        that($validate)->getImeMode()->is(Hostname::DISABLED);
-    }
-
     function test_getDelimiter()
     {
         $validate = new Hostname();

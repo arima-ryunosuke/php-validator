@@ -44,12 +44,6 @@ class RangeTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('1000')->isFalse();
     }
 
-    function test_getImeMode()
-    {
-        $validate = new Range(1, 999);
-        that($validate)->getImeMode()->is(Range::DISABLED);
-    }
-
     function test_getType()
     {
         $validate = new Range(1, 999);

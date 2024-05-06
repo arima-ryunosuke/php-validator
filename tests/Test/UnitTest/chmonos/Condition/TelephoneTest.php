@@ -52,12 +52,6 @@ class TelephoneTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('070-1234-5678, 080-1234-5678,090-1234-5678, 123456789')->isFalse();
     }
 
-    function test_getImeMode()
-    {
-        $validate = new Telephone();
-        that($validate)->getImeMode()->is(Telephone::DISABLED);
-    }
-
     function test_getType()
     {
         $validate = new Telephone();

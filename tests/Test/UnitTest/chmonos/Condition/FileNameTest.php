@@ -26,12 +26,6 @@ class FileNameTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('prn')->isTrue();
     }
 
-    function test_getImeMode()
-    {
-        $validate = new FileName();
-        that($validate)->getImeMode()->is(FileName::DISABLED);
-    }
-
     function test_getFixture()
     {
         $validate = new FileName('txt');
