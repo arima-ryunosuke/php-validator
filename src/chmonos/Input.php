@@ -156,15 +156,6 @@ class Input
             }
         }
 
-        // datalist から options への移し替え（↑のデフォルト値との相関を持たせたくないのでこのタイミング）
-        if ($rule['datalist']) {
-            if ($rule['options']) {
-                throw new \InvalidArgumentException('both datalist and options are specified');
-            }
-            // この移し替えは現状の options の実装を流用したいだけの簡易実装であり、将来的には専用の属性として個別実装になる想定
-            $rule['options'] = $rule['datalist'];
-        }
-
         // multiple の自動設定
         if ($rule['multiple'] === null) {
             $rule['multiple'] = $rule['inputs'] || is_array($rule['default']);
@@ -416,7 +407,7 @@ class Input
         }
 
         // options を持っているなら [checkbox, radio, select] のいずれか
-        if ($this->options && !$this->datalist) {
+        if ($this->options) {
             // 階層を持つなら optgroup なので select
             if (array_depth($this->options, 2) > 1) {
                 return 'select';
@@ -493,7 +484,7 @@ class Input
             }
         }
 
-        if (!$this->options || $this->datalist) {
+        if (!$this->options) {
             return;
         }
 
@@ -532,7 +523,7 @@ class Input
             }
         }
 
-        if (!$this->options || $this->datalist) {
+        if (!$this->options) {
             return;
         }
 
@@ -1088,12 +1079,12 @@ class Input
 
         // datalist
         $datalist = '';
-        $options = array_unset($attrs, 'options', $this->options);
+        $options = array_unset($attrs, 'datalist', $this->datalist);
         if ($options) {
-            $option_attrs = (array) array_unset($attrs, 'option_attrs', []);
+            $datalist_attrs = (array) array_unset($attrs, 'datalist_attrs', []);
             $optionhtmls = [];
             foreach ((array) $options as $key => $text) {
-                $optionhtmls[] = $this->_inputOption([], is_int($key) ? $text : $key, $text, $option_attrs);
+                $optionhtmls[] = $this->_inputOption([], is_int($key) ? $text : $key, $text, $datalist_attrs);
             }
 
             $attrs['list'] ??= $attrs['id'] . '-datalist';

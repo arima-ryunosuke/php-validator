@@ -1146,12 +1146,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // InArray 系は設定されない
         that($input)->condition->isEmpty();
-
-        // 両方の設定はできない
-        that(Input::class)->new([
-            'options'  => ['A'],
-            'datalist' => ['B']
-        ])->wasThrown(new \InvalidArgumentException('both datalist and options are specified'));
     }
 
     function test_inputArrays()
