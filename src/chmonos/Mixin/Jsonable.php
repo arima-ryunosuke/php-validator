@@ -5,7 +5,7 @@ use function ryunosuke\chmonos\array_sprintf;
 
 trait Jsonable
 {
-    public static function encodeJson($value, $options = JSON_UNESCAPED_UNICODE)
+    public static function encodeJson(mixed $value, int $options = JSON_UNESCAPED_UNICODE): string
     {
         $self = function ($v) use ($options) { return self::encodeJson($v, $options); };
 
@@ -27,7 +27,7 @@ trait Jsonable
         return json_encode($value, $options);
     }
 
-    public static function literalJson($value)
+    public static function literalJson(string $value)
     {
         $handle = tmpfile();
         fwrite($handle, $value);

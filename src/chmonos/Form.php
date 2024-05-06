@@ -23,30 +23,18 @@ class Form
     use Mixin\Htmlable;
     use Mixin\Jsonable;
 
-    /** @var Context */
-    private $context;
+    private Context $context;
 
-    /** @var string */
-    private $id;
+    private string $id;
 
-    /** @var array */
-    private $options;
+    private array $options;
 
-    /** @var array */
-    private $currents = [];
+    private array $currents = [];
 
     /** @var string[] */
-    private $templateValues = [];
+    private array $templateValues = [];
 
-    /**
-     * コンストラクタ
-     *
-     * ルール配列については AbstractInput のコンストラクタを参照。
-     *
-     * @param array $rules コンテキストのルール配列
-     * @param array $options オプション配列
-     */
-    public function __construct(array $rules, $options = [])
+    public function __construct(array $rules, array $options = [])
     {
         $options += [
             'nonce'      => '',
@@ -58,14 +46,7 @@ class Form
         $this->context = (new Context($rules, null, $options['inputClass']))->initialize();
     }
 
-    /**
-     * input 要素があるか返す isset プロキシ
-     *
-     * @see Context
-     * @param string $name 要素名
-     * @return bool
-     */
-    public function __isset($name)
+    public function __isset(string $name): bool
     {
         if ($name === 'context') {
             return false;
@@ -74,14 +55,7 @@ class Form
         return isset($this->context->$name);
     }
 
-    /**
-     * input 要素を返す get プロキシ
-     *
-     * @see Context
-     * @param string $name 要素名
-     * @return Context|Input input 要素
-     */
-    public function __get($name)
+    public function __get(string $name): Context|Input
     {
         if ($name === 'context') {
             return $this->context;
@@ -90,20 +64,12 @@ class Form
         return $this->context->$name;
     }
 
-    /**
-     * context への移譲
-     *
-     * @see Context
-     * @param string $name メソッド名
-     * @param array $argument 引数
-     * @return mixed
-     */
-    public function __call($name, $argument)
+    public function __call(string $name, array $argument): mixed
     {
         return $this->context->$name(...$argument);
     }
 
-    private function _is_uploaded_file($filename)
+    private function _is_uploaded_file(string $filename): bool
     {
         // 開発中は get_included_files を「アップロードされたファイル」とみなす
         if (php_sapi_name() === 'cli') {
@@ -114,7 +80,7 @@ class Form
         return is_uploaded_file($filename);
     }
 
-    public function getValues($obtain_file = true)
+    public function getValues(bool $obtain_file = true): array
     {
         $values = $this->context->getValues();
 
@@ -129,7 +95,7 @@ class Form
         return $values;
     }
 
-    public function setValues(array $values)
+    public function setValues(array $values): array
     {
         $parseFile = function ($file) {
             $error = $file['error'];
@@ -186,10 +152,8 @@ class Form
      * 返り値としてフィルタされた値を返す。
      *
      * @see Form::validate
-     * @param array $values 検証する値
-     * @return array 検証・フィルタされた値
      */
-    public function filter(array $values)
+    public function filter(array $values): array
     {
         $values = $this->setValues($values);
         $result = $this->context->validate($values);
@@ -204,10 +168,8 @@ class Form
      * 値を検証して bool を返す
      *
      * @see Context::validate
-     * @param array $values 検証する値
-     * @return bool 検証結果
      */
-    public function validate(array &$values)
+    public function validate(array &$values): bool
     {
         $values = $this->setValues($values);
         $result = $this->context->validate($values);
@@ -221,10 +183,8 @@ class Form
      * validate と違って返り値が空くので検証・フィルタされた値を返す。
      *
      * @see Form::validate
-     * @param array $values 検証する値
-     * @return array 検証・フィルタされた値
      */
-    public function validateOrThrow(array $values)
+    public function validateOrThrow(array $values): array
     {
         if ($this->validate($values) === false) {
             throw new ValidationException($this, 'validation error.');
@@ -238,11 +198,8 @@ class Form
      *
      * 必要な js とか属性とかも同時に吐かれる。
      * 空呼び出しで閉じタグになる。
-     *
-     * @param array|string $attrs 属性連想配列・CSSセレクタ文字列
-     * @return string html 文字列
      */
-    public function form($attrs = [])
+    public function form(array $attrs = []): string
     {
         $E = fn($v) => $v;
 
@@ -302,17 +259,17 @@ class Form
         }
     }
 
-    public function open($attrs)
+    public function open(array $attrs): string
     {
         return $this->form($attrs);
     }
 
-    public function close()
+    public function close(): string
     {
         return $this->form();
     }
 
-    public function context($name = null, $index = null)
+    public function context(?string $name = null, ?string $index = null)
     {
         if (func_num_args() > 0) {
             $this->currents[] = [$name, $index];
@@ -322,7 +279,7 @@ class Form
         }
     }
 
-    public function template($name = null)
+    public function template(?string $name = null): string
     {
         if (func_num_args() > 0) {
             $this->currents[] = [$name];
@@ -345,7 +302,7 @@ class Form
         }
     }
 
-    public function vuefor($name = null, $child = null, $index = null)
+    public function vuefor(?string $name = null, ?string $child = null, ?string $index = null)
     {
         if (!$this->options['vuejs']) {
             throw new \UnexpectedValueException('vuejs flag is false');
@@ -360,29 +317,21 @@ class Form
 
     /**
      * UI ラベルの描画
-     *
-     * @param string $name 要素名
-     * @param array|string $attrs 属性連想配列・CSSセレクタ文字列
-     * @return string html 文字列
      */
-    public function label($name, $attrs = [])
+    public function label(string $name, array $attrs = []): string
     {
         return $this->_ui($name, $attrs)->label($attrs);
     }
 
     /**
      * UI インプットの描画
-     *
-     * @param string $name 要素名
-     * @param array|string $attrs 属性連想配列・CSSセレクタ文字列
-     * @return string html 文字列
      */
-    public function input($name, $attrs = [])
+    public function input(string $name, array $attrs = []): string
     {
         return $this->_ui($name, $attrs)->input($attrs);
     }
 
-    protected function _ui(string $name, array &$attrs)
+    protected function _ui(string $name, array &$attrs): Input
     {
         $attrs = $this->convertHtmlAttrs($attrs);
         $attrs['vuejs'] ??= $this->options['vuejs'];

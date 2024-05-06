@@ -20,8 +20,7 @@ class Input
     }
     use Mixin\Jsonable;
 
-    /** @var array 生成時のデフォルト値 */
-    protected static $defaultRule = [
+    protected static array $defaultRule = [
         'title'                 => '',
         'condition'             => [],
         'options'               => [],
@@ -51,50 +50,34 @@ class Input
         // 'fixture'               => null, // あるかないかでfixture値を決めるのでコメントアウト
     ];
 
-    /** @var Input */
-    protected $parent;
+    protected ?Input $parent;
 
-    /** @var Context */
-    protected $context;
+    protected ?Context $context;
 
-    /** @var Context */
-    protected $parentContext;
+    protected Context $parentContext;
 
-    /** @var string */
-    protected $id;
+    protected string $id;
 
-    /** @var string */
-    protected $name;
+    protected string $name;
 
-    /** @var string */
-    protected $type;
+    protected string $type;
 
-    /** @var array|string */
-    protected $value;
+    protected mixed $value;
 
-    /** @var array */
-    protected $rule = [];
+    protected array $rule = [];
 
-    /** @var array */
-    protected $messages = [];
+    protected array $messages = [];
 
-    /** @var bool */
-    protected $vuemode = false;
+    protected bool $vuemode = false;
 
-    public static function setDefaultRule($rule)
+    public static function setDefaultRule(array $rule): array
     {
         $return = static::$defaultRule;
         static::$defaultRule = array_replace(static::$defaultRule, $rule);
         return $return;
     }
 
-    /**
-     * コンストラクタ
-     *
-     * @param array $rule ルール配列
-     * @param Input|null $parent 親要素
-     */
-    public function __construct($rule, $parent = null)
+    public function __construct(array $rule, ?Input $parent = null)
     {
         $rule += static::$defaultRule;
         $rule['condition'] = arrayize($rule['condition']);
@@ -231,13 +214,7 @@ class Input
         $this->setValue($this->default);
     }
 
-    /**
-     * rule プロパティへのアクセス
-     *
-     * @param string $name
-     * @return bool
-     */
-    public function __isset($name)
+    public function __isset(string $name): bool
     {
         if ($name === 'context') {
             return isset($this->context);
@@ -246,13 +223,7 @@ class Input
         return isset($this->rule[$name]);
     }
 
-    /**
-     * rule プロパティへのアクセス
-     *
-     * @param string $name
-     * @return mixed
-     */
-    public function __get($name)
+    public function __get(string $name): mixed
     {
         if ($name === 'context') {
             return $this->context;
@@ -264,15 +235,7 @@ class Input
         return $this->rule[$name];
     }
 
-    /**
-     * rule プロパティへのアクセス
-     *
-     * いかなる検証も型チェックも行われない直接代入なので注意して使わなければならない。
-     *
-     * @param string $name
-     * @param mixed $value
-     */
-    public function __set($name, $value)
+    public function __set(string $name, mixed $value): void
     {
         if ($name === 'context') {
             $this->context = $value;
@@ -285,12 +248,12 @@ class Input
         $this->rule[$name] = $value;
     }
 
-    public function resolveTitle($member)
+    public function resolveTitle(string $member): ?string
     {
         return $this->parentContext->$member?->title;
     }
 
-    public function resolveLabel($value)
+    public function resolveLabel(string $value): ?string
     {
         $options = [];
         array_walk_recursive($this->rule['options'], function ($v, $k) use (&$options) {
@@ -299,7 +262,7 @@ class Input
         return $this->options[$value] ?? $value;
     }
 
-    public function initialize(Context $root, Context $context)
+    public function initialize(Context $root, Context $context): void
     {
         $this->parentContext = $context;
 
@@ -325,7 +288,7 @@ class Input
         }
     }
 
-    public function normalize($values)
+    public function normalize(array $values): mixed
     {
         $exists = function ($value, $values) {
             if ($this->nullable) {
@@ -374,13 +337,7 @@ class Input
         return $value;
     }
 
-    /**
-     * value セッター
-     *
-     * @param mixed $value この UI の値
-     * @return mixed 正規化された $value
-     */
-    public function setValue($value)
+    public function setValue(mixed $value): mixed
     {
         if ($this->getType() === 'arrays') {
             // context のルールで引数を正規化するために呼ぶ（値の設定が目的ではない）
@@ -410,13 +367,7 @@ class Input
         return $this->value = $value;
     }
 
-    /**
-     * value ゲッター
-     *
-     * @param int|null $index 欲しい連番
-     * @return mixed この UI の値
-     */
-    public function getValue($index = null)
+    public function getValue(?string $index = null): mixed
     {
         if ($this->parent && $index !== null) {
             return array_dive($this->parent->value, [$index, $this->name], $this->default);
@@ -424,20 +375,12 @@ class Input
         return $this->value;
     }
 
-    /**
-     * タイプを取得
-     *
-     * @return string タイプ
-     */
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * rule 配列から type を推測する
-     */
-    protected function _detectType()
+    protected function _detectType(): string
     {
         if (isset($this->rule['type'])) {
             return $this->rule['type'];
@@ -481,17 +424,12 @@ class Input
         return 'text';
     }
 
-    /**
-     * MaxLength を実装しているものは StringLength を自動設定する
-     *
-     * ただし、すでに StringLength 条件が登録されていたら何もしない。
-     */
-    protected function _setAutoStringLength()
+    protected function _setAutoStringLength(): ?Condition\StringLength
     {
         $lengths = [];
         foreach ($this->condition as $condition) {
             if ($condition instanceof Condition\StringLength) {
-                return;
+                return null;
             }
             if ($condition instanceof Interfaces\MaxLength) {
                 if (($max_length = $condition->getMaxLength()) !== null) {
@@ -513,21 +451,16 @@ class Input
         return $stringlength;
     }
 
-    /**
-     * options を必要とする要素（select とか radio とか）に InArray 条件を自動で付加する
-     *
-     * ただし、すでに InArray 条件が登録されていたら何もしない。
-     */
-    protected function _setAutoInArray()
+    protected function _setAutoInArray(): ?Condition\InArray
     {
         foreach ($this->condition as $condition) {
             if ($condition instanceof Condition\InArray) {
-                return;
+                return null;
             }
         }
 
         if (!$this->options) {
-            return;
+            return null;
         }
 
         // optgroup 用の配列が来ることがあるので flat にする
@@ -552,21 +485,16 @@ class Input
         return $inarray;
     }
 
-    /**
-     * options を必要とする要素（select とか radio とか）に特殊プレフィックスで NotInArray 条件を自動で付加する
-     *
-     * ただし、すでに NotInArray 条件が登録されていたら何もしない。
-     */
-    protected function _setAutoNotInArray()
+    protected function _setAutoNotInArray(): ?Condition\NotInArray
     {
         foreach ($this->condition as $condition) {
             if ($condition instanceof Condition\NotInArray) {
-                return;
+                return null;
             }
         }
 
         if (!$this->options) {
-            return;
+            return null;
         }
 
         $notoptions = [];
@@ -586,19 +514,15 @@ class Input
             }
         });
 
-        if ($notoptions) {
-            $notinarray = new Condition\NotInArray($notoptions);
-            $this->rule['condition'][class_shorten($notinarray)] = $notinarray;
-            return $notinarray;
+        if (!$notoptions) {
+            return null;
         }
+        $notinarray = new Condition\NotInArray($notoptions);
+        $this->rule['condition'][class_shorten($notinarray)] = $notinarray;
+        return $notinarray;
     }
 
-    /**
-     * Distinct の delimiter を自動設定する
-     *
-     * ただし、すでに delimiter が設定されていたら何もしない。
-     */
-    protected function _setAutoDistinctDelimiter()
+    protected function _setAutoDistinctDelimiter(): void
     {
         $distinct = null;
         foreach ($this->condition as $condition) {
@@ -626,12 +550,8 @@ class Input
         $distinct->setDelimiter(reset($delimiters));
     }
 
-    /**
-     * number 用の min/max/step を算出する
-     *
-     * @return array ['min'=>$min, 'max'=>$max, 'step'=>$step]
-     */
-    protected function _getRange()
+    /** @return array{min: ?float, max: ?float, step: ?float} */
+    protected function _getRange(): array
     {
         $range = [
             'min'  => null,
@@ -660,12 +580,7 @@ class Input
         return $range;
     }
 
-    /**
-     * 自身のバリデータチェインの中から検証用のパラメータを集めて返す
-     *
-     * @return array
-     */
-    public function getValidationRule()
+    public function getValidationRule(): array
     {
         return [
             'condition' => array_map_filter($this->condition, function ($condition) { return $condition->getRule(); }),
@@ -679,10 +594,7 @@ class Input
         ];
     }
 
-    /**
-     * 伝播元をまとめて取得して配列で返す
-     */
-    public function getDependent()
+    public function getDependent(): array
     {
         if (!$this->dependent) {
             return [];
@@ -718,11 +630,8 @@ class Input
      *
      * 複数の Ajax があることはまずないだろうので最初の要素のみ。
      * Ajax が無い場合は例外を投げる。
-     *
-     * @param array|null $fields 依存データ。未指定時はよしなに
-     * @return ?array メッセージ配列
      */
-    public function getAjaxResponse($fields = null)
+    public function getAjaxResponse(?array $fields = null): ?array
     {
         foreach ($this->condition as $condition) {
             if ($condition instanceof Condition\Ajax) {
@@ -732,14 +641,7 @@ class Input
         throw new \UnexpectedValueException('AjaxCondition is not found.');
     }
 
-    /**
-     * 登録されている Condition 全てを回して検証
-     *
-     * @param array $values 値
-     * @param array $original 入力元オリジナル配列
-     * @return bool エラーがないならtrue
-     */
-    public function validate($values, $original)
+    public function validate(array $values, array $original): bool
     {
         $value = $values[$this->name];
 
@@ -780,31 +682,17 @@ class Input
         return $isvalid;
     }
 
-    /**
-     * バリデーションメッセージを返す
-     *
-     * @return array バリデーションメッセージ
-     */
-    public function getMessages()
+    public function getMessages(): array
     {
         return $this->messages;
     }
 
-    /**
-     * バリデーション結果をクリアする
-     */
-    public function clear()
+    public function clear(): void
     {
         $this->messages = [];
     }
 
-    /**
-     * UI ラベル描画
-     *
-     * @param array $attrs 属性連想配列
-     * @return string label 文字列
-     */
-    public function label($attrs = [])
+    public function label(array $attrs = []): string
     {
         $this->vuemode = array_unset($attrs, 'vuejs') ?? false;
 
@@ -832,13 +720,7 @@ class Input
         return "<label $attr>{$this->escapeHtml($label)}</label>";
     }
 
-    /**
-     * UI インプット描画
-     *
-     * @param array $attrs 属性連想配列
-     * @return string 自身の type に基づく inputXXX の結果文字列
-     */
-    public function input($attrs = [])
+    public function input(array $attrs = []): string
     {
         $this->vuemode = array_unset($attrs, 'vuejs') ?? false;
 
@@ -917,7 +799,7 @@ class Input
         return $this->$method($attrs);
     }
 
-    public function fixture($default, $fields = [])
+    public function fixture(mixed $default, array $fields = []): mixed
     {
         if (array_key_exists('fixture', $this->rule)) {
             $value = $this->rule['fixture'];
@@ -996,7 +878,7 @@ class Input
         return $value;
     }
 
-    protected function _inputArrays($attrs)
+    protected function _inputArrays(array $attrs): string
     {
         $attrs['name'] = $this->_concatString('__', [$attrs['name']]);
         $attrs['type'] = 'dummy';
@@ -1010,7 +892,7 @@ class Input
         return $this->_inputText($attrs);
     }
 
-    protected function _inputCheckbox($attrs)
+    protected function _inputCheckbox(array $attrs): string
     {
         $hidden = '';
         if ($this->pseudo !== false) {
@@ -1028,7 +910,7 @@ class Input
         return $this->_wrapInput('group', $grouper, $attrs['type'], $attrs['name'], '', $hidden . $this->_inputChoice($attrs));
     }
 
-    protected function _inputFile($attrs)
+    protected function _inputFile(array $attrs): string
     {
         $attrs['multiple'] = $this->multiple;
         $attrs['name'] = $attrs['multiple'] ? $this->_concatString([$attrs['name']], '[]') : $attrs['name'];
@@ -1050,7 +932,7 @@ class Input
         return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $attrs['name'], '', "<input $attr>");
     }
 
-    protected function _inputRadio($attrs)
+    protected function _inputRadio(array $attrs): string
     {
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable';
         $attrs['type'] = 'radio';
@@ -1059,7 +941,7 @@ class Input
         return $this->_wrapInput('group', $grouper, $attrs['type'], $attrs['name'], '', $this->_inputChoice($attrs));
     }
 
-    protected function _inputSelect($attrs)
+    protected function _inputSelect(array $attrs): string
     {
         $hidden = '';
         if ($this->pseudo !== false && $this->multiple) {
@@ -1098,7 +980,7 @@ class Input
         return $hidden . $this->_wrapInput('wrapper', $wrapper, 'select', $attrs['name'], $value, "<select $attr>" . implode('', $result) . "</select>");
     }
 
-    protected function _inputText($attrs)
+    protected function _inputText(array $attrs): string
     {
         $attrs['type'] = $attrs['type'] ?? $this->getType();
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable';
@@ -1136,7 +1018,7 @@ class Input
         return $this->_wrapInput('wrapper', $wrapper, $attrs['type'], $attrs['name'], $attrs['value'], "<input $attr>$datalist");
     }
 
-    protected function _inputTextarea($attrs)
+    protected function _inputTextarea(array $attrs): string
     {
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable';
 
@@ -1149,7 +1031,7 @@ class Input
         return $this->_wrapInput('wrapper', $wrapper, 'textarea', $attrs['name'], $value, "<textarea $attr>$content</textarea>");
     }
 
-    protected function _inputChoice($attrs)
+    protected function _inputChoice(array $attrs): string
     {
         $value = (array) array_unset($attrs, 'value', $this->getValue());
         $flipped_value = array_flip(array_map('strval', $value));
@@ -1219,7 +1101,7 @@ class Input
         return implode($separator, $result);
     }
 
-    protected function _inputOption($value, $key, $text, $option_attrs)
+    protected function _inputOption(array $value, string $key, string|\stdClass $text, array $option_attrs): string
     {
         if ($text instanceof \stdClass) {
             $label = $text->label;
@@ -1243,7 +1125,7 @@ class Input
         return "<option $oattrs>{$this->escapeHtml($text)}</option>";
     }
 
-    protected function _pseudoHidden($name)
+    protected function _pseudoHidden(string $name): string
     {
         $hiddenAttr = $this->createHtmlAttr([
             'type'               => 'hidden',
@@ -1254,7 +1136,7 @@ class Input
         return "<input $hiddenAttr>";
     }
 
-    protected function _wrapInput($mode, $class, $type, $name, $value, $html)
+    protected function _wrapInput(string $mode, ?string $class, string $type, string $name, string|array|null $value, string $html): string
     {
         if ("$class" === "") {
             return $html;
@@ -1271,7 +1153,8 @@ class Input
         return "<span {$vuemark}data-vinput-$mode=\"$name\" {$data_value}class=\"$class input-$type\">$html</span>";
     }
 
-    protected function _createDataAttrs($index)
+    /** @return array{id: string, class: string, index: string} */
+    protected function _createDataAttrs(string $index): array
     {
         $parent_name = $this->parent ? $this->parent->name : '';
         $name = $this->name;
@@ -1283,7 +1166,7 @@ class Input
         ];
     }
 
-    protected function _concatString(...$values)
+    protected function _concatString(...$values): string
     {
         if (!$this->vuemode) {
             return implode('', array_flatten($values));
@@ -1310,7 +1193,7 @@ class Input
         return implode('+', $expression);
     }
 
-    public function createHtmlAttr($attrs, $arg = null, $type = null)
+    public function createHtmlAttr(array $attrs, mixed $arg = null, ?string $type = null): string
     {
         if ($this->vuemode) {
             if ($type !== null) {

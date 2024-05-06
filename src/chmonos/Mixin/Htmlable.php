@@ -7,7 +7,7 @@ use function ryunosuke\chmonos\css_selector;
 
 trait Htmlable
 {
-    public static function convertHtmlAttrs($attrs)
+    public static function convertHtmlAttrs(array|string $attrs): array
     {
         if (is_string($attrs)) {
             $attrs = css_selector($attrs);
@@ -18,7 +18,7 @@ trait Htmlable
         return $attrs;
     }
 
-    public static function createHtmlAttr($attrs, $arg = null)
+    public static function createHtmlAttr(array $attrs, mixed $arg = null): string
     {
         $attrs = array_filter($attrs, function ($v) { return $v !== false; });
 
@@ -36,14 +36,14 @@ trait Htmlable
         }, ' ');
     }
 
-    public static function createStyleAttr($styles)
+    public static function createStyleAttr(array|string $styles): string
     {
         return array_sprintf((array) $styles, function ($style, $key) {
             return is_int($key) ? $style : "$key:$style";
         }, ';');
     }
 
-    public static function escapeHtml($value, $glue = ' ', $flags = ENT_QUOTES)
+    public static function escapeHtml(mixed $value, ?string $glue = ' ', int $flags = ENT_QUOTES): string|array
     {
         if (is_array($value)) {
             $value = array_map(function ($v) use ($glue) { return self::escapeHtml($v, $glue); }, $value);

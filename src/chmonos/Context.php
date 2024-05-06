@@ -7,19 +7,12 @@ namespace ryunosuke\chmonos;
 class Context implements \IteratorAggregate
 {
     /** @var Input[] */
-    private $inputs = [];
+    private array $inputs = [];
 
     /** @var string[][][] */
-    private $messages = [];
+    private array $messages = [];
 
-    /**
-     * コンストラクタ
-     *
-     * @param array $rules ルール配列
-     * @param Input|null $parent 親
-     * @param string|null $inputClass Input クラス
-     */
-    public function __construct(array $rules, $parent = null, $inputClass = null)
+    public function __construct(array $rules, ?Input $parent = null, ?string $inputClass = null)
     {
         $id = 'cx' . spl_object_id($this) . '_';
         $inputClass = $inputClass ?? ($parent !== null ? get_class($parent) : Input::class);
@@ -60,13 +53,7 @@ class Context implements \IteratorAggregate
         }
     }
 
-    /**
-     * input メンバがあるか調べる
-     *
-     * @param string $name 要素の名前
-     * @return bool
-     */
-    public function __isset($name)
+    public function __isset(string $name): bool
     {
         if (isset($this->inputs[$name])) {
             return true;
@@ -80,13 +67,7 @@ class Context implements \IteratorAggregate
         return false;
     }
 
-    /**
-     * input メンバへのプロクシ
-     *
-     * @param string $name 要素の名前
-     * @return Input input 要素
-     */
-    public function __get($name)
+    public function __get(string $name): Input
     {
         if (isset($this->inputs[$name])) {
             return $this->inputs[$name];
@@ -105,11 +86,8 @@ class Context implements \IteratorAggregate
      *
      * 例えばコンストラクタ内でネスト要素のコンストラクタが呼ばれる可能性がある。
      * つまりコンストラクタ内で「親子を含めた全要素が出揃っている」という状況を得ることは出来ない。
-     *
-     * @param Context|null $root 親を辿るためにルート要素を持ち回すが内部用なので呼び出し側は気にしなくていい
-     * @return $this
      */
-    public function initialize($root = null)
+    public function initialize(?Context $root = null): static
     {
         $root = $root ?? $this;
 
@@ -123,11 +101,8 @@ class Context implements \IteratorAggregate
      * 値を正規化して返す
      *
      * 足りないキーを default で埋めたり不要なキーを伏せたりして返す。
-     *
-     * @param array $values 値の入った連想配列
-     * @return array 正規化された $values
      */
-    public function normalize($values)
+    public function normalize(array $values): array
     {
         $values = array_intersect_key($values, $this->inputs);
 
@@ -143,14 +118,7 @@ class Context implements \IteratorAggregate
         return $values;
     }
 
-    /**
-     * バリデート
-     *
-     * @param array $values 検証する値が入った連想配列
-     * @param array|null $original 上位要素検証のため入力元配列を持ち回すが内部用なので呼び出し側は気にしなくていい
-     * @return bool エラーがないならtrue
-     */
-    public function validate(array $values, $original = null)
+    public function validate(array $values, ?array $original = null)
     {
         if ($original === null) {
             $original = array_map_key($values, function ($k) { return "/$k"; });
@@ -165,14 +133,7 @@ class Context implements \IteratorAggregate
         return $isvalid && count($this->messages) === 0;
     }
 
-    /**
-     * フィルタ
-     *
-     * @param array $values 値が入った連想配列
-     * @param bool $error エラー項目も伏せるか
-     * @return array フィルタされた連想配列
-     */
-    public function filter(array $values, $error = false)
+    public function filter(array $values, bool $error = false): array
     {
         foreach ($this->inputs as $name => $input) {
             if ($input->ignore) {
@@ -213,11 +174,8 @@ class Context implements \IteratorAggregate
      * 汎用機構を使用しない任意のエラー
      *
      * ログイン認証とかセッション切れとか。
-     *
-     * @param string $name 要素名
-     * @param string $message エラーメッセージ
      */
-    public function error($name, $message)
+    public function error(string $name, string $message): static
     {
         // 初めてなら作る
         if (!isset($this->messages[$name])) {
@@ -227,12 +185,11 @@ class Context implements \IteratorAggregate
         // 追加。push([]=)だと数値キーで色々都合がわるいので userxx という名前で作成する
         $length = count($this->messages[$name]);
         $this->messages[$name]['users']["user$length"] = $message;
+
+        return $this;
     }
 
-    /**
-     * バリデーション結果をクリアする
-     */
-    public function clear()
+    public function clear(): static
     {
         $this->messages = [];
         foreach ($this->inputs as $input) {
@@ -241,14 +198,11 @@ class Context implements \IteratorAggregate
                 $input->context->clear();
             }
         }
+
+        return $this;
     }
 
-    /**
-     * 各要素のデフォルト値を返す
-     *
-     * @return array デフォルト値
-     */
-    public function getDefaults()
+    public function getDefaults(): array
     {
         $defaults = [];
         foreach ($this->inputs as $name => $input) {
@@ -262,12 +216,7 @@ class Context implements \IteratorAggregate
         return $defaults;
     }
 
-    /**
-     * 値を返す
-     *
-     * @return array 値
-     */
-    public function getValues()
+    public function getValues(): array
     {
         $values = [];
         foreach ($this->inputs as $name => $input) {
@@ -276,12 +225,7 @@ class Context implements \IteratorAggregate
         return $values;
     }
 
-    /**
-     * 検証メッセージを array で返す
-     *
-     * @return array 検証メッセージ
-     */
-    public function getMessages()
+    public function getMessages(): array
     {
         $messages = [];
         foreach ($this->inputs as $name => $input) {
@@ -296,12 +240,8 @@ class Context implements \IteratorAggregate
 
     /**
      * エラーメッセージキーなどを含めず、フラットなメッセージ一覧を返す
-     *
-     * @param string $format 表示フォーマット。タイトルとメッセージが与えられる
-     * @param string $childformat 配列用表示フォーマット。タイトルと行数とサブタイトルが与えられる
-     * @return array エラーメッセージ配列
      */
-    public function getFlatMessages($format = '[%s] %s', $childformat = '%s %d行目 - %s')
+    public function getFlatMessages(string $format = '[%s] %s', string $childformat = '%s %d行目 - %s'): array
     {
         $result = [];
         foreach ($this->inputs as $input) {
@@ -325,12 +265,7 @@ class Context implements \IteratorAggregate
         return $result;
     }
 
-    /**
-     * ルール（入力規則とか伝播先とかメッセージとかをまとめたもの）を返す
-     *
-     * @return array 入力検証ルール配列
-     */
-    public function getRules()
+    public function getRules(): array
     {
         $rules = [];
         foreach ($this->getAllInput() as $name => $input) {
@@ -339,12 +274,7 @@ class Context implements \IteratorAggregate
         return $rules;
     }
 
-    /**
-     * File を持っているか返す
-     *
-     * @return bool 持っているならtrue
-     */
-    public function hasInputFile()
+    public function hasInputFile(): bool
     {
         foreach ($this->getAllInput() as $input) {
             if ($input->getType() === 'file') {
@@ -354,12 +284,7 @@ class Context implements \IteratorAggregate
         return false;
     }
 
-    /**
-     * delimiter Input を持っているか返す
-     *
-     * @return bool 持っているならtrue
-     */
-    public function hasDelimitableInput()
+    public function hasDelimitableInput(): bool
     {
         foreach ($this->getAllInput() as $input) {
             if (strlen($input->delimiter)) {
@@ -369,7 +294,7 @@ class Context implements \IteratorAggregate
         return false;
     }
 
-    public function getFixture($defaults = [])
+    public function getFixture(array $defaults = []): array
     {
         $scores = [];
         $score = function ($name) use (&$score, &$scores) {
@@ -415,9 +340,6 @@ class Context implements \IteratorAggregate
         }
     }
 
-    /**
-     * @return \Generator|\Traversable|Input[]
-     */
     public function getIterator(): \Generator
     {
         foreach ($this->inputs as $name => $input) {
