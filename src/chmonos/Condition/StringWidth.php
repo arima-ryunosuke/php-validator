@@ -9,7 +9,7 @@ namespace ryunosuke\chmonos\Condition;
  * - max: int|null
  *   - 文字幅の最大数
  */
-class StringWidth extends AbstractCondition implements Interfaces\MaxLength
+class StringWidth extends AbstractCondition
 {
     public const INVALID   = 'StringWidthInvalidLength';
     public const TOO_SHORT = 'StringWidthInvalidMin';
@@ -38,7 +38,12 @@ class StringWidth extends AbstractCondition implements Interfaces\MaxLength
 
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
-        $length = mb_strwidth($value);
+        $length = array_sum(array_map(function ($c) {
+            if ($c === "‍") {
+                return -1;
+            }
+            return strlen($c) === 1 ? 1 : 2;
+        }, mb_str_split($value)));
 
         if (!is_null($params['max']) && !is_null($params['min']) && ($length > $params['max'] || $length < $params['min'])) {
             if ($params['min'] === $params['max']) {
@@ -54,11 +59,6 @@ class StringWidth extends AbstractCondition implements Interfaces\MaxLength
         else if (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
             $error($consts['TOO_LONG']);
         }
-    }
-
-    public function getMaxLength()
-    {
-        return $this->_max;
     }
 
     public function getFixture($value, $fields)

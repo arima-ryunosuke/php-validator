@@ -44,12 +44,16 @@ class StringWidthTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($messages)[StringWidth::DIFFERENT]->contains('3文字で');
     }
 
-    function test_getMaxLength()
+    function test_grapheme()
     {
-        $validate = new StringWidth(3, 4);
-        that($validate)->getMaxLength()->is(4);
-        $validate = new StringWidth(3);
-        that($validate)->getMaxLength()->isNull();
+        $validate = new StringWidth(2, 10);
+
+        that($validate)->isValid('a')->isFalse();
+        that($validate)->isValid('あ')->isTrue();
+        that($validate)->isValid('👨👨👨👨👨')->isTrue();
+        that($validate)->isValid('a👨👨👨👨👨')->isFalse();
+        that($validate)->isValid('👨‍👩‍👧‍👦👨‍👩‍👧‍👦')->isTrue();
+        that($validate)->isValid('a👨‍👩‍👧‍👦👨‍👩‍👧‍👦')->isFalse();
     }
 
     function test_getFixture()
