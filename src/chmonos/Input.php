@@ -24,8 +24,9 @@ class Input
     protected static $defaultRule = [
         'title'                 => '',
         'condition'             => [],
-        'invalid-option-prefix' => "\x18",
         'options'               => [],
+        'invalids'              => [],
+        'invalid-option-prefix' => "\x18",
         'datalist'              => [],
         'event'                 => ['change'],
         'propagate'             => [],
@@ -162,6 +163,18 @@ class Input
         // multiple の自動設定
         if ($rule['multiple'] === null) {
             $rule['multiple'] = $rule['inputs'] || is_array($rule['default']);
+        }
+
+        // invalids の自動設定
+        if (strlen($rule["invalid-option-prefix"])) {
+            array_walk_recursive($rule['options'], function ($v, $k) use (&$rule) {
+                if (is_string($v)) {
+                    [, $value] = explode($rule["invalid-option-prefix"], $v, 2) + [1 => null];
+                    if ($value !== null) {
+                        $rule['invalids'][$k] = $value;
+                    }
+                }
+            });
         }
 
         $this->rule = $rule;
@@ -546,28 +559,27 @@ class Input
             return;
         }
 
-        if (strlen($this->rule["invalid-option-prefix"])) {
-            $notoptions = [];
-            array_walk_recursive($this->rule['options'], function (&$v, $k) use (&$notoptions) {
-                if (is_string($v)) {
-                    [, $value] = explode($this->rule["invalid-option-prefix"], $v, 2) + [1 => null];
-                    if ($value !== null) {
-                        $v = $value;
-                        $notoptions[] = $k;
-                    }
+        $notoptions = [];
+        array_walk_recursive($this->rule['options'], function (&$v, $k) use (&$notoptions) {
+            if (array_key_exists($k, $this->invalids)) {
+                if ($v instanceof \stdClass) {
+                    $v->label = $this->invalids[$k] ?? $v->label;
+                    $v->invalid = false;
                 }
-                elseif ($v instanceof \stdClass) {
-                    if ($v->invalid ?? false) {
-                        $notoptions[] = $k;
-                    }
+                else {
+                    $v = $this->invalids[$k] ?? $v;
                 }
-            });
-
-            if ($notoptions) {
-                $notinarray = new Condition\NotInArray($notoptions);
-                $this->rule['condition'][class_shorten($notinarray)] = $notinarray;
-                return $notinarray;
+                $notoptions[] = $k;
             }
+            elseif ($v instanceof \stdClass && ($v->invalid ?? false)) {
+                $notoptions[] = $k;
+            }
+        });
+
+        if ($notoptions) {
+            $notinarray = new Condition\NotInArray($notoptions);
+            $this->rule['condition'][class_shorten($notinarray)] = $notinarray;
+            return $notinarray;
         }
     }
 
@@ -1158,6 +1170,9 @@ class Input
             if (isset($flipped_value[$key])) {
                 $params['checked'] = "checked";
             }
+            if (array_key_exists($key, $this->invalids)) {
+                $params['class'] = concat($params['class'] ?? '', ' ') . 'validation_invalid';
+            }
 
             // for id のペア
             $params['id'] = $this->_concatString([$params['id']], "-$key");
@@ -1207,6 +1222,9 @@ class Input
 
         if (isset($value[$key])) {
             $option_attrs['selected'] = 'selected';
+        }
+        if (array_key_exists($key, $this->invalids)) {
+            $option_attrs['class'] = concat($option_attrs['class'] ?? '', ' ') . 'validation_invalid';
         }
         $option_attrs['value'] = $key;
         $oattrs = $this->createHtmlAttr($option_attrs, $key, 'option');

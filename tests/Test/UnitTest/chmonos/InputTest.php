@@ -1697,6 +1697,83 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
     }
 
+    function test_inputRadio_invalid()
+    {
+        $input = new Input([
+            'name'     => 'name',
+            'options'  => [
+                1 => (object) [
+                    'label'   => 'object.1',
+                    'invalid' => false,
+                ],
+                2 => (object) [
+                    'label'   => 'object.2',
+                    'invalid' => true,
+                ],
+                3 => (object) [
+                    'label' => 'object.3',
+                ],
+            ],
+            'invalids' => [
+                3 => 'invalid-option(invalid)',
+            ],
+        ]);
+
+        that($input)->input([
+            'type' => 'radio'
+        ])->htmlMatchesArray([
+            'input[1]' => [
+                'type'                  => 'radio',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'class'                 => 'validatable',
+                'value'                 => '1',
+                'checked'               => 'checked',
+                'id'                    => 'name-1',
+            ],
+            'label[1]' => [
+                'for' => 'name-1',
+            ],
+            'input[2]' => [
+                'type'                  => 'radio',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'class'                 => 'validatable',
+                'value'                 => '2',
+                'id'                    => 'name-2',
+            ],
+            'label[2]' => [
+                'for' => 'name-2',
+            ],
+            'input[3]' => [
+                'type'                  => 'radio',
+                'data-validation-title' => '',
+                'data-vinput-id'        => 'name',
+                'data-vinput-class'     => 'name',
+                'data-vinput-index'     => '',
+                'name'                  => 'name',
+                'class'                 => ['validatable', 'validation_invalid'],
+                'value'                 => '3',
+                'id'                    => 'name-3',
+            ],
+            'label[3]' => [
+                'for' => 'name-3',
+                'invalid-option(invalid)',
+            ],
+        ]);
+
+        that($input)->condition['NotInArray']->getValidationParam()['haystack']->is([
+            2 => 0,
+            3 => 1,
+        ]);
+    }
+
     function test_inputRadio_format()
     {
         $input = new Input([
@@ -1788,11 +1865,11 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
     }
 
-    function test_inputSelect_stdclass()
+    function test_inputSelect_invalid()
     {
         $input = new Input([
-            'name'    => 'name',
-            'options' => [
+            'name'     => 'name',
+            'options'  => [
                 1       => (object) [
                     'label'   => 'object.1',
                     'invalid' => false,
@@ -1801,13 +1878,19 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'label'   => 'object.2',
                     'invalid' => true,
                 ],
+                3       => (object) [
+                    'label' => 'object.3',
+                ],
                 'group' => [
-                    3 => (object) [
-                        'label'   => 'object.3',
+                    4 => (object) [
+                        'label'   => 'object.4',
                         'invalid' => false,
                     ],
                 ]
-            ]
+            ],
+            'invalids' => [
+                3 => 'invalid-option(invalid)',
+            ],
         ]);
 
         that($input)->input([
@@ -1823,8 +1906,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'class'                 => 'validatable',
 
                 'option[1]' => [
-                    'selected' => 'selected',
-                    'value'    => '1',
+                    'value' => '1',
                     'object.1',
                 ],
 
@@ -1833,11 +1915,16 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'object.2',
                 ],
 
+                'option[3]' => [
+                    'value' => '3',
+                    'invalid-option(invalid)',
+                ],
+
                 'optgroup' => [
                     'label'  => 'group',
                     'option' => [
-                        'value' => '3',
-                        'object.3',
+                        'value' => '4',
+                        'object.4',
                     ],
                 ],
             ],
@@ -1845,6 +1932,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         that($input)->condition['NotInArray']->getValidationParam()['haystack']->is([
             2 => 0,
+            3 => 1,
         ]);
     }
 
