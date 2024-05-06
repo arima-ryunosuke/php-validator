@@ -37,14 +37,16 @@ function Chmonos(form, options) {
         return chmonos[parts[parts.length - 1]];
     };
 
+    chmonos.phpjs = {};
+
     /// phpjs のインポート
     /**/
-var PREG_SPLIT_NO_EMPTY = this.PREG_SPLIT_NO_EMPTY = 1;
+var PREG_SPLIT_NO_EMPTY = this.PREG_SPLIT_NO_EMPTY = this.phpjs.PREG_SPLIT_NO_EMPTY = 1;
 /**/
-var PREG_UNMATCHED_AS_NULL = this.PREG_UNMATCHED_AS_NULL = 512;
+var PREG_UNMATCHED_AS_NULL = this.PREG_UNMATCHED_AS_NULL = this.phpjs.PREG_UNMATCHED_AS_NULL = 512;
 /**/
     /**/
-var _phpCastString = this._phpCastString = (function(){
+var _phpCastString = this._phpCastString = this.phpjs._phpCastString = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -116,7 +118,7 @@ module.exports = function _phpCastString(value) {
 return module.exports;
 })();
 /**/
-var _php_cast_float = this._php_cast_float = (function(){
+var _php_cast_float = this._php_cast_float = this.phpjs._php_cast_float = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -170,7 +172,7 @@ module.exports = function _php_cast_float(value) {
 return module.exports;
 })();
 /**/
-var _php_cast_int = this._php_cast_int = (function(){
+var _php_cast_int = this._php_cast_int = this.phpjs._php_cast_int = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -230,7 +232,7 @@ module.exports = function _php_cast_int(value) {
 return module.exports;
 })();
 /**/
-var abs = this.abs = (function(){
+var abs = this.abs = this.phpjs.abs = (function(){
 "use strict";
 
 module.exports = function abs(mixedNumber) {
@@ -253,7 +255,7 @@ module.exports = function abs(mixedNumber) {
 return module.exports;
 })();
 /**/
-var array_column = this.array_column = (function(){
+var array_column = this.array_column = this.phpjs.array_column = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -347,7 +349,55 @@ module.exports = function array_column(input, ColumnKey) {
 return module.exports;
 })();
 /**/
-var array_count_values = this.array_count_values = (function(){
+var array_combine = this.array_combine = this.phpjs.array_combine = (function(){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+module.exports = function array_combine(keys, values) {
+  //  discuss at: https://locutus.io/php/array_combine/
+  // original by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: Brett Zamir (https://brett-zamir.me)
+  //   example 1: array_combine([0,1,2], ['kevin','van','zonneveld'])
+  //   returns 1: {0: 'kevin', 1: 'van', 2: 'zonneveld'}
+
+  var newArray = {};
+  var i = 0;
+
+  // input sanitation
+  // Only accept arrays or array-like objects
+  // Require arrays to have a count
+  if ((typeof keys === 'undefined' ? 'undefined' : _typeof(keys)) !== 'object') {
+    return false;
+  }
+  if ((typeof values === 'undefined' ? 'undefined' : _typeof(values)) !== 'object') {
+    return false;
+  }
+  if (typeof keys.length !== 'number') {
+    return false;
+  }
+  if (typeof values.length !== 'number') {
+    return false;
+  }
+  if (!keys.length) {
+    return false;
+  }
+
+  // number of elements does not match
+  if (keys.length !== values.length) {
+    return false;
+  }
+
+  for (i = 0; i < keys.length; i++) {
+    newArray[keys[i]] = values[i];
+  }
+
+  return newArray;
+};
+return module.exports;
+})();
+/**/
+var array_count_values = this.array_count_values = this.phpjs.array_count_values = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -411,7 +461,7 @@ module.exports = function array_count_values(array) {
 return module.exports;
 })();
 /**/
-var array_filter = this.array_filter = (function(){
+var array_filter = this.array_filter = this.phpjs.array_filter = (function(){
 'use strict';
 
 module.exports = function array_filter(arr, func) {
@@ -452,7 +502,7 @@ module.exports = function array_filter(arr, func) {
 return module.exports;
 })();
 /**/
-var array_flip = this.array_flip = (function(){
+var array_flip = this.array_flip = this.phpjs.array_flip = (function(){
 "use strict";
 
 module.exports = function array_flip(trans) {
@@ -478,7 +528,7 @@ module.exports = function array_flip(trans) {
 return module.exports;
 })();
 /**/
-var array_intersect_key = this.array_intersect_key = (function(){
+var array_intersect_key = this.array_intersect_key = this.phpjs.array_intersect_key = (function(){
 'use strict';
 
 module.exports = function array_intersect_key(arr1) {
@@ -528,7 +578,7 @@ module.exports = function array_intersect_key(arr1) {
 return module.exports;
 })();
 /**/
-var array_keys = this.array_keys = (function(){
+var array_keys = this.array_keys = this.phpjs.array_keys = (function(){
 'use strict';
 
 module.exports = function array_keys(input, searchValue, argStrict) {
@@ -571,22 +621,42 @@ module.exports = function array_keys(input, searchValue, argStrict) {
 return module.exports;
 })();
 /**/
-var array_kmap = this.array_kmap = (function(){
+var array_map = this.array_map = this.phpjs.array_map = (function(){
 /**
- * array_kmap
+ * array_map
+ *
+ * locutus の array_map は連想配列に対応していないので自前定義。
+ * （php の array_map は挙動が謎過ぎるので完全模倣しなくてもいいのだけど…しばしば登場するので）。
  */
-module.exports = function array_kmap(array, callback) {
-    var n = 0;
-    var result = array instanceof Array ? [] : {};
-    for (var [k, v] of Object.entries(array)) {
-        result[k] = callback(v, k, n++);
+module.exports = function array_map(callback, ...arrays) {
+    if (callback == null) {
+        throw 'array_map() callback must not be null';
     }
-    return result;
+    if (arrays.length === 0) {
+        throw 'array_map() expects at least 2 arguments, 1 given';
+    }
+
+    if (arrays.length === 1) {
+        var result = arrays[0] instanceof Array ? [] : {};
+        for (var [k, v] of Object.entries(arrays[0])) {
+            result[k] = callback(v);
+        }
+        return result;
+    }
+    else {
+        var arrayed = arrays.map(array => Object.values(array));
+        var max = Math.max(...arrayed.map(array => array.length));
+        var result = [];
+        for (var i = 0; i < max; i++) {
+            result.push(callback(...arrayed.map(array => array[i] ?? null)));
+        }
+        return result;
+    }
 };
 return module.exports;
 })();
 /**/
-var array_merge = this.array_merge = (function(){
+var array_merge = this.array_merge = this.phpjs.array_merge = (function(){
 'use strict';
 
 module.exports = function array_merge() {
@@ -655,7 +725,7 @@ module.exports = function array_merge() {
 return module.exports;
 })();
 /**/
-var array_reduce = this.array_reduce = (function(){
+var array_reduce = this.array_reduce = this.phpjs.array_reduce = (function(){
 /**
  * array_reduce
  *
@@ -676,7 +746,46 @@ module.exports = function array_reduce(input, callback, initial) {
 return module.exports;
 })();
 /**/
-var array_unique = this.array_unique = (function(){
+var array_sum = this.array_sum = this.phpjs.array_sum = (function(){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+module.exports = function array_sum(array) {
+  //  discuss at: https://locutus.io/php/array_sum/
+  // original by: Kevin van Zonneveld (https://kvz.io)
+  // bugfixed by: Nate
+  // bugfixed by: Gilbert
+  // improved by: David Pilia (https://www.beteck.it/)
+  // improved by: Brett Zamir (https://brett-zamir.me)
+  //   example 1: array_sum([4, 9, 182.6])
+  //   returns 1: 195.6
+  //   example 2: var $total = []
+  //   example 2: var $index = 0.1
+  //   example 2: for (var $y = 0; $y < 12; $y++){ $total[$y] = $y + $index }
+  //   example 2: array_sum($total)
+  //   returns 2: 67.2
+
+  var key = void 0;
+  var sum = 0;
+
+  // input sanitation
+  if ((typeof array === 'undefined' ? 'undefined' : _typeof(array)) !== 'object') {
+    return null;
+  }
+
+  for (key in array) {
+    if (!isNaN(parseFloat(array[key]))) {
+      sum += parseFloat(array[key]);
+    }
+  }
+
+  return sum;
+};
+return module.exports;
+})();
+/**/
+var array_unique = this.array_unique = this.phpjs.array_unique = (function(){
 'use strict';
 
 module.exports = function array_unique(inputArr) {
@@ -726,7 +835,29 @@ module.exports = function array_unique(inputArr) {
 return module.exports;
 })();
 /**/
-var base64_decode = this.base64_decode = (function(){
+var array_values = this.array_values = this.phpjs.array_values = (function(){
+'use strict';
+
+module.exports = function array_values(input) {
+  //  discuss at: https://locutus.io/php/array_values/
+  // original by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: Brett Zamir (https://brett-zamir.me)
+  //   example 1: array_values( {firstname: 'Kevin', surname: 'van Zonneveld'} )
+  //   returns 1: [ 'Kevin', 'van Zonneveld' ]
+
+  var tmpArr = [];
+  var key = '';
+
+  for (key in input) {
+    tmpArr[tmpArr.length] = input[key];
+  }
+
+  return tmpArr;
+};
+return module.exports;
+})();
+/**/
+var base64_decode = this.base64_decode = this.phpjs.base64_decode = (function(){
 /**
  * base64_decode
  */
@@ -745,7 +876,7 @@ module.exports = function base64_decode(string, strict) {
 return module.exports;
 })();
 /**/
-var basename = this.basename = (function(){
+var basename = this.basename = this.phpjs.basename = (function(){
 'use strict';
 
 module.exports = function basename(path, suffix) {
@@ -782,7 +913,7 @@ module.exports = function basename(path, suffix) {
 return module.exports;
 })();
 /**/
-var count = this.count = (function(){
+var count = this.count = this.phpjs.count = (function(){
 'use strict';
 
 module.exports = function count(mixedVar, mode) {
@@ -828,7 +959,7 @@ module.exports = function count(mixedVar, mode) {
 return module.exports;
 })();
 /**/
-var ctype_digit = this.ctype_digit = (function(){
+var ctype_digit = this.ctype_digit = this.phpjs.ctype_digit = (function(){
 'use strict';
 
 module.exports = function ctype_digit(text) {
@@ -854,7 +985,7 @@ module.exports = function ctype_digit(text) {
 return module.exports;
 })();
 /**/
-var date = this.date = (function(){
+var date = this.date = this.phpjs.date = (function(){
 'use strict';
 
 module.exports = function date(format, timestamp) {
@@ -1175,7 +1306,7 @@ module.exports = function date(format, timestamp) {
 return module.exports;
 })();
 /**/
-var explode = this.explode = (function(){
+var explode = this.explode = this.phpjs.explode = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -1231,7 +1362,7 @@ module.exports = function explode(delimiter, string, limit) {
 return module.exports;
 })();
 /**/
-var filesize = this.filesize = (function(){
+var filesize = this.filesize = this.phpjs.filesize = (function(){
 /**
  * filesize
  *
@@ -1246,7 +1377,7 @@ module.exports = function filesize(file) {
 return module.exports;
 })();
 /**/
-var getenv = this.getenv = (function(){
+var getenv = this.getenv = this.phpjs.getenv = (function(){
 'use strict';
 
 module.exports = function getenv(varname) {
@@ -1264,7 +1395,7 @@ module.exports = function getenv(varname) {
 return module.exports;
 })();
 /**/
-var getimagesize = this.getimagesize = (function(){
+var getimagesize = this.getimagesize = this.phpjs.getimagesize = (function(){
 /**
  * getimagesize
  *
@@ -1298,7 +1429,7 @@ module.exports = function getimagesize(file) {
 return module.exports;
 })();
 /**/
-var gettype = this.gettype = (function(){
+var gettype = this.gettype = this.phpjs.gettype = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -1370,19 +1501,7 @@ module.exports = function gettype(mixedVar) {
 return module.exports;
 })();
 /**/
-var grapheme_strlen = this.grapheme_strlen = (function(){
-/**
- * grapheme_strlen
- */
-module.exports = function grapheme_strlen(string) {
-    const segmenter = new Intl.Segmenter("ja-JP", {granularity: "grapheme"});
-    const segments = segmenter.segment(string);
-    return Array.from(segments).length;
-};
-return module.exports;
-})();
-/**/
-var implode = this.implode = (function(){
+var implode = this.implode = this.phpjs.implode = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -1423,7 +1542,7 @@ module.exports = function implode(glue, pieces) {
 return module.exports;
 })();
 /**/
-var in_array = this.in_array = (function(){
+var in_array = this.in_array = this.phpjs.in_array = (function(){
 'use strict';
 
 module.exports = function in_array(needle, haystack, argStrict) {
@@ -1470,7 +1589,7 @@ module.exports = function in_array(needle, haystack, argStrict) {
 return module.exports;
 })();
 /**/
-var ini_get = this.ini_get = (function(){
+var ini_get = this.ini_get = this.phpjs.ini_get = (function(){
 'use strict';
 
 module.exports = function ini_get(varname) {
@@ -1499,7 +1618,31 @@ module.exports = function ini_get(varname) {
 return module.exports;
 })();
 /**/
-var intval = this.intval = (function(){
+var ini_parse_quantity = this.ini_parse_quantity = this.phpjs.ini_parse_quantity = (function(){
+/**
+ * ini_parse_quantity
+ *
+ * 思ったよりややこしかったので超簡易実装（どうせ kmg しか使わん）。
+ */
+module.exports = function ini_parse_quantity(quantity) {
+    quantity = ('' + quantity).toLowerCase();
+    var unit = quantity.slice(-1);
+    var size = parseInt(quantity || 0);
+    if (unit === 'k') {
+        size *= 1024;
+    }
+    if (unit === 'm') {
+        size *= 1024 * 1024;
+    }
+    if (unit === 'g') {
+        size *= 1024 * 1024 * 1024;
+    }
+    return size;
+};
+return module.exports;
+})();
+/**/
+var intval = this.intval = this.phpjs.intval = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -1552,7 +1695,7 @@ module.exports = function intval(mixedVar, base) {
 return module.exports;
 })();
 /**/
-var is_array = this.is_array = (function(){
+var is_array = this.is_array = this.phpjs.is_array = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -1652,7 +1795,7 @@ module.exports = function is_array(mixedVar) {
 return module.exports;
 })();
 /**/
-var is_float = this.is_float = (function(){
+var is_float = this.is_float = this.phpjs.is_float = (function(){
 "use strict";
 
 module.exports = function is_float(mixedVar) {
@@ -1671,7 +1814,7 @@ module.exports = function is_float(mixedVar) {
 return module.exports;
 })();
 /**/
-var is_int = this.is_int = (function(){
+var is_int = this.is_int = this.phpjs.is_int = (function(){
 "use strict";
 
 module.exports = function is_int(mixedVar) {
@@ -1698,7 +1841,7 @@ module.exports = function is_int(mixedVar) {
 return module.exports;
 })();
 /**/
-var is_null = this.is_null = (function(){
+var is_null = this.is_null = this.phpjs.is_null = (function(){
 "use strict";
 
 module.exports = function is_null(mixedVar) {
@@ -1714,7 +1857,7 @@ module.exports = function is_null(mixedVar) {
 return module.exports;
 })();
 /**/
-var is_string = this.is_string = (function(){
+var is_string = this.is_string = this.phpjs.is_string = (function(){
 'use strict';
 
 module.exports = function is_string(mixedVar) {
@@ -1730,7 +1873,7 @@ module.exports = function is_string(mixedVar) {
 return module.exports;
 })();
 /**/
-var isset = this.isset = (function(){
+var isset = this.isset = this.phpjs.isset = (function(){
 'use strict';
 
 module.exports = function isset() {
@@ -1765,7 +1908,7 @@ module.exports = function isset() {
 return module.exports;
 })();
 /**/
-var join = this.join = (function(){
+var join = this.join = this.phpjs.join = (function(){
 'use strict';
 
 module.exports = function join(glue, pieces) {
@@ -1780,7 +1923,7 @@ module.exports = function join(glue, pieces) {
 return module.exports;
 })();
 /**/
-var json_decode = this.json_decode = (function(){
+var json_decode = this.json_decode = this.phpjs.json_decode = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -1870,7 +2013,7 @@ module.exports = function json_decode(strJson) {
 return module.exports;
 })();
 /**/
-var log = this.log = (function(){
+var log = this.log = this.phpjs.log = (function(){
 'use strict';
 
 module.exports = function log(arg, base) {
@@ -1885,7 +2028,7 @@ module.exports = function log(arg, base) {
 return module.exports;
 })();
 /**/
-var ltrim = this.ltrim = (function(){
+var ltrim = this.ltrim = this.phpjs.ltrim = (function(){
 'use strict';
 
 module.exports = function ltrim(str, charlist) {
@@ -1906,7 +2049,19 @@ module.exports = function ltrim(str, charlist) {
 return module.exports;
 })();
 /**/
-var mb_strlen = this.mb_strlen = (function(){
+var mb_str_split = this.mb_str_split = this.phpjs.mb_str_split = (function(){
+/**
+ * mb_str_split
+ *
+ * unicode 環境のみ。
+ */
+module.exports = function mb_str_split(string) {
+    return [...string];
+};
+return module.exports;
+})();
+/**/
+var mb_strlen = this.mb_strlen = this.phpjs.mb_strlen = (function(){
 /**
  * mb_strlen
  *
@@ -1918,78 +2073,7 @@ module.exports = function mb_strlen(str) {
 return module.exports;
 })();
 /**/
-var mb_strwidth = this.mb_strwidth = (function(){
-/**
- * mb_strwidth
- *
- * unicode 環境のみ。
- */
-module.exports = function mb_strwidth(str) {
-    // https://www.php.net/manual/ja/function.mb-strwidth.php
-    var fullwidth_points = [
-        [0x1100, 0x115F],
-        [0x11A3, 0x11A7],
-        [0x11FA, 0x11FF],
-        [0x2329, 0x232A],
-        [0x2E80, 0x2E99],
-        [0x2E9B, 0x2EF3],
-        [0x2F00, 0x2FD5],
-        [0x2FF0, 0x2FFB],
-        [0x3000, 0x303E],
-        [0x3041, 0x3096],
-        [0x3099, 0x30FF],
-        [0x3105, 0x312D],
-        [0x3131, 0x318E],
-        [0x3190, 0x31BA],
-        [0x31C0, 0x31E3],
-        [0x31F0, 0x321E],
-        [0x3220, 0x3247],
-        [0x3250, 0x32FE],
-        [0x3300, 0x4DBF],
-        [0x4E00, 0xA48C],
-        [0xA490, 0xA4C6],
-        [0xA960, 0xA97C],
-        [0xAC00, 0xD7A3],
-        [0xD7B0, 0xD7C6],
-        [0xD7CB, 0xD7FB],
-        [0xF900, 0xFAFF],
-        [0xFE10, 0xFE19],
-        [0xFE30, 0xFE52],
-        [0xFE54, 0xFE66],
-        [0xFE68, 0xFE6B],
-        [0xFF01, 0xFF60],
-        [0xFFE0, 0xFFE6],
-        [0x1B000, 0x1B001],
-        [0x1F200, 0x1F202],
-        [0x1F210, 0x1F23A],
-        [0x1F240, 0x1F248],
-        [0x1F250, 0x1F251],
-        [0x20000, 0x2FFFD],
-        [0x30000, 0x3FFFD],
-    ];
-
-    var str_width = 0;
-    for (var i = 0; i < str.length; i++) {
-        var char_code = str.charCodeAt(i);
-        if (0xD800 <= char_code && char_code <= 0xDBFF) {
-            char_code = ((char_code - 0xD800) * 0x400) + (str.charCodeAt(++i) - 0xDC00) + 0x10000;
-        }
-
-        str_width++;
-        for (var n = 0; n < fullwidth_points.length; n++) {
-            if (fullwidth_points[n][0] <= char_code && char_code <= fullwidth_points[n][1]) {
-                str_width++;
-                break;
-            }
-        }
-    }
-
-    return str_width;
-};
-return module.exports;
-})();
-/**/
-var mime_content_type = this.mime_content_type = (function(){
+var mime_content_type = this.mime_content_type = this.phpjs.mime_content_type = (function(){
 /**
  * mime_content_type
  *
@@ -2004,7 +2088,7 @@ module.exports = function mime_content_type(file) {
 return module.exports;
 })();
 /**/
-var parse_str = this.parse_str = (function(){
+var parse_str = this.parse_str = this.phpjs.parse_str = (function(){
 'use strict';
 
 module.exports = function parse_str(str, array) {
@@ -2170,7 +2254,7 @@ module.exports = function parse_str(str, array) {
 return module.exports;
 })();
 /**/
-var parse_url = this.parse_url = (function(){
+var parse_url = this.parse_url = this.phpjs.parse_url = (function(){
 'use strict';
 
 module.exports = function parse_url(str, component) {
@@ -2243,7 +2327,7 @@ module.exports = function parse_url(str, component) {
 return module.exports;
 })();
 /**/
-var pathinfo = this.pathinfo = (function(){
+var pathinfo = this.pathinfo = this.phpjs.pathinfo = (function(){
 'use strict';
 
 module.exports = function pathinfo(path, options) {
@@ -2391,7 +2475,7 @@ module.exports = function pathinfo(path, options) {
 return module.exports;
 })();
 /**/
-var pow = this.pow = (function(){
+var pow = this.pow = this.phpjs.pow = (function(){
 "use strict";
 
 module.exports = function pow(base, exp) {
@@ -2406,7 +2490,7 @@ module.exports = function pow(base, exp) {
 return module.exports;
 })();
 /**/
-var preg_match = this.preg_match = (function(){
+var preg_match = this.preg_match = this.phpjs.preg_match = (function(){
 /**
  * preg_match
  *
@@ -2455,7 +2539,7 @@ module.exports = function preg_match(pattern, subject, matches, flags) {
 return module.exports;
 })();
 /**/
-var preg_split = this.preg_split = (function(){
+var preg_split = this.preg_split = this.phpjs.preg_split = (function(){
 /**
  * preg_split
  *
@@ -2501,7 +2585,7 @@ module.exports = function preg_split(pattern, subject, limit, flags) {
 return module.exports;
 })();
 /**/
-var round = this.round = (function(){
+var round = this.round = this.phpjs.round = (function(){
 'use strict';
 
 function roundToInt(value, mode) {
@@ -2581,7 +2665,7 @@ module.exports = function round(value) {
 return module.exports;
 })();
 /**/
-var setlocale = this.setlocale = (function(){
+var setlocale = this.setlocale = this.phpjs.setlocale = (function(){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -2918,7 +3002,7 @@ module.exports = function setlocale(category, locale) {
 return module.exports;
 })();
 /**/
-var split = this.split = (function(){
+var split = this.split = this.phpjs.split = (function(){
 'use strict';
 
 module.exports = function split(delimiter, string) {
@@ -2933,7 +3017,7 @@ module.exports = function split(delimiter, string) {
 return module.exports;
 })();
 /**/
-var sprintf = this.sprintf = (function(){
+var sprintf = this.sprintf = this.phpjs.sprintf = (function(){
 'use strict';
 
 module.exports = function sprintf() {
@@ -3134,7 +3218,7 @@ module.exports = function sprintf() {
 return module.exports;
 })();
 /**/
-var str_split = this.str_split = (function(){
+var str_split = this.str_split = this.phpjs.str_split = (function(){
 'use strict';
 
 module.exports = function str_split(string, splitLength) {
@@ -3169,86 +3253,18 @@ module.exports = function str_split(string, splitLength) {
 return module.exports;
 })();
 /**/
-var strlen = this.strlen = (function(){
-'use strict';
-
+var strlen = this.strlen = this.phpjs.strlen = (function(){
+/**
+ * strlen
+ */
 module.exports = function strlen(string) {
-  //  discuss at: https://locutus.io/php/strlen/
-  // original by: Kevin van Zonneveld (https://kvz.io)
-  // improved by: Sakimori
-  // improved by: Kevin van Zonneveld (https://kvz.io)
-  //    input by: Kirk Strobeck
-  // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
-  //  revised by: Brett Zamir (https://brett-zamir.me)
-  //      note 1: May look like overkill, but in order to be truly faithful to handling all Unicode
-  //      note 1: characters and to this function in PHP which does not count the number of bytes
-  //      note 1: but counts the number of characters, something like this is really necessary.
-  //   example 1: strlen('Kevin van Zonneveld')
-  //   returns 1: 19
-  //   example 2: ini_set('unicode.semantics', 'on')
-  //   example 2: strlen('A\ud87e\udc04Z')
-  //   returns 2: 3
-
-  var str = string + '';
-
-  var iniVal = (typeof require !== 'undefined' ? require('../info/ini_get')('unicode.semantics') : undefined) || 'off';
-  if (iniVal === 'off') {
-    return str.length;
-  }
-
-  var i = 0;
-  var lgth = 0;
-
-  var getWholeChar = function getWholeChar(str, i) {
-    var code = str.charCodeAt(i);
-    var next = '';
-    var prev = '';
-    if (code >= 0xd800 && code <= 0xdbff) {
-      // High surrogate (could change last hex to 0xDB7F to
-      // treat high private surrogates as single characters)
-      if (str.length <= i + 1) {
-        throw new Error('High surrogate without following low surrogate');
-      }
-      next = str.charCodeAt(i + 1);
-      if (next < 0xdc00 || next > 0xdfff) {
-        throw new Error('High surrogate without following low surrogate');
-      }
-      return str.charAt(i) + str.charAt(i + 1);
-    } else if (code >= 0xdc00 && code <= 0xdfff) {
-      // Low surrogate
-      if (i === 0) {
-        throw new Error('Low surrogate without preceding high surrogate');
-      }
-      prev = str.charCodeAt(i - 1);
-      if (prev < 0xd800 || prev > 0xdbff) {
-        // (could change last hex to 0xDB7F to treat high private surrogates
-        // as single characters)
-        throw new Error('Low surrogate without preceding high surrogate');
-      }
-      // We can pass over low surrogates now as the second
-      // component in a pair which we have already processed
-      return false;
-    }
-    return str.charAt(i);
-  };
-
-  for (i = 0, lgth = 0; i < str.length; i++) {
-    if (getWholeChar(str, i) === false) {
-      continue;
-    }
-    // Adapt this line at the top of any loop, passing in the whole string and
-    // the current iteration and returning a variable to represent the individual character;
-    // purpose is to treat the first part of a surrogate pair as the whole character and then
-    // ignore the second part
-    lgth++;
-  }
-
-  return lgth;
+    const encoder = new TextEncoder();
+    return encoder.encode(string).length;
 };
 return module.exports;
 })();
 /**/
-var strtolower = this.strtolower = (function(){
+var strtolower = this.strtolower = this.phpjs.strtolower = (function(){
 'use strict';
 
 module.exports = function strtolower(str) {
@@ -3263,7 +3279,7 @@ module.exports = function strtolower(str) {
 return module.exports;
 })();
 /**/
-var strtotime = this.strtotime = (function(){
+var strtotime = this.strtotime = this.phpjs.strtotime = (function(){
 'use strict';
 
 var reSpace = '[ \\t]+';
@@ -4583,7 +4599,7 @@ module.exports = function strtotime(str, now) {
 return module.exports;
 })();
 /**/
-var strtoupper = this.strtoupper = (function(){
+var strtoupper = this.strtoupper = this.phpjs.strtoupper = (function(){
 'use strict';
 
 module.exports = function strtoupper(str) {
@@ -4598,7 +4614,7 @@ module.exports = function strtoupper(str) {
 return module.exports;
 })();
 /**/
-var strval = this.strval = (function(){
+var strval = this.strval = this.phpjs.strval = (function(){
 'use strict';
 
 module.exports = function strval(str) {
@@ -4637,7 +4653,7 @@ module.exports = function strval(str) {
 return module.exports;
 })();
 /**/
-var substr = this.substr = (function(){
+var substr = this.substr = this.phpjs.substr = (function(){
 'use strict';
 
 module.exports = function substr(input, start, len) {
@@ -4709,7 +4725,7 @@ module.exports = function substr(input, start, len) {
 return module.exports;
 })();
 /**/
-var trim = this.trim = (function(){
+var trim = this.trim = this.phpjs.trim = (function(){
 'use strict';
 
 module.exports = function trim(str, charlist) {
@@ -4760,7 +4776,7 @@ module.exports = function trim(str, charlist) {
 return module.exports;
 })();
 /**/
-var vsprintf = this.vsprintf = (function(){
+var vsprintf = this.vsprintf = this.phpjs.vsprintf = (function(){
 'use strict';
 
 module.exports = function vsprintf(format, args) {
@@ -4888,35 +4904,35 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
             })();},"AlphaDigit":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
 
         if (!preg_match($params['regex'], $value)) {
-            $error($consts['INVALID']);
+            $error($consts['INVALID_ALPHADIGIT'], []);
             return;
         }
 
         if (!$params['first_number'] && ctype_digit(substr($value, 0, 1))) {
-            $error($consts['INVALID_FIRST_NUMBER']);
+            $error($consts['INVALID_FIRST_NUMBER'], []);
         }
         if ($params['case'] === false && strtoupper($value) !== $value) {
-            $error($consts['INVALID_LOWERCASE']);
+            $error($consts['INVALID_LOWERCASE'], []);
         }
         if ($params['case'] === true && strtolower($value) !== $value) {
-            $error($consts['INVALID_UPPERCASE']);
+            $error($consts['INVALID_UPPERCASE'], []);
         }},"ArrayExclusion":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
 
         if (count(array_intersect_key(array_flip($value), $params['set'])) > 1) {
-            $error($consts['INVALID_INCLUSION']);
+            $error($consts['INVALID_INCLUSION'], []);
         }},"ArrayLength":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $length;
 // 
 
         $length = count($value);
 
         if (!is_null($params['max']) && !is_null($params['min']) && ($length > $params['max'] || $length < $params['min'])) {
-            $error($consts['SHORTLONG']);
+            $error($consts['SHORTLONG'], []);
         }
         else if (is_null($params['max']) && !is_null($params['min']) && $length < $params['min']) {
-            $error($consts['TOO_SHORT']);
+            $error($consts['TOO_SHORT'], []);
         }
         else if (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
-            $error($consts['TOO_LONG']);
+            $error($consts['TOO_LONG'], []);
         }},"Aruiha":async function(input, $value, $fields, $params, $consts, $error, $context, e) {(function() {
                 var keys = Object.keys($params['condition']);
                 for (var i = 0; i < keys.length; i++) {
@@ -4927,7 +4943,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
                         return;
                     }
                 }
-                $error($consts['INVALID']);
+                $error($consts['INVALID_ARUIHA'], []);
             })();},"Callback":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $callee;
 // 
 
@@ -4953,49 +4969,49 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }
 
         if ($params['operator'] === '==' && $field1 != $field2) {
-            return $error($consts['EQUAL']);
+            return $error($consts['EQUAL'], []);
         }
         if ($params['operator'] === '===' && $field1 !== $field2) {
-            return $error($consts['EQUAL']);
+            return $error($consts['EQUAL'], []);
         }
         if ($params['operator'] === '!=' && $field1 == $field2) {
-            return $error($consts['NOT_EQUAL']);
+            return $error($consts['NOT_EQUAL'], []);
         }
         if ($params['operator'] === '!==' && $field1 === $field2) {
-            return $error($consts['NOT_EQUAL']);
+            return $error($consts['NOT_EQUAL'], []);
         }
         if ($params['operator'] === '<' && $field1 >= $field2) {
-            return $error($consts['LESS_THAN']);
+            return $error($consts['LESS_THAN'], []);
         }
         if ($params['operator'] === '<=' && $field1 > $field2) {
-            return $error($consts['LESS_THAN']);
+            return $error($consts['LESS_THAN'], []);
         }
         if ($params['operator'] === '>' && $field1 <= $field2) {
-            return $error($consts['GREATER_THAN']);
+            return $error($consts['GREATER_THAN'], []);
         }
         if ($params['operator'] === '>=' && $field1 < $field2) {
-            return $error($consts['GREATER_THAN']);
+            return $error($consts['GREATER_THAN'], []);
         }},"DataUri":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $matches, $decoded;
 // 
 
         $matches = [];
 
         if (!preg_match('#^data:(.+?/.+?)?(;charset=.+?)?(;base64)?,#iu', $value, $matches)) {
-            return $error($consts['INVALID']);
+            return $error($consts['INVALID'], []);
         }
 
         $decoded = base64_decode(substr($value, strlen($matches[0])), true);
 
         if ($decoded === false) {
-            return $error($consts['INVALID']);
+            return $error($consts['INVALID'], []);
         }
 
-        if ($params['size'] && $params['size'] < strlen($decoded)) {
-            $error($consts['INVALID_SIZE']);
+        if ($params['size'] && ini_parse_quantity($params['size']) < strlen($decoded)) {
+            $error($consts['INVALID_SIZE'], []);
         }
 
         if ($params['type'] && !in_array($matches[1], $params['allowTypes'], true)) {
-            $error($consts['INVALID_TYPE']);
+            $error($consts['INVALID_TYPE'], []);
         }},"Date":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $value00, $time;
 // 
 
@@ -5015,49 +5031,49 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }
 
         if ($time === false) {
-            $error($consts['INVALID_DATE']);
+            $error($consts['INVALID_DATE'], []);
         }
         else if (date($params['format'], $time) !== $value) {
-            $error($consts['FALSEFORMAT']);
+            $error($consts['FALSEFORMAT'], []);
         }},"Decimal":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $match;
 // 
 
         $match = [];
 
         if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value, $match)) {
-            return $error($consts['INVALID']);
+            return $error($consts['INVALID'], []);
         }
 
         $match[2] = (isset($match[2])) ? $match[2] : '';
         if (strlen($match[1]) > $params['int'] && strlen($match[2]) > $params['dec'] + 1) {
-            $error($consts['INVALID_INTDEC']);
+            $error($consts['INVALID_INTDEC'], []);
         }
         else if (strlen($match[1]) > $params['int']) {
-            $error($consts['INVALID_INT']);
+            $error($consts['INVALID_INT'], []);
         }
         else if (strlen($match[2]) > $params['dec'] + 1) {
-            $error($consts['INVALID_DEC']);
+            $error($consts['INVALID_DEC'], []);
         }},"Digits":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
 
         $value = ltrim($value, $params['sign']);
 
         if (!ctype_digit($value)) {
-            $error($consts['NOT_DIGITS']);
+            $error($consts['NOT_DIGITS'], []);
             return;
         }
         if ($params['mustDigit'] && $params['digit'] !== null && $params['digit'] !== strlen($value)) {
-            $error($consts['INVALID_DIGIT']);
+            $error($consts['INVALID_DIGIT'], []);
             return;
         }
         if (!$params['mustDigit'] && $params['digit'] !== null && $params['digit'] < strlen($value)) {
-            $error($consts['INVALID_DIGIT']);
+            $error($consts['INVALID_DIGIT'], []);
             return;
         }},"Distinct":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
 
         $value = preg_split($params['delimiter'], $value, -1, PREG_SPLIT_NO_EMPTY);
 
         if (count($value) !== count(array_unique($value))) {
-            $error($consts['NO_DISTINCT']);
+            $error($consts['NO_DISTINCT'], []);
         }},"EmailAddress":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $key;
 // 
 
@@ -5070,14 +5086,14 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
         $context['foreach']($value, function ($key, $value, $params, $error, $consts) {
             if (!preg_match($params['regex'], $value)) {
-                $error($consts['INVALID_FORMAT']);
+                $error($consts['INVALID_FORMAT'], []);
                 return false;
             }
         }, $params, $error, $consts);},"FileName":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $pathinfo;
 // 
 
         if (!preg_match($params['regex'], $value)) {
-            $error($consts['INVALID_FILENAME_STR']);
+            $error($consts['INVALID_FILENAME_STR'], []);
             return;
         }
 
@@ -5086,12 +5102,12 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         $pathinfo['filename'] = isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
 
         if (count($params['extensions']) && !in_array($pathinfo['extension'], $params['extensions'])) {
-            $error($consts['INVALID_FILENAME_EXT']);
+            $error($consts['INVALID_FILENAME_EXT'], []);
             return;
         }
 
         if (count($params['reserved']) && in_array(strtoupper($pathinfo['filename']), $params['reserved'])) {
-            $error($consts['INVALID_FILENAME_RESERVED']);
+            $error($consts['INVALID_FILENAME_RESERVED'], []);
             return;
         }},"FileSize":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $size;
 // 
@@ -5099,39 +5115,39 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         $size = filesize($value);
 
         if (!$size) {
-            $error($consts['INVALID']);
+            $error($consts['INVALID'], []);
         }
 
-        if ($size > $params['maxsize']) {
-            $error($consts['INVALID_OVER']);
+        if ($size > ini_parse_quantity($params['maxsize'])) {
+            $error($consts['INVALID_OVER'], []);
         }},"FileType":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $mimetype;
 // 
 
         $mimetype = mime_content_type($value);
 
         if (!$mimetype && !in_array('*', $params['mimetype'])) {
-            $error($consts['INVALID']);
+            $error($consts['INVALID'], []);
         }
 
         if (!in_array($mimetype, $params['mimetype'])) {
-            $error($consts['INVALID_TYPE']);
+            $error($consts['INVALID_TYPE'], []);
         }},"Hostname":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $checkport, $port, $require_port, $key, $matches;
 // 
 
         $checkport = function ($port, $require_port, $error, $consts) {
             if (strlen($port)) {
                 if ($require_port === false) {
-                    $error($consts['INVALID']);
+                    $error($consts['INVALID'], []);
                     return false;
                 }
                 if ($port > 65535) {
-                    $error($consts['INVALID_PORT']);
+                    $error($consts['INVALID_PORT'], []);
                     return false;
                 }
             }
             else {
                 if ($require_port === true) {
-                    $error($consts['INVALID_PORT']);
+                    $error($consts['INVALID_PORT'], []);
                     return false;
                 }
             }
@@ -5161,7 +5177,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
                 return true;
             }
 
-            $error($consts['INVALID']);
+            $error($consts['INVALID'], []);
             return false;
         }, $params, $checkport, $error, $consts);},"ImageSize":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $size;
 // 
@@ -5169,44 +5185,44 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         $size = await getimagesize($value);
 
         if ($size === false) {
-            $error($consts['INVALID']);
+            $error($consts['INVALID'], []);
             return;
         }
 
         if (!is_null($params['width']) && $params['width'] < $size[0]) {
-            $error($consts['INVALID_WIDTH']);
+            $error($consts['INVALID_WIDTH'], []);
         }
 
         if (!is_null($params['height']) && $params['height'] < $size[1]) {
-            $error($consts['INVALID_HEIGHT']);
+            $error($consts['INVALID_HEIGHT'], []);
         }},"InArray":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
 
         if ($params['strict'] === null) {
             if (!isset($params['haystack'][$value])) {
-                $error($consts['NOT_IN_ARRAY']);
+                $error($consts['NOT_IN_ARRAY'], []);
             }
         }
         else {
             if (!in_array($value, $params['haystack'], $params['strict'])) {
-                $error($consts['NOT_IN_ARRAY']);
+                $error($consts['NOT_IN_ARRAY'], []);
             }
         }},"Json":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $decode;
 // 
 
         $decode = json_decode($value, true);
         if ($decode === null && strtolower(trim($value)) !== 'null') {
-            $error($consts['INVALID']);
+            $error($consts['INVALID'], []);
             return;
         }},"NotInArray":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
 
         if ($params['strict'] === null) {
             if (isset($params['haystack'][$value])) {
-                $error($consts['VALUE_IN_ARRAY']);
+                $error($consts['VALUE_IN_ARRAY'], [['current', $value]]);
             }
         }
         else {
             if (in_array($value, $params['haystack'], $params['strict'])) {
-                $error($consts['VALUE_IN_ARRAY']);
+                $error($consts['VALUE_IN_ARRAY'], [['current', $value]]);
             }
         }},"Number":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $match;
 // 
@@ -5214,28 +5230,28 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         $match = [];
 
         if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value, $match)) {
-            return $error($consts['INVALID']);
+            return $error($consts['INVALID'], []);
         }
 
         $match[2] = (isset($match[2])) ? $match[2] : '';
         if (strlen($match[1]) > $params['int'] && strlen($match[2]) > $params['dec'] + 1) {
-            return $error($consts['INVALID_INTDEC']);
+            return $error($consts['INVALID_INTDEC'], []);
         }
         else if (strlen($match[1]) > $params['int']) {
-            return $error($consts['INVALID_INT']);
+            return $error($consts['INVALID_INT'], []);
         }
         else if (strlen($match[2]) > $params['dec'] + 1) {
-            return $error($consts['INVALID_DEC']);
+            return $error($consts['INVALID_DEC'], []);
         }
 
         if (!(+$params['min'] <= +$value && +$value <= +$params['max'])) {
-            return $error($consts['INVALID_MINMAX']);
+            return $error($consts['INVALID_MINMAX'], []);
         }},"Password":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $fulfill, $key, $regex, $counts;
 // 
 
         $fulfill = $context['foreach']($params['regexes'], function ($key, $regex, $value, $error, $consts) {
             if (!preg_match($regex, $value)) {
-                $error($consts['INVALID_PASSWORD_LESS']);
+                $error($consts['INVALID_PASSWORD_LESS'], []);
                 return false;
             }
         }, $value, $error, $consts);
@@ -5246,42 +5262,42 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
         $counts = array_count_values(str_split($value, 1));
         if (count($counts) < count($params['regexes']) * $params['repeat']) {
-            $error($consts['INVALID_PASSWORD_WEAK']);
+            $error($consts['INVALID_PASSWORD_WEAK'], []);
         }},"Range":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
 
         if ((!is_null($params['min']) && !is_null($params['max'])) && !($params['min'] <= $value && $value <= $params['max'])) {
-            $error($consts['INVALID_MINMAX']);
+            $error($consts['INVALID_MINMAX'], []);
         }
         else if ((!is_null($params['min']) && is_null($params['max'])) && ($params['min'] > $value)) {
-            $error($consts['INVALID_MIN']);
+            $error($consts['INVALID_MIN'], []);
         }
         else if ((is_null($params['min']) && !is_null($params['max'])) && ($value > $params['max'])) {
-            $error($consts['INVALID_MAX']);
+            $error($consts['INVALID_MAX'], []);
         }},"Regex":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $status;
 // 
 
         if (!is_string($value) && !is_int($value) && !is_float($value)) {
-            return $error($consts['INVALID']);
+            return $error($consts['INVALID'], []);
         }
 
         $status = preg_match($params['pattern'], $value);
         if (false === $status) {
-            $error($consts['ERROROUS']);
+            $error($consts['ERROROUS'], []);
         }
         else if (!$params['negation'] && !$status) {
-            $error($consts['NOT_MATCH']);
+            $error($consts['NOT_MATCH'], []);
         }
         else if ($params['negation'] && $status) {
-            $error($consts['NEGATION']);
+            $error($consts['NEGATION'], []);
         }},"Requires":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $nofify, $getDepend, $name, $carry, $statement, $field, $operator, $operand, $dvalue, $intersect;
 // 
 
         $nofify = function ($value, $error, $consts) {
             if (!is_array($value) && strval($value) === '') {
-                $error($consts['INVALID_TEXT']);
+                $error($consts['INVALID_TEXT'], []);
             }
             else if (is_array($value) && count($value) === 0) {
-                $error($consts['INVALID_MULTIPLE']);
+                $error($consts['INVALID_MULTIPLE'], []);
             }
         };
 
@@ -5349,16 +5365,15 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
             }, $statement, $getDepend, $context), true);
         }, $getDepend, $context), false)) {
             $nofify($value, $error, $consts);
-        }},"RequiresChild":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $cols, $_, $k, $n, $col, $carry, $c, $name, $values, $inputs, $operator, $operands, $intersect;
+        }},"RequiresChild":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $flipped, $cols, $v, $col, $cb, $carry, $c, $name, $values, $inputs, $operator, $operands, $intersect;
 // 
 
-        $cols = array_kmap(array_flip($params['children']), $context['function'](function ($_, $k, $n, $value, $context) {
-            $col = array_column($value, $k);
-            $col = array_reduce($col, $context['function'](function ($carry, $c, $context) {
-                return array_merge($carry, $context['cast']('array', $c));
-            }, $context), []);
-            return $col;
-        }, $value, $context));
+        $flipped = array_combine(array_values($params['children']), array_values($params['children']));
+        $cols = array_map($context['function'](function ($v, $value, $context) {
+            $col = array_column($value, $v);
+            $cb = ($carry, $c) => array_merge($carry, $context['cast']('array', $c));
+            return array_reduce($col, $context['function']($cb, $context), []);
+        }, $value, $context), $flipped);
 
         $context['foreach']($cols, function ($name, $values, $inputs, $consts, $error, $context) {
             $operator = $inputs[$name][0];
@@ -5370,10 +5385,10 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
             );
 
             if ($operator === 'any' && !count($intersect)) {
-                $error($consts['NOT_CONTAIN']);
+                $error($consts['NOT_CONTAIN'], []);
             }
             if ($operator === 'all' && count($intersect) !== count($operands)) {
-                $error($consts['NOT_CONTAIN']);
+                $error($consts['NOT_CONTAIN'], []);
             }
         }, $params['inputs'], $consts, $error, $context);},"Step":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $match;
 // 
@@ -5381,64 +5396,69 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         $match = [];
         if (isset($params['timeunit']['h']) && isset($params['timeunit']['i'])) {
             if (!preg_match('#(\\d{1,2}):?(\\d{1,2})(:?(\\d{1,2}))?$#u', $value, $match)) {
-                return $error($consts['INVALID']);
+                return $error($consts['INVALID'], []);
             }
             $value = (3600 * $match[1]) + (60 * $match[2]) + intval($match[4] ?? 0);
         }
         else if (isset($params['timeunit']['i']) && isset($params['timeunit']['s'])) {
             if (!preg_match('#(\\d{1,2}):?(\\d{1,2})$#u', $value, $match)) {
-                return $error($consts['INVALID']);
+                return $error($consts['INVALID'], []);
             }
             $value = (60 * $match[1]) + intval($match[2] ?? 0);
         }
         else {
             if (!preg_match('#^-?([1-9]\\d*|0)(\\.\\d+)?$#u', $value)) {
-                return $error($consts['INVALID']);
+                return $error($consts['INVALID'], []);
             }
         }
         if (abs(round($value / $params['step']) * $params['step'] - $value) > pow(2, -52)) {
             if (count($params['timeunit'])) {
-                $error($consts['INVALID_TIME']);
+                $error($consts['INVALID_TIME'], []);
             }
             else {
-                $error($consts['INVALID_STEP']);
+                $error($consts['INVALID_STEP'], []);
             }
         }},"StringLength":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $length;
 // 
 
-        $length = $params['grapheme'] ? grapheme_strlen($value) : mb_strlen($value);
+        $length = mb_strlen($value);
 
         if (!is_null($params['max']) && !is_null($params['min']) && ($length > $params['max'] || $length < $params['min'])) {
             if ($params['min'] === $params['max']) {
-                $error($consts['DIFFERENT']);
+                $error($consts['DIFFERENT'], []);
             }
             else {
-                $error($consts['SHORTLONG']);
+                $error($consts['SHORTLONG'], []);
             }
         }
         else if (is_null($params['max']) && !is_null($params['min']) && $length < $params['min']) {
-            $error($consts['TOO_SHORT']);
+            $error($consts['TOO_SHORT'], []);
         }
         else if (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
-            $error($consts['TOO_LONG']);
-        }},"StringWidth":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $length;
+            $error($consts['TOO_LONG'], []);
+        }},"StringWidth":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $length, $c;
 // 
 
-        $length = mb_strwidth($value);
+        $length = array_sum(array_map(function ($c) {
+            if ($c === "‍") {
+                return -1;
+            }
+            return strlen($c) === 1 ? 1 : 2;
+        }, mb_str_split($value)));
 
         if (!is_null($params['max']) && !is_null($params['min']) && ($length > $params['max'] || $length < $params['min'])) {
             if ($params['min'] === $params['max']) {
-                $error($consts['DIFFERENT']);
+                $error($consts['DIFFERENT'], []);
             }
             else {
-                $error($consts['SHORTLONG']);
+                $error($consts['SHORTLONG'], []);
             }
         }
         else if (is_null($params['max']) && !is_null($params['min']) && $length < $params['min']) {
-            $error($consts['TOO_SHORT']);
+            $error($consts['TOO_SHORT'], []);
         }
         else if (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
-            $error($consts['TOO_LONG']);
+            $error($consts['TOO_LONG'], []);
         }},"Telephone":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $key;
 // 
 
@@ -5452,22 +5472,22 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         $context['foreach']($value, function ($key, $value, $params, $error, $consts) {
             // 明らかに電話番号っぽくない場合のチェック
             if (mb_strlen($value) > $params['maxlength']) {
-                $error($consts['INVALID']);
+                $error($consts['INVALID'], []);
                 return false;
             }
 
             // 電話番号っぽいが細部がおかしい場合
             if (!preg_match($params['pattern'], $value)) {
                 if ($params['hyphen'] === null) {
-                    $error($consts['INVALID_TELEPHONE']);
+                    $error($consts['INVALID_TELEPHONE'], []);
                     return false;
                 }
                 else if ($params['hyphen'] === true) {
-                    $error($consts['INVALID_WITH_HYPHEN']);
+                    $error($consts['INVALID_WITH_HYPHEN'], []);
                     return false;
                 }
                 else if ($params['hyphen'] === false) {
-                    $error($consts['INVALID_NONE_HYPHEN']);
+                    $error($consts['INVALID_NONE_HYPHEN'], []);
                     return false;
                 }
             }
@@ -5488,27 +5508,26 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
         $acv = array_count_values($context['values']);
         if ($acv[$params['strict'] ? $value : strtolower($value)] > 1) {
-            $error($consts['NO_UNIQUE']);
+            $error($consts['NO_UNIQUE'], []);
             return false;
         }
     
-            })();},"UniqueChild":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $rows, $row, $k, $n, $children, $v;
+            })();},"UniqueChild":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $rows, $row, $children, $cb, $v;
 // 
 
-        $rows = array_kmap($value, $context['function'](function ($row, $k, $n, $children, $context) {
+        $rows = array_map($context['function'](function ($row, $children, $context) {
             $row = array_intersect_key($row, $children);
-            $row = array_kmap($row, $context['function'](function ($v, $k, $n, $context) {
-                return implode("\x1f", $context['cast']('array', $v));
-            }, $context));
+            $cb = ($v, $context) => implode("\x1f", $context['cast']('array', $v));
+            $row = array_map($context['function']($cb, $context), $row);
             return implode("\x1e", $row);
-        }, array_flip($params['children']), $context));
+        }, array_flip($params['children']), $context), $value);
 
         if ($params['ignore_empty']) {
             $rows = array_filter($rows, ($row) => strlen(trim($row, "\x1e")));
         }
 
         if (count($rows) !== count(array_unique($rows))) {
-            $error($consts['NO_UNIQUE']);
+            $error($consts['NO_UNIQUE'], []);
         }},"Uri":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $key, $parsed;
 // 
 
@@ -5523,15 +5542,15 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
             $parsed = parse_url($value);
 
             if (!$parsed || !isset($parsed['scheme'])) {
-                $error($consts['INVALID']);
+                $error($consts['INVALID'], []);
                 return false;
             }
             else if (count($params['schemes']) && !in_array($parsed['scheme'], $params['schemes'])) {
-                $error($consts['INVALID_SCHEME']);
+                $error($consts['INVALID_SCHEME'], []);
                 return false;
             }
             else if (!isset($parsed['host'])) {
-                $error($consts['INVALID_HOST']);
+                $error($consts['INVALID_HOST'], []);
                 return false;
             }
         }, $params, $error, $consts);}};/*
@@ -5539,12 +5558,12 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
     /// エラー定数のインポート
     /**/
-this.constants = {"Ajax":{"INVALID":"AjaxInvalid"},"AlphaDigit":{"INVALID":"AlphaNumericInvalid","INVALID_FIRST_NUMBER":"AlphaNumericFirstNumber","INVALID_UNDERSCORE":"AlphaNumericUnderscore","INVALID_UPPERCASE":"AlphaNumericUpperCase","INVALID_LOWERCASE":"AlphaNumericLowerCase","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"ArrayExclusion":{"INVALID":"ArrayExclusionInvalid","INVALID_INCLUSION":"ArrayExclusionInclusion"},"ArrayLength":{"INVALID":"ArrayLengthInvalidLength","TOO_SHORT":"ArrayLengthInvalidMin","TOO_LONG":"ArrayLengthInvalidMax","SHORTLONG":"ArrayLengthInvalidMinMax"},"Aruiha":{"INVALID":"AruihaInvalid"},"Callback":{"INVALID":"CallbackInvalid"},"Compare":{"INVALID":"compareInvalid","EQUAL":"compareEqual","NOT_EQUAL":"compareNotEqual","LESS_THAN":"compareLessThan","GREATER_THAN":"compareGreaterThan","SIMILAR":"compareSimilar"},"DataUri":{"INVALID":"dataUriInvalid","INVALID_SIZE":"dataUriInvalidSize","INVALID_TYPE":"dataUriInvalidType"},"Date":{"INVALID":"dateInvalid","INVALID_DATE":"dateInvalidDate","FALSEFORMAT":"dateFalseFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Decimal":{"INVALID":"DecimalInvalid","INVALID_INT":"DecimalInvalidInt","INVALID_DEC":"DecimalInvalidDec","INVALID_INTDEC":"DecimalInvalidIntDec","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Digits":{"INVALID":"notDigits","NOT_DIGITS":"digitsInvalid","INVALID_DIGIT":"digitsInvalidDigit","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Distinct":{"INVALID":"DistinctInvalid","NO_DISTINCT":"DistinctNoDistinct"},"EmailAddress":{"INVALID":"emailAddressInvalid","INVALID_FORMAT":"emailAddressInvalidFormat","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileName":{"INVALID":"InvalidFileName","INVALID_FILENAME_STR":"InvalidFileNameStr","INVALID_FILENAME_EXT":"InvalidFileNameExt","INVALID_FILENAME_RESERVED":"InvalidFileNameReserved","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"FileSize":{"INVALID":"FileSizeInvalid","INVALID_OVER":"FileSizeInvalidOver"},"FileType":{"INVALID":"FileTypeInvalid","INVALID_TYPE":"FileTypeInvalidType"},"Hostname":{"INVALID":"InvalidHostname","INVALID_PORT":"InvalidHostnamePort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"ImageSize":{"INVALID":"ImageFileInvalid","INVALID_WIDTH":"ImageFileInvalidWidth","INVALID_HEIGHT":"ImageFileInvalidHeight"},"InArray":{"INVALID":"InvalidInArray","NOT_IN_ARRAY":"notInArray"},"Json":{"INVALID":"JsonInvalid","INVALID_INVALID_SCHEMA":"JsonInvalidSchema"},"NotInArray":{"INVALID":"InvalidNotInArray","VALUE_IN_ARRAY":"valueInArray"},"Number":{"INVALID":"NumberInvalid","INVALID_INT":"NumberInvalidInt","INVALID_DEC":"NumberInvalidDec","INVALID_INTDEC":"NumberInvalidIntDec","INVALID_MIN":"NumberMin","INVALID_MAX":"NumberMax","INVALID_MINMAX":"NumberMinMax","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Password":{"INVALID":"InvalidPassword","INVALID_PASSWORD_LESS":"InvalidPasswordLess","INVALID_PASSWORD_WEAK":"InvalidPasswordWeak","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Range":{"INVALID":"RangeInvalid","INVALID_MIN":"RangeInvalidMin","INVALID_MAX":"RangeInvalidMax","INVALID_MINMAX":"RangeInvalidMinMax","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Regex":{"INVALID":"regexInvalid","ERROROUS":"regexErrorous","NOT_MATCH":"regexNotMatch","NEGATION":"regexNegation"},"Requires":{"INVALID":"RequireInvalid","INVALID_TEXT":"RequireInvalidText","INVALID_MULTIPLE":"RequireInvalidSelectSingle"},"RequiresChild":{"INVALID":"RequiresChildInvalid","NOT_CONTAIN":"RequiresChildNotContain"},"Step":{"INVALID":"StepInvalid","INVALID_STEP":"StepInvalidInt","INVALID_TIME":"StepInvalidTime","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"StringLength":{"INVALID":"StringLengthInvalidLength","TOO_SHORT":"StringLengthInvalidMin","TOO_LONG":"StringLengthInvalidMax","SHORTLONG":"StringLengthInvalidMinMax","DIFFERENT":"StringLengthInvalidDifferenr"},"StringWidth":{"INVALID":"StringWidthInvalidLength","TOO_SHORT":"StringWidthInvalidMin","TOO_LONG":"StringWidthInvalidMax","SHORTLONG":"StringWidthInvalidMinMax","DIFFERENT":"StringWidthInvalidDifferenr"},"Telephone":{"INVALID":"InvalidTelephone","INVALID_TELEPHONE":"InvalidTelephoneNumber","INVALID_WITH_HYPHEN":"InvalidTelephoneWithHyphen","INVALID_NONE_HYPHEN":"InvalidTelephoneNoneHyphen","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4},"Unique":{"INVALID":"UniqueInvalid","NO_UNIQUE":"UniqueNoUnique"},"UniqueChild":{"INVALID":"UniqueChildInvalid","NO_UNIQUE":"UniqueChildNoUnique"},"Uri":{"INVALID":"UriInvalid","INVALID_SCHEME":"UriInvalidScheme","INVALID_HOST":"UriInvalidHost","INVALID_PORT":"UriInvalidPort","AUTO":1,"ACTIVE":2,"INACTIVE":3,"DISABLED":4}};/*
+this.constants = {"Ajax":{"INVALID":"AjaxInvalid"},"AlphaDigit":{"INVALID_ALPHADIGIT":"AlphaNumericInvalid","INVALID_FIRST_NUMBER":"AlphaNumericFirstNumber","INVALID_UPPERCASE":"AlphaNumericUpperCase","INVALID_LOWERCASE":"AlphaNumericLowerCase","INVALID":"InvalidAbstract"},"ArrayExclusion":{"INVALID_INCLUSION":"ArrayExclusionInclusion","INVALID":"InvalidAbstract"},"ArrayLength":{"INVALID":"ArrayLengthInvalidLength","TOO_SHORT":"ArrayLengthInvalidMin","TOO_LONG":"ArrayLengthInvalidMax","SHORTLONG":"ArrayLengthInvalidMinMax"},"Aruiha":{"INVALID_ARUIHA":"AruihaInvalid","INVALID":"InvalidAbstract"},"Callback":{"INVALID":"CallbackInvalid"},"Compare":{"INVALID":"compareInvalid","EQUAL":"compareEqual","NOT_EQUAL":"compareNotEqual","LESS_THAN":"compareLessThan","GREATER_THAN":"compareGreaterThan","SIMILAR":"compareSimilar"},"DataUri":{"INVALID":"dataUriInvalid","INVALID_SIZE":"dataUriInvalidSize","INVALID_TYPE":"dataUriInvalidType"},"Date":{"INVALID":"dateInvalid","INVALID_DATE":"dateInvalidDate","FALSEFORMAT":"dateFalseFormat"},"Decimal":{"INVALID":"DecimalInvalid","INVALID_INT":"DecimalInvalidInt","INVALID_DEC":"DecimalInvalidDec","INVALID_INTDEC":"DecimalInvalidIntDec"},"Digits":{"INVALID":"notDigits","NOT_DIGITS":"digitsInvalid","INVALID_DIGIT":"digitsInvalidDigit"},"Distinct":{"INVALID":"DistinctInvalid","NO_DISTINCT":"DistinctNoDistinct"},"EmailAddress":{"INVALID":"emailAddressInvalid","INVALID_FORMAT":"emailAddressInvalidFormat"},"FileName":{"INVALID":"InvalidFileName","INVALID_FILENAME_STR":"InvalidFileNameStr","INVALID_FILENAME_EXT":"InvalidFileNameExt","INVALID_FILENAME_RESERVED":"InvalidFileNameReserved"},"FileSize":{"INVALID":"FileSizeInvalid","INVALID_OVER":"FileSizeInvalidOver"},"FileType":{"INVALID":"FileTypeInvalid","INVALID_TYPE":"FileTypeInvalidType"},"Hostname":{"INVALID":"InvalidHostname","INVALID_PORT":"InvalidHostnamePort"},"ImageSize":{"INVALID":"ImageFileInvalid","INVALID_WIDTH":"ImageFileInvalidWidth","INVALID_HEIGHT":"ImageFileInvalidHeight"},"InArray":{"INVALID":"InvalidInArray","NOT_IN_ARRAY":"notInArray"},"Json":{"INVALID":"JsonInvalid","INVALID_INVALID_SCHEMA":"JsonInvalidSchema"},"NotInArray":{"INVALID":"InvalidNotInArray","VALUE_IN_ARRAY":"valueInArray"},"Number":{"INVALID":"NumberInvalid","INVALID_INT":"NumberInvalidInt","INVALID_DEC":"NumberInvalidDec","INVALID_INTDEC":"NumberInvalidIntDec","INVALID_MIN":"NumberMin","INVALID_MAX":"NumberMax","INVALID_MINMAX":"NumberMinMax"},"Password":{"INVALID":"InvalidPassword","INVALID_PASSWORD_LESS":"InvalidPasswordLess","INVALID_PASSWORD_WEAK":"InvalidPasswordWeak"},"Range":{"INVALID":"RangeInvalid","INVALID_MIN":"RangeInvalidMin","INVALID_MAX":"RangeInvalidMax","INVALID_MINMAX":"RangeInvalidMinMax"},"Regex":{"INVALID":"regexInvalid","ERROROUS":"regexErrorous","NOT_MATCH":"regexNotMatch","NEGATION":"regexNegation"},"Requires":{"INVALID":"RequireInvalid","INVALID_TEXT":"RequireInvalidText","INVALID_MULTIPLE":"RequireInvalidSelectSingle"},"RequiresChild":{"INVALID":"RequiresChildInvalid","NOT_CONTAIN":"RequiresChildNotContain"},"Step":{"INVALID":"StepInvalid","INVALID_STEP":"StepInvalidInt","INVALID_TIME":"StepInvalidTime"},"StringLength":{"INVALID":"StringLengthInvalidLength","TOO_SHORT":"StringLengthInvalidMin","TOO_LONG":"StringLengthInvalidMax","SHORTLONG":"StringLengthInvalidMinMax","DIFFERENT":"StringLengthInvalidDifferenr"},"StringWidth":{"INVALID":"StringWidthInvalidLength","TOO_SHORT":"StringWidthInvalidMin","TOO_LONG":"StringWidthInvalidMax","SHORTLONG":"StringWidthInvalidMinMax","DIFFERENT":"StringWidthInvalidDifferenr"},"Telephone":{"INVALID":"InvalidTelephone","INVALID_TELEPHONE":"InvalidTelephoneNumber","INVALID_WITH_HYPHEN":"InvalidTelephoneWithHyphen","INVALID_NONE_HYPHEN":"InvalidTelephoneNoneHyphen"},"Unique":{"INVALID":"UniqueInvalid","NO_UNIQUE":"UniqueNoUnique"},"UniqueChild":{"INVALID":"UniqueChildInvalid","NO_UNIQUE":"UniqueChildNoUnique"},"Uri":{"INVALID":"UriInvalid","INVALID_SCHEME":"UriInvalidScheme","INVALID_HOST":"UriInvalidHost","INVALID_PORT":"UriInvalidPort"}};/*
 */
 
     /// エラー文言のインポート
     /**/
-this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できない文字が含まれています","AlphaNumericFirstNumber":"先頭に数値は使えません","AlphaNumericUnderscore":"アンダースコアは使えません","AlphaNumericUpperCase":"大文字は使えません","AlphaNumericLowerCase":"小文字は使えません"},"ArrayExclusion":{"ArrayExclusionInvalid":"Invalid value given","ArrayExclusionInclusion":"%message%は同時選択できません"},"ArrayLength":{"ArrayLengthInvalidLength":"Invalid value given","ArrayLengthInvalidMin":"%min%件以上は入力してください","ArrayLengthInvalidMax":"%max%件以下で入力して下さい","ArrayLengthInvalidMinMax":"%min%件～%max%件を入力して下さい"},"Aruiha":{"AruihaInvalid":"必ず呼び出し元で再宣言する"},"Callback":{"CallbackInvalid":"クロージャの戻り値で上書きされる"},"Compare":{"compareInvalid":"Invalid value given","compareEqual":"%operand%と同じ値を入力してください","compareNotEqual":"%operand%と異なる値を入力してください","compareLessThan":"%operand%より小さい値を入力してください","compareGreaterThan":"%operand%より大きい値を入力してください"},"DataUri":{"dataUriInvalid":"Invalid value given","dataUriInvalidSize":"%size_message%以下で入力してください","dataUriInvalidType":"%type_message%形式で入力してください"},"Date":{"dateInvalid":"Invalid value given","dateInvalidDate":"有効な日付を入力してください","dateFalseFormat":"%format%形式で入力してください"},"Decimal":{"DecimalInvalid":"小数値を入力してください","DecimalInvalidInt":"整数部分を%int%桁以下で入力してください","DecimalInvalidDec":"小数部分を%dec%桁以下で入力してください","DecimalInvalidIntDec":"整数部分を%int%桁、小数部分を%dec%桁以下で入力してください"},"Digits":{"notDigits":"Invalid value given","digitsInvalid":"整数を入力してください","digitsInvalidDigit":"%digit%桁で入力してください"},"Distinct":{"DistinctInvalid":"Invalid value given","DistinctNoDistinct":"重複した値が含まれています"},"EmailAddress":{"emailAddressInvalid":"Invalid value given","emailAddressInvalidFormat":"メールアドレスを正しく入力してください"},"FileName":{"InvalidFileName":"Invalid value given","InvalidFileNameStr":"有効なファイル名を入力してください","InvalidFileNameExt":"%extensions%ファイル名を入力してください","InvalidFileNameReserved":"使用できないファイル名です"},"FileSize":{"FileSizeInvalid":"入力ファイルが不正です","FileSizeInvalidOver":"ファイルサイズが大きすぎます。%message%以下のファイルを選択してください"},"FileType":{"FileTypeInvalid":"入力ファイルが不正です","FileTypeInvalidType":"%type%形式のファイルを選択して下さい"},"Hostname":{"InvalidHostname":"ホスト名を正しく入力してください","InvalidHostnamePort":"ポート番号を正しく入力してください"},"ImageSize":{"ImageFileInvalid":"画像ファイルを入力してください","ImageFileInvalidWidth":"横サイズは%width%ピクセル以下で選択してください","ImageFileInvalidHeight":"縦サイズは%height%ピクセル以下で選択してください"},"InArray":{"InvalidInArray":"Invalid value given","notInArray":"選択値が不正です"},"Json":{"JsonInvalid":"JSON文字列が不正です","JsonInvalidSchema":"キーが不正です"},"NotInArray":{"InvalidNotInArray":"Invalid value given","valueInArray":"選択値が不正です"},"Number":{"NumberInvalid":"数値を入力してください","NumberInvalidInt":"整数部分を%int%桁以下で入力してください","NumberInvalidDec":"小数部分を%dec%桁以下で入力してください","NumberInvalidIntDec":"整数部分を%int%桁、小数部分を%dec%桁以下で入力してください","NumberMin":"%min%以上で入力して下さい","NumberMax":"%max%以下で入力して下さい","NumberMinMax":"%min%以上%max%以下で入力して下さい"},"Password":{"InvalidPassword":"Invalid value given","InvalidPasswordLess":"%char_types%を含めてください","InvalidPasswordWeak":"%char_types%のいずれかを%repeat%文字以上含めてください"},"Range":{"RangeInvalid":"Invalid value given","RangeInvalidMin":"%min%以上で入力して下さい","RangeInvalidMax":"%max%以下で入力して下さい","RangeInvalidMinMax":"%min%以上%max%以下で入力して下さい"},"Regex":{"regexInvalid":"Invalid value given","regexErrorous":"There was%pattern%'","regexNotMatch":"パターンに一致しません","regexNegation":"使用できない文字が含まれています"},"Requires":{"RequireInvalid":"Invalid value given","RequireInvalidText":"入力必須です","RequireInvalidSelectSingle":"選択してください"},"RequiresChild":{"RequiresChildInvalid":"Invalid value given","RequiresChildNotContain":"必須項目を含んでいません"},"Step":{"StepInvalid":"Invalid value given","StepInvalidInt":"%step%の倍数で入力してください","StepInvalidTime":"%timemessage%単位で入力してください"},"StringLength":{"StringLengthInvalidLength":"Invalid value given","StringLengthInvalidMin":"%min%文字以上で入力して下さい","StringLengthInvalidMax":"%max%文字以下で入力して下さい","StringLengthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringLengthInvalidDifferenr":"%min%文字で入力して下さい"},"StringWidth":{"StringWidthInvalidLength":"Invalid value given","StringWidthInvalidMin":"%min%文字以上で入力して下さい","StringWidthInvalidMax":"%max%文字以下で入力して下さい","StringWidthInvalidMinMax":"%min%文字～%max%文字で入力して下さい","StringWidthInvalidDifferenr":"%min%文字で入力して下さい"},"Telephone":{"InvalidTelephone":"電話番号を正しく入力してください","InvalidTelephoneNumber":"電話番号を入力してください","InvalidTelephoneWithHyphen":"ハイフン付きで電話番号を入力してください","InvalidTelephoneNoneHyphen":"ハイフン無しで電話番号を入力してください"},"Unique":{"UniqueInvalid":"Invalid value given","UniqueNoUnique":"値が重複しています"},"UniqueChild":{"UniqueChildInvalid":"Invalid value given","UniqueChildNoUnique":"値が重複しています"},"Uri":{"UriInvalid":"URLをスキームから正しく入力してください","UriInvalidScheme":"スキームが不正です(%schemes%のみ)","UriInvalidHost":"ホスト名が不正です","UriInvalidPort":"ポート番号が不正です"}};/*
+this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できない文字が含まれています","AlphaNumericFirstNumber":"先頭に数値は使えません","AlphaNumericUpperCase":"大文字は使えません","AlphaNumericLowerCase":"小文字は使えません"},"ArrayExclusion":{"ArrayExclusionInclusion":"${implode(\",\", _set)}は同時選択できません"},"ArrayLength":{"ArrayLengthInvalidLength":"Invalid value given","ArrayLengthInvalidMin":"${_min}件以上は入力してください","ArrayLengthInvalidMax":"${_max}件以下で入力して下さい","ArrayLengthInvalidMinMax":"${_min}件～${_max}件を入力して下さい"},"Aruiha":{"AruihaInvalid":"必ず呼び出し元で再宣言する"},"Callback":{"CallbackInvalid":"クロージャの戻り値で上書きされる"},"Compare":{"compareInvalid":"Invalid value given","compareEqual":"「${$resolveTitle(_operand)}」と同じ値を入力してください","compareNotEqual":"「${$resolveTitle(_operand)}」と異なる値を入力してください","compareLessThan":"「${$resolveTitle(_operand)}」より小さい値を入力してください","compareGreaterThan":"「${$resolveTitle(_operand)}」より大きい値を入力してください"},"DataUri":{"dataUriInvalid":"Invalid value given","dataUriInvalidSize":"${_size}B以下で入力してください","dataUriInvalidType":"${implode(\",\", _type)}形式で入力してください"},"Date":{"dateInvalid":"Invalid value given","dateInvalidDate":"有効な日付を入力してください","dateFalseFormat":"${_format}形式で入力してください"},"Decimal":{"DecimalInvalid":"小数値を入力してください","DecimalInvalidInt":"整数部分を${_int}桁以下で入力してください","DecimalInvalidDec":"小数部分を${_dec}桁以下で入力してください","DecimalInvalidIntDec":"整数部分を${_int}桁、小数部分を${_dec}桁以下で入力してください"},"Digits":{"notDigits":"Invalid value given","digitsInvalid":"整数を入力してください","digitsInvalidDigit":"${_digit}桁で入力してください"},"Distinct":{"DistinctInvalid":"Invalid value given","DistinctNoDistinct":"重複した値が含まれています"},"EmailAddress":{"emailAddressInvalid":"Invalid value given","emailAddressInvalidFormat":"メールアドレスを正しく入力してください"},"FileName":{"InvalidFileName":"Invalid value given","InvalidFileNameStr":"有効なファイル名を入力してください","InvalidFileNameExt":"${implode(\",\", _extensions)}のファイル名を入力してください","InvalidFileNameReserved":"使用できないファイル名です"},"FileSize":{"FileSizeInvalid":"入力ファイルが不正です","FileSizeInvalidOver":"${_maxsize}B以下のファイルを選択してください"},"FileType":{"FileTypeInvalid":"入力ファイルが不正です","FileTypeInvalidType":"${implode(\",\", array_keys(_allowTypes))}形式のファイルを選択して下さい"},"Hostname":{"InvalidHostname":"ホスト名を正しく入力してください","InvalidHostnamePort":"ポート番号を正しく入力してください"},"ImageSize":{"ImageFileInvalid":"画像ファイルを入力してください","ImageFileInvalidWidth":"横サイズは${_width}ピクセル以下で選択してください","ImageFileInvalidHeight":"縦サイズは${_height}ピクセル以下で選択してください"},"InArray":{"InvalidInArray":"Invalid value given","notInArray":"選択値が不正です"},"Json":{"JsonInvalid":"JSON文字列が不正です","JsonInvalidSchema":"キーが不正です"},"NotInArray":{"InvalidNotInArray":"Invalid value given","valueInArray":"${$resolveLabel(current)}は不正です"},"Number":{"NumberInvalid":"数値を入力してください","NumberInvalidInt":"整数部分を${_int}桁以下で入力してください","NumberInvalidDec":"小数部分を${_dec}桁以下で入力してください","NumberInvalidIntDec":"整数部分を${_int}桁、小数部分を${_dec}桁以下で入力してください","NumberMin":"${_min}以上で入力して下さい","NumberMax":"${_max}以下で入力して下さい","NumberMinMax":"${_min}以上${_max}以下で入力して下さい"},"Password":{"InvalidPassword":"Invalid value given","InvalidPasswordLess":"${implode(\",\", array_keys(_charlists))}を含めてください","InvalidPasswordWeak":"${implode(\",\", array_keys(_charlists))}のいずれかを${_repeat}文字以上含めてください"},"Range":{"RangeInvalid":"Invalid value given","RangeInvalidMin":"${_min}以上で入力して下さい","RangeInvalidMax":"${_max}以下で入力して下さい","RangeInvalidMinMax":"${_min}以上${_max}以下で入力して下さい"},"Regex":{"regexInvalid":"Invalid value given","regexErrorous":"There was${_pattern}","regexNotMatch":"パターンに一致しません","regexNegation":"使用できない文字が含まれています"},"Requires":{"RequireInvalid":"Invalid value given","RequireInvalidText":"入力必須です","RequireInvalidSelectSingle":"選択してください"},"RequiresChild":{"RequiresChildInvalid":"Invalid value given","RequiresChildNotContain":"必須項目を含んでいません"},"Step":{"StepInvalid":"Invalid value given","StepInvalidInt":"${_step}の倍数で入力してください","StepInvalidTime":"${_timemessage}単位で入力してください"},"StringLength":{"StringLengthInvalidLength":"Invalid value given","StringLengthInvalidMin":"${_min}文字以上で入力して下さい","StringLengthInvalidMax":"${_max}文字以下で入力して下さい","StringLengthInvalidMinMax":"${_min}文字～${_max}文字で入力して下さい","StringLengthInvalidDifferenr":"${_min}文字で入力して下さい"},"StringWidth":{"StringWidthInvalidLength":"Invalid value given","StringWidthInvalidMin":"${_min}文字以上で入力して下さい","StringWidthInvalidMax":"${_max}文字以下で入力して下さい","StringWidthInvalidMinMax":"${_min}文字～${_max}文字で入力して下さい","StringWidthInvalidDifferenr":"${_min}文字で入力して下さい"},"Telephone":{"InvalidTelephone":"電話番号を正しく入力してください","InvalidTelephoneNumber":"電話番号を入力してください","InvalidTelephoneWithHyphen":"ハイフン付きで電話番号を入力してください","InvalidTelephoneNoneHyphen":"ハイフン無しで電話番号を入力してください"},"Unique":{"UniqueInvalid":"Invalid value given","UniqueNoUnique":"${value}が重複しています"},"UniqueChild":{"UniqueChildInvalid":"Invalid value given","UniqueChildNoUnique":"値が重複しています"},"Uri":{"UriInvalid":"URLをスキームから正しく入力してください","UriInvalidScheme":"スキームが不正です(${implode(\",\", _schemes)}のみ)","UriInvalidHost":"ホスト名が不正です","UriInvalidPort":"ポート番号が不正です"}};/*
 */
 
     /// 初期化（コンストラクション）
@@ -5604,6 +5623,22 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         }
 
         return already;
+    }
+
+    function templateFunction(vars) {
+        var entries = Object.entries(vars);
+        var args = entries.map(e => e[0]);
+        var vals = entries.map(e => e[1]);
+
+        return function (template, tag) {
+            try {
+                const F = new Function(...args, 'return ' + (tag ?? '') + '`' + template + '`');
+                return F(...vals);
+            }
+            catch (e) {
+                console.error(e);
+            }
+        };
     }
 
     function addError(input, result) {
@@ -5758,7 +5793,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                 let cond = condition[keys[k]];
                 let cname = cond.cname;
                 let level = cond.level;
-                var error = function (err) {
+                var error = function (err, vars) {
                     if (evt.chmonosSubtypes) {
                         if (evt.chmonosSubtypes.includes('noerror')) {
                             return;
@@ -5801,12 +5836,24 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                         if (errorTypes[level][cname] === undefined) {
                             errorTypes[level][cname] = {};
                         }
-                        errorTypes[level][cname][err] = ret.replace(/%(.+?)%/g, function (p0, p1) {
-                            if (cond['param'][p1] !== undefined) {
-                                return cond['param'][p1];
-                            }
-                            return p0;
-                        });
+
+                        const values = Object.assign({
+                            "$resolveTitle": function (member, target) {
+                                target = target ?? input;
+                                return chmonos.brother(target, member)[0]?.dataset?.validationTitle ?? member;
+                            },
+                            "$resolveLabel": function (value, target) {
+                                target = target ?? input;
+                                if (target.tagName === 'SELECT') {
+                                    return target.querySelector('option[value="' + value + '"]')?.label ?? '';
+                                }
+                                else {
+                                    return form.querySelector('input[name="' + target.name + '"][value="' + value + '"]')?.labels[0]?.textContent ?? '';
+                                }
+                            },
+                            'value': value,
+                        }, chmonos.phpjs, Object.fromEntries(vars ?? []), Object.fromEntries(Object.entries(cond['param']).map(kv => ['_' + kv[0], kv[1]])));
+                        errorTypes[level][cname][err] = templateFunction(values)(ret);
                     }
                 };
                 // 値が空の場合は Requires しか検証しない（空かどうかの制御を他の condition に任せたくない）
@@ -6016,36 +6063,47 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
             try {
                 chmonos.validate(e).then(function (result) {
                     var done = function () {
-                        if (e.submitter) {
-                            setTimeout(function () {
-                                form.removeEventListener('submit', submit);
-                                if (form.dispatchEvent(new CustomEvent('submitting', {
-                                    bubbles: true,
-                                    cancelable: true,
-                                }))) {
+                        var submittingEvent = new CustomEvent('submitting', {
+                            bubbles: true,
+                            cancelable: true,
+                            detail: {
+                                submitter: e.submitter ?? null,
+                            },
+                        });
+                        var submittedEvent = new CustomEvent('submitted', {
+                            bubbles: true,
+                            detail: {
+                                submitter: e.submitter ?? null,
+                            },
+                        });
+                        var array = (e.submitter?.getAttribute('formenctype') ?? '').includes('array=delimitable');
+                        if (!array && !e.submitter?.hasAttribute('formenctype')) {
+                            array = (form.getAttribute('enctype') ?? '').includes('array=delimitable');
+                        }
+                        if (array && (e.submitter?.formMethod || form.method) === 'get') {
+                            var target = e.submitter?.formTarget || form.target;
+                            if (target) {
+                                window.open(chmonos.url(e.submitter), target);
+                            }
+                            else {
+                                location.href = chmonos.url(e.submitter);
+                            }
+                            return;
+                        }
+                        setTimeout(function () {
+                            // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
+                            form.removeEventListener('submit', submit);
+                            if (form.dispatchEvent(submittingEvent)) {
+                                if (e.submitter) {
                                     e.submitter.click();
                                 }
-                                form.dispatchEvent(new CustomEvent('submitted', {
-                                    bubbles: true,
-                                }));
-                                form.addEventListener('submit', submit);
-                            }, 0);
-                        }
-                        else {
-                            // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
-                            // 発火するしないは規定されていないらしいので念の為に付け外す
-                            form.removeEventListener('submit', submit);
-                            if (form.dispatchEvent(new CustomEvent('submitting', {
-                                bubbles: true,
-                                cancelable: true,
-                            }))) {
-                                form.submit();
+                                else {
+                                    form.submit();
+                                }
                             }
-                            form.dispatchEvent(new CustomEvent('submitted', {
-                                bubbles: true,
-                            }));
+                            form.dispatchEvent(submittedEvent);
                             form.addEventListener('submit', submit);
-                        }
+                        }, 0);
                     };
                     if (result.indexOf(true) === -1) {
                         if (chmonos.customValidation.warning.length && result.indexOf(null) !== -1) {
@@ -6068,7 +6126,6 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                 console.error(ex);
             }
             e.preventDefault();
-            e.stopPropagation();
             return false;
         });
     };
@@ -6285,20 +6342,10 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
 
         var node = chmonos.birth(template, values, index);
         if (values) {
-            var entries = Object.entries(values);
-            var args = entries.map(e => e[0]);
-            var vals = entries.map(e => e[1]);
-
+            var F = templateFunction(values);
             node.querySelectorAll('[data-vnode]').forEach(function (e) {
-                try {
-                    const T = e.dataset.vnode;
-                    const F = new Function(...args, 'return ' + T + '`' + e.outerHTML + '`');
-                    e.insertAdjacentHTML('afterend', F(...vals));
-                    e.remove();
-                }
-                catch (e) {
-                    console.error(e);
-                }
+                e.insertAdjacentHTML('afterend', F(e.outerHTML, e.dataset.vnode));
+                e.remove();
             });
         }
         template.dispatchEvent(new CustomEvent('spawn', {
@@ -6603,6 +6650,39 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
             }
         }
         return params;
+    };
+
+    /**
+     * フォームの値を URL で返す
+     *
+     * @param submitter
+     */
+    chmonos.url = function (submitter) {
+        var url = new URL(submitter?.formAction || form.action);
+        url.search = ''; // form の action もパラメータが無視される
+
+        var arrays = {};
+        for (var [k, v] of chmonos.data().entries()) {
+            var matches = k.match(/(.+?)(\[.+\]\[(.+)\])?\[\]$/) ?? [];
+            var elemName = (matches[1] ?? '') + (matches[3] ? '/' + (matches[3] ?? '') : '');
+            if (matches.length && options.allrules[elemName]?.delimiter) {
+                var name = (matches[1] ?? '') + (matches[2] ?? '') + (matches[3] ?? '')
+                arrays[name] = arrays[name] ?? [];
+                arrays[name].push(v);
+            }
+            else {
+                url.searchParams.append(k, v);
+            }
+        }
+        for (var [k, vv] of Object.entries(arrays)) {
+            url.searchParams.append(k, vv.join(options.allrules[k]?.delimiter));
+        }
+        if (submitter && submitter.name) {
+            // type=image の場合は？ -> 対応しない
+            url.searchParams.append(submitter.name, submitter.value);
+        }
+
+        return url;
     };
 
     /**
