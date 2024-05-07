@@ -263,6 +263,9 @@ class Form
                 $attrs['method'] = $attrs['method'] ?? 'post';
                 $attrs['enctype'] = $attrs['enctype'] ?? 'multipart/form-data';
             }
+            if ($this->context->hasDelimitableInput()) {
+                $attrs['enctype'] = $attrs['enctype'] ?? 'application/x-www-form-urlencodeds;array=delimitable';
+            }
 
             $attrs['id'] = $attrs['id'] ?? 'form' . spl_object_id($this);
             $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable_form';

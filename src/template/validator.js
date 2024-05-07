@@ -549,36 +549,47 @@ function Chmonos(form, options) {
             try {
                 chmonos.validate(e).then(function (result) {
                     var done = function () {
-                        if (e.submitter) {
-                            setTimeout(function () {
-                                form.removeEventListener('submit', submit);
-                                if (form.dispatchEvent(new CustomEvent('submitting', {
-                                    bubbles: true,
-                                    cancelable: true,
-                                }))) {
+                        var submittingEvent = new CustomEvent('submitting', {
+                            bubbles: true,
+                            cancelable: true,
+                            detail: {
+                                submitter: e.submitter ?? null,
+                            },
+                        });
+                        var submittedEvent = new CustomEvent('submitted', {
+                            bubbles: true,
+                            detail: {
+                                submitter: e.submitter ?? null,
+                            },
+                        });
+                        var array = (e.submitter?.getAttribute('formenctype') ?? '').includes('array=delimitable');
+                        if (!array && !e.submitter?.hasAttribute('formenctype')) {
+                            array = (form.getAttribute('enctype') ?? '').includes('array=delimitable');
+                        }
+                        if (array && (e.submitter?.formMethod || form.method) === 'get') {
+                            var target = e.submitter?.formTarget || form.target;
+                            if (target) {
+                                window.open(chmonos.url(e.submitter), target);
+                            }
+                            else {
+                                location.href = chmonos.url(e.submitter);
+                            }
+                            return;
+                        }
+                        setTimeout(function () {
+                            // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
+                            form.removeEventListener('submit', submit);
+                            if (form.dispatchEvent(submittingEvent)) {
+                                if (e.submitter) {
                                     e.submitter.click();
                                 }
-                                form.dispatchEvent(new CustomEvent('submitted', {
-                                    bubbles: true,
-                                }));
-                                form.addEventListener('submit', submit);
-                            }, 0);
-                        }
-                        else {
-                            // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
-                            // 発火するしないは規定されていないらしいので念の為に付け外す
-                            form.removeEventListener('submit', submit);
-                            if (form.dispatchEvent(new CustomEvent('submitting', {
-                                bubbles: true,
-                                cancelable: true,
-                            }))) {
-                                form.submit();
+                                else {
+                                    form.submit();
+                                }
                             }
-                            form.dispatchEvent(new CustomEvent('submitted', {
-                                bubbles: true,
-                            }));
+                            form.dispatchEvent(submittedEvent);
                             form.addEventListener('submit', submit);
-                        }
+                        }, 0);
                     };
                     if (result.indexOf(true) === -1) {
                         if (chmonos.customValidation.warning.length && result.indexOf(null) !== -1) {
@@ -601,7 +612,6 @@ function Chmonos(form, options) {
                 console.error(ex);
             }
             e.preventDefault();
-            e.stopPropagation();
             return false;
         });
     };
@@ -1126,6 +1136,39 @@ function Chmonos(form, options) {
             }
         }
         return params;
+    };
+
+    /**
+     * フォームの値を URL で返す
+     *
+     * @param submitter
+     */
+    chmonos.url = function (submitter) {
+        var url = new URL(submitter?.formAction || form.action);
+        url.search = ''; // form の action もパラメータが無視される
+
+        var arrays = {};
+        for (var [k, v] of chmonos.data().entries()) {
+            var matches = k.match(/(.+?)(\[.+\]\[(.+)\])?\[\]$/) ?? [];
+            var elemName = (matches[1] ?? '') + (matches[3] ? '/' + (matches[3] ?? '') : '');
+            if (matches.length && options.allrules[elemName]?.delimiter) {
+                var name = (matches[1] ?? '') + (matches[2] ?? '') + (matches[3] ?? '')
+                arrays[name] = arrays[name] ?? [];
+                arrays[name].push(v);
+            }
+            else {
+                url.searchParams.append(k, v);
+            }
+        }
+        for (var [k, vv] of Object.entries(arrays)) {
+            url.searchParams.append(k, vv.join(options.allrules[k]?.delimiter));
+        }
+        if (submitter && submitter.name) {
+            // type=image の場合は？ -> 対応しない
+            url.searchParams.append(submitter.name, submitter.value);
+        }
+
+        return url;
     };
 
     /**

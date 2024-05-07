@@ -924,6 +924,20 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->input()->contains('name="hoge[]" id="hoge_2" value="3"');
     }
 
+    function test_input_delimiter()
+    {
+        $input = new Input([
+            'name'      => 'hoge',
+            'delimiter' => ',',
+        ]);
+
+        $input->setValue('');
+        that($input)->getValue()->is([]);
+
+        $input->setValue('1,2,3');
+        that($input)->getValue()->is(['1', '2', '3']);
+    }
+
     function test_input_wrapper()
     {
         $input = new Input([

@@ -368,6 +368,29 @@ class Context implements \IteratorAggregate
         return false;
     }
 
+    /**
+     * delimiter Input を持っているか返す
+     *
+     * @return bool 持っているならtrue
+     */
+    public function hasDelimitableInput()
+    {
+        foreach ($this->inputs as $input) {
+            // 子要素が持ってたら true
+            if (strlen($input->delimiter)) {
+                return true;
+            }
+
+            // 子要素の子要素が持ってたら true
+            if ($input->getType() === 'arrays') {
+                if ($input->context->hasDelimitableInput()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public function getFixture($defaults = [])
     {
         $scores = [];

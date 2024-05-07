@@ -471,6 +471,35 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($context)->hasInputFile()->isTrue();
     }
 
+    function test_hasDelimitableInput()
+    {
+        // 持っていない
+        $context = new Context($this->_getRules());
+        that($context)->hasDelimitableInput()->isFalse();
+
+        // 持っている
+        $rules = [
+            'dummy' => [
+                'delimiter' => ',',
+            ]
+        ];
+        $context = new Context($rules);
+        that($context)->hasDelimitableInput()->isTrue();
+
+        // 子が持っている
+        $rules = [
+            'children' => [
+                'inputs' => [
+                    'child' => [
+                        'delimiter' => ',',
+                    ]
+                ]
+            ]
+        ];
+        $context = new Context($rules);
+        that($context)->hasDelimitableInput()->isTrue();
+    }
+
     function test_getIterator()
     {
         $context = new Context(['inputA' => [], 'inputB' => []]);

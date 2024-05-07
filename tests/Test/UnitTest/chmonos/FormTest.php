@@ -139,6 +139,20 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($form_tag)->contains('enctype="multipart/form-data"');
     }
 
+    function test_withDelimiter()
+    {
+        $form = new Form([
+            'text' => [
+                'delimiter' => ',',
+            ]
+        ]);
+
+        $form_tag = $form->form([]) . 'dummy' . $form->form();
+
+        // array=delimitable な application/x-www-form-urlencodeds になるはず
+        that($form_tag)->contains('enctype="application/x-www-form-urlencodeds;array=delimitable"');
+    }
+
     function test_validate()
     {
         $form = new Form([

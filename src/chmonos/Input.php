@@ -44,6 +44,7 @@ class Input
         'needless'              => [],
         'autocond'              => true,
         'multiple'              => null,
+        'delimiter'             => '',
         'pseudo'                => true,
         'nullable'              => true,
         // 'default'               => null, // あるかないかでdefault値を決めるのでコメントアウト
@@ -162,7 +163,7 @@ class Input
 
         // multiple の自動設定
         if ($rule['multiple'] === null) {
-            $rule['multiple'] = $rule['inputs'] || is_array($rule['default']);
+            $rule['multiple'] = $rule['inputs'] || is_array($rule['default']) || strlen($rule['delimiter']);
         }
 
         // invalids の自動設定
@@ -394,6 +395,15 @@ class Input
         foreach (array_reverse($this->condition) as $condition) {
             if ($condition instanceof Condition\Interfaces\ConvertibleValue) {
                 $value = $condition->getValue($value);
+            }
+        }
+
+        if ($this->delimiter && !is_array($value)) {
+            if ($value === '') {
+                $value = [];
+            }
+            else {
+                $value = explode($this->delimiter, $value);
             }
         }
 
@@ -663,6 +673,7 @@ class Input
             'propagate' => (array) $this->propagate,
             'phantom'   => (array) $this->phantom,
             'invisible' => (bool) $this->invisible,
+            'delimiter' => (string) $this->delimiter,
             'trimming'  => (bool) $this->trimming,
             'needless'  => (array) $this->needless,
         ];
