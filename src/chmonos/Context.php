@@ -333,14 +333,8 @@ class Context implements \IteratorAggregate
     public function getRules()
     {
         $rules = [];
-        foreach ($this->inputs as $name => $input) {
+        foreach ($this->getAllInput() as $name => $input) {
             $rules[$name] = $input->getValidationRule();
-
-            if ($input->getType() === 'arrays') {
-                foreach ($input->context->getRules() as $n => $r) {
-                    $rules["$name/$n"] = $r;
-                }
-            }
         }
         return $rules;
     }
@@ -352,17 +346,9 @@ class Context implements \IteratorAggregate
      */
     public function hasInputFile()
     {
-        foreach ($this->inputs as $input) {
-            // 子要素が持ってたら true
+        foreach ($this->getAllInput() as $input) {
             if ($input->getType() === 'file') {
                 return true;
-            }
-
-            // 子要素の子要素が持ってたら true
-            if ($input->getType() === 'arrays') {
-                if ($input->context->hasInputFile()) {
-                    return true;
-                }
             }
         }
         return false;
@@ -375,17 +361,9 @@ class Context implements \IteratorAggregate
      */
     public function hasDelimitableInput()
     {
-        foreach ($this->inputs as $input) {
-            // 子要素が持ってたら true
+        foreach ($this->getAllInput() as $input) {
             if (strlen($input->delimiter)) {
                 return true;
-            }
-
-            // 子要素の子要素が持ってたら true
-            if ($input->getType() === 'arrays') {
-                if ($input->context->hasDelimitableInput()) {
-                    return true;
-                }
             }
         }
         return false;
@@ -422,21 +400,19 @@ class Context implements \IteratorAggregate
     /**
      * ネスト要素も含めて全ての Input を返す
      *
-     * @return Input[] 全ての Input
+     * @return \Generator|Input[] 全ての Input
      */
-    public function getAllInput()
+    public function getAllInput(): \Generator
     {
-        $inputs = [];
         foreach ($this->inputs as $name => $input) {
-            $inputs[$name] = $input;
+            yield $name => $input;
 
             if ($input->getType() === 'arrays') {
                 foreach ($input->context->getAllInput() as $name2 => $input2) {
-                    $inputs["$name/$name2"] = $input2;
+                    yield "$name/$name2" => $input2;
                 }
             }
         }
-        return $inputs;
     }
 
     /**

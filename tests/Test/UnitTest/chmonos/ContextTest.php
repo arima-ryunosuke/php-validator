@@ -509,7 +509,7 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_getAllInput()
     {
         $context = new Context($this->_getRules());
-        that(array_keys($context->getAllInput()))->is(['parent', 'children', 'children/child1', 'children/child2']);
+        that(array_keys(iterator_to_array($context->getAllInput())))->is(['parent', 'children', 'children/child1', 'children/child2']);
     }
 
     function test_noform()
