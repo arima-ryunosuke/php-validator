@@ -438,62 +438,6 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
     }
 
-    function test_getRules()
-    {
-        $context = new Context([
-            'parent' => [
-                'inputs' => [
-                    'child' => [
-                        'condition' => [
-                            // キー指定
-                            'Decimal'              => [1, 1],
-                            // エイリアス指定
-                            'num'                  => 'Decimal(int:2,dec:2)',
-                            // エイリアス指定
-                            'Decimal(int:3,dec:3)' => [
-                                Decimal::INVALID => 'foo'
-                            ],
-                            // インスタンス指定
-                            new Decimal(4, 4),
-                        ],
-                        'message'   => [
-                            'Decimal'              => [
-                                Decimal::INVALID => 'hoge'
-                            ],
-                            'num'                  => [
-                                Decimal::INVALID => 'fuga'
-                            ],
-                            'Decimal(int:3,dec:3)' => [
-                                Decimal::INVALID_INT => 'bar'
-                            ],
-                            '0'                    => [
-                                Decimal::INVALID => 'piyo'
-                            ],
-                        ]
-                    ]
-                ]
-            ]
-        ]);
-
-        $rule = $context->getRules();
-
-        that($rule)['parent/child']['condition']['Decimal']['cname']->is("Decimal");
-        that($rule)['parent/child']['condition']['num']['cname']->is("Decimal");
-        that($rule)['parent/child']['condition']['Decimal(int:3,dec:3)']['cname']->is("Decimal");
-        that($rule)['parent/child']['condition']['0']['cname']->is("Decimal");
-
-        that($rule)['parent/child']['condition']['Decimal']['param']['int']->is(1);
-        that($rule)['parent/child']['condition']['num']['param']['int']->is(2);
-        that($rule)['parent/child']['condition']['Decimal(int:3,dec:3)']['param']['int']->is(3);
-        that($rule)['parent/child']['condition']['0']['param']['int']->is(4);
-
-        that($rule)['parent/child']['condition']['Decimal']['message'][Decimal::INVALID]->is("hoge");
-        that($rule)['parent/child']['condition']['num']['message'][Decimal::INVALID]->is("fuga");
-        that($rule)['parent/child']['condition']['Decimal(int:3,dec:3)']['message'][Decimal::INVALID]->is("foo");
-        that($rule)['parent/child']['condition']['Decimal(int:3,dec:3)']['message'][Decimal::INVALID_INT]->is("bar");
-        that($rule)['parent/child']['condition']['0']['message'][Decimal::INVALID]->is("piyo");
-    }
-
     function test_hasInputFile()
     {
         // 持っていない

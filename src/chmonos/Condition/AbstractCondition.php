@@ -7,14 +7,11 @@ use ryunosuke\chmonos\Mixin\Jsonable;
 use function ryunosuke\chmonos\array_each;
 use function ryunosuke\chmonos\array_map_key;
 use function ryunosuke\chmonos\array_strpad;
-use function ryunosuke\chmonos\array_unset;
 use function ryunosuke\chmonos\callable_code;
 use function ryunosuke\chmonos\class_constants;
 use function ryunosuke\chmonos\class_shorten;
 use function ryunosuke\chmonos\dirmtime;
-use function ryunosuke\chmonos\paml_import;
 use function ryunosuke\chmonos\render_template;
-use function ryunosuke\chmonos\str_exists;
 
 /**
  * 検証条件抽象クラス
@@ -296,53 +293,14 @@ JS;
      * インストタンスを渡さなくてもいいようにするためのファクトリメソッド
      *
      * @param string $name クラス名
-     * @param array $arguments コンストラクタに渡す引数配列
+     * @param mixed $arguments コンストラクタに渡す引数配列
      * @return static
      */
     public static function create($name, $arguments = [])
     {
-        if (is_string($arguments) && str_exists($arguments, ['(', ')'], false, true) !== false) {
-            $name = $arguments;
-            $arguments = [];
-        }
-
-        $message = [];
-        $parts = explode('(', $name, 2);
-        if (count($parts) === 2) {
-            $message = $arguments;
-            $name = trim($parts[0]);
-            $arguments = paml_import(substr($parts[1], 0, -1));
-        }
-
-        $arguments = (array) $arguments;
-
         foreach (['' => ''] + self::$namespaces as $ns => $dir) {
             if (class_exists($class = "$ns\\$name")) {
-                $args = [];
-                $refparams = (new \ReflectionClass($class))->getConstructor()->getParameters();
-                foreach ($refparams as $n => $refparam) {
-                    $pname = $refparam->name;
-                    if ($refparam->isVariadic()) {
-                        break;
-                    }
-                    elseif (array_key_exists($n, $arguments)) {
-                        $args[$n] = array_unset($arguments, $n);
-                    }
-                    elseif (array_key_exists($pname, $arguments)) {
-                        $args[$n] = array_unset($arguments, $pname);
-                    }
-                    elseif ($refparam->isDefaultValueAvailable()) {
-                        $args[$n] = $refparam->getDefaultValue();
-                    }
-                    else {
-                        $n1 = $n + 1;
-                        throw new \InvalidArgumentException("class $class is required parameter #$n1(\$$pname)");
-                    }
-                }
-                /** @var self $instance */
-                $instance = new $class(...array_merge($args, $arguments));
-                $instance->setMessageTemplates($message);
-                return $instance;
+                return new $class(...(array) $arguments);
             }
         }
 

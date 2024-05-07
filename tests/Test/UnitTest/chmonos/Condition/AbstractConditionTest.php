@@ -6,7 +6,6 @@ use ryunosuke\chmonos\Condition\Callback;
 use ryunosuke\chmonos\Condition\Compare;
 use ryunosuke\chmonos\Condition\Decimal;
 use ryunosuke\chmonos\Condition\NotInArray;
-use ryunosuke\chmonos\Condition\Range;
 use ryunosuke\chmonos\Context;
 
 class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
@@ -70,42 +69,10 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
         that(AbstractCondition::class)::create(\custom\Condition\CustomCondition::class . 'Dummy')->wasThrown('is not found');
     }
 
-    function test_create_paml()
-    {
-        $expected = ['min' => 1, 'max' => 3];
-        that(AbstractCondition::class)::create(null, 'Range(1, 3)')->getValidationParam()->is($expected);
-        that(AbstractCondition::class)::create(null, 'Range(max:3, min:1)')->getValidationParam()->is($expected);
-        that(AbstractCondition::class)::create(null, 'Range(max:3, min:1)')->getValidationParam()->is($expected);
-
-        that(AbstractCondition::class)::create(null, 'Range(min:1)')->getValidationParam()->is([
-            "min" => 1,
-            "max" => null,
-        ]);
-        that(AbstractCondition::class)::create(null, 'Range(max:3)')->getValidationParam()->is([
-            "min" => null,
-            "max" => 3,
-        ]);
-    }
-
-    function test_create_paml_key()
-    {
-        $condition = AbstractCondition::create('Range(min:1,max:3)', [
-            Range::INVALID => 'hoge',
-        ]);
-        that($condition)->getValidationParam()->is([
-            "min" => 1,
-            "max" => 3,
-        ]);
-        that($condition)->getMessageTemplates()->is([
-            Range::INVALID => 'hoge',
-        ]);
-    }
-
     function test_create_arg()
     {
         $expected = ['min' => 1, 'max' => 3];
         that(AbstractCondition::class)::create('Range', [1, 3])->getValidationParam()->is($expected);
-        that(AbstractCondition::class)::create('Range', ['max' => 3, 1])->getValidationParam()->is($expected);
         that(AbstractCondition::class)::create('Range', [1, 'max' => 3])->getValidationParam()->is($expected);
         that(AbstractCondition::class)::create('Range', ['min' => 1, 'max' => 3])->getValidationParam()->is($expected);
         that(AbstractCondition::class)::create('Range', ['max' => 3, 'min' => 1])->getValidationParam()->is($expected);
@@ -130,8 +97,6 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
                 ],
             ]
         ]);
-
-        that(AbstractCondition::class)::create('Regex')->wasThrown('is required parameter');
     }
 
     function test_outputJavascript()

@@ -748,29 +748,17 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $input = new Input([
             'condition' => [
-                // キー指定
-                'Decimal'              => [1, 1],
-                // エイリアス指定
-                'num'                  => 'Decimal(int:2,dec:2)',
-                // エイリアス指定
-                'Decimal(int:3,dec:3)' => [
-                    Decimal::INVALID => 'foo'
-                ],
+                // 名前付き引数
+                'Decimal' => ['dec' => 1, 'int' => 1],
                 // インスタンス指定
-                new Decimal(4, 4),
+                'num'     => (new Decimal(2, 2))->setMessageTemplates([Decimal::INVALID => 'foo']),
             ],
             'message'   => [
-                'Decimal'              => [
+                'Decimal' => [
                     Decimal::INVALID => 'hoge'
                 ],
-                'num'                  => [
-                    Decimal::INVALID => 'fuga'
-                ],
-                'Decimal(int:3,dec:3)' => [
+                'num'     => [
                     Decimal::INVALID_INT => 'bar'
-                ],
-                '0'                    => [
-                    Decimal::INVALID => 'piyo'
                 ],
             ]
         ]);
@@ -779,19 +767,13 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         that($rule)['condition']['Decimal']['cname']->is('Decimal');
         that($rule)['condition']['num']['cname']->is('Decimal');
-        that($rule)['condition']['Decimal(int:3,dec:3)']['cname']->is('Decimal');
-        that($rule)['condition']['0']['cname']->is('Decimal');
 
         that($rule)['condition']['Decimal']['param']['int']->is('1');
         that($rule)['condition']['num']['param']['int']->is('2');
-        that($rule)['condition']['Decimal(int:3,dec:3)']['param']['int']->is('3');
-        that($rule)['condition']['0']['param']['int']->is('4');
 
         that($rule)['condition']['Decimal']['message'][Decimal::INVALID]->is('hoge');
-        that($rule)['condition']['num']['message'][Decimal::INVALID]->is('fuga');
-        that($rule)['condition']['Decimal(int:3,dec:3)']['message'][Decimal::INVALID]->is('foo');
-        that($rule)['condition']['Decimal(int:3,dec:3)']['message'][Decimal::INVALID_INT]->is('bar');
-        that($rule)['condition']['0']['message'][Decimal::INVALID]->is('piyo');
+        that($rule)['condition']['num']['message'][Decimal::INVALID]->is('foo');
+        that($rule)['condition']['num']['message'][Decimal::INVALID_INT]->is('bar');
     }
 
     function test_label()
