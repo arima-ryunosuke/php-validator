@@ -85,6 +85,7 @@ $appendmtime = function ($filename) {
             this.forEach(function (node) {
                 node.on(type, listener);
             });
+            return this;
         };
         File.prototype.toDataURL = function () {
             return new Promise((resolve, reject) => {
@@ -103,19 +104,23 @@ $appendmtime = function ($filename) {
                 li.appendChild(a);
                 $$('nav>ul').appendChild(li);
             });
-            $('.object-button').on('click', async function (e) {
-                var form = e.target.closest('form.validatable_form');
-                console.log(await form.chmonos.object('string'));
-            });
-            $('.js-enable-switcher').on('change', function (e) {
-                var form = e.target.closest('form.validatable_form');
-                if (e.target.checked) {
-                    form.chmonos.validationDisabled = false;
-                    form.chmonos.validate();
+            $('form.validatable_form').on('click', async function (e) {
+                if (e.target.matches('.object-button')) {
+                    console.log(await this.chmonos.object('string'));
                 }
-                else {
-                    form.chmonos.validationDisabled = true;
-                    form.chmonos.clearErrors();
+                if (e.target.matches('.html-button')) {
+                    this.querySelector('.output-html').innerHTML = await this.chmonos.html();
+                }
+            }).on('change', async function (e) {
+                if (e.target.matches('.js-enable-switcher')) {
+                    if (e.target.checked) {
+                        this.chmonos.validationDisabled = false;
+                        this.chmonos.validate();
+                    }
+                    else {
+                        this.chmonos.validationDisabled = true;
+                        this.chmonos.clearErrors();
+                    }
                 }
             });
             $$('#all_clear').on('click', function (e) {

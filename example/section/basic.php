@@ -208,16 +208,36 @@ resetForm($basic_form, 'basic_form');
     #toggleInvisible:checked ~ #invisible-wrapper {
         display: block;
     }
+
+    #basic_form .chmonos-output {
+        display: grid;
+        grid-template-columns: max-content auto;
+        overflow-x: auto;
+        gap: 4px 3px;
+
+        .chmonos-output-row {
+            display: contents;
+        }
+
+        .chmonos-output-row:has(>dt:empty),
+        .chmonos-output-row:has(>dd:empty) {
+            display: none;
+        }
+
+        dt:after {
+            content: "：";
+        }
+    }
 </style>
 <?= $basic_form->form(['id' => 'basic_form'/* ファイル要素を持つ Form は自動で POST,multipart/form-data になる */]) ?>
 <input type="hidden" name="formid" value="basic_form">
 <table class="table">
     <tr>
-        <th>text要素</th>
+        <th><?= $basic_form->label('text', ['label' => 'text要素']) ?></th>
         <td><?= $basic_form->input('text') ?></td>
     </tr>
     <tr>
-        <th>texts要素</th>
+        <th><?= $basic_form->label('texts', ['label' => 'texts要素']) ?></th>
         <td><?= $basic_form->input('texts') ?></td>
     </tr>
     <tr>
@@ -225,7 +245,7 @@ resetForm($basic_form, 'basic_form');
         <td><?= $basic_form->input('textarea', ['type' => 'textarea']) ?></td>
     </tr>
     <tr>
-        <th>datetime要素</th>
+        <th><?= $basic_form->label('datetime', ['label' => 'datetime要素']) ?></th>
         <td><?= $basic_form->input('datetime', [
             'format' => 'yyyyMMdd日',
             ]) ?></td>
@@ -301,11 +321,13 @@ resetForm($basic_form, 'basic_form');
     </tr>
 </table>
 <input type="button" class="btn btn-info object-button" value="object">
+<input type="button" class="btn btn-info html-button" value="html">
 <input type="submit" id="basic_form_submit" class="btn btn-primary" value="post">
 <label class='btn btn-warning'>
     <input type='checkbox' class="js-enable-switcher" checked>
     js チェック有効
 </label>
+<div class="output-html"></div>
 <?= $basic_form->form() ?>
 
 <script>
