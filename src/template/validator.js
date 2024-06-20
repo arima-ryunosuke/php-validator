@@ -1093,7 +1093,7 @@ function Chmonos(form, options) {
             if (filemanage === 'base64') {
                 return async file => btoa([...new Uint8Array(await file.arrayBuffer())].map(c => String.fromCharCode(c)).join(''));
             }
-            return filemanage(file);
+            return filemanage;
         })(filemanage ?? 'base64');
 
         var params = new URLSearchParams();
