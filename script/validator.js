@@ -6590,7 +6590,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
             if (filemanage === 'base64') {
                 return async file => btoa([...new Uint8Array(await file.arrayBuffer())].map(c => String.fromCharCode(c)).join(''));
             }
-            return filemanage(file);
+            return filemanage;
         })(filemanage ?? 'base64');
 
         var params = new URLSearchParams();
@@ -6614,5 +6614,123 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         var result = {};
         chmonos.parse_str((await chmonos.params(filemanage)).toString(), result);
         return result;
+    };
+
+    /**
+     * フォームの値を html で返す
+     *
+     * 装飾は一切しない。class は当てるので利用側で好きにすればよい。
+     *
+     * @param filemanage file 要素をどう扱うか？ filename|object
+     * @param delimiter string 値の区切り文字
+     */
+    chmonos.html = async function (filemanage, delimiter) {
+        delimiter = delimiter ?? ',';
+        filemanage = (function (filemanage) {
+            if (filemanage === 'filename') {
+                return file => Array.from(file.files, file => file.name).join(delimiter);
+            }
+            if (filemanage === 'object') {
+                return async file => (await Promise.all(Array.from(file.files, file => new Promise(function (resolve, reject) {
+                    var reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.addEventListener('load', () => resolve(`<object data="${reader.result}"></object>`));
+                    reader.addEventListener('error', () => reject(reader.error));
+                })))).join('');
+            }
+            return filemanage;
+        })(filemanage ?? 'object');
+
+        var E = function (string) {
+            return ('' + string).replace(/[&'`"<>]/g, function (match) {
+                return {
+                    '&': '&amp;',
+                    "'": '&#x27;',
+                    '`': '&#x60;',
+                    '"': '&quot;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                }[match]
+            });
+        };
+        var V = async function (inputs) {
+            var result = [];
+            for (var input of inputs) {
+                var type = input.type;
+                if (type === undefined) {
+                    //
+                }
+                else if (type === 'file') {
+                    result.push(await filemanage(input));
+                }
+                else if (type === 'checkbox' || type === 'radio') {
+                    if (input.checked) {
+                        result.push(...Array.from(input.labels).map(label => E(label.textContent)));
+                    }
+                }
+                else if (type === 'select-one' || type === 'select-multiple') {
+                    result.push(...Array.from(input.options).filter(e => e.selected).map(e => E(e.textContent)));
+                }
+                else {
+                    result.push(E(input.value));
+                }
+            }
+            return result;
+        };
+
+        var inputs = {};
+        form.querySelectorAll('.validatable:is(input, textarea, select):enabled').forEach(function (e) {
+            var klass = e.dataset.vinputClass ?? '';
+            if (e.matches('[type="dummy"]')) {
+                inputs[klass] = inputs[klass] ?? {};
+                inputs[klass][''] = [e];
+            }
+            else if (klass.includes('/')) {
+                var index = e.dataset.vinputIndex ?? '';
+                var kindex = 'k' + index; // 順序維持のためプレフィックスを付ける
+                var [parent, local] = klass.split('/');
+                inputs[parent] = inputs[parent] ?? {};
+                inputs[parent][kindex] = inputs[parent][kindex] ?? {};
+                inputs[parent][kindex][local] = Array.from(form.querySelectorAll(`[data-vinput-class="${klass}"][data-vinput-index="${index}"]`));
+            }
+            else {
+                inputs[klass] = Array.from(form.querySelectorAll(`[data-vinput-class="${klass}"]`));
+            }
+        });
+
+        var dldtdd = async function (inputs, klass) {
+            var result = [];
+            for (var input of Object.values(inputs)) {
+                if (Array.isArray(input)) {
+                    var target = input;
+                    var ids = [...new Set(input.map(e => e.dataset.vinputId ?? ''))].join('|');
+                    var values = (await V(input)).filter(v => v.length);
+                    var delimiter2 = delimiter;
+                }
+                else {
+                    var target = input[''] ?? [];
+                    delete input[''];
+                    var ids = [...new Set(target.map(e => e.dataset.vinputId ?? ''))].join('|');
+                    var values = await Promise.all(Object.entries(input).map(([k, children]) => dldtdd(children, ids +'/'+ k.substring(1))));
+                    var delimiter2 = '';
+                }
+                var title = [...new Set(target.map(e => e.dataset.validationTitle ?? ''))].join('|');
+                // ラベルを優先する（validationTitle は固定的だが label は html 上で指定されていることもありそっちの方が精度が高い）
+                // …がタイトルのないチェックボックスは単一で存在しがち（「同意する」とか）なので特別扱い
+                if (title.length === 0 && target.length === 1 && target[0].matches('[type=checkbox]')) {
+                    title = Array.from(target[0].labels, (label) => label.textContent).join('|');
+                    values = [target[0].checked ? "✓" : ""];
+                }
+                else {
+                    // checkbox,radio の label は「項目のラベル」ではないことが多い
+                    var label = [...new Set(target.filter(e => !e.matches('[type=checkbox],[type=radio]')).map(e => Array.from(e.labels).map(l => l.textContent).join('|')))].join('|');
+                    title = label || title;
+                }
+                result.push(`<div class="chmonos-output-row" data-voutput-id="${E(ids)}"><dt>${E(title)}</dt><dd>${values.join(delimiter2)}</dd></div>`);
+            }
+            return `<dl class="chmonos-output" data-voutput-class="${E(klass)}">${result.join('')}</dl>`;
+        };
+
+        return await dldtdd(inputs, "");
     };
 }
