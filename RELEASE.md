@@ -59,6 +59,12 @@
     - 明示的な指定が必要（とはいえデフォルト '+-' なので実質的には影響なし）
   - AlphaDigit のアンダースコア特別扱いを廃止
 
+## 1.2.10
+
+- [feature] form option にデフォルト属性を持たせる機能
+- [feature] 入力内容を html 化する機能
+- [fixbug] filemanage がコールバックを受け付けない不具合
+
 ## 1.2.9
 
 - [refactor] npm の更新とメンテ

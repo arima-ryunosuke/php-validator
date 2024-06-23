@@ -40,6 +40,7 @@ class Form
             'nonce'      => '',
             'inputClass' => Input::class,
             'vuejs'      => false,
+            'attribute'  => [],
         ];
         $this->options = $options;
 
@@ -213,7 +214,7 @@ class Form
             $this->currents = [];
             $this->templateValues = [];
 
-            $attrs = $this->convertHtmlAttrs($attrs);
+            $attrs = $this->convertHtmlAttrs($attrs + $this->options['attribute']);
 
             // ファイルを持っているなら強制的に multipart/form-data な post にする。
             if ($this->context->hasInputFile()) {

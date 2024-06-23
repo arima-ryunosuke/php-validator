@@ -63,6 +63,7 @@ $dynamic_rule = [
                 'default' => [1, 3],
             ],
             'unique_require' => [
+                'title'   => '',
                 'options' => [
                     1 => '必須'
                 ]
@@ -92,13 +93,44 @@ $dynamic_rule = [
 ];
 ?>
 
+<style>
+    .html_form .chmonos-output {
+        .chmonos-output-row:after {
+            content: "、";
+        }
+
+        .chmonos-output-row:nth-last-child(1 of :not(:has(>dt:empty))):after,
+        .chmonos-output-row:nth-last-child(1 of :not(:has(>dd:empty))):after {
+            content: "";
+        }
+
+        .chmonos-output-row {
+            display: inline;
+        }
+
+        .chmonos-output-row:has(>dt:empty),
+        .chmonos-output-row:has(>dd:empty) {
+            display: none;
+        }
+
+        dt,
+        dd {
+            display: inline;
+        }
+
+        dt:after {
+            content: "：";
+        }
+    }
+</style>
+
 <section>
     <h3>template</h3>
     <?php
     $template_form = new Form($dynamic_rule);
     resetForm($template_form, 'template_form');
     ?>
-    <?= $template_form->form(['id' => 'template_form', 'method' => 'post']) ?>
+    <?= $template_form->form(['id' => 'template_form', 'method' => 'post', 'class' => 'html_form']) ?>
     <input type="hidden" name="formid" value="template_form">
     <?= $template_form->label('parent_mail') ?>
     <?= $template_form->input('parent_mail') ?>
@@ -143,11 +175,13 @@ $dynamic_rule = [
     </div>
 
     <input type="button" class="btn btn-info object-button" value="object">
+    <input type="button" class="btn btn-info html-button" value="html">
     <input type="submit" id="template_form_submit" class="btn btn-primary" value="post">
     <label class='btn btn-warning'>
         <input type='checkbox' class="js-enable-switcher" checked>
         js チェック有効
     </label>
+    <div class="output-html"></div>
     <?= $template_form->form() ?>
 
     <script type="text/javascript">
@@ -197,7 +231,7 @@ $dynamic_rule = [
     $context_form = new Form($dynamic_rule);
     resetForm($context_form, 'context_form');
     ?>
-    <?= $context_form->form(['id' => 'context_form', 'method' => 'post']) ?>
+    <?= $context_form->form(['id' => 'context_form', 'method' => 'post', 'class' => 'html_form']) ?>
     <input type="hidden" name="formid" value="context_form">
     <?= $context_form->label('parent_mail') ?>
     <?= $context_form->input('parent_mail') ?>
@@ -256,11 +290,13 @@ $dynamic_rule = [
     </table>
 
     <input type="button" class="btn btn-info object-button" value="object">
+    <input type="button" class="btn btn-info html-button" value="html">
     <input type="submit" id="context_form_submit" class="btn btn-primary" value="post">
     <label class='btn btn-warning'>
         <input type='checkbox' class="js-enable-switcher" checked>
         js チェック有効
     </label>
+    <div class="output-html"></div>
     <?= $context_form->form() ?>
 
     <script type="text/javascript">
@@ -292,7 +328,7 @@ $dynamic_rule = [
     ]);
     resetForm($vuejs_form, 'vuejs_form');
     ?>
-    <?= $vuejs_form->form(['id' => 'vuejs_form', 'method' => 'post']) ?>
+    <?= $vuejs_form->form(['id' => 'vuejs_form', 'method' => 'post', 'class' => 'html_form']) ?>
     <div id="application">
         <input type="hidden" name="formid" value="vuejs_form">
         <?= $vuejs_form->label('parent_mail') ?>
@@ -335,10 +371,12 @@ $dynamic_rule = [
         <pre>{{JSON.stringify(this.$data, null, 2)}}</pre>
 
         <input type="submit" id="vuejs_form_submit" class="btn btn-primary" value="post">
+        <input type="button" class="btn btn-info html-button" value="html">
         <label class='btn btn-warning'>
             <input type='checkbox' class="js-enable-switcher" checked>
             js チェック有効
         </label>
+        <div class="output-html"></div>
     </div>
     <?= $vuejs_form->form() ?>
 

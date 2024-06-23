@@ -509,6 +509,9 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         ], [
             'tokenName' => 'hoge',
             'nonce'     => 'fuga',
+            'attribute' => [
+                'autocomplete' => 'off',
+            ],
         ]);
 
         $form->setValues([
@@ -526,7 +529,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // 開始タグ
         {
-            $content = $form->open(['id' => 'hoge']);
+            $content = $form->open(['id' => 'hoge', 'autocomplete' => 'on']);
 
             // form 開始タグから始まる
             that($content)->stringStartsWith('<form');
@@ -534,6 +537,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             that($content)->stringContains('id="hoge"');
             // nonce がある
             that($content)->stringContains('nonce="fuga"');
+            // autocomplete がある
+            that($content)->stringContains('autocomplete="on"');
         }
 
         $prefix = spl_object_id($form->context);
