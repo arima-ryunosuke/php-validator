@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.2.10
+
+- [feature] form option にデフォルト属性を持たせる機能
+- [feature] 入力内容を html 化する機能
+- [fixbug] filemanage がコールバックを受け付けない不具合
+
 ## 1.2.9
 
 - [refactor] npm の更新とメンテ
