@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.2.11
+
+- [composer] update
+
 ## 1.2.10
 
 - [feature] form option にデフォルト属性を持たせる機能
