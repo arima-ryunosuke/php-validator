@@ -4954,7 +4954,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         $field1 = $value;
         $field2 = $params['direct'] ? $params['operand'] : $fields[$params['operand']];
 
-        if (strlen($field2) === 0) {
+        if (strlen($field2 ?? '') === 0) {
             return;
         }
 
