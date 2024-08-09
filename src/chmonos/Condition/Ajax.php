@@ -207,7 +207,7 @@ JS;
         }
         if ($fields === null) {
             if ($this->_request['method'] === 'GET') {
-                parse_str(parse_url($this->_request['url'], PHP_URL_QUERY), $query);
+                parse_str(parse_url($this->_request['url'], PHP_URL_QUERY) ?? '', $query);
                 $fields = array_diff_key($_GET, $query);
             }
             if ($this->_request['method'] === 'POST') {

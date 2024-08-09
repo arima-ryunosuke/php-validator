@@ -303,7 +303,7 @@ class Input
             $flag = true;
             $palues = [];
             for ($i = 1; $i < count($phantom); $i++) {
-                $palue = array_get($values, $phantom[$i], '');
+                $palue = array_get($values, $phantom[$i]) ?? '';
                 if (strlen($palue) === 0) {
                     $flag = false;
                     break;
@@ -356,7 +356,7 @@ class Input
         }
 
         if ($this->delimiter && !is_array($value)) {
-            if ($value === '') {
+            if (strlen($value ?? '') === 0) {
                 $value = [];
             }
             else {
