@@ -33,23 +33,21 @@
 
     // DOM が消え去ったときに toast も消えるように監視する
     setInterval(function () {
-        var container = document.querySelector('#chmonos-toast-container');
-        if (container) {
-            Array.prototype.forEach.call(container.children, function (e) {
-                var vinput = e.chmonos_vinput;
-                if (vinput && vinput.closest('body') === null) {
-                    e.remove();
-                }
-            });
-        }
+        var toasts = document.querySelectorAll('.chmonos-toast-container>.validation_message');
+        toasts.forEach(function (toast) {
+            var vinput = toast.chmonos_vinput;
+            if (vinput && vinput.closest('body') === null) {
+                toast.remove();
+            }
+        });
     }, 111);
 
     function toast(result) {
         var showToast = function (options) {
-            var container = document.getElementById('chmonos-toast-container');
+            var container = options.container.getElementsByClassName('chmonos-toast-container')[0];
             if (!container) {
-                document.body.insertAdjacentHTML('beforeend', '<div id="chmonos-toast-container"></div>');
-                container = document.getElementById('chmonos-toast-container');
+                options.container.insertAdjacentHTML('beforeend', '<div class="chmonos-toast-container"></div>');
+                container = options.container.getElementsByClassName('chmonos-toast-container')[0];
             }
 
             container.insertAdjacentHTML('beforeend',
@@ -139,6 +137,7 @@
                     let TOAST_NAME = 'vinput-toast-' + type;
                     if (messages[type].length) {
                         var toast = input[TOAST_NAME] || showToast({
+                            container: input.closest('form'),
                             type: type,
                             title: messages.title || '',
                             message: "",
