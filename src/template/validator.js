@@ -770,7 +770,9 @@ function Chmonos(form, options) {
             chmonos.required(e, undefined, fragment);
         });
 
-        return fragment.querySelector(rootTag);
+        var node = fragment.querySelector(rootTag);
+        node.dataset.vinputIndex = index;
+        return node;
     };
 
     /**
@@ -804,11 +806,12 @@ function Chmonos(form, options) {
                 }
             });
         }
+
         template.dispatchEvent(new CustomEvent('spawn', {
             detail: {
                 node: node,
-                index: index,
-                values: values,
+                index: index ?? +node.dataset.vinputIndex,
+                values: values ?? {},
             },
         }));
 
