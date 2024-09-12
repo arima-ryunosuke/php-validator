@@ -896,7 +896,6 @@ class Input
             $subname = $this->name;
 
             if (!isset($attrs['index'])) {
-                $attrs['disabled'] = 'disabled';
                 $attrs['value'] = $this->default;
             }
 

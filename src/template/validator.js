@@ -803,12 +803,10 @@ function Chmonos(form, options) {
             resetIndex(e, 'name', index);
             resetIndex(e, 'data-vinput-id', index);
             resetIndex(e, 'data-vinput-index', index);
-            e.disabled = false;
         });
         Array.from(fragment.querySelectorAll('[data-vinput-wrapper],[data-vinput-group]')).forEach(function (e) {
             resetIndex(e, 'data-vinput-wrapper', index);
             resetIndex(e, 'data-vinput-group', index);
-            e.disabled = false;
         });
         if (values) {
             chmonos.setValues(fragment, values);
