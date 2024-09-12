@@ -581,11 +581,11 @@ function Chmonos(form, options) {
         chmonos.customValidation[timing].push(validation);
     };
 
-    chmonos.validate = function (evt, selector) {
+    chmonos.validate = function (evt, selector, inputs) {
         form.validationValues = undefined;
         evt = evt || new CustomEvent('vatidation');
 
-        var inputs = form.querySelectorAll('.validatable:is(input, textarea, select)');
+        inputs ??= form.querySelectorAll('.validatable:is(input, textarea, select)');
         if (selector) {
             inputs = Array.from(inputs).filter((e) => e.matches(selector));
         }
