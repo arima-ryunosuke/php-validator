@@ -109,6 +109,27 @@ function Chmonos(form, options) {
         return already;
     }
 
+    chmonos.functionCache ??= new Map();
+    function templateFunction(vars) {
+        var entries = Object.entries(vars);
+        var args = entries.map(e => e[0]);
+        var vals = entries.map(e => e[1]);
+        var argstring = args.join(',');
+
+        return function (template, tag) {
+            try {
+                const cachekey = `${tag}@${template}(${argstring})`;
+                if (!chmonos.functionCache.has(cachekey)) {
+                    chmonos.functionCache.set(cachekey, new Function(...args, 'return ' + (tag ?? '') + '`' + template + '`'));
+                }
+                return chmonos.functionCache.get(cachekey).call(vars, ...vals);
+            }
+            catch (e) {
+                console.error(e);
+            }
+        };
+    }
+
     function addError(input, result) {
         const inputs = resolveDepend(input, {
             group: true,
@@ -794,11 +815,10 @@ function Chmonos(form, options) {
             var args = entries.map(e => e[0]);
             var vals = entries.map(e => e[1]);
 
+            const F = templateFunction(values);
             node.querySelectorAll('[data-vnode]').forEach(function (e) {
                 try {
-                    const T = e.dataset.vnode;
-                    const F = new Function(...args, 'return ' + T + '`' + e.outerHTML + '`');
-                    e.insertAdjacentHTML('afterend', F(...vals));
+                    e.insertAdjacentHTML('afterend', F(e.outerHTML, e.dataset.vnode));
                     e.remove();
                 }
                 catch (e) {
