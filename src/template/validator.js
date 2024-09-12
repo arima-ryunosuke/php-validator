@@ -745,7 +745,7 @@ function Chmonos(form, options) {
                             return;
                         }
                         if (e.type === 'checkbox' || e.type === 'radio') {
-                            var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + x});
+                            var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + (+x)});
                             e.checked = vv.indexOf(e.value) >= 0;
                         }
                         else if (e.type === 'select-multiple') {
