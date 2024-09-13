@@ -118,6 +118,7 @@
                 blinkee[0].scrollIntoView({
                     behavior: "smooth",
                     block: "center",
+                    inline: "center",
                 });
             }
         };
