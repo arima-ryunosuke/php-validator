@@ -137,11 +137,6 @@ $dynamic_rule = [
     <?= $template_form->input('require_address') ?>
 
     <style>
-        .template-holder {
-            display: flex;
-            flex-wrap: wrap;
-        }
-
         .template-item {
             display: grid;
             grid-template-columns: max-content 260px;
@@ -169,6 +164,8 @@ $dynamic_rule = [
             </dd>
             <dd>
                 <input class="delete_row1 btn btn-danger" type="button" value="削除">
+                <input class="insert_row1 btn btn-danger" type="button" value="挿入">
+                <input class="reset_row1 btn btn-danger" type="button" value="リセット">
             </dd>
         </dl>
         <?= $template_form->template() ?>
@@ -212,6 +209,20 @@ $dynamic_rule = [
                 chmonos.spawn('rows', function (node) {
                     this.parentNode.appendChild(node);
                 }, {title: Math.round(Math.random() * 10), multiple: [2, 3]});
+            });
+            // 挿入ボタン
+            $$('#template_form').on('click', function (e) {
+                if (e.target.matches('.insert_row1')) {
+                    chmonos.respawn('rows', function (node, self) {
+                        self.after(node);
+                    }, {}, e.target.closest('dl'));
+                }
+            });
+            // リセットボタン
+            $$('#template_form').on('click', function (e) {
+                if (e.target.matches('.reset_row1')) {
+                    chmonos.rebirth(e.target.closest('dl'), {title: Math.round(Math.random() * 10), multiple: [2, 3]});
+                }
             });
             // 削除ボタン
             $$('#template_form').on('click', function (e) {
