@@ -24,6 +24,17 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.3.0
+
+- [*change] index なしで disabled になる仕様を廃止
+- [*change] エラー表示は各フォームに紐づくようにする
+- [fixbug] inline が center になっていない不具合
+- [feature] ユーティリティ的なメソッドを追加
+- [feature] vnode のキャッシュと this 化
+- [feature] バリデーションする inputs を直接指定できる機能
+- [fixbug] spawn イベントに未確定の値が渡ってくる不具合
+- [fixbug] 様々なしがらみで checkbox は bool で来ることがある
+
 ## 1.2.11
 
 - [composer] update
