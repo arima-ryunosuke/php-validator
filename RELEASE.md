@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.1.0
+
+- [merge] v1.3.1
+
 ## 2.0.3
 
 - [feature] php8.2 のエラーを修正
