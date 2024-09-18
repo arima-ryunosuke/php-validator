@@ -412,6 +412,8 @@ function Chmonos(form, options) {
         },
     };
 
+    chmonos.valuesMap ??= new WeakMap();
+    chmonos.vnodesMap ??= new WeakMap();
     chmonos.customValidation = {
         before: [],
         after: [],
@@ -638,6 +640,57 @@ function Chmonos(form, options) {
         return Promise.all(promises).then(results => [...results].flat());
     };
 
+    chmonos.getValues = function (fragment) {
+        fragment ??= form;
+        var values = {};
+        fragment.querySelectorAll('.validatable:is(input, textarea, select):enabled').forEach(function (e) {
+            var klass = e.dataset.vinputClass;
+            if (klass === undefined) {
+                return;
+            }
+            var value = chmonos.value(e);
+            if (value === undefined) {
+                return;
+            }
+
+            var parts = klass.split('/');
+            values[parts[1] ?? parts[0]] = value;
+        });
+        return values;
+    };
+
+    chmonos.setValues = function (fragment, values) {
+        fragment ??= form;
+        Object.keys(values).forEach(function (key) {
+            var index = 0;
+            if (values[key] !== null) {
+                fragment.querySelectorAll('.validatable:is([data-vinput-id="' + key + '"], [data-vinput-id$="/' + key + '"])').forEach(function (e) {
+                    if (e.type === 'file') {
+                        return;
+                    }
+                    if (e.type === 'checkbox' || e.type === 'radio') {
+                        var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + (+x)});
+                        e.checked = vv.indexOf(e.value) >= 0;
+                    }
+                    else if (e.type === 'select-multiple') {
+                        var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + x});
+                        e.querySelectorAll('option').forEach(function (o) {
+                            o.selected = vv.indexOf(o.value) >= 0;
+                        });
+                    }
+                    else {
+                        if (values[key] instanceof Array) {
+                            e.value = values[key][index++] || '';
+                        }
+                        else {
+                            e.value = values[key];
+                        }
+                    }
+                });
+            }
+        });
+    };
+
     chmonos.setErrors = function (emessages) {
         var errorTypes = {};
         // {input: {condition: {errortype: message}}} => {input: {errortype: message}} in future scope
@@ -758,34 +811,7 @@ function Chmonos(form, options) {
             e.disabled = false;
         });
         if (values) {
-            Object.keys(values).forEach(function (key) {
-                var index = 0;
-                if (values[key] !== null) {
-                    fragment.querySelectorAll('[data-vinput-id$="/' + key + '"].validatable').forEach(function (e) {
-                        if (e.type === 'file') {
-                            return;
-                        }
-                        if (e.type === 'checkbox' || e.type === 'radio') {
-                            var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + (+x)});
-                            e.checked = vv.indexOf(e.value) >= 0;
-                        }
-                        else if (e.type === 'select-multiple') {
-                            var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + x});
-                            e.querySelectorAll('option').forEach(function (o) {
-                                o.selected = vv.indexOf(o.value) >= 0;
-                            });
-                        }
-                        else {
-                            if (values[key] instanceof Array) {
-                                e.value = values[key][index++] || '';
-                            }
-                            else {
-                                e.value = values[key];
-                            }
-                        }
-                    });
-                }
-            });
+            chmonos.setValues(fragment, values);
         }
         Array.from(fragment.querySelectorAll('.validatable:is(input, textarea, select):enabled')).forEach(function (e) {
             chmonos.required(e, undefined, fragment);
@@ -793,11 +819,12 @@ function Chmonos(form, options) {
 
         var node = fragment.querySelector(rootTag);
         node.dataset.vinputIndex = index;
+        chmonos.valuesMap.set(node, values ?? {});
         return node;
     };
 
     /**
-     * 子要素を生み出す
+     * 子要素を生み出す（新規追加）
      *
      * @param template Array 要素名か
      * @param callback 追加処理
@@ -819,6 +846,7 @@ function Chmonos(form, options) {
             node.querySelectorAll('[data-vnode]').forEach(function (e) {
                 try {
                     e.insertAdjacentHTML('afterend', F(e.outerHTML, e.dataset.vnode));
+                    chmonos.vnodesMap.set(e.nextElementSibling, e);
                     e.remove();
                 }
                 catch (e) {
@@ -838,6 +866,44 @@ function Chmonos(form, options) {
         callback = callback || function (node) {this.parentNode.appendChild(node)};
         callback.call(template, node);
         return node;
+    };
+
+    /**
+     * 子要素を生み出す（ベース NODE 指定）
+     *
+     * @param template Array 要素名か
+     * @param callback 追加処理
+     * @param values 初期値
+     * @param baseNode ベース NODE
+     */
+    chmonos.respawn = function (template, callback, values, baseNode) {
+        var node = chmonos.spawn(template, () => null, Object.assign({}, chmonos.valuesMap.get(baseNode) ?? {}, chmonos.getValues(baseNode), values));
+        callback = callback || function (node, base) {base.after(node)};
+        callback.call(template, node, baseNode);
+
+    };
+
+    /**
+     * 子要素を再設定する
+     *
+     * @param baseNode ベース NODE
+     * @param values 初期値
+     */
+    chmonos.rebirth = function (baseNode, values) {
+        chmonos.setValues(baseNode, values);
+
+        const F = templateFunction(values);
+        baseNode.querySelectorAll('[data-vnode]').forEach(function (e) {
+            try {
+                const vnode = chmonos.vnodesMap.get(e);
+                e.insertAdjacentHTML('afterend', F(vnode.outerHTML, vnode.dataset.vnode));
+                chmonos.vnodesMap.set(e.nextElementSibling, vnode);
+                e.remove();
+            }
+            catch (e) {
+                console.error(e);
+            }
+        });
     };
 
     /**
