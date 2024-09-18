@@ -1229,7 +1229,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'data-vinput-id'        => 'inputs/__index/child',
                 'data-vinput-class'     => 'inputs/child',
                 'data-vinput-index'     => '__index',
-                'disabled'              => 'disabled',
                 'name'                  => 'inputs[__index][child]',
                 'type'                  => 'text',
                 'class'                 => 'validatable',

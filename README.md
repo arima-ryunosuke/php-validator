@@ -658,8 +658,8 @@ validate を通した後の form のレンダリングにエラー表示や値�
 
 ```html
 <form>
-    <input disabled="disabled" name="parent[__index][child1]">
-    <input disabled="disabled" name="parent[__index][child2]">
+    <input name="parent[__index][child1]">
+    <input name="parent[__index][child2]">
     
     <input name="parent[1][child1]">
     <input name="parent[1][child2]">
@@ -667,9 +667,9 @@ validate を通した後の form のレンダリングにエラー表示や値�
 ```
 
 のようなタグが生成されます。
-context メソッドの第2引数で連番を指定しますが、 null を指定すると `__index` という特別なキーが指定されたとしてレンダリングされます。disabled になっているのも `__index` による効果です。
+context メソッドの第2引数で連番を指定しますが、 null を指定すると `__index` という特別なキーが指定されたとしてレンダリングされます。
 
-context メソッドは典型的には後述のように `<template>` タグの内部に配置します。IE11 などで template タグがない場合は単に不可視 div などでも構いません。
+context メソッドは典型的には後述のように `<template>` タグの内部に配置します。
 そのようにして得られた template タグを `chmonos.birth` に渡すと完全な DOM Node として得られるので、後はそれを追加したい箇所に `appendChild` すれば良いです。
 
 もっと具体的な実際の使い方は下記のようになるでしょう。

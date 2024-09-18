@@ -67,7 +67,7 @@ option.validation_invalid,
  * Project: https://github.com/CodeSeven/toastr
 */
 
-#chmonos-toast-container {
+.chmonos-toast-container {
     position: fixed;
     z-index: 999999;
     display: flex;
@@ -100,11 +100,11 @@ option.validation_invalid,
     */
 }
 
-#chmonos-toast-container:empty {
+.chmonos-toast-container:empty {
     display: none;
 }
 
-#chmonos-toast-container:before {
+.chmonos-toast-container:before {
     font-size: 12px;
     color: white;
     display: block;
@@ -113,27 +113,27 @@ option.validation_invalid,
     padding: 3px;
 }
 
-#chmonos-toast-container:has([data-toast-type="warning"]):before {
+.chmonos-toast-container:has([data-toast-type="warning"]):before {
     content: '下記の警告があります(クリックで移動します)';
     background-color: rgba(228, 128, 1, 0.9);
 }
 
-#chmonos-toast-container:has([data-toast-type="error"]):before {
+.chmonos-toast-container:has([data-toast-type="error"]):before {
     content: '下記のエラーがあります(クリックで移動します)';
     background-color: rgba(146, 32, 21, 0.9);
 }
 
-#chmonos-toast-container:has([data-toast-type="warning"]):has([data-toast-type="error"]):before {
+.chmonos-toast-container:has([data-toast-type="warning"]):has([data-toast-type="error"]):before {
     content: '下記の警告・エラーがあります(クリックで移動します)';
     background-color: rgba(146, 32, 21, 0.9);
 }
 
-#chmonos-toast-container * {
+.chmonos-toast-container * {
     box-sizing: border-box;
     word-break: break-all;
 }
 
-#chmonos-toast-container > div {
+.chmonos-toast-container > div {
     position: relative;
     flex: 0 0 auto;
     overflow: hidden;
@@ -146,23 +146,23 @@ option.validation_invalid,
     opacity: 0.8;
 }
 
-#chmonos-toast-container > div:hover {
+.chmonos-toast-container > div:hover {
     box-shadow: 0 0 12px #000000;
     opacity: 1;
     cursor: pointer;
 }
 
-#chmonos-toast-container .toast-title {
+.chmonos-toast-container .toast-title {
     font-weight: bold;
     font-size: 16px;
 }
 
-#chmonos-toast-container .toast-message {
+.chmonos-toast-container .toast-message {
     white-space: pre-line;
     font-size: 14px;
 }
 
-#chmonos-toast-container .toast-close-button {
+.chmonos-toast-container .toast-close-button {
     padding: 0;
     cursor: pointer;
     background: transparent;
@@ -178,15 +178,15 @@ option.validation_invalid,
     line-height: 1;
 }
 
-#chmonos-toast-container .toast-close-button:hover,
-#chmonos-toast-container .toast-close-button:focus {
+.chmonos-toast-container .toast-close-button:hover,
+.chmonos-toast-container .toast-close-button:focus {
     color: #000000;
     text-decoration: none;
     cursor: pointer;
     opacity: 0.4;
 }
 
-#chmonos-toast-container > [data-toast-type]:before {
+.chmonos-toast-container > [data-toast-type]:before {
     position: absolute;
     left: 0;
     top: 0;
@@ -198,24 +198,24 @@ option.validation_invalid,
     align-items: center;
 }
 
-#chmonos-toast-container > [data-toast-type="error"] {
+.chmonos-toast-container > [data-toast-type="error"] {
     background-color: #BD362F;
 }
 
-#chmonos-toast-container > [data-toast-type="error"]:before {
+.chmonos-toast-container > [data-toast-type="error"]:before {
     content: "\26D4\FE0E";
 }
 
-#chmonos-toast-container > [data-toast-type="warning"] {
+.chmonos-toast-container > [data-toast-type="warning"] {
     background-color: #F89406;
 }
 
-#chmonos-toast-container > [data-toast-type="warning"]:before {
+.chmonos-toast-container > [data-toast-type="warning"]:before {
     content: "\26A0\FE0E";
 }
 
 @media screen and (max-height: 800px) {
-    #chmonos-toast-container {
+    .chmonos-toast-container {
         max-height: 32vh;
     }
 }

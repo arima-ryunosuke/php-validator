@@ -111,15 +111,20 @@ function Chmonos(form, options) {
         return already;
     }
 
+    chmonos.functionCache ??= new Map();
     function templateFunction(vars) {
         var entries = Object.entries(vars);
         var args = entries.map(e => e[0]);
         var vals = entries.map(e => e[1]);
+        var argstring = args.join(',');
 
         return function (template, tag) {
             try {
-                const F = new Function(...args, 'return ' + (tag ?? '') + '`' + template + '`');
-                return F(...vals);
+                const cachekey = `${tag}@${template}(${argstring})`;
+                if (!chmonos.functionCache.has(cachekey)) {
+                    chmonos.functionCache.set(cachekey, new Function(...args, 'return ' + (tag ?? '') + '`' + template + '`'));
+                }
+                return chmonos.functionCache.get(cachekey).call(vars, ...vals);
             }
             catch (e) {
                 console.error(e);
@@ -421,6 +426,8 @@ function Chmonos(form, options) {
         },
     };
 
+    chmonos.valuesMap ??= new WeakMap();
+    chmonos.vnodesMap ??= new WeakMap();
     chmonos.customValidation = {
         before: [],
         after: [],
@@ -621,11 +628,11 @@ function Chmonos(form, options) {
         chmonos.customValidation[timing].push(validation);
     };
 
-    chmonos.validate = function (evt, selector) {
+    chmonos.validate = function (evt, selector, inputs) {
         form.validationValues = undefined;
         evt = evt || new CustomEvent('vatidation');
 
-        var inputs = form.querySelectorAll('.validatable:is(input, textarea, select)');
+        inputs ??= form.querySelectorAll('.validatable:is(input, textarea, select)');
         if (selector) {
             inputs = Array.from(inputs).filter((e) => e.matches(selector));
         }
@@ -655,6 +662,57 @@ function Chmonos(form, options) {
         }
 
         return Promise.all(promises).then(results => [...results].flat());
+    };
+
+    chmonos.getValues = function (fragment) {
+        fragment ??= form;
+        var values = {};
+        fragment.querySelectorAll('.validatable:is(input, textarea, select):enabled').forEach(function (e) {
+            var klass = e.dataset.vinputClass;
+            if (klass === undefined) {
+                return;
+            }
+            var value = chmonos.value(e);
+            if (value === undefined) {
+                return;
+            }
+
+            var parts = klass.split('/');
+            values[parts[1] ?? parts[0]] = value;
+        });
+        return values;
+    };
+
+    chmonos.setValues = function (fragment, values) {
+        fragment ??= form;
+        Object.keys(values).forEach(function (key) {
+            var index = 0;
+            if (values[key] !== null) {
+                fragment.querySelectorAll('.validatable:is([data-vinput-id="' + key + '"], [data-vinput-id$="/' + key + '"])').forEach(function (e) {
+                    if (e.type === 'file') {
+                        return;
+                    }
+                    if (e.type === 'checkbox' || e.type === 'radio') {
+                        var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + (+x)});
+                        e.checked = vv.indexOf(e.value) >= 0;
+                    }
+                    else if (e.type === 'select-multiple') {
+                        var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + x});
+                        e.querySelectorAll('option').forEach(function (o) {
+                            o.selected = vv.indexOf(o.value) >= 0;
+                        });
+                    }
+                    else {
+                        if (values[key] instanceof Array) {
+                            e.value = values[key][index++] || '';
+                        }
+                        else {
+                            e.value = values[key];
+                        }
+                    }
+                });
+            }
+        });
     };
 
     chmonos.setErrors = function (emessages) {
@@ -769,52 +827,26 @@ function Chmonos(form, options) {
             resetIndex(e, 'name', index);
             resetIndex(e, 'data-vinput-id', index);
             resetIndex(e, 'data-vinput-index', index);
-            e.disabled = false;
         });
         Array.from(fragment.querySelectorAll('[data-vinput-wrapper],[data-vinput-group]')).forEach(function (e) {
             resetIndex(e, 'data-vinput-wrapper', index);
             resetIndex(e, 'data-vinput-group', index);
-            e.disabled = false;
         });
         if (values) {
-            Object.keys(values).forEach(function (key) {
-                var index = 0;
-                if (values[key] !== null) {
-                    fragment.querySelectorAll('[data-vinput-id$="/' + key + '"].validatable').forEach(function (e) {
-                        if (e.type === 'file') {
-                            return;
-                        }
-                        if (e.type === 'checkbox' || e.type === 'radio') {
-                            var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + x});
-                            e.checked = vv.indexOf(e.value) >= 0;
-                        }
-                        else if (e.type === 'select-multiple') {
-                            var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + x});
-                            e.querySelectorAll('option').forEach(function (o) {
-                                o.selected = vv.indexOf(o.value) >= 0;
-                            });
-                        }
-                        else {
-                            if (values[key] instanceof Array) {
-                                e.value = values[key][index++] || '';
-                            }
-                            else {
-                                e.value = values[key];
-                            }
-                        }
-                    });
-                }
-            });
+            chmonos.setValues(fragment, values);
         }
         Array.from(fragment.querySelectorAll('.validatable:is(input, textarea, select):enabled')).forEach(function (e) {
             chmonos.required(e, undefined, fragment);
         });
 
-        return fragment.querySelector(rootTag);
+        var node = fragment.querySelector(rootTag);
+        node.dataset.vinputIndex = index;
+        chmonos.valuesMap.set(node, values ?? {});
+        return node;
     };
 
     /**
-     * 子要素を生み出す
+     * 子要素を生み出す（新規追加）
      *
      * @param template Array 要素名か
      * @param callback 追加処理
@@ -828,23 +860,68 @@ function Chmonos(form, options) {
 
         var node = chmonos.birth(template, values, index);
         if (values) {
-            var F = templateFunction(values);
+            const F = templateFunction(values);
             node.querySelectorAll('[data-vnode]').forEach(function (e) {
-                e.insertAdjacentHTML('afterend', F(e.outerHTML, e.dataset.vnode));
-                e.remove();
+                try {
+                    e.insertAdjacentHTML('afterend', F(e.outerHTML, e.dataset.vnode));
+                    chmonos.vnodesMap.set(e.nextElementSibling, e);
+                    e.remove();
+                }
+                catch (e) {
+                    console.error(e);
+                }
             });
         }
+
         template.dispatchEvent(new CustomEvent('spawn', {
             detail: {
                 node: node,
-                index: index,
-                values: values,
+                index: index ?? +node.dataset.vinputIndex,
+                values: values ?? {},
             },
         }));
 
         callback = callback || function (node) {this.parentNode.appendChild(node)};
         callback.call(template, node);
         return node;
+    };
+
+    /**
+     * 子要素を生み出す（ベース NODE 指定）
+     *
+     * @param template Array 要素名か
+     * @param callback 追加処理
+     * @param values 初期値
+     * @param baseNode ベース NODE
+     */
+    chmonos.respawn = function (template, callback, values, baseNode) {
+        var node = chmonos.spawn(template, () => null, Object.assign({}, chmonos.valuesMap.get(baseNode) ?? {}, chmonos.getValues(baseNode), values));
+        callback = callback || function (node, base) {base.after(node)};
+        callback.call(template, node, baseNode);
+
+    };
+
+    /**
+     * 子要素を再設定する
+     *
+     * @param baseNode ベース NODE
+     * @param values 初期値
+     */
+    chmonos.rebirth = function (baseNode, values) {
+        chmonos.setValues(baseNode, values);
+
+        const F = templateFunction(values);
+        baseNode.querySelectorAll('[data-vnode]').forEach(function (e) {
+            try {
+                const vnode = chmonos.vnodesMap.get(e);
+                e.insertAdjacentHTML('afterend', F(vnode.outerHTML, vnode.dataset.vnode));
+                chmonos.vnodesMap.set(e.nextElementSibling, vnode);
+                e.remove();
+            }
+            catch (e) {
+                console.error(e);
+            }
+        });
     };
 
     /**
