@@ -6333,10 +6333,6 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
 
         var node = chmonos.birth(template, values, index);
         if (values) {
-            var entries = Object.entries(values);
-            var args = entries.map(e => e[0]);
-            var vals = entries.map(e => e[1]);
-
             const F = templateFunction(values);
             node.querySelectorAll('[data-vnode]').forEach(function (e) {
                 try {
