@@ -50,6 +50,16 @@
                 container = options.container.getElementsByClassName('chmonos-toast-container')[0];
             }
 
+            if (options.container.dataset.maxToastCount) {
+                if (container.children.length >= options.container.dataset.maxToastCount) {
+                    options.container.classList.add('chmonos-many-invalid');
+                    return undefined;
+                }
+                else {
+                    options.container.classList.remove('chmonos-many-invalid');
+                }
+            }
+
             container.insertAdjacentHTML('beforeend',
                 '<div class="validation_message" data-toast-type="' + options.type + '" aria-live="assertive">' +
                 '    <button type="button" class="toast-close-button" role="button">&times;</button>' +
@@ -147,11 +157,13 @@
                                 delete input[TOAST_NAME];
                             },
                         });
-                        toast.querySelector('.toast-title').textContent = messages.title ?? '';
-                        toast.querySelector('.toast-message').textContent = [...new Set(messages[type])].join('\n');
-                        toast.style.order = chmonosFormElements.get(input) ?? 0;
-                        toast.chmonos_vinput = input;
-                        input[TOAST_NAME] = toast;
+                        if (toast) {
+                            toast.querySelector('.toast-title').textContent = messages.title ?? '';
+                            toast.querySelector('.toast-message').textContent = [...new Set(messages[type])].join('\n');
+                            toast.style.order = chmonosFormElements.get(input) ?? 0;
+                            toast.chmonos_vinput = input;
+                            input[TOAST_NAME] = toast;
+                        }
                     }
                     else {
                         var toast = input[TOAST_NAME];

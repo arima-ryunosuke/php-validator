@@ -6412,7 +6412,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         var node = chmonos.spawn(template, () => null, Object.assign({}, chmonos.valuesMap.get(baseNode) ?? {}, chmonos.getValues(baseNode), values));
         callback = callback || function (node, base) {base.after(node)};
         callback.call(template, node, baseNode);
-
+        return node;
     };
 
     /**

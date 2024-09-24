@@ -576,7 +576,7 @@ $condition_form = new \ryunosuke\chmonos\Form([
 resetForm($condition_form, 'condition_form');
 ?>
 
-<?= $condition_form->form(['method' => 'post']) ?>
+<?= $condition_form->form(['method' => 'post', 'data-max-toast-count' => 5]) ?>
 <input type="hidden" name="formid" value="condition_form">
 <table class="table">
     <tr>
