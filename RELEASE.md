@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.1.1
+
+- [merge] v1.3.3
+- [merge] v1.3.2
+
 ## 2.1.0
 
 - [merge] v1.3.1
