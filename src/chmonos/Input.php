@@ -24,6 +24,7 @@ class Input
     /** @var array 生成時のデフォルト値 */
     protected static $defaultRule = [
         'title'                 => '',
+        'normalize'             => null,
         'condition'             => [],
         'invalid-option-prefix' => "\x18",
         'options'               => [],
@@ -350,6 +351,10 @@ class Input
         // trim するなら trim （ただし必要があるのは string のみ）
         if ($this->trimming && is_string($value)) {
             $value = mb_trim($value);
+        }
+
+        if ($this->normalize) {
+            $value = ($this->normalize)($value, $values) ?? $value;
         }
 
         return $value;
