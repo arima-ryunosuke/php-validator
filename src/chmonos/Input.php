@@ -22,6 +22,7 @@ class Input
 
     protected static array $defaultRule = [
         'title'                 => '',
+        'normalize'             => null,
         'condition'             => [],
         'options'               => [],
         'invalids'              => [],
@@ -332,6 +333,10 @@ class Input
         // trim するなら trim （ただし必要があるのは string のみ）
         if ($this->trimming && is_string($value)) {
             $value = mb_trim($value);
+        }
+
+        if ($this->normalize) {
+            $value = ($this->normalize)($value, $values) ?? $value;
         }
 
         return $value;

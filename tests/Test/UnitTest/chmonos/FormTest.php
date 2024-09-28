@@ -241,6 +241,84 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
     }
 
+    function test_validate_normalize()
+    {
+        $form = new Form([
+            'parent'   => [
+                'normalize' => function ($value) {
+                    return 'dummy';
+                },
+                'condition' => [
+                    'Requires' => null
+                ]
+            ],
+            'children' => [
+                'normalize' => function ($value) {
+                    unset($value[2]);
+                    $value[1]['child1'] = 'rewrite';
+                    return $value;
+                },
+                'condition' => [
+                    'ArrayLength' => [0, 2]
+                ],
+                'inputs'    => [
+                    'child1' => [
+                        'normalize' => function ($value) {
+                            return substr($value, -3, 3);
+                        },
+                        'condition' => [
+                            'StringLength' => [0, 3]
+                        ]
+                    ],
+                    'child2' => [
+                        'normalize' => function ($value) {
+                            return substr($value, -3, 3);
+                        },
+                        'condition' => [
+                            'StringLength' => [0, 3]
+                        ]
+                    ]
+                ]
+            ],
+        ]);
+
+        $values = [
+            'parent'   => '',
+            'children' => [
+                [
+                    'child1' => 'hoge1',
+                    'child2' => 'hoge2',
+                ],
+                [
+                    'child1' => 'fuga1',
+                    'child2' => 'fuga2',
+                ],
+                [
+                    'child1' => 'dummy',
+                    'child2' => 'dummy',
+                ],
+            ],
+        ];
+        $form->validate($values);
+
+        // normalize で全て潰しているので validate は通る
+        that($form)->getMessages()->isEmpty();
+        // その証左
+        that($values)->is([
+            "parent"   => "dummy",
+            "children" => [
+                [
+                    "child1" => "ge1",
+                    "child2" => "ge2",
+                ],
+                [
+                    "child1" => "ite",
+                    "child2" => "ga2",
+                ],
+            ],
+        ]);
+    }
+
     function test_validate_files()
     {
         file_put_contents($parent_file = tempnam(sys_get_temp_dir(), 'tmp'), '');
