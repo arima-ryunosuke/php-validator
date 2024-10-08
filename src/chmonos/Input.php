@@ -332,7 +332,7 @@ class Input
 
         // trim するなら trim （ただし必要があるのは string のみ）
         if ($this->trimming && is_string($value)) {
-            $value = mb_trim($value);
+            $value = \mb_trim($value);
         }
 
         if ($this->normalize) {
@@ -664,7 +664,7 @@ class Input
                 break;
             }
             $vs = $condition->isArrayableValidation() ? [$value] : arrayize($value);
-            $flag = array_all($vs, function ($v) use ($condition, $fields) { return $condition->isValid($v, $fields, $this); });
+            $flag = array_and($vs, function ($v) use ($condition, $fields) { return $condition->isValid($v, $fields, $this); });
             $mess = $condition->getMessages();
 
             $isvalid = $flag && $isvalid;

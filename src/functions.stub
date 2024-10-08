@@ -275,6 +275,10 @@ if (!defined('ryunosuke\\chmonos\\JSON_BARE_AS_STRING')) {
     define('ryunosuke\\chmonos\\JSON_BARE_AS_STRING', -106);
 }
 
+if (!defined('ryunosuke\\chmonos\\JSON_OBJECT_HANDLER')) {
+    define('ryunosuke\\chmonos\\JSON_OBJECT_HANDLER', -107);
+}
+
 if (!defined('ryunosuke\\chmonos\\SI_UNITS')) {
     define('ryunosuke\\chmonos\\SI_UNITS', [
         -8 => ["y"],
@@ -301,8 +305,8 @@ if (!defined('ryunosuke\\chmonos\\SORT_STRICT')) {
     define('ryunosuke\\chmonos\\SORT_STRICT', 256);
 }
 
-assert(!function_exists('ryunosuke\\chmonos\\array_all') || (new \ReflectionFunction('ryunosuke\\chmonos\\array_all'))->isUserDefined());
-if (!function_exists('ryunosuke\\chmonos\\array_all')) {
+assert(!function_exists('ryunosuke\\chmonos\\array_and') || (new \ReflectionFunction('ryunosuke\\chmonos\\array_and'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\array_and')) {
     /**
      * 全要素が true になるなら true を返す（1つでも false なら false を返す）
      *
@@ -310,9 +314,9 @@ if (!function_exists('ryunosuke\\chmonos\\array_all')) {
      *
      * Example:
      * ```php
-     * that(array_all([true, true]))->isTrue();
-     * that(array_all([true, false]))->isFalse();
-     * that(array_all([false, false]))->isFalse();
+     * that(array_and([true, true]))->isTrue();
+     * that(array_and([true, false]))->isFalse();
+     * that(array_and([false, false]))->isFalse();
      * ```
      *
      * @package ryunosuke\Functions\Package\array
@@ -322,7 +326,7 @@ if (!function_exists('ryunosuke\\chmonos\\array_all')) {
      * @param bool|mixed $default 空配列の場合のデフォルト値
      * @return bool 全要素が true なら true
      */
-    function array_all($array, $callback = null, $default = true)
+    function array_and($array, $callback = null, $default = true)
     {
         if (is_empty($array)) {
             return $default;
@@ -1736,6 +1740,48 @@ if (!function_exists('ryunosuke\\chmonos\\object_properties')) {
     }
 }
 
+assert(!function_exists('ryunosuke\\chmonos\\type_exists') || (new \ReflectionFunction('ryunosuke\\chmonos\\type_exists'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\type_exists')) {
+    /**
+     * 型が存在するか返す
+     *
+     * class/interface/trait/enum exists の合せ技。
+     * trait/enum のように今後型的なものがさらに増えるかもしれないし、class_exists だけして interface/trait が抜けているコードを何度も見てきた。
+     * それを一元管理するような関数となる。
+     *
+     * Example:
+     * ```php
+     * that(class_exists(\Throwable::class))->isFalse();     // class_exists は class にしか反応しない
+     * that(interface_exists(\Exception::class))->isFalse(); // interface_exists は interface にしか反応しない
+     * that(trait_exists(\Error::class))->isFalse();         // trait_exists は trait にしか反応しない
+     * // type_exists であれば全てに反応する
+     * that(type_exists(\Throwable::class))->isTrue();
+     * that(type_exists(\Exception::class))->isTrue();
+     * that(type_exists(\Error::class))->isTrue();
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\classobj
+     *
+     * @param string $typename 調べる型名
+     * @param bool $autoload オートロードを行うか
+     * @return bool 型が存在するなら true
+     */
+    function type_exists($typename, $autoload = true)
+    {
+        if (class_exists($typename, $autoload)) {
+            return true;
+        }
+        if (interface_exists($typename, $autoload)) {
+            return true;
+        }
+        if (trait_exists($typename, $autoload)) {
+            return true;
+        }
+        // enum は class で実装されているので enum_exists は不要
+        return false;
+    }
+}
+
 assert(!function_exists('ryunosuke\\chmonos\\css_selector') || (new \ReflectionFunction('ryunosuke\\chmonos\\css_selector'))->isUserDefined());
 if (!function_exists('ryunosuke\\chmonos\\css_selector')) {
     /**
@@ -2929,8 +2975,12 @@ if (!function_exists('ryunosuke\\chmonos\\reflect_callable')) {
      *   - 上記二つは __call/__callStatic のメソッドも呼び出せる
      * - getDeclaration: 宣言部のコードを返す
      * - getCode: 定義部のコードを返す
+     * - isAnonymous: 無名関数なら true を返す（8.2 の isAnonymous 互換）
      * - isStatic: $this バインド可能かを返す（クロージャのみ）
      * - getUsedVariables: use している変数配列を返す（クロージャのみ）
+     * - getClosure: 元となったオブジェクトを $object としたクロージャを返す（メソッドのみ）
+     *   - 上記二つは __call/__callStatic のメソッドも呼び出せる
+     * - getTraitMethod: トレイト側のリフレクションを返す（メソッドのみ）
      *
      * Example:
      * ```php
@@ -2984,6 +3034,11 @@ if (!function_exists('ryunosuke\\chmonos\\reflect_callable')) {
                 {
                     return ($this->definition ??= callable_code($this))[1];
                 }
+
+                public function isAnonymous(): bool
+                {
+                    return false;
+                }
             };
         }
         elseif ($callable instanceof \Closure) {
@@ -3018,6 +3073,15 @@ if (!function_exists('ryunosuke\\chmonos\\reflect_callable')) {
                     return ($this->definition ??= callable_code($this))[1];
                 }
 
+                public function isAnonymous(): bool
+                {
+                    if (method_exists(\ReflectionFunction::class, 'isAnonymous')) {
+                        return parent::isAnonymous(); // @codeCoverageIgnore
+                    }
+
+                    return strpos($this->name, '{closure}') !== false;
+                }
+
                 public function isStatic(): bool
                 {
                     return !is_bindable_closure($this->callable);
@@ -3025,6 +3089,10 @@ if (!function_exists('ryunosuke\\chmonos\\reflect_callable')) {
 
                 public function getUsedVariables(): array
                 {
+                    if (method_exists(\ReflectionFunction::class, 'getClosureUsedVariables')) {
+                        return parent::getClosureUsedVariables(); // @codeCoverageIgnore
+                    }
+
                     $uses = object_properties($this->callable);
                     unset($uses['this']);
                     return $uses;
@@ -3084,8 +3152,97 @@ if (!function_exists('ryunosuke\\chmonos\\reflect_callable')) {
                 {
                     return ($this->definition ??= callable_code($this))[1];
                 }
+
+                public function isAnonymous(): bool
+                {
+                    return false;
+                }
+
+                public function getClosure(?object $object = null): \Closure
+                {
+                    $name = strtolower($this->name);
+
+                    if ($this->isStatic()) {
+                        if ($name === '__callstatic') {
+                            return \Closure::fromCallable([$this->class, $this->call_name]);
+                        }
+                        return parent::getClosure();
+                    }
+
+                    $object ??= $this->callable[0];
+                    if ($name === '__call') {
+                        return \Closure::fromCallable([$object, $this->call_name]);
+                    }
+                    return parent::getClosure($object);
+                }
+
+                public function getTraitMethod(): ?\ReflectionMethod
+                {
+                    $name = strtolower($this->name);
+                    $class = $this->getDeclaringClass();
+                    $aliases = array_change_key_case($class->getTraitAliases(), CASE_LOWER);
+
+                    if (!isset($aliases[$name])) {
+                        if ($this->getFileName() === $class->getFileName()) {
+                            return null;
+                        }
+                        else {
+                            return $this;
+                        }
+                    }
+
+                    [$tname, $mname] = explode('::', $aliases[$name]);
+                    $result = new self($tname, $mname, $this->callable, $this->call_name);
+
+                    // alias を張ったとしても自身で再宣言はエラーなく可能で、その場合自身が採用されるようだ
+                    if (false
+                        || $this->getFileName() !== $result->getFileName()
+                        || $this->getStartLine() !== $result->getStartLine()
+                        || $this->getEndLine() !== $result->getEndLine()
+                    ) {
+                        return null;
+                    }
+
+                    return $result;
+                }
             };
         }
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\reflect_type_resolve') || (new \ReflectionFunction('ryunosuke\\chmonos\\reflect_type_resolve'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\reflect_type_resolve')) {
+    /**
+     * ReflectionType の型に \\ を付与する
+     *
+     * php8.0 で ReflectionType の __toString が解放されたけど、それをそのまま埋め込んだりすると \\ がないのでエラーになったりする。
+     * この関数を通してから埋め込めば \\ が付くので回避できる、という非常にニッチな関数。
+     *
+     * 型 exists で判定するため、付与するクラスは存在している必要がある（オプション引数で対応するかもしれない）。
+     *
+     * Example:
+     * ```php
+     * // このような DNF 型も形式を保ったまま \\ を付与できる
+     * that(reflect_type_resolve('(Countable&Traversable)|object'))->is('(\\Countable&\\Traversable)|object');
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\reflection
+     *
+     * @param ?string $type string だが実用上は getType 等で得られるインスタンスでよい
+     * @return ?string 解決された文字列
+     */
+    function reflect_type_resolve(?string $type): ?string
+    {
+        if ($type === null) {
+            return null;
+        }
+
+        // 拡張関数が string|null ではなく ?string で返すことがあるので ? を含める
+        // 8.1以上では交差型もあり得るので (&) も含める
+        // そして PREG_SPLIT_DELIM_CAPTURE で分割して再結合すれば元の形式のまま得られる
+        $types = preg_split('#([?()|&])#', $type, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $types = array_map(fn($v) => type_exists($v) ? "\\" . ltrim($v, '\\') : $v, $types);
+        return implode('', $types);
     }
 }
 
@@ -3133,18 +3290,14 @@ if (!function_exists('ryunosuke\\chmonos\\mb_trim')) {
     /**
      * マルチバイト対応 trim
      *
-     * Example:
-     * ```php
-     * that(mb_trim(' 　 あああ　 　'))->isSame('あああ');
-     * ```
-     *
+     * @see https://github.com/symfony/polyfill-php84/
+     * @deprecated 標準関数と重複
+     * @codeCoverageIgnore
      * @package ryunosuke\Functions\Package\strings
-     *
-     * @param string $string 対象文字列
-     * @return string trim した文字列
      */
     function mb_trim(?string $string)
     {
+        trigger_error(__FUNCTION__ . ' is deprecated. use symfony/polyfill or 8.4 builtin', E_USER_DEPRECATED);
         return preg_replace('/\A[\p{C}\p{Z}]++|[\p{C}\p{Z}]++\z/u', '', $string);
     }
 }
@@ -4506,7 +4659,7 @@ if (!function_exists('ryunosuke\\chmonos\\var_export2')) {
                 $hashed = is_hasharray($value);
 
                 // スカラー値のみで構成されているならシンプルな再帰
-                if (!$hashed && array_all($value, fn(...$args) => is_primitive(...$args))) {
+                if (!$hashed && array_and($value, fn(...$args) => is_primitive(...$args))) {
                     return '[' . implode(",$space", array_map(fn($v) => $export($v, 'array-value'), $value)) . ']';
                 }
 
@@ -4630,6 +4783,17 @@ if (!function_exists('ryunosuke\\chmonos\\var_type')) {
      * 無名クラスの場合は extends, implements の優先順位でその名前を使う。
      * 継承も実装もされていない場合は標準の get_class の結果を返す。
      *
+     * phpdoc に true を渡すと array-shape 記法も有効になり下記のようになる。
+     *
+     * - 連想配列は想起した通り
+     * - 連番配列は中身の和集合を取る
+     *     - 中身がさらに配列なら再帰的に処理する
+     *         - 有り無し混在は null 扱いになる
+     * - 無名クラスは親クラス＋インターフェースを取る
+     *     - 完全無名クラスは object になる
+     *
+     * phpdoc:true の場合の結果は互換性を考慮しない。
+     *
      * Example:
      * ```php
      * // プリミティブ型は get_debug_type と同義
@@ -4647,16 +4811,242 @@ if (!function_exists('ryunosuke\\chmonos\\var_type')) {
      * that(var_type(new class implements \JsonSerializable{
      *     public function jsonSerialize(): string { return ''; }
      * }))->isSame('\\JsonSerializable');
+     *
+     * // phpdoc 形式
+     * that(var_type([
+     *     'scalar'    => 123,
+     *     'lish-hash' => [
+     *         ['id' => 1, 'name' => 'a'],
+     *         ['id' => 2, 'name' => 'b'],
+     *     ],
+     *     'nest'      => [
+     *         'a' => [
+     *             'b' => [
+     *                 'c' => ['a', 'b', 'c'],
+     *             ],
+     *         ],
+     *     ],
+     * ], ['phpdoc' => true, 'format' => 9]))->is(<<<ARRAYSHAPE
+     * array{
+     *   "lish-hash": array<array{
+     *     id: int,
+     *     name: string
+     *   }>,
+     *   nest: array{
+     *     a: array{
+     *       b: array{
+     *         c: array<string>
+     *       }
+     *     }
+     *   },
+     *   scalar: int
+     * }
+     * ARRAYSHAPE);
      * ```
      *
      * @package ryunosuke\Functions\Package\var
-     *
-     * @param mixed $var 型を取得する値
-     * @return string 型名
      */
-    function var_type($var)
+    function var_type(
+        /** 型を取得する値 */ mixed $var,
+        /** オプション配列 */ array $options = [],
+    ): /** 型名 */ string
     {
+        $options['phpdoc'] ??= false;                             // phpdoc 形式で書き出すか
+        $options['format'] ??= 1;                                 // フォーマットレベル（0:no space, 1:separator only, ...9:pretty）
+        $options['is_list'] ??= fn($k, $v, $array) => is_int($k); // 連番配列の判定処理（例えば UUID などを連番として扱いたいことがある）
+        $options['is_object'] ??= function ($var) {               // object-shape 記法にするオブジェクトの判定処理
+            if (is_object($var)) {
+                if ($var instanceof \stdClass) {
+                    return true;
+                }
+                /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
+                if (count((new \ReflectionClass($var))->getAttributes(\AllowDynamicProperties::class))) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        $options['nest'] = 0;
+
+        if (is_array($var) || $options['is_object']($var)) {
+            if ($options['phpdoc']) {
+                $shape = new class($var, $options) {
+                    private string $shape;
+                    private array  $type     = [];
+                    private array  $list     = [];
+                    private array  $hash     = [];
+                    private array  $object   = [];
+                    private bool   $optional = false;
+                    private array  $options;
+
+                    private string $result;
+
+                    public function __construct($var, $options)
+                    {
+                        $this->shape = is_object($var) ? 'object' : 'array';
+                        $this->options = $options;
+
+                        if (is_array($var) || $this->options['is_object']($var)) {
+                            foreach ($var as $k => $v) {
+                                if ($this->options['is_list']($k, $v, $var)) {
+                                    $new = new self($v, $this->options);
+                                    foreach ($this->list as $n => $old) {
+                                        /** @var self $old */
+                                        if (type_exists($newtype = (string) $new) && type_exists($oldtype = (string) $old)) {
+                                            if (is_subclass_of($newtype, $oldtype)) {
+                                                $this->list[$n] = $new;
+                                                continue 2;
+                                            }
+                                            if (is_subclass_of($oldtype, $newtype)) {
+                                                continue 2;
+                                            }
+                                        }
+
+                                        if ($new->list xor $old->list) {
+                                            if ($new->list && !$old->list) {
+                                                $this->list[$n] = $new;
+                                                continue 2;
+                                            }
+                                            if (!$new->list && $old->list) {
+                                                continue 2;
+                                            }
+                                        }
+
+                                        $flag = false;
+                                        foreach (['hash', 'object'] as $property) {
+                                            if ($new->$property && $old->$property) {
+                                                $flag = true;
+                                                $diffs = array_diff_key($new->$property, $old->$property) + array_diff_key($old->$property, $new->$property);
+
+                                                foreach ($diffs as $diff) {
+                                                    /** @var self $diff */
+                                                    unset($diff->result);
+                                                    $diff->optional = true;
+                                                }
+                                                $old->$property += $diffs;
+
+                                                foreach ($old->$property as $name => $diff) {
+                                                    unset($diff->result);
+                                                    $diff->type = array_merge($diff->type, $new->$property[$name]?->type ?? []);
+                                                    $diff->list = array_merge($diff->list, $new->$property[$name]?->list ?? []);
+                                                    $diff->hash = array_merge($diff->hash, $new->$property[$name]?->hash ?? []);
+                                                    $diff->object = array_merge($diff->object, $new->$property[$name]?->object ?? []);
+                                                }
+                                            }
+                                        }
+                                        if ($flag) {
+                                            continue 2;
+                                        }
+                                    }
+                                    $this->list[] = $new;
+                                }
+                                else {
+                                    $new = new self($v, ['nest' => $this->options['nest'] + 1] + $this->options);
+                                    if (is_object($var)) {
+                                        $type = var_type($var, ['is_object' => fn() => false] + $this->options);
+                                        if ($type !== 'object') {
+                                            $this->type[] = $type;
+                                        }
+                                        $this->object[$k] = $new;
+                                    }
+                                    else {
+                                        $this->hash[$k] = $new;
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            $this->type[] = var_type($var, $this->options);
+                        }
+                    }
+
+                    public function __toString(): string
+                    {
+                        return $this->result ??= (function () {
+                            $result = [];
+                            if ($t = array_filter(array_map('strval', $this->type), 'strlen')) {
+                                sort($t);
+                                $result[] = $t ? implode('|', array_unique($t)) : "";
+                            }
+                            if ($t = array_filter(array_map('strval', $this->list), 'strlen')) {
+                                sort($t);
+                                $result[] = $t ? "array<" . implode('|', array_unique($t)) . ">" : "";
+                            }
+                            foreach (['hash', 'object'] as $property) {
+                                if ($t = array_filter(array_map('strval', $this->$property), 'strlen')) {
+                                    $space = $this->options['format'] > 0 ? " " : "";
+                                    $break = $this->options['format'] > 1 ? "\n" : "";
+                                    $delim = $this->options['format'] > 1 ? $break : $space;
+                                    $indent = $this->options['format'] > 1 ? "  " : "";
+                                    $indent0 = $this->options['format'] > 1 ? str_repeat($indent, $this->options['nest'] + 0) : "";
+                                    $indent1 = $this->options['format'] > 1 ? str_repeat($indent, $this->options['nest'] + 1) : "";
+
+                                    ksort($t);
+                                    $keyvalues = array_map(function ($v, $k) use ($property, $indent1, $space) {
+                                        if (!preg_match('#^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$#u', $k)) {
+                                            $k = str_quote($k);
+                                        }
+                                        if ($this->$property[$k]->optional ?? false) {
+                                            $k = "$k?";
+                                        }
+                                        return "{$indent1}$k:{$space}$v";
+                                    }, $t, array_keys($t));
+                                    $result[] = $t ? "{$this->shape}{{$break}" . implode(",{$delim}", $keyvalues) . "{$break}{$indent0}}" : "";
+                                }
+                            }
+                            $result = array_filter($result, 'strlen');
+                            return $result ? implode('|', $result) : $this->shape;
+                        })();
+                    }
+
+                    /** @codeCoverageIgnore */
+                    public function __debugInfo(): ?array
+                    {
+                        return [
+                            'type'     => $this->type,
+                            'list'     => $this->list,
+                            'hash'     => $this->hash,
+                            'object'   => $this->object,
+                            'optional' => $this->optional,
+                        ];
+                    }
+                };
+                //var_pretty($shape);
+                return (string) $shape;
+            }
+        }
         if (is_object($var)) {
+            if ($options['phpdoc']) {
+                // クロージャだけはどうせ情報量がゼロなので特別扱いにする
+                if ($var instanceof \Closure) {
+                    $space = $options['format'] > 0 ? " " : "";
+
+                    $ref = new \ReflectionFunction($var);
+                    $args = array_map(fn($p) => ($p->getType() ?? "mixed") . ($p->isVariadic() ? '...' : ''), $ref->getParameters());
+                    $return = ($ref->getReturnType() ?? 'mixed');
+                    $return = is_string($return) || $return instanceof \ReflectionNamedType ? $return : "($return)";
+                    return "\\Closure(" . implode(",$space", $args) . "):$space" . reflect_type_resolve($return);
+                }
+
+                $types = [];
+                $ref = new \ReflectionObject($var);
+                if ($ref->isAnonymous()) {
+                    $ifs = [];
+                    if ($pc = $ref->getParentClass()) {
+                        $types[] = $pc->name;
+                        $ifs = $pc->getInterfaceNames();
+                    }
+                    $types = array_merge($types, array_diff($ref->getInterfaceNames(), $ifs));
+                }
+                else {
+                    $types[] = get_class($var);
+                }
+                if (!$types) {
+                    return 'object';
+                }
+                return implode('|', array_map(fn($v) => "\\" . ltrim($v, '\\'), $types));
+            }
             $ref = new \ReflectionObject($var);
             if ($ref->isAnonymous()) {
                 if ($pc = $ref->getParentClass()) {
