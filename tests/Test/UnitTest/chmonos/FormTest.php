@@ -264,7 +264,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'inputs'    => [
                     'child1' => [
                         'normalize' => function ($value) {
-                            return substr($value, -3, 3);
+                            return substr($value ?? '', -3, 3);
                         },
                         'condition' => [
                             'StringLength' => [0, 3]
@@ -272,7 +272,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                     ],
                     'child2' => [
                         'normalize' => function ($value) {
-                            return substr($value, -3, 3);
+                            return substr($value ?? '', -3, 3);
                         },
                         'condition' => [
                             'StringLength' => [0, 3]
