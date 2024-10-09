@@ -462,7 +462,7 @@ function Chmonos(form, options) {
         });
 
         // イベントをバインド
-        var handler = function (e) {
+        var handler = async function (e) {
             // keyup における Tab はすでに項目が遷移している
             if (e.type === 'keyup' && e.keyCode === 9) {
                 return;
@@ -487,7 +487,7 @@ function Chmonos(form, options) {
                             inputs: inputs,
                         },
                     }));
-                    validateInputs(inputs, e);
+                    await validateInputs(inputs, e);
                     form.dispatchEvent(new CustomEvent('validation-end', {
                         bubbles: true,
                         detail: {
@@ -552,74 +552,62 @@ function Chmonos(form, options) {
         });
 
         // サブミット時にバリデーション
-        form.addEventListener('submit', function submit(e) {
-            try {
-                chmonos.validate(e).then(function (result) {
-                    var done = function () {
-                        var submittingEvent = new CustomEvent('submitting', {
-                            bubbles: true,
-                            cancelable: true,
-                            detail: {
-                                submitter: e.submitter ?? null,
-                            },
-                        });
-                        var submittedEvent = new CustomEvent('submitted', {
-                            bubbles: true,
-                            detail: {
-                                submitter: e.submitter ?? null,
-                            },
-                        });
-                        var array = (e.submitter?.getAttribute('formenctype') ?? '').includes('array=delimitable');
-                        if (!array && !e.submitter?.hasAttribute('formenctype')) {
-                            array = (form.getAttribute('enctype') ?? '').includes('array=delimitable');
-                        }
-                        if (array && (e.submitter?.formMethod || form.method) === 'get') {
-                            var target = e.submitter?.formTarget || form.target;
-                            if (target) {
-                                window.open(chmonos.url(e.submitter), target);
-                            }
-                            else {
-                                location.href = chmonos.url(e.submitter);
-                            }
-                            return;
-                        }
-                        setTimeout(function () {
-                            // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
-                            form.removeEventListener('submit', submit);
-                            if (form.dispatchEvent(submittingEvent)) {
-                                if (e.submitter) {
-                                    e.submitter.click();
-                                }
-                                else {
-                                    form.submit();
-                                }
-                            }
-                            form.dispatchEvent(submittedEvent);
-                            form.addEventListener('submit', submit);
-                        }, 0);
-                    };
-                    if (result.indexOf(true) === -1) {
-                        if (chmonos.customValidation.warning.length && result.indexOf(null) !== -1) {
-                            var promises = [];
-                            if (!chmonos.customValidation.warning.some(function (f) { return f.call(form, promises) === false })) {
-                                Promise.all(promises).then(function (result) {
-                                    if (result.indexOf(true) === -1) {
-                                        done();
-                                    }
-                                });
-                            }
-                        }
-                        else {
-                            done();
-                        }
-                    }
-                });
-            }
-            catch (ex) {
-                console.error(ex);
-            }
+        form.addEventListener('submit', async function submit(e) {
             e.preventDefault();
-            return false;
+
+            const valid = await chmonos.validate(e) ?? await (async function () {
+                for (const f of chmonos.customValidation.warning) {
+                    if ((await f.call(form)) === false) {
+                        return false;
+                    }
+                }
+                return true;
+            })();
+            if (!valid) {
+                return false;
+            }
+
+            var submittingEvent = new CustomEvent('submitting', {
+                bubbles: true,
+                cancelable: true,
+                detail: {
+                    submitter: e.submitter ?? null,
+                },
+            });
+            var submittedEvent = new CustomEvent('submitted', {
+                bubbles: true,
+                detail: {
+                    submitter: e.submitter ?? null,
+                },
+            });
+            var array = (e.submitter?.getAttribute('formenctype') ?? '').includes('array=delimitable');
+            if (!array && !e.submitter?.hasAttribute('formenctype')) {
+                array = (form.getAttribute('enctype') ?? '').includes('array=delimitable');
+            }
+            if (array && (e.submitter?.formMethod || form.method) === 'get') {
+                var target = e.submitter?.formTarget || form.target;
+                if (target) {
+                    window.open(chmonos.url(e.submitter), target);
+                }
+                else {
+                    location.href = chmonos.url(e.submitter);
+                }
+                return;
+            }
+            setTimeout(function () {
+                // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
+                form.removeEventListener('submit', submit);
+                if (form.dispatchEvent(submittingEvent)) {
+                    if (e.submitter) {
+                        e.submitter.click();
+                    }
+                    else {
+                        form.submit();
+                    }
+                }
+                form.dispatchEvent(submittedEvent);
+                form.addEventListener('submit', submit);
+            }, 0);
         });
     };
 
@@ -628,7 +616,7 @@ function Chmonos(form, options) {
         chmonos.customValidation[timing].push(validation);
     };
 
-    chmonos.validate = function (evt, selector, inputs) {
+    chmonos.validate = async function (evt, selector, inputs) {
         form.validationValues = undefined;
         evt = evt || new CustomEvent('vatidation');
 
@@ -637,10 +625,10 @@ function Chmonos(form, options) {
             inputs = Array.from(inputs).filter((e) => e.matches(selector));
         }
 
-        var promises = [];
-        if (chmonos.customValidation.before.some(function (f) { return f.call(form, promises) === false })) {
-            promises.push(true);
-            return Promise.all(promises);
+        for (const f of chmonos.customValidation.before) {
+            if ((await f.call(form)) === false) {
+                return false;
+            }
         }
 
         form.dispatchEvent(new CustomEvent('validation-start', {
@@ -649,7 +637,7 @@ function Chmonos(form, options) {
                 inputs: inputs,
             },
         }));
-        promises.push(validateInputs(inputs, evt));
+        const results = await validateInputs(inputs, evt);
         form.dispatchEvent(new CustomEvent('validation-end', {
             bubbles: true,
             detail: {
@@ -657,11 +645,19 @@ function Chmonos(form, options) {
             },
         }));
 
-        if (chmonos.customValidation.after.some(function (f) { return f.call(form, promises) === false })) {
-            promises.push(true);
+        for (const f of chmonos.customValidation.after) {
+            if ((await f.call(form)) === false) {
+                return false;
+            }
         }
 
-        return Promise.all(promises).then(results => [...results].flat());
+        if (results.includes(true)) {
+            return false;
+        }
+        if (results.includes(null)) {
+            return null;
+        }
+        return true;
     };
 
     chmonos.getValues = function (fragment) {
