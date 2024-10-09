@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.3.4
+
+- [feature] combobox 判定が暴走していたので使用フラグを用意
+
 ## 1.3.3
 
 - [feature] normalize フック
