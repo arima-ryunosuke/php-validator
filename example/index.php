@@ -69,11 +69,11 @@ $appendmtime = function ($filename) {
         }
     </style>
     <script type="text/javascript" src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
-    <script type="text/javascript" src="<?= $appendmtime('./validator.js') ?>"></script>
-    <script type="text/javascript" src="<?= $appendmtime('../script/validator-error.js') ?>"></script>
-    <script>
-        const $ = document.querySelectorAll.bind(document);
-        const $$ = document.querySelector.bind(document);
+    <script defer src="<?= $appendmtime('./validator.js') ?>"></script>
+    <script defer src="<?= $appendmtime('../script/validator-error.js') ?>"></script>
+    <script type="module">
+        window.$ = document.querySelectorAll.bind(document);
+        window.$$ = document.querySelector.bind(document);
         Window.prototype.var_dump = function () {
             console.log(...arguments);
         };
@@ -95,40 +95,38 @@ $appendmtime = function ($filename) {
                 reader.readAsDataURL(this);
             });
         };
-        document.addEventListener('DOMContentLoaded', function () {
-            $('section>h2').forEach(function (e) {
-                var a = document.createElement('a');
-                a.setAttribute('href', '#' + e.id);
-                a.textContent = e.textContent;
-                var li = document.createElement('li');
-                li.appendChild(a);
-                $$('nav>ul').appendChild(li);
-            });
-            $('form.validatable_form').on('click', async function (e) {
-                if (e.target.matches('.object-button')) {
-                    console.log(await this.chmonos.object('string'));
+        $('section>h2').forEach(function (e) {
+            var a = document.createElement('a');
+            a.setAttribute('href', '#' + e.id);
+            a.textContent = e.textContent;
+            var li = document.createElement('li');
+            li.appendChild(a);
+            $$('nav>ul').appendChild(li);
+        });
+        $('form.validatable_form').on('click', async function (e) {
+            if (e.target.matches('.object-button')) {
+                console.log(await this.chmonos.object('string'));
+            }
+            if (e.target.matches('.html-button')) {
+                this.querySelector('.output-html').innerHTML = await this.chmonos.html();
+            }
+        }).on('change', async function (e) {
+            if (e.target.matches('.js-enable-switcher')) {
+                if (e.target.checked) {
+                    this.chmonos.validationDisabled = false;
+                    this.chmonos.validate();
                 }
-                if (e.target.matches('.html-button')) {
-                    this.querySelector('.output-html').innerHTML = await this.chmonos.html();
+                else {
+                    this.chmonos.validationDisabled = true;
+                    this.chmonos.clearErrors();
                 }
-            }).on('change', async function (e) {
-                if (e.target.matches('.js-enable-switcher')) {
-                    if (e.target.checked) {
-                        this.chmonos.validationDisabled = false;
-                        this.chmonos.validate();
-                    }
-                    else {
-                        this.chmonos.validationDisabled = true;
-                        this.chmonos.clearErrors();
-                    }
-                }
+            }
+        });
+        $$('#all_clear').on('click', function (e) {
+            $('form.validatable_form').forEach(function (e) {
+                e.chmonos.clearErrors();
             });
-            $$('#all_clear').on('click', function (e) {
-                $('form.validatable_form').forEach(function (e) {
-                    e.chmonos.clearErrors();
-                });
-                return false;
-            });
+            return false;
         });
     </script>
 </head>
@@ -138,7 +136,7 @@ $appendmtime = function ($filename) {
     <input id="dummy-focus" type="text">
     <a href="./">reload</a>
     <a href="javascript:void(0)" id="all_clear">all clear</a>
-    <a href="./testing.php">jstest</a>
+    <a href="./testing.php?random=false">jstest</a>
 </div>
 
 <h1>Validator サンプル</h1>

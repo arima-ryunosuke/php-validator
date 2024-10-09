@@ -38,7 +38,8 @@ require_once __DIR__ . '/+include.php' ?>
         });
     };
     document.addEventListener('DOMContentLoaded', function () {
-        var chmonos = document.getElementById('context_form').chmonos;
+        var context_form = document.getElementById('context_form');
+        var chmonos = context_form.chmonos;
 
         beforeEach(function () {
             jasmine.addMatchers({
@@ -330,6 +331,65 @@ require_once __DIR__ . '/+include.php' ?>
                 expect(chmonos.fields('rows/2/title')).toEqualLoosely({
                     "/require_address": "",
                     "/parent_mail": "mail@example.com",
+                });
+            });
+            it('get/set values', function () {
+                chmonos.setValues(null, {
+                    parent_mail: "mailX@example.com",
+                });
+                chmonos.setValues(context_form.querySelectorAll('tr')[0], {
+                    title: "titleX1",
+                    checkbox: ["1"],
+                    multiple: ["1", "3"],
+                    unique_require: "1",
+                    unique: "199",
+                    array_file: "",
+                });
+                chmonos.setValues(context_form.querySelectorAll('tr')[1], {
+                    title: "titleX2",
+                    checkbox: ["2"],
+                    multiple: ["2", "3"],
+                    unique_require: "",
+                    unique: "299",
+                    array_file: "",
+                });
+                expect(chmonos.getValues(context_form.querySelectorAll('tr')[0])).toEqualLoosely({
+                    "title": "titleX1",
+                    "checkbox": ["1"],
+                    "multiple": ["1", "3"],
+                    "unique_require": "1",
+                    "unique": "199",
+                    "array_file": "",
+                });
+                expect(chmonos.getValues(context_form.querySelectorAll('tr')[1])).toEqualLoosely({
+                    "title": "titleX2",
+                    "checkbox": ["2"],
+                    "multiple": ["2", "3"],
+                    "unique_require": "",
+                    "unique": "299",
+                    "array_file": "",
+                });
+                expect(chmonos.getValues(null)).toEqualLoosely({
+                    "parent_mail": "mailX@example.com",
+                    "require_address": "",
+                    "rows": [
+                        {
+                            "title": "titleX1",
+                            "checkbox": ["1"],
+                            "multiple": ["1", "3"],
+                            "unique_require": "1",
+                            "unique": "199",
+                            "array_file": "",
+                        },
+                        {
+                            "title": "titleX2",
+                            "checkbox": ["2"],
+                            "multiple": ["2", "3"],
+                            "unique_require": "",
+                            "unique": "299",
+                            "array_file": "",
+                        }
+                    ],
                 });
             });
         });

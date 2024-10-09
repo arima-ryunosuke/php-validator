@@ -930,9 +930,9 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
      */
     function test_jstest(WebDriver $driver)
     {
-        $driver->path('/example/testing.php');
+        $driver->path('/example/testing.php?random=false');
 
         sleep(1); // wait for js testing
-        that($driver)->findElement(WebDriverBy::cssSelector('.jasmine-alert'))->getText()->contains('0 failures');
+        that($driver)->findElement(WebDriverBy::cssSelector('.jasmine-alert'))->getText()->break()->contains('0 failures');
     }
 }

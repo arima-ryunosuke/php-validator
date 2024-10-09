@@ -181,57 +181,55 @@ $dynamic_rule = [
     <div class="output-html"></div>
     <?= $template_form->form() ?>
 
-    <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function () {
-            var chmonos = document.getElementById('template_form').chmonos;
-            // 画面構築時の初期生成開始時に spawnBegin イベントが呼ばれる
-            $$('[data-vtemplate-name=rows]').on('spawnBegin', function (e) {
-                console.log(e);
-            });
-            // 画面構築時の初期生成完了時に spawnEnd イベントが呼ばれる
-            $$('[data-vtemplate-name=rows]').on('spawnEnd', function (e) {
-                console.log(e);
-            });
-            // ノード生成時に spawn イベントが呼ばれる
-            $$('[data-vtemplate-name=rows]').on('spawn', function (e) {
-                console.log('ノード追加', e.detail.node);
-                var t = e.detail.node.querySelector('[data-vinput-class="rows/title"]');
-                var span = document.createElement('span');
-                span.textContent = t.value;
-                t.parentNode.insertBefore(span, t.nextElementSibling);
-            });
-            // ノード削除時に cull  イベントが呼ばれる
-            $$('[data-vtemplate-name=rows]').on('cull', function (e) {
-                console.log('ノード削除', e.detail.node);
-            });
-            // 追加ボタン
-            $$('.append_row1').on('click', function (e) {
-                chmonos.spawn('rows', function (node) {
-                    this.parentNode.appendChild(node);
-                }, {title: Math.round(Math.random() * 10), multiple: [2, 3]});
-            });
-            // 挿入ボタン
-            $$('#template_form').on('click', function (e) {
-                if (e.target.matches('.insert_row1')) {
-                    chmonos.respawn('rows', function (node, self) {
-                        self.after(node);
-                    }, {}, e.target.closest('dl'));
-                }
-            });
-            // リセットボタン
-            $$('#template_form').on('click', function (e) {
-                if (e.target.matches('.reset_row1')) {
-                    chmonos.rebirth(e.target.closest('dl'), {title: Math.round(Math.random() * 10), multiple: [2, 3]});
-                }
-            });
-            // 削除ボタン
-            $$('#template_form').on('click', function (e) {
-                if (e.target.matches('.delete_row1')) {
-                    // cull を呼ぶとそのノードが削除される
-                    // cull を使わず単純にノード削除でも特に問題はない
-                    chmonos.cull('rows', e.target.closest('dl'));
-                }
-            });
+    <script type="module">
+        var chmonos = document.getElementById('template_form').chmonos;
+        // 画面構築時の初期生成開始時に spawnBegin イベントが呼ばれる
+        $$('[data-vtemplate-name=rows]').on('spawnBegin', function (e) {
+            console.log(e);
+        });
+        // 画面構築時の初期生成完了時に spawnEnd イベントが呼ばれる
+        $$('[data-vtemplate-name=rows]').on('spawnEnd', function (e) {
+            console.log(e);
+        });
+        // ノード生成時に spawn イベントが呼ばれる
+        $$('[data-vtemplate-name=rows]').on('spawn', function (e) {
+            console.log('ノード追加', e.detail.node);
+            var t = e.detail.node.querySelector('[data-vinput-class="rows/title"]');
+            var span = document.createElement('span');
+            span.textContent = t.value;
+            t.parentNode.insertBefore(span, t.nextElementSibling);
+        });
+        // ノード削除時に cull  イベントが呼ばれる
+        $$('[data-vtemplate-name=rows]').on('cull', function (e) {
+            console.log('ノード削除', e.detail.node);
+        });
+        // 追加ボタン
+        $$('.append_row1').on('click', function (e) {
+            chmonos.spawn('rows', function (node) {
+                this.parentNode.appendChild(node);
+            }, {title: Math.round(Math.random() * 10), multiple: [2, 3]});
+        });
+        // 挿入ボタン
+        $$('#template_form').on('click', function (e) {
+            if (e.target.matches('.insert_row1')) {
+                chmonos.respawn('rows', function (node, self) {
+                    self.after(node);
+                }, {}, e.target.closest('dl'));
+            }
+        });
+        // リセットボタン
+        $$('#template_form').on('click', function (e) {
+            if (e.target.matches('.reset_row1')) {
+                chmonos.rebirth(e.target.closest('dl'), {title: Math.round(Math.random() * 10), multiple: [2, 3]});
+            }
+        });
+        // 削除ボタン
+        $$('#template_form').on('click', function (e) {
+            if (e.target.matches('.delete_row1')) {
+                // cull を呼ぶとそのノードが削除される
+                // cull を使わず単純にノード削除でも特に問題はない
+                chmonos.cull('rows', e.target.closest('dl'));
+            }
         });
     </script>
 </section>
@@ -310,22 +308,20 @@ $dynamic_rule = [
     <div class="output-html"></div>
     <?= $context_form->form() ?>
 
-    <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function () {
-            var chmonos = document.getElementById('context_form').chmonos;
-            // 追加ボタン
-            $$('.append_row2').on('click', function (e) {
-                var node = chmonos.birth($$('#rows-template'), {title: Math.round(Math.random() * 10)});
-                $$('#context-table>tbody').appendChild(node);
-            });
-            // 削除ボタン
-            $$('#context_form').on('click', function (e) {
-                if (e.target.matches('.delete_row2')) {
-                    // cull を呼ぶとそのノードが削除される
-                    // cull を使わず単純にノード削除でも特に問題はない
-                    chmonos.cull('rows', e.target.closest('tr'));
-                }
-            });
+    <script type="module">
+        var chmonos = document.getElementById('context_form').chmonos;
+        // 追加ボタン
+        $$('.append_row2').on('click', function (e) {
+            var node = chmonos.birth($$('#rows-template'), {title: Math.round(Math.random() * 10)});
+            $$('#context-table>tbody').appendChild(node);
+        });
+        // 削除ボタン
+        $$('#context_form').on('click', function (e) {
+            if (e.target.matches('.delete_row2')) {
+                // cull を呼ぶとそのノードが削除される
+                // cull を使わず単純にノード削除でも特に問題はない
+                chmonos.cull('rows', e.target.closest('tr'));
+            }
         });
     </script>
 </section>
@@ -391,27 +387,25 @@ $dynamic_rule = [
     </div>
     <?= $vuejs_form->form() ?>
 
-    <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function () {
-            const vuejs_chmonos = document.getElementById('vuejs_form').chmonos;
-            const app = Vue.createApp({
-                data: function () {
-                    return vuejs_chmonos.data;
+    <script type="module">
+        const vuejs_chmonos = document.getElementById('vuejs_form').chmonos;
+        const app = Vue.createApp({
+            data: function () {
+                return vuejs_chmonos.data;
+            },
+            methods: {
+                append: function () {
+                    this.rows.push(Object.assign({}, vuejs_chmonos.defaults.rows));
                 },
-                methods: {
-                    append: function () {
-                        this.rows.push(Object.assign({}, vuejs_chmonos.defaults.rows));
-                    },
-                    remove: function (index) {
-                        this.rows.splice(index, 1);
-                    },
+                remove: function (index) {
+                    this.rows.splice(index, 1);
                 },
-                mounted: function () {
-                    this.$nextTick(function () {
-                        vuejs_chmonos.initialize();
-                    });
-                },
-            }).mount('#application');
-        });
+            },
+            mounted: function () {
+                this.$nextTick(function () {
+                    vuejs_chmonos.initialize();
+                });
+            },
+        }).mount('#application');
     </script>
 </section>

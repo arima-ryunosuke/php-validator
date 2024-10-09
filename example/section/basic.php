@@ -330,12 +330,25 @@ resetForm($basic_form, 'basic_form');
 <div class="output-html"></div>
 <?= $basic_form->form() ?>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        $$('#basic_form').chmonos.addCustomValidation(function (promises) {
-            promises.push(new Promise(function (resolve) {
-                resolve(!confirm('警告があります。保存しますか？'));
-            }));
-        }, 'warning');
-    });
+<dialog id="dialog">
+    <form method="dialog">
+        <p>警告があります。保存しますか？</p>
+        <button value="yes">はい</button>
+        <button value="no">いいえ</button>
+    </form>
+</dialog>
+
+<script type="module">
+    $$('#basic_form').chmonos.addCustomValidation(function () {
+        return new Promise(function (resolve, reject) {
+            var dialog = $$('#dialog');
+            dialog.addEventListener('close', function (e) {
+                resolve(e.target.returnValue === 'yes');
+            }, {
+                once: true,
+            });
+            dialog.returnValue = null;
+            dialog.showModal();
+        });
+    }, 'warning');
 </script>

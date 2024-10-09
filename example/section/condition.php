@@ -816,7 +816,7 @@ resetForm($condition_form, 'condition_form');
             <div id="data-uri-filedrop"  class="vfile-dropzone">
                 ドロップエリアです
             </div>
-            <script>
+            <script type="module">
                 $$('#data-uri-filedrop').addEventListener('filedrop', async function (e) {
                     const textarea = $$('[data-vinput-id=data-uri]');
                     textarea.value = await e.detail.files[0].toDataURL();

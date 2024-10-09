@@ -195,34 +195,32 @@ if (resetForm($other_form, 'other_form')) {
 </label>
 <?= $other_form->form() ?>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var $validated = $$('[data-vinput-id=validated]');
-        $validated.on('input', function (e) {
-            console.log(e)
-        });
-        // validated で検証完了イベントがフックできる。
-        // （イベント順にもよるが） stopPropagation すればエラーをキャンセルできる
-        $validated.on('validated', function (e) {
-            console.log(e);
-            e.stopPropagation();
-            alert('フックされたバリデーションイベント：エラー有り\n' + JSON.stringify(e.detail.errorTypes));
-        });
-        $$('#other_form').chmonos.addCustomValidation(function () {
-            var answer = prompt('これはカスタムバリデーションの before イベントです');
-            if (answer === null) {
-                return false;
-            }
-            $$('#cutom-input').value = answer;
-        }, 'before');
-        $$('#other_form').chmonos.addCustomValidation(function () {
-            if ($$('#cutom-input').value !== 'hoge') {
-                alert('これはカスタムバリデーションの before イベントです。ダイアログで "hoge" と入力してください');
-                return false;
-            }
-        }, 'after');
-        $$('#other_form').on('submit', function () {
-            alert('これはフォーム自体に bind されたイベントです');
-        });
+<script type="module">
+    var $validated = $$('[data-vinput-id=validated]');
+    $validated.on('input', function (e) {
+        console.log(e)
+    });
+    // validated で検証完了イベントがフックできる。
+    // （イベント順にもよるが） stopPropagation すればエラーをキャンセルできる
+    $validated.on('validated', function (e) {
+        console.log(e);
+        e.stopPropagation();
+        alert('フックされたバリデーションイベント：エラー有り\n' + JSON.stringify(e.detail.errorTypes));
+    });
+    $$('#other_form').chmonos.addCustomValidation(function () {
+        var answer = prompt('これはカスタムバリデーションの before イベントです');
+        if (answer === null) {
+            return false;
+        }
+        $$('#cutom-input').value = answer;
+    }, 'before');
+    $$('#other_form').chmonos.addCustomValidation(function () {
+        if ($$('#cutom-input').value !== 'hoge') {
+            alert('これはカスタムバリデーションの before イベントです。ダイアログで "hoge" と入力してください');
+            return false;
+        }
+    }, 'after');
+    $$('#other_form').on('submit', function () {
+        alert('これはフォーム自体に bind されたイベントです');
     });
 </script>
