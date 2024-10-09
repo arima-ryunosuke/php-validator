@@ -51,6 +51,7 @@ class Input
         'multiple'              => null,
         'pseudo'                => true,
         'nullable'              => true,
+        'use-combobox'          => true,
         // 'default'               => null, // あるかないかでdefault値を決めるのでコメントアウト
         // 'fixture'               => null, // あるかないかでfixture値を決めるのでコメントアウト
     ];
@@ -436,7 +437,7 @@ class Input
                 return 'select';
             }
             // options が通常配列なら combobox の場合が*多い*
-            if (!is_hasharray($this->options)) {
+            if ($this->rule['use-combobox'] && !is_hasharray($this->options)) {
                 return 'combobox';
             }
             // options が 1つなら単 checkbox
