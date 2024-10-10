@@ -5976,7 +5976,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         });
 
         // イベントをバインド
-        var handler = function (e) {
+        var handler = async function (e) {
             // keyup における Tab はすでに項目が遷移している
             if (e.type === 'keyup' && e.keyCode === 9) {
                 return;
@@ -6001,7 +6001,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                             inputs: inputs,
                         },
                     }));
-                    validateInputs(inputs, e);
+                    await validateInputs(inputs, e);
                     form.dispatchEvent(new CustomEvent('validation-end', {
                         bubbles: true,
                         detail: {
@@ -6066,74 +6066,62 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         });
 
         // サブミット時にバリデーション
-        form.addEventListener('submit', function submit(e) {
-            try {
-                chmonos.validate(e).then(function (result) {
-                    var done = function () {
-                        var submittingEvent = new CustomEvent('submitting', {
-                            bubbles: true,
-                            cancelable: true,
-                            detail: {
-                                submitter: e.submitter ?? null,
-                            },
-                        });
-                        var submittedEvent = new CustomEvent('submitted', {
-                            bubbles: true,
-                            detail: {
-                                submitter: e.submitter ?? null,
-                            },
-                        });
-                        var array = (e.submitter?.getAttribute('formenctype') ?? '').includes('array=delimitable');
-                        if (!array && !e.submitter?.hasAttribute('formenctype')) {
-                            array = (form.getAttribute('enctype') ?? '').includes('array=delimitable');
-                        }
-                        if (array && (e.submitter?.formMethod || form.method) === 'get') {
-                            var target = e.submitter?.formTarget || form.target;
-                            if (target) {
-                                window.open(chmonos.url(e.submitter), target);
-                            }
-                            else {
-                                location.href = chmonos.url(e.submitter);
-                            }
-                            return;
-                        }
-                        setTimeout(function () {
-                            // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
-                            form.removeEventListener('submit', submit);
-                            if (form.dispatchEvent(submittingEvent)) {
-                                if (e.submitter) {
-                                    e.submitter.click();
-                                }
-                                else {
-                                    form.submit();
-                                }
-                            }
-                            form.dispatchEvent(submittedEvent);
-                            form.addEventListener('submit', submit);
-                        }, 0);
-                    };
-                    if (result.indexOf(true) === -1) {
-                        if (chmonos.customValidation.warning.length && result.indexOf(null) !== -1) {
-                            var promises = [];
-                            if (!chmonos.customValidation.warning.some(function (f) { return f.call(form, promises) === false })) {
-                                Promise.all(promises).then(function (result) {
-                                    if (result.indexOf(true) === -1) {
-                                        done();
-                                    }
-                                });
-                            }
-                        }
-                        else {
-                            done();
-                        }
-                    }
-                });
-            }
-            catch (ex) {
-                console.error(ex);
-            }
+        form.addEventListener('submit', async function submit(e) {
             e.preventDefault();
-            return false;
+
+            const valid = await chmonos.validate(e) ?? await (async function () {
+                for (const f of chmonos.customValidation.warning) {
+                    if ((await f.call(form)) === false) {
+                        return false;
+                    }
+                }
+                return true;
+            })();
+            if (!valid) {
+                return false;
+            }
+
+            var submittingEvent = new CustomEvent('submitting', {
+                bubbles: true,
+                cancelable: true,
+                detail: {
+                    submitter: e.submitter ?? null,
+                },
+            });
+            var submittedEvent = new CustomEvent('submitted', {
+                bubbles: true,
+                detail: {
+                    submitter: e.submitter ?? null,
+                },
+            });
+            var array = (e.submitter?.getAttribute('formenctype') ?? '').includes('array=delimitable');
+            if (!array && !e.submitter?.hasAttribute('formenctype')) {
+                array = (form.getAttribute('enctype') ?? '').includes('array=delimitable');
+            }
+            if (array && (e.submitter?.formMethod || form.method) === 'get') {
+                var target = e.submitter?.formTarget || form.target;
+                if (target) {
+                    window.open(chmonos.url(e.submitter), target);
+                }
+                else {
+                    location.href = chmonos.url(e.submitter);
+                }
+                return;
+            }
+            setTimeout(function () {
+                // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
+                form.removeEventListener('submit', submit);
+                if (form.dispatchEvent(submittingEvent)) {
+                    if (e.submitter) {
+                        e.submitter.click();
+                    }
+                    else {
+                        form.submit();
+                    }
+                }
+                form.dispatchEvent(submittedEvent);
+                form.addEventListener('submit', submit);
+            }, 0);
         });
     };
 
@@ -6142,7 +6130,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         chmonos.customValidation[timing].push(validation);
     };
 
-    chmonos.validate = function (evt, selector, inputs) {
+    chmonos.validate = async function (evt, selector, inputs) {
         form.validationValues = undefined;
         evt = evt || new CustomEvent('vatidation');
 
@@ -6151,10 +6139,10 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
             inputs = Array.from(inputs).filter((e) => e.matches(selector));
         }
 
-        var promises = [];
-        if (chmonos.customValidation.before.some(function (f) { return f.call(form, promises) === false })) {
-            promises.push(true);
-            return Promise.all(promises);
+        for (const f of chmonos.customValidation.before) {
+            if ((await f.call(form)) === false) {
+                return false;
+            }
         }
 
         form.dispatchEvent(new CustomEvent('validation-start', {
@@ -6163,7 +6151,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                 inputs: inputs,
             },
         }));
-        promises.push(validateInputs(inputs, evt));
+        const results = await validateInputs(inputs, evt);
         form.dispatchEvent(new CustomEvent('validation-end', {
             bubbles: true,
             detail: {
@@ -6171,19 +6159,31 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
             },
         }));
 
-        if (chmonos.customValidation.after.some(function (f) { return f.call(form, promises) === false })) {
-            promises.push(true);
+        for (const f of chmonos.customValidation.after) {
+            if ((await f.call(form)) === false) {
+                return false;
+            }
         }
 
-        return Promise.all(promises).then(results => [...results].flat());
+        if (results.includes(true)) {
+            return false;
+        }
+        if (results.includes(null)) {
+            return null;
+        }
+        return true;
     };
 
     chmonos.getValues = function (fragment) {
         fragment ??= form;
         var values = {};
         fragment.querySelectorAll('.validatable:is(input, textarea, select):enabled').forEach(function (e) {
-            var klass = e.dataset.vinputClass;
-            if (klass === undefined) {
+            // chmonos.value が行全体を返すので form の場合は不要
+            if (fragment === form && e.dataset.vinputIndex) {
+                return;
+            }
+            var name = e.dataset.vinputName;
+            if (name === undefined) {
                 return;
             }
             var value = chmonos.value(e);
@@ -6191,8 +6191,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                 return;
             }
 
-            var parts = klass.split('/');
-            values[parts[1] ?? parts[0]] = value;
+            values[name] = value;
         });
         return values;
     };
@@ -6202,7 +6201,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         Object.keys(values).forEach(function (key) {
             var index = 0;
             if (values[key] !== null) {
-                fragment.querySelectorAll('.validatable:is([data-vinput-id="' + key + '"], [data-vinput-id$="/' + key + '"])').forEach(function (e) {
+                fragment.querySelectorAll('.validatable:is([data-vinput-name="' + key + '"])').forEach(function (e) {
                     if (e.type === 'file') {
                         return;
                     }
@@ -6335,12 +6334,14 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
             resetIndex(e, 'for', index);
             resetIndex(e, 'data-vlabel-id', index);
             resetIndex(e, 'data-vlabel-index', index);
+            resetIndex(e, 'data-vlabel-parent', index);
         });
         Array.from(fragment.querySelectorAll('[name*=__index]')).forEach(function (e) {
             resetIndex(e, 'id', index);
             resetIndex(e, 'name', index);
             resetIndex(e, 'data-vinput-id', index);
             resetIndex(e, 'data-vinput-index', index);
+            resetIndex(e, 'data-vinput-parent', index);
         });
         Array.from(fragment.querySelectorAll('[data-vinput-wrapper],[data-vinput-group]')).forEach(function (e) {
             resetIndex(e, 'data-vinput-wrapper', index);
