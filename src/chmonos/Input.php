@@ -1164,9 +1164,11 @@ class Input
         $name = $this->name;
 
         return [
-            'id'    => $this->_concatString($parent_name, strlen($parent_name) ? '/' : '', [$index], strlen($index) ? '/' : '', $name),
-            'class' => $this->_concatString($parent_name, strlen($parent_name) ? '/' : '', $name),
-            'index' => $this->_concatString([$index]),
+            'id'     => $this->_concatString($parent_name, strlen($parent_name) ? '/' : '', [$index], strlen($index) ? '/' : '', $name),
+            'parent' => $this->_concatString($parent_name, strlen($parent_name) ? '/' : '', [$index]),
+            'class'  => $this->_concatString($parent_name, strlen($parent_name) ? '/' : '', $name),
+            'index'  => $this->_concatString([$index]),
+            'name'   => $this->_concatString($name),
         ];
     }
 

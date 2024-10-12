@@ -668,8 +668,12 @@ function Chmonos(form, options) {
         fragment ??= form;
         var values = {};
         fragment.querySelectorAll('.validatable:is(input, textarea, select):enabled').forEach(function (e) {
-            var klass = e.dataset.vinputClass;
-            if (klass === undefined) {
+            // chmonos.value が行全体を返すので form の場合は不要
+            if (fragment === form && e.dataset.vinputIndex) {
+                return;
+            }
+            var name = e.dataset.vinputName;
+            if (name === undefined) {
                 return;
             }
             var value = chmonos.value(e);
@@ -677,8 +681,7 @@ function Chmonos(form, options) {
                 return;
             }
 
-            var parts = klass.split('/');
-            values[parts[1] ?? parts[0]] = value;
+            values[name] = value;
         });
         return values;
     };
@@ -688,7 +691,7 @@ function Chmonos(form, options) {
         Object.keys(values).forEach(function (key) {
             var index = 0;
             if (values[key] !== null) {
-                fragment.querySelectorAll('.validatable:is([data-vinput-id="' + key + '"], [data-vinput-id$="/' + key + '"])').forEach(function (e) {
+                fragment.querySelectorAll('.validatable:is([data-vinput-name="' + key + '"])').forEach(function (e) {
                     if (e.type === 'file') {
                         return;
                     }
@@ -821,12 +824,14 @@ function Chmonos(form, options) {
             resetIndex(e, 'for', index);
             resetIndex(e, 'data-vlabel-id', index);
             resetIndex(e, 'data-vlabel-index', index);
+            resetIndex(e, 'data-vlabel-parent', index);
         });
         Array.from(fragment.querySelectorAll('[name*=__index]')).forEach(function (e) {
             resetIndex(e, 'id', index);
             resetIndex(e, 'name', index);
             resetIndex(e, 'data-vinput-id', index);
             resetIndex(e, 'data-vinput-index', index);
+            resetIndex(e, 'data-vinput-parent', index);
         });
         Array.from(fragment.querySelectorAll('[data-vinput-wrapper],[data-vinput-group]')).forEach(function (e) {
             resetIndex(e, 'data-vinput-wrapper', index);
