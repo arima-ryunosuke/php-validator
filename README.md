@@ -945,25 +945,23 @@ Condition の `setValidationLevel` を "warning" で呼ぶと、その Condition
 
 ```js
 // 事前検証
-document.getElementById('form-id').chmonos.addCustomValidation(function(promises) {
+document.getElementById('form-id').chmonos.addCustomValidation(function() {
     // DOM を追加したり hidden を設定したり
 }, 'before');
 // 事後検証
-document.getElementById('form-id').chmonos.addCustomValidation(function(promises) {
-    // ajax で一意制をちぇっくしたり
+document.getElementById('form-id').chmonos.addCustomValidation(function() {
+    // ajax で一意性をチェックしたり
 }, 'after');
 // 警告イベント
-document.getElementById('form-id').chmonos.addCustomValidation(function(promises) {
-    promises.push(!confirm("警告が出ているが本当によい？"));
+document.getElementById('form-id').chmonos.addCustomValidation(async function() {
+    return !!await confirm("警告が出ているが本当によい？");
 }, 'warning');
 ```
 
 それぞれ検証処理の事前・事後に登録した function がコールされます。
 コールバック内の this は form 要素そのものを表します。
-唯一の引数として Promise 配列が渡ってくるので、この配列に Promise を追加すると遅延実行されて処理されます。
-（通常は Promise を使わず、直接エラーメッセージを表示するなどで十分でしょう。 Promise は非同期処理や Ajax など用です）。
 
-before/after はタイミングの違いであり、シグネチャなどに違いはありませんが、共通仕様として「false を返すとそこで中断される」というのがあります（preventDefault みたいなものです）。
+before/after はタイミングの違いであり、シグネチャなどに違いはありませんが、共通仕様として「false を返すとそこで中断される」というのがあります。
 before で false を返すと、他の before イベントやその後の通常検証処理は実行されません。もちろん after も実行されません。
 after で false を返すと、他の after イベントは実行されません。
 いずれにせよ false を返すと検証結果としては false となります。

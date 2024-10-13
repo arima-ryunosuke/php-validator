@@ -24,6 +24,13 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.0
+
+- [*change] DOMContentLoaded を type=module に変更
+- [*change] async/await/Promise の気持ち悪いところを修正
+- [feature] data 属性に parent, name を追加
+- [fixbug] normalize は初期化時に null で呼ばれることもある
+
 ## 2.1.1
 
 - [merge] v1.3.3
