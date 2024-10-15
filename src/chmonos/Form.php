@@ -237,26 +237,22 @@ class Form
             ]);
 
             $script = <<<JAVASCRIPT
-            document.addEventListener('DOMContentLoaded', function() {
-                var thisform = document.getElementById({$this->encodeJson($this->id)});
-                thisform.chmonos = new Chmonos(thisform, $jsoption);
-            });
+            const thisform = document.getElementById({$this->encodeJson($this->id)});
+            thisform.chmonos = new Chmonos(thisform, $jsoption);
             JAVASCRIPT;
 
-            return "<form {$this->createHtmlAttr($attrs)}><script {$this->createHtmlAttr($scriptAttrs)}>$script</script>";
+            return "<form {$this->createHtmlAttr($attrs)}><script type=\"module\" {$this->createHtmlAttr($scriptAttrs)}>$script</script>";
         }
         // 閉じタグ
         else {
             $script = <<<JAVASCRIPT
-            document.addEventListener('DOMContentLoaded', function() {
-                var thisform = document.getElementById({$this->encodeJson($this->id)});
-                {$E($this->options['vuejs'] ? "thisform.chmonos.data = {$this->encodeJson($this->getValues(false))};" : "")}
-                {$E($this->options['vuejs'] ? "thisform.chmonos.defaults = {$this->encodeJson($this->getDefaults())};" : "")}
-                {$E($this->options['vuejs'] ? '' : "thisform.chmonos.initialize({$this->encodeJson($this->templateValues)});")}
-            });
+            const thisform = document.getElementById({$this->encodeJson($this->id)});
+            {$E($this->options['vuejs'] ? "thisform.chmonos.data = {$this->encodeJson($this->getValues(false))};" : "")}
+            {$E($this->options['vuejs'] ? "thisform.chmonos.defaults = {$this->encodeJson($this->getDefaults())};" : "")}
+            {$E($this->options['vuejs'] ? '' : "thisform.chmonos.initialize({$this->encodeJson($this->templateValues)});")}
             JAVASCRIPT;
 
-            return "<script {$this->createHtmlAttr($scriptAttrs)}>$script</script></form>";
+            return "<script type=\"module\" {$this->createHtmlAttr($scriptAttrs)}>$script</script></form>";
         }
     }
 

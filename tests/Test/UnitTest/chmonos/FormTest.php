@@ -934,7 +934,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             $content = $form->close();
 
             // <script> タグから始まる
-            that($content)->stringStartsWith('<script nonce="fuga">');
+            that($content)->stringStartsWith('<script type="module" nonce="fuga">');
             // </form> で終わる
             that($content)->stringEndsWith('</form>');
             // 初期化がある
