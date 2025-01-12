@@ -4999,8 +4999,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }},"Date":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $value00, $time;
 // 
 
-        // datetime-local で秒が 00 の場合、00が省略される場合があるので補完する
-        if ($params['member']['s']) {
+                if ($params['member']['s']) {
             $value00 = $context['str_concat']($value, ':00');
             if (strtotime($value00) !== false) {
                 $value = $value00;
@@ -5009,8 +5008,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
         $time = strtotime($value);
 
-        // 時刻のみの場合を考慮して年月日を付加して再チャレンジ
-        if ($time === false) {
+                if ($time === false) {
             $time = strtotime($context['str_concat']('2000/10/10 ', $value));
         }
 
@@ -5303,8 +5301,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
                 $operand = $statement[$field][1];
                 $dvalue = $getDepend($field);
 
-                // for scalar
-                if ($operator === '==') {
+                                if ($operator === '==') {
                     return $dvalue == $operand;
                 }
                 if ($operator === '===') {
@@ -5329,8 +5326,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
                     return $dvalue >= $operand;
                 }
 
-                // for array
-                $intersect = array_intersect_key(
+                                $intersect = array_intersect_key(
                     array_flip($context['cast']('array', $dvalue)),
                     array_flip($operand)
                 );
@@ -5450,14 +5446,12 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }
 
         $context['foreach']($value, function ($key, $value, $params, $error, $consts) {
-            // 明らかに電話番号っぽくない場合のチェック
-            if (mb_strlen($value) > $params['maxlength']) {
+                        if (mb_strlen($value) > $params['maxlength']) {
                 $error($consts['INVALID']);
                 return false;
             }
 
-            // 電話番号っぽいが細部がおかしい場合
-            if (!preg_match($params['pattern'], $value)) {
+                        if (!preg_match($params['pattern'], $value)) {
                 if ($params['hyphen'] === null) {
                     $error($consts['INVALID_TELEPHONE']);
                     return false;
