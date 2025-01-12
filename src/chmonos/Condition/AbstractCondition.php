@@ -41,6 +41,9 @@ abstract class AbstractCondition
     /** @var array バリデーションメッセージのテンプレート（固有） */
     protected $changedMessageTemplates = [];
 
+    /** @var array バリデーションパラメータのキャッシュ */
+    protected array $validationParams;
+
     /** @var array バリデーションメッセージ */
     protected $messages = [];
 
@@ -483,11 +486,13 @@ JS;
      * 基本的にはアンダースコアのプロパティ値を返すだけ。
      * 特別なことがしたかったらオーバーライドで対応。
      *
+     * このメソッドの結果はキャッシュされるのでプロパティの変更時は validationParams をクリアしなければならない。
+     *
      * @return array 検証パラメータ
      */
     public function getValidationParam()
     {
-        return array_map_key(get_object_vars($this), function ($name) {
+        return $this->validationParams ??= array_map_key(get_object_vars($this), function ($name) {
             return $name[0] === '_' ? substr($name, 1) : null;
         });
     }
