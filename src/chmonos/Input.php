@@ -664,7 +664,13 @@ class Input
                 break;
             }
             $vs = $condition->isArrayableValidation() ? [$value] : arrayize($value);
-            $flag = array_and($vs, function ($v) use ($condition, $fields) { return $condition->isValid($v, $fields, $this); });
+            $flag = true;
+            foreach ($vs as $v) {
+                if (!$condition->isValid($v, $fields)) {
+                    $flag = false;
+                    break;
+                }
+            }
             $mess = $condition->getMessages();
 
             $isvalid = $flag && $isvalid;

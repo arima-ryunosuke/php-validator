@@ -41,6 +41,9 @@ abstract class AbstractCondition
     /** @var array バリデーションメッセージのテンプレート（固有） */
     protected $changedMessageTemplates = [];
 
+    /** @var array バリデーションパラメータのキャッシュ */
+    protected array $validationParams;
+
     /** @var array バリデーションメッセージ */
     protected $messages = [];
 
@@ -151,13 +154,12 @@ abstract class AbstractCondition
                     $tokens = array_slice(token_get_all("<?php $block"), 1);
                     $tokens = array_map(fn($v) => is_array($v) ? $v : [ord($v), $v], $tokens);
                     $tokens = array_map(fn($v) => $v[0] === T_YIELD ? ['', 'await'] : $v, $tokens);
-                    $tokens = array_filter($tokens, fn($v) => $v[0] !== T_FN);
+                    $tokens = array_filter($tokens, fn($v) => !in_array($v[0], [T_FN, T_COMMENT], true));
                     $block = implode("", array_column($tokens, 1));
                     $vars = array_diff(array_unique(array_column(array_filter($tokens, fn($v) => $v[0] === T_VARIABLE), 1)), $args);
 
                     $code = $class::getJavascriptCode();
                     $code = str_replace('@validationcode:inject', "\n" . $block, $code);
-                    $code = preg_replace('#\s*<script>|</script>\s*#us', '', $code);
                     if ($vars) {
                         $code = 'var ' . implode(', ', $vars) . ";\n" . $code;
                     }
@@ -475,11 +477,13 @@ JS;
      * 基本的にはアンダースコアのプロパティ値を返すだけ。
      * 特別なことがしたかったらオーバーライドで対応。
      *
+     * このメソッドの結果はキャッシュされるのでプロパティの変更時は validationParams をクリアしなければならない。
+     *
      * @return array 検証パラメータ
      */
     public function getValidationParam()
     {
-        return array_map_key(get_object_vars($this), function ($name) {
+        return $this->validationParams ??= array_map_key(get_object_vars($this), function ($name) {
             return $name[0] === '_' ? substr($name, 1) : null;
         });
     }
