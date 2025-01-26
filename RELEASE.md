@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.1
+
+- [docker] コンテナ名が古かったので修正
+- Merge tag 'v1.3.5'
+
 ## 2.2.0
 
 - [*change] DOMContentLoaded を type=module に変更
