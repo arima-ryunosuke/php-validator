@@ -128,18 +128,40 @@ $dynamic_rule = [
     <h3>template</h3>
     <?php
     $template_form = new Form($dynamic_rule);
+    $template_form->setValues([
+        'rows' => [
+            [
+                'title'    => 'foo',
+                'checkbox' => [2],
+                'unique'   => 1,
+            ],
+        ],
+    ]);
     resetForm($template_form, 'template_form');
     ?>
     <?= $template_form->form(['id' => 'template_form', 'method' => 'post', 'class' => 'html_form']) ?>
     <input type="hidden" name="formid" value="template_form">
     <?= $template_form->label('parent_mail') ?>
     <?= $template_form->input('parent_mail') ?>
+    <span data-vnode="Chmonos.Utils.htmlTemplateTag">${(this.parent_mail ?? '')}</span>
     <?= $template_form->input('require_address') ?>
 
     <style>
         .template-item {
             display: grid;
-            grid-template-columns: max-content 260px;
+            grid-template-columns: max-content 320px max-content;
+
+            dt {
+                grid-column: 1;
+            }
+            dd {
+                grid-column: 2;
+            }
+            pre {
+                grid-column: 3;
+                grid-row-start: 1;
+                grid-row-end: 6;
+            }
         }
     </style>
     <br>
@@ -149,20 +171,25 @@ $dynamic_rule = [
         <!-- $template_form->template('hoge') すると script.hoge-template なタグが生成される -->
         <?= $template_form->template('rows') ?>
         <dl class="template-item">
-            <dt><?= $template_form->label('title') ?></dt>
-            <dd><?= $template_form->input('title') ?></dd>
-            <dt>選択肢</dt>
-            <dd><?= $template_form->input('checkbox', ['type' => 'checkbox']) ?><br><?= $template_form->input('multiple', ['type' => 'select']) ?><span data-vnode="">${multiple.length}個</span></dd>
-            <dt>兄弟内の重複禁止</dt>
-            <dd><?= $template_form->input('unique_require') ?> <?= $template_form->input('unique') ?></dd>
-            <dt>ファイル要素</dt>
-            <dd>
+            <pre data-vnode="Chmonos.Utils.htmlTemplateTag">${JSON.stringify(this, null, 2)}</pre>
+            <dt style="grid-row: 1"><?= $template_form->label('title') ?></dt>
+            <dd style="grid-row: 1"><?= $template_form->input('title') ?></dd>
+            <dt style="grid-row: 2">選択肢</dt>
+            <dd style="grid-row: 2">
+                <?= $template_form->input('checkbox', ['type' => 'checkbox']) ?>
+                <span data-vnode="Chmonos.Utils.htmlTemplateTag" data-bool="${!!(this.checkbox ?? []).length}">${(this.checkbox ?? []).length}個</span><br>
+                <?= $template_form->input('multiple', ['type' => 'select']) ?>
+            </dd>
+            <dt style="grid-row: 3">兄弟内の重複禁止</dt>
+            <dd style="grid-row: 3"><?= $template_form->input('unique_require') ?> <?= $template_form->input('unique') ?></dd>
+            <dt style="grid-row: 4">ファイル要素</dt>
+            <dd style="grid-row: 4">
                 <div class="vfile-dropzone">
                     ドロップエリア
                     <?= $template_form->input('array_file') ?>
                 </div>
             </dd>
-            <dd>
+            <dd style="grid-row: 5">
                 <input class="delete_row1 btn btn-danger" type="button" value="削除">
                 <input class="insert_row1 btn btn-danger" type="button" value="挿入">
                 <input class="reset_row1 btn btn-danger" type="button" value="リセット">
@@ -207,7 +234,7 @@ $dynamic_rule = [
         $$('.append_row1').on('click', function (e) {
             chmonos.spawn('rows', function (node) {
                 this.parentNode.appendChild(node);
-            }, {title: Math.round(Math.random() * 10), multiple: [2, 3]});
+            }, {title: Math.round(Math.random() * 10), checkbox: [2, 3]});
         });
         // 挿入ボタン
         $$('#template_form').on('click', function (e) {
@@ -220,7 +247,7 @@ $dynamic_rule = [
         // リセットボタン
         $$('#template_form').on('click', function (e) {
             if (e.target.matches('.reset_row1')) {
-                chmonos.rebirth(e.target.closest('dl'), {title: Math.round(Math.random() * 10), multiple: [2, 3]});
+                chmonos.rebirth(e.target.closest('dl'), {title: Math.round(Math.random() * 10), checkbox: [2, 3]});
             }
         });
         // 削除ボタン
@@ -275,7 +302,7 @@ $dynamic_rule = [
         </template>
         <?php foreach (range(1, 2) as $index): ?>
             <?= $context_form->context('rows', $index) ?>
-            <tr>
+            <tr data-vinputs-name="rows" data-vinput-index="<?= $index ?>">
                 <th><?= $context_form->label('title', ['value' => "title$index"]) ?></th>
                 <td><?= $context_form->input('title', ['value' => "title$index"]) ?></td>
                 <th>選択肢</th>
@@ -325,7 +352,6 @@ $dynamic_rule = [
         });
     </script>
 </section>
-
 
 <section>
     <h3>vue.js</h3>

@@ -14,9 +14,12 @@ class WebDriver extends RemoteWebDriver
 {
     public function path($path)
     {
-        $parts = uri_parse($this->getCurrentURL());
-        $parts['path'] = $path;
-        return $this->get(uri_build($parts));
+        $parts = uri_parse($path);
+
+        $current = uri_parse($this->getCurrentURL());
+        $current['path'] = $parts['path'];
+        $current['query'] = array_merge($parts['query'], $current['query']);
+        return $this->get(uri_build($current));
     }
 
     public function click($select)
@@ -118,6 +121,11 @@ class WebDriver extends RemoteWebDriver
     public function getMessages($sleep = null, $displayed = true, $blur = true)
     {
         return $this->getResult('.validation_message', $sleep, $displayed, $blur);
+    }
+
+    public function getMessage($sleep = null, $displayed = true, $blur = true)
+    {
+        return implode("\n\n", array_map(fn($e) => $e->getText(), $this->getResult('.validation_message', $sleep, $displayed, $blur)));
     }
 
     private function getResult(string $cssClass, ?int $sleep, bool $displayed, bool $blur)

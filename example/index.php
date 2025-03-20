@@ -17,6 +17,7 @@ $appendmtime = function ($filename) {
     <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <title>Validator サンプル</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="<?= $appendmtime('../script/validator.css') ?>"/>
     <link rel="stylesheet" href="<?= $appendmtime('../script/validator-error.css') ?>"/>
     <style>
         body {
@@ -68,7 +69,7 @@ $appendmtime = function ($filename) {
             z-index: 9999999;
         }
     </style>
-    <script type="text/javascript" src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.min.js"></script>
     <script defer src="<?= $appendmtime('./validator.js') ?>"></script>
     <script defer src="<?= $appendmtime('../script/validator-error.js') ?>"></script>
     <script type="module">

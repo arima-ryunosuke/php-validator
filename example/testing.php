@@ -10,13 +10,14 @@ require_once __DIR__ . '/+include.php' ?>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <title>Validator テスト</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.4.0/jasmine.css"/>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.4.0/jasmine.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.4.0/jasmine-html.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.4.0/boot.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.4.0/jasmine.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.4.0/jasmine.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.4.0/jasmine-html.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.4.0/boot0.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.4.0/boot1.js"></script>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
-    <script type="text/javascript" src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.min.js"></script>
     <script type="text/javascript" src="./validator.js"></script>
 </head>
 <body>
@@ -154,6 +155,18 @@ require_once __DIR__ . '/+include.php' ?>
             });
         });
 
+        describe('chmonos.Utils', function () {
+            it('htmlTemplateTag', function () {
+                expect(Chmonos.Utils.htmlTemplateTag``).toEqual('');
+                expect(Chmonos.Utils.htmlTemplateTag`a<b>bold</b>z`).toEqual('a<b>bold</b>z');
+                expect(Chmonos.Utils.htmlTemplateTag`a${'<b>bold</b>'}z`).toEqual('a&lt;b&gt;bold&lt;/b&gt;z');
+                expect(Chmonos.Utils.htmlTemplateTag`<span hidden="${false}">${'<b>bold</b>'}</span>`).toEqual(`<span>&lt;b&gt;bold&lt;/b&gt;</span>`);
+                expect(Chmonos.Utils.htmlTemplateTag`<span hidden='${false}'>${'<b>bold</b>'}</span>`).toEqual(`<span>&lt;b&gt;bold&lt;/b&gt;</span>`);
+                expect(Chmonos.Utils.htmlTemplateTag`<span hidden=${false}>${'<b>bold</b>'}</span>`).toEqual(`<span>&lt;b&gt;bold&lt;/b&gt;</span>`);
+                expect(Chmonos.Utils.htmlTemplateTag`<span hidden="${true}">${'<b>bold</b>'}</span>`).toEqual(`<span hidden="">&lt;b&gt;bold&lt;/b&gt;</span>`);
+            });
+        });
+
         describe('chmonos.context', function () {
             it('function', function () {
                 var func = chmonos.context.function(function (a, b, c) {
@@ -268,6 +281,19 @@ require_once __DIR__ . '/+include.php' ?>
                     <?= $expect(fn() => preg_split('/,/', ',,a,,b,,c,,', 3, PREG_SPLIT_NO_EMPTY)) ?>;
                     <?= $expect(fn() => preg_split('/,|-/', ',h-o--g,-,e-')) ?>;
                     <?= $expect(fn() => preg_split('/,|-/', ',h-o--g,-,e-', 4)) ?>;
+                });
+
+                it('fnmatch', function () {
+                    expect(fnmatch('image/png', 'image/png')).toEqual(true);
+                    expect(fnmatch('image/png', 'image/gif')).toEqual(false);
+                    expect(fnmatch('image/png', 'text/csv')).toEqual(false);
+                    expect(fnmatch('image/*', 'image/png')).toEqual(true);
+                    expect(fnmatch('image/*', 'image/gif')).toEqual(true);
+                    expect(fnmatch('image/*', 'text/csv')).toEqual(false);
+                    expect(fnmatch('*/*', 'image/png')).toEqual(true);
+                    expect(fnmatch('*/*', 'image/gif')).toEqual(true);
+                    expect(fnmatch('*/*', 'text/csv')).toEqual(true);
+                    expect(fnmatch('*', 'text/csv')).toEqual(true);
                 });
             }
         });

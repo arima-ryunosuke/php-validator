@@ -158,6 +158,12 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'Compare' => ['==', 'compare']
         ]
     ],
+    'compare_contain'       => [
+        'title'     => '比較元を含んではならない',
+        'condition' => [
+            'Compare' => ['!contain', 'compare']
+        ]
+    ],
     'compare_direct'        => [
         'title'     => '今日より2日先でなければならない',
         'condition' => [
@@ -495,6 +501,34 @@ $condition_form = new \ryunosuke\chmonos\Form([
             ]
         ]
     ],
+    'require_preceding'        => [
+        'options' => [
+            1 => '後方は伝播しない',
+        ],
+        'propagate' => [
+            'require_domorder' => 'preceding',
+        ],
+        'default' => '',
+    ],
+    'require_following'        => [
+        'options' => [
+            1 => '無条件で伝播',
+        ],
+        'default' => '',
+    ],
+    'require_domorder'         => [
+        'title'     => 'DOM条件',
+        'condition' => [
+            'Requires' => [
+                [
+                    'require_preceding' => ['==', '1'],
+                ],
+                [
+                    'require_following' => ['==', '1'],
+                ],
+            ]
+        ]
+    ],
     'require_array'         => [
         'options' => [
             1 => '1.これを選ぶと必須になる',
@@ -513,7 +547,7 @@ $condition_form = new \ryunosuke\chmonos\Form([
     'require_in'            => [
         'title'     => '依存チェックボックス(1 && 3)',
         'condition' => [
-            (new Requires(['require_array' => ['in', [1, '3']],]))->setValidationLevel('warning'),
+            (new Requires(['require_array' => ['all', [1, '3']],]))->setValidationLevel('warning'),
         ]
     ],
     'require_needless'      => [
@@ -568,7 +602,7 @@ $condition_form = new \ryunosuke\chmonos\Form([
     'data-uri'                => [
         'title'     => 'DataURI',
         'condition' => [
-            'DataUri' => [['size' => '256K', 'type' => ['txt', 'csv']]]
+            'DataUri' => ['size' => '256K', 'type' => ['txt' => ['text/txt'], 'csv' => ['text/csv']]]
         ],
         'default' => "a,b,c\na1,b1,c1\na2,b2,c2\n",
     ]
@@ -618,9 +652,12 @@ resetForm($condition_form, 'condition_form');
         <td><?= $condition_form->input('callback2') ?></td>
     </tr>
     <tr>
-        <th>同じ値でなければならない</th>
-        <td><?= $condition_form->input('compare') ?></td>
-        <td><?= $condition_form->input('compare_confirm') ?></td>
+        <th>単純比較/包含</th>
+        <td>比較元<?= $condition_form->input('compare') ?></td>
+        <td>
+            同じ値でなければならない<?= $condition_form->input('compare_confirm') ?><br>
+            比較元を含んではならない<?= $condition_form->input('compare_contain') ?>
+        </td>
     </tr>
     <tr>
         <th>今日より2日先でなければならない</th>
@@ -770,6 +807,14 @@ resetForm($condition_form, 'condition_form');
         <td><?= $condition_form->input('require_should') ?><br><?= $condition_form->input('require_option', ['type' => 'radio', 'separator' => '<br>']) ?><br><?= $condition_form->input('require_always') ?></td>
         <td>
             <?= $condition_form->input('require_break') ?>
+        </td>
+    </tr>
+    <tr>
+        <th>必須：DOM 順で後方に居るなら伝播しない</th>
+        <td colspan="2">
+            <?= $condition_form->input('require_preceding') ?>
+            <?= $condition_form->input('require_domorder') ?>
+            <?= $condition_form->input('require_following') ?>
         </td>
     </tr>
     <tr>

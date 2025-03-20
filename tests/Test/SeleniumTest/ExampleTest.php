@@ -767,14 +767,12 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/index.php');
 
         $driver->click('.append_row1');
-        $driver->click('#template_form_submit');
-        $baseCount = count($driver->getErrors());
         $driver->click('.append_row1');
         $driver->click('.append_row1');
         $driver->click('.append_row1');
         $driver->click('#template_form_submit');
 
-        that($driver)->getErrors(null, false)->count($baseCount * 5 + 1);
+        that($driver)->getMessage()->contains('1件～3件');
     }
 
     /**
@@ -792,20 +790,16 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('rows[-1][unique]', '12');
         $driver->setValue('rows[-2][unique]', '34');
         $driver->click('#template_form_submit');
-        that($driver)->getMessages()->count(5);
+        that($driver)->getMessage()->contains('必須項目を含んでいません');
 
         $driver->setValue('rows[-1][title]', 'title1');
         $driver->setValue('rows[-2][title]', 'title2');
         $driver->click('#template_form_submit');
-        that($driver)->getMessages()->count(5);
+        that($driver)->getMessage()->contains('必須項目を含んでいません');
 
         $driver->setValue('rows[-1][unique]', '99');
         $driver->click('#template_form_submit');
-        that($driver)->getMessages()->count(4);
-
-        $driver->setValue('rows[-1][title]', 'title3');
-        $driver->click('#template_form_submit');
-        that($driver)->getMessages()->count(5);
+        that($driver)->getMessage()->notContains('必須項目を含んでいません');
     }
 
     /**
@@ -819,27 +813,39 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->click('.append_row1');
         $driver->click('.append_row1');
 
+        $driver->click('#template_form_submit');
+        that($driver)->getMessage()->contains('重複しています');
+
         $driver->setValue('rows[-1][unique]', '97');
         $driver->setValue('rows[-2][unique]', '98');
         $driver->setValue('rows[-3][unique]', '99');
+
+        $driver->setValue('rows[-1][title]', 'title');
+        $driver->setValue('rows[-2][title]', 'title');
+        $driver->setValue('rows[-3][title]', 'title');
+        $driver->setValue('rows[-1][checkbox][]', [1]);
+        $driver->setValue('rows[-2][checkbox][]', [1]);
+        $driver->setValue('rows[-3][checkbox][]', [1]);
+        $driver->click('#template_form_submit');
+        that($driver)->getMessage()->contains('重複しています');
+
+        $driver->setValue('rows[-1][title]', 'title');
+        $driver->setValue('rows[-2][title]', 'title');
+        $driver->setValue('rows[-3][title]', 'title');
+        $driver->setValue('rows[-1][checkbox][]', [1]);
+        $driver->setValue('rows[-2][checkbox][]', [2]);
+        $driver->setValue('rows[-3][checkbox][]', [3]);
+        $driver->click('#template_form_submit');
+        that($driver)->getMessage()->notContains('重複しています');
+
         $driver->setValue('rows[-1][title]', 'title1');
         $driver->setValue('rows[-2][title]', 'title2');
-        $driver->setValue('rows[-3][title]', 'title2');
-        $driver->setValue('rows[-1][checkbox][]', [1, 3]);
-        $driver->setValue('rows[-2][checkbox][]', [1, 3]);
-        $driver->setValue('rows[-3][checkbox][]', [1, 3]);
-        $driver->click('#template_form_submit');
-        that($driver)->getMessages()->count(4);
-
         $driver->setValue('rows[-3][title]', 'title3');
-        $driver->setValue('rows[-3][checkbox][]', [1, 3]);
+        $driver->setValue('rows[-1][checkbox][]', [1]);
+        $driver->setValue('rows[-2][checkbox][]', [1]);
+        $driver->setValue('rows[-3][checkbox][]', [1]);
         $driver->click('#template_form_submit');
-        that($driver)->getMessages()->count(3);
-
-        $driver->setValue('rows[-3][title]', 'title2');
-        $driver->setValue('rows[-3][checkbox][]', [2, 3]);
-        $driver->click('#template_form_submit');
-        that($driver)->getMessages()->count(3);
+        that($driver)->getMessage()->notContains('重複しています');
     }
 
     /**
@@ -947,6 +953,6 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->path('/example/testing.php?random=false');
 
         sleep(1); // wait for js testing
-        that($driver)->findElement(WebDriverBy::cssSelector('.jasmine-alert'))->getText()->break()->contains('0 failures');
+        that($driver)->findElement(WebDriverBy::cssSelector('.jasmine_html-reporter'))->getText()->break()->contains('0 failures');
     }
 }
