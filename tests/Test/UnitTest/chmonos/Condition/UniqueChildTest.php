@@ -17,7 +17,7 @@ class UniqueChildTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'k1' => 'val1',
                     'k2' => 'val2',
                 ],
-            ]
+            ],
         ];
 
         $validate = new UniqueChild(['k1', 'k2']);
@@ -58,7 +58,7 @@ class UniqueChildTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'k1' => '',
                     'k2' => '',
                 ],
-            ]
+            ],
         ];
 
         $validate1 = new UniqueChild(['k1', 'k2'], true);

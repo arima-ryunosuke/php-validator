@@ -39,10 +39,10 @@ class Range extends AbstractCondition implements Interfaces\Range
         if ((!is_null($params['min']) && !is_null($params['max'])) && !($params['min'] <= $value && $value <= $params['max'])) {
             $error($consts['INVALID_MINMAX'], []);
         }
-        else if ((!is_null($params['min']) && is_null($params['max'])) && ($params['min'] > $value)) {
+        elseif ((!is_null($params['min']) && is_null($params['max'])) && ($params['min'] > $value)) {
             $error($consts['INVALID_MIN'], []);
         }
-        else if ((is_null($params['min']) && !is_null($params['max'])) && ($value > $params['max'])) {
+        elseif ((is_null($params['min']) && !is_null($params['max'])) && ($value > $params['max'])) {
             $error($consts['INVALID_MAX'], []);
         }
     }

@@ -82,7 +82,7 @@ function Chmonos(form, options) {
             }
             already.add(input);
             resolveDepend(input, contains, already);
-        }
+        };
 
         add(input);
 
@@ -121,6 +121,7 @@ function Chmonos(form, options) {
     }
 
     chmonos.functionCache ??= new Map();
+
     function templateFunction(vars) {
         var entries = Object.entries(vars).filter(([k]) => k.match(/^[$_a-z0-9]+$/i));
         var args = entries.map(e => e[0]);
@@ -754,11 +755,11 @@ function Chmonos(form, options) {
                         return;
                     }
                     if (e.type === 'checkbox' || e.type === 'radio') {
-                        var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + (+x)});
+                        var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + (+x);});
                         e.checked = vv.indexOf(e.value) >= 0;
                     }
                     else if (e.type === 'select-multiple') {
-                        var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + x});
+                        var vv = (values[key] instanceof Array ? values[key] : [values[key]]).map(function (x) {return '' + x;});
                         e.querySelectorAll('option').forEach(function (o) {
                             o.selected = vv.indexOf(o.value) >= 0;
                         });
@@ -929,7 +930,7 @@ function Chmonos(form, options) {
      */
     chmonos.spawn = function (template, callback, values, index) {
         if (typeof (template) === 'string') {
-            template = form.querySelector('[data-vtemplate-name="' + template + '"]')
+            template = form.querySelector('[data-vtemplate-name="' + template + '"]');
         }
 
         var node = chmonos.birth(template, values, index);
@@ -942,7 +943,7 @@ function Chmonos(form, options) {
             },
         }));
 
-        callback = callback || function (node) {this.parentNode.appendChild(node)};
+        callback = callback || function (node) {this.parentNode.appendChild(node);};
         callback.call(template, node);
         return node;
     };
@@ -957,7 +958,7 @@ function Chmonos(form, options) {
      */
     chmonos.respawn = function (template, callback, values, baseNode) {
         var node = chmonos.spawn(template, () => null, Object.assign({}, chmonos.valuesMap.get(baseNode) ?? {}, chmonos.getValues(baseNode), values));
-        callback = callback || function (node, base) {base.after(node)};
+        callback = callback || function (node, base) {base.after(node);};
         callback.call(template, node, baseNode);
         return node;
     };
@@ -985,7 +986,7 @@ function Chmonos(form, options) {
      */
     chmonos.cull = function (template, node, callback) {
         if (typeof (template) === 'string') {
-            template = form.querySelector('[data-vtemplate-name="' + template + '"]')
+            template = form.querySelector('[data-vtemplate-name="' + template + '"]');
         }
 
         template.dispatchEvent(new CustomEvent('cull', {
@@ -994,7 +995,7 @@ function Chmonos(form, options) {
             },
         }));
 
-        callback = callback || function (node) {this.parentNode.removeChild(node)};
+        callback = callback || function (node) {this.parentNode.removeChild(node);};
         callback.call(template, node);
         return node;
     };
@@ -1281,7 +1282,7 @@ function Chmonos(form, options) {
             var matches = k.match(/(.+?)(\[.+\]\[(.+)\])?\[\]$/) ?? [];
             var elemName = (matches[1] ?? '') + (matches[3] ? '/' + (matches[3] ?? '') : '');
             if (matches.length && options.allrules[elemName]?.delimiter) {
-                var name = (matches[1] ?? '') + (matches[2] ?? '') + (matches[3] ?? '')
+                var name = (matches[1] ?? '') + (matches[2] ?? '') + (matches[3] ?? '');
                 arrays[name] = arrays[name] ?? [];
                 arrays[name].push(v);
             }
@@ -1395,7 +1396,7 @@ function Chmonos(form, options) {
                     var target = input[''] ?? [];
                     delete input[''];
                     var ids = [...new Set(target.map(e => e.dataset.vinputId ?? ''))].join('|');
-                    var values = await Promise.all(Object.entries(input).map(([k, children]) => dldtdd(children, ids +'/'+ k.substring(1))));
+                    var values = await Promise.all(Object.entries(input).map(([k, children]) => dldtdd(children, ids + '/' + k.substring(1))));
                     var delimiter2 = '';
                 }
                 var title = [...new Set(target.map(e => e.dataset.validationTitle ?? ''))].join('|');

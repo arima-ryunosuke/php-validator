@@ -53,10 +53,10 @@ class StringWidth extends AbstractCondition
                 $error($consts['SHORTLONG'], []);
             }
         }
-        else if (is_null($params['max']) && !is_null($params['min']) && $length < $params['min']) {
+        elseif (is_null($params['max']) && !is_null($params['min']) && $length < $params['min']) {
             $error($consts['TOO_SHORT'], []);
         }
-        else if (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
+        elseif (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
             $error($consts['TOO_LONG'], []);
         }
     }

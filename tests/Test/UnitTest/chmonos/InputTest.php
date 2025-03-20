@@ -31,7 +31,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $rule = [
             'condition' => new Requires(),
-            'propagate' => 'other'
+            'propagate' => 'other',
         ];
         $input = new Input($rule);
         that($input)->condition->isArray();
@@ -43,10 +43,10 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
             'options'   => [
                 'group' => [
-                    '1' => 'groupoption.1'
+                    '1' => 'groupoption.1',
                 ],
                 '2'     => 'option.2',
-            ]
+            ],
         ];
         $input = new Input($rule);
         that($input)->condition->count(1);
@@ -77,7 +77,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'inputs' => [
                 'child' => [],
-            ]
+            ],
         ]);
         that(isset($input->context))->isTrue();
     }
@@ -94,12 +94,12 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $input = new Input([
             'condition' => [
-                'StringLength' => [2, 6]
+                'StringLength' => [2, 6],
             ],
             'inputs'    => [
                 'child' => [
                     'title' => 'child',
-                ]
+                ],
             ],
         ]);
 
@@ -143,9 +143,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                         'options' => [
                             'c2' => 'C2',
                         ],
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ]);
         $context->initialize();
 
@@ -167,7 +167,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'inputs' => [
                     'elem1' => [
                         'condition' => [
-                            'Requires' => '/flag'
+                            'Requires' => '/flag',
                         ],
                     ],
                     'elem2' => [
@@ -293,7 +293,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'name'      => 'input',
             'title'     => '項目名',
             'condition' => [
-                'StringLength' => [2, 6]
+                'StringLength' => [2, 6],
             ],
             'options'   => [
                 1 => 'hoge',
@@ -301,13 +301,13 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
             'message'   => [
                 StringLength::SHORTLONG => 'm_SHORTLONG',
-                InArray::NOT_IN_ARRAY   => 'm_NOT_IN_ARRAY'
-            ]
+                InArray::NOT_IN_ARRAY   => 'm_NOT_IN_ARRAY',
+            ],
         ];
         $input = new Input($rule);
 
         $values = [
-            'input' => 'x'
+            'input' => 'x',
         ];
 
         $input->validate($values, $values);
@@ -321,7 +321,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'condition' => [
                 'EmailAddress' => null,
-            ]
+            ],
         ]);
         that($input)->condition->hasKey('StringLength');
 
@@ -439,7 +439,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_detectType()
     {
         $rule = [
-            'options' => ['' => '', 1 => '1']
+            'options' => ['' => '', 1 => '1'],
         ];
         $input = new Input($rule);
 
@@ -447,7 +447,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->_detectType()->is('select');
 
         $rule = [
-            'options' => ['' => '', 'group' => [1 => '1']]
+            'options' => ['' => '', 'group' => [1 => '1']],
         ];
         $input = new Input($rule);
 
@@ -491,7 +491,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $rule = [
             'condition' => [
                 'EmailAddress' => null,
-                $string_length
+                $string_length,
             ],
         ];
         $input = new Input($rule);
@@ -506,7 +506,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $rule = [
             'condition' => [],
             'options'   => [
-                1 => 'option.1'
+                1 => 'option.1',
             ],
             'default'   => 2,
             'pseudo'    => 3,
@@ -526,11 +526,11 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $in_array = new InArray([1, 2, 3]);
         $rule = [
             'condition' => [
-                $in_array
+                $in_array,
             ],
             'options'   => [
-                1 => 'option.1'
-            ]
+                1 => 'option.1',
+            ],
         ];
         $input = new Input($rule);
         that($input)->_setAutoInArray()->isNull();
@@ -581,7 +581,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'Range'   => [0, 999],
                 'Decimal' => [2, 3],
                 'Step'    => [0.5],
-            ]
+            ],
         ];
         $input = new Input($rule);
 
@@ -596,7 +596,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $rule = [
             'condition' => [
-                'Requires' => 'depend1'
+                'Requires' => 'depend1',
             ],
             'phantom'   => ['hoge%sfuga', 'depend2', 'depend3'],
             'dependent' => ['hoge', true],
@@ -608,7 +608,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $rule = [
             'condition' => [
-                'Requires' => 'depend1'
+                'Requires' => 'depend1',
             ],
             'phantom'   => ['hoge%sfuga', 'depend2', 'depend3'],
             'dependent' => [],
@@ -649,12 +649,12 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'condition' => [
                 'Requires'     => null,
                 'StringLength' => [2, 6],
-            ]
+            ],
         ];
         $input = new Input($rule);
 
         $values = [
-            'input' => ''
+            'input' => '',
         ];
 
         that($input)->validate($values, $values)->isFalse();
@@ -663,7 +663,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         //-----------------------------------------------
 
         $values = [
-            'input' => 'longlonglong'
+            'input' => 'longlonglong',
         ];
 
         that($input)->validate($values, $values)->isFalse();
@@ -672,7 +672,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         //-----------------------------------------------
 
         $values = [
-            'input' => 'short'
+            'input' => 'short',
         ];
 
         that($input)->validate($values, $values)->isTrue();
@@ -687,12 +687,12 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'e1' => [
                     'condition' => [
                         'StringLength' => [2, 6],
-                    ]
+                    ],
                 ],
                 'e2' => [
                     'condition' => [
                         'StringLength' => [1, 7],
-                    ]
+                    ],
                 ],
             ],
         ];
@@ -702,7 +702,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'input' => [
                 ['e1' => 'longlong', 'e2' => 'short'],
                 ['e1' => 'short', 'e2' => 'longlong'],
-            ]
+            ],
         ];
 
         that($input)->validate($values, $values)->isFalse();
@@ -755,12 +755,12 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
             'message'   => [
                 'Decimal' => [
-                    Decimal::INVALID => 'hoge'
+                    Decimal::INVALID => 'hoge',
                 ],
                 'num'     => [
-                    Decimal::INVALID_INT => 'bar'
+                    Decimal::INVALID_INT => 'bar',
                 ],
-            ]
+            ],
         ]);
 
         $rule = $input->getValidationRule();
@@ -804,8 +804,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'name'    => 'input',
             'title'   => 'hogera',
             'options' => [
-                1 => 'OK'
-            ]
+                1 => 'OK',
+            ],
         ]);
 
         that($input)->label()->htmlMatchesArray([
@@ -830,8 +830,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'inputs' => [
                 'child' => [
                     'title' => 'child',
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $prefix = spl_object_id($input->context);
@@ -1185,11 +1185,11 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 '2014-12-23' => 'yesterday',
                 '2014-12-24' => 'today',
                 '2014-12-25' => 'tomorrow',
-            ]
+            ],
         ]);
 
         that($input)->input([
-            'type' => 'date'
+            'type' => 'date',
         ])->htmlMatchesArray([
             'input'    => [
                 'data-validation-title' => '',
@@ -1219,7 +1219,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                     "value" => "2014-12-25",
                     "tomorrow",
                 ],
-            ]
+            ],
         ]);
 
         // InArray 系は設定されない
@@ -1231,8 +1231,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'name'   => 'inputs',
             'inputs' => [
-                'child' => []
-            ]
+                'child' => [],
+            ],
         ]);
 
         that($input)->input()->htmlMatchesArray([
@@ -1306,9 +1306,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'name'    => 'name',
             'options' => [
-                1 => 'option.1'
+                1 => 'option.1',
             ],
-            'pseudo'  => false
+            'pseudo'  => false,
         ]);
 
         that($input)->input([
@@ -1354,14 +1354,14 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'checked'               => 'checked',
                     'id'                    => 'name-1',
                 ],
-            ]
+            ],
         ]);
 
         that($input)->input([
             'type'    => 'checkbox',
             'options' => [
-                '99' => 'hoge'
-            ]
+                '99' => 'hoge',
+            ],
         ])->htmlMatchesArray([
             'input' => [
                 'type'                  => 'checkbox',
@@ -1378,7 +1378,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
             'label' => [
                 'for' => 'name-99',
-            ]
+            ],
         ]);
 
         that($input)->input([
@@ -1438,9 +1438,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'name'    => 'name',
             'options' => [
                 0  => 'option.1',
-                '' => 'option.2'
+                '' => 'option.2',
             ],
-            'pseudo'  => true
+            'pseudo'  => true,
         ]);
 
         that($input)->input([
@@ -1494,9 +1494,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'name'    => 'name',
             'options' => [
                 0  => 'option.1',
-                '' => 'option.2'
+                '' => 'option.2',
             ],
-            'pseudo'  => false
+            'pseudo'  => false,
         ]);
 
         that($input)->input([
@@ -1584,15 +1584,15 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'name'     => 'name',
             'options'  => [
                 1 => 'option.1',
-                2 => 'option.2'
+                2 => 'option.2',
             ],
             'multiple' => true,
-            'pseudo'   => false
+            'pseudo'   => false,
         ]);
 
         that($input)->input([
             'type'  => 'checkbox',
-            'value' => '2'
+            'value' => '2',
         ])->htmlMatchesArray([
             'input[1]' => [
                 'type'                  => 'checkbox',
@@ -1634,7 +1634,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'options' => [
                 '98' => 'hoge',
                 '99' => 'fuga',
-            ]
+            ],
         ])->htmlMatchesArray([
             'input[1]' => [
                 'type'                  => 'checkbox',
@@ -1678,7 +1678,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         that($input)->input([
-            'type' => 'file'
+            'type' => 'file',
         ])->htmlMatchesArray([
             'input' => [
                 'type'                  => 'file',
@@ -1697,12 +1697,12 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'name'      => 'name',
             'condition' => [
-                'FileType' => [['HTML' => ['html']]]
-            ]
+                'FileType' => [['HTML' => ['html']]],
+            ],
         ]);
 
         that($input)->input([
-            'type' => 'file'
+            'type' => 'file',
         ])->htmlMatchesArray([
             'input' => [
                 'type'                  => 'file',
@@ -1728,7 +1728,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         that($input)->input([
-            'type' => 'file'
+            'type' => 'file',
         ])->htmlMatchesArray([
             'input' => [
                 'type'                  => 'file',
@@ -1751,12 +1751,12 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'name'    => 'name',
             'options' => [
-                1 => 'option.1'
-            ]
+                1 => 'option.1',
+            ],
         ]);
 
         that($input)->input([
-            'type' => 'radio'
+            'type' => 'radio',
         ])->htmlMatchesArray([
             'input' => [
                 'type'                  => 'radio',
@@ -1780,8 +1780,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->input([
             'type'    => 'radio',
             'options' => [
-                '99' => 'hoge'
-            ]
+                '99' => 'hoge',
+            ],
         ])->htmlMatchesArray([
             'input' => [
                 'type'                  => 'radio',
@@ -1825,7 +1825,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         that($input)->input([
-            'type' => 'radio'
+            'type' => 'radio',
         ])->htmlMatchesArray([
             'input[1]' => [
                 'type'                  => 'radio',
@@ -1890,13 +1890,13 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'name'    => 'name',
             'options' => [
-                1 => 'option.1'
-            ]
+                1 => 'option.1',
+            ],
         ]);
 
         that($input)->input([
             'type'   => 'radio',
-            'format' => 'hoge%sfuga'
+            'format' => 'hoge%sfuga',
         ])->htmlMatchesArray([
             'input' => [
                 'type'                  => 'radio',
@@ -1925,13 +1925,13 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'options' => [
                 1       => 'option.1',
                 'group' => [
-                    2 => 'group.1'
-                ]
-            ]
+                    2 => 'group.1',
+                ],
+            ],
         ]);
 
         that($input)->input([
-            'type' => 'select'
+            'type' => 'select',
         ])->htmlMatchesArray([
             'select' => [
                 'data-validation-title' => '',
@@ -1961,8 +1961,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->input([
             'type'    => 'select',
             'options' => [
-                '99' => 'hoge'
-            ]
+                '99' => 'hoge',
+            ],
         ])->htmlMatchesArray([
             'select' => [
                 'data-validation-title' => '',
@@ -2003,7 +2003,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                         'label'   => 'object.4',
                         'invalid' => false,
                     ],
-                ]
+                ],
             ],
             'invalids' => [
                 3 => 'invalid-option(invalid)',
@@ -2011,7 +2011,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
 
         that($input)->input([
-            'type' => 'select'
+            'type' => 'select',
         ])->htmlMatchesArray([
             'select' => [
                 'data-validation-title' => '',
@@ -2105,15 +2105,15 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'options'  => [
                 1       => 'option.1',
                 'group' => [
-                    2 => 'group.1'
-                ]
+                    2 => 'group.1',
+                ],
             ],
             'multiple' => true,
         ]);
 
         that($input)->input([
             'type'  => 'select',
-            'value' => 2
+            'value' => 2,
         ])->htmlMatchesArray([
             'select' => [
                 'multiple'              => 'multiple',
@@ -2148,9 +2148,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'options' => [
                 0       => 'option.1',
                 'group' => [
-                    '' => 'group.1'
-                ]
-            ]
+                    '' => 'group.1',
+                ],
+            ],
         ]);
 
         that($input)->input([
@@ -2215,8 +2215,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'name'      => 'name',
             'condition' => [
-                'Date' => 'Y/m/d'
-            ]
+                'Date' => 'Y/m/d',
+            ],
         ]);
 
         that($input)->input()->htmlMatchesArray([
@@ -2238,8 +2238,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'name'      => 'name',
             'condition' => [
-                'Date' => 'Y-m-d\TH:i:s'
-            ]
+                'Date' => 'Y-m-d\TH:i:s',
+            ],
         ]);
 
         that($input)->input()->htmlMatchesArray([
@@ -2267,9 +2267,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'Digits' => null,
                 'Range'  => [
                     10,
-                    20
-                ]
-            ]
+                    20,
+                ],
+            ],
         ]);
 
         that($input)->input()->htmlMatchesArray([
@@ -2295,9 +2295,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'condition' => [
                 'Decimal' => [
                     2,
-                    4
-                ]
-            ]
+                    4,
+                ],
+            ],
         ]);
 
         that($input)->input()->htmlMatchesArray([
@@ -2353,12 +2353,12 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                     null,
                     1000,
                     false,
-                ]
-            ]
+                ],
+            ],
         ]);
 
         that($input)->input([
-            'type' => 'textarea'
+            'type' => 'textarea',
         ])->htmlMatchesArray([
             'textarea' => [
                 'data-validation-title' => '',

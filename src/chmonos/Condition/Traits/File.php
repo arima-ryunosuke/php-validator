@@ -89,7 +89,7 @@ trait File
         'video/mpeg'                                                              => ['mpeg', 'mpg', 'mpe'],
         'video/ogg'                                                               => ['ogv'],
         'video/quicktime'                                                         => ['qt', 'mov'],
-        'video/webm'                                                              => ['webm']
+        'video/webm'                                                              => ['webm'],
     ];
 
     /**

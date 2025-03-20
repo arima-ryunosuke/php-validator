@@ -44,10 +44,10 @@ class Regex extends AbstractCondition
         if (false === $status) {
             $error($consts['ERROROUS'], []);
         }
-        else if (!$params['negation'] && !$status) {
+        elseif (!$params['negation'] && !$status) {
             $error($consts['NOT_MATCH'], []);
         }
-        else if ($params['negation'] && $status) {
+        elseif ($params['negation'] && $status) {
             $error($consts['NEGATION'], []);
         }
     }

@@ -27,7 +27,7 @@ class UriTest extends \ryunosuke\Test\AbstractUnitTestCase
         // http, https のみ
         $validate = new Uri([
             'http',
-            'https'
+            'https',
         ]);
         that($validate)->isValid('http://hostname')->isTrue();
         that($validate)->isValid('https://hostname')->isTrue();
@@ -35,7 +35,7 @@ class UriTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // ftpのみ
         $validate = new Uri([
-            'ftp'
+            'ftp',
         ]);
         that($validate)->isValid('http://hostname')->isFalse();
         that($validate)->isValid('https://hostname')->isFalse();
@@ -46,7 +46,7 @@ class UriTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $validate = new Uri([
             'http',
-            'https'
+            'https',
         ], '#,|\\s#');
         that($validate)->isValid('')->isTrue();
         that($validate)->isValid('http://example.com, https://example.com,https://example.com:80')->isTrue();

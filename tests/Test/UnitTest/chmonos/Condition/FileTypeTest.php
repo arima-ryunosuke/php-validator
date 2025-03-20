@@ -11,7 +11,7 @@ class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // jpg のみ受けつける
         $types = [
-            'JPG' => 'jpg'
+            'JPG' => 'jpg',
         ];
         $validate = new FileType($types);
         that($validate)->isValid($dir . 'csv.txt')->isFalse(); // 明らかにダメ
@@ -20,7 +20,7 @@ class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // csv のみ受けつける
         $types = [
-            'CSV' => 'csv'
+            'CSV' => 'csv',
         ];
         $validate = new FileType($types);
         that($validate)->isValid($dir . 'png.jpg')->isFalse();                   // 明らかにダメ
@@ -29,7 +29,7 @@ class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // csv と txt のみ受けつける
         $types = [
-            'CSV' => ['csv', 'txt']
+            'CSV' => ['csv', 'txt'],
         ];
         $validate = new FileType($types);
         that($validate)->isValid($dir . 'png.jpg')->isFalse(); // 明らかにダメ
@@ -38,7 +38,7 @@ class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // html のみ受けつける
         $types = [
-            'HTML' => 'htm'
+            'HTML' => 'htm',
         ];
         $validate = new FileType($types);
         that($validate)->isValid($dir . 'jpg.jpg')->isFalse(); // 明らかにダメ
@@ -47,7 +47,7 @@ class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // 拡張子の大文字小文字は区別されない
         $types = [
-            'HTML' => 'HtM'
+            'HTML' => 'HtM',
         ];
         $validate = new FileType($types);
         that($validate)->isValid($dir . 'htm.htm')->isTrue();

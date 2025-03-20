@@ -81,7 +81,7 @@ class Date extends AbstractCondition implements Interfaces\Range, Interfaces\Max
         if ($time === false) {
             $error($consts['INVALID_DATE'], []);
         }
-        else if (date($params['format'], $time) !== $value) {
+        elseif (date($params['format'], $time) !== $value) {
             $error($consts['FALSEFORMAT'], []);
         }
     }

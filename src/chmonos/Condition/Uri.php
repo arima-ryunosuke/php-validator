@@ -52,11 +52,11 @@ class Uri extends AbstractCondition implements Interfaces\InferableType, Interfa
                 $error($consts['INVALID'], []);
                 return false;
             }
-            else if (count($params['schemes']) && !in_array($parsed['scheme'], $params['schemes'])) {
+            elseif (count($params['schemes']) && !in_array($parsed['scheme'], $params['schemes'])) {
                 $error($consts['INVALID_SCHEME'], []);
                 return false;
             }
-            else if (!isset($parsed['host'])) {
+            elseif (!isset($parsed['host'])) {
                 $error($consts['INVALID_HOST'], []);
                 return false;
             }

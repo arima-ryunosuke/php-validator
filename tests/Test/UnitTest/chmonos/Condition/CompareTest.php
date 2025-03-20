@@ -8,7 +8,7 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid_equal()
     {
         $values = [
-            'depend' => '12345'
+            'depend' => '12345',
         ];
 
         // equal/string
@@ -27,7 +27,7 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid_equal_filter()
     {
         $values = [
-            'depend' => 'abcde'
+            'depend' => 'abcde',
         ];
 
         // equal/string
@@ -38,7 +38,7 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid_notequal()
     {
         $values = [
-            'depend' => '12345'
+            'depend' => '12345',
         ];
 
         // notequal/string
@@ -57,7 +57,7 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid_less()
     {
         $values = [
-            'depend' => '12345'
+            'depend' => '12345',
         ];
 
         // less/number
@@ -67,7 +67,7 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('12346', $values)->isFalse();
 
         $values = [
-            'depend' => '2011/11/11 11:11:11'
+            'depend' => '2011/11/11 11:11:11',
         ];
 
         // less/date
@@ -80,7 +80,7 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid_great()
     {
         $values = [
-            'depend' => '12345'
+            'depend' => '12345',
         ];
 
         // great/number
@@ -90,7 +90,7 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('12346', $values)->isTrue();
 
         $values = [
-            'depend' => '2011/11/11 11:11:11'
+            'depend' => '2011/11/11 11:11:11',
         ];
 
         // great/date
@@ -120,7 +120,7 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid_offset()
     {
         $values = [
-            'depend' => '12345'
+            'depend' => '12345',
         ];
 
         // less/number
@@ -130,7 +130,7 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('12246', $values)->isFalse();
 
         $values = [
-            'depend' => '2011/11/11 11:11:11'
+            'depend' => '2011/11/11 11:11:11',
         ];
 
         // great/date
@@ -150,7 +150,7 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test_valid_empty()
     {
         $values = [
-            'depend' => ''
+            'depend' => '',
         ];
 
         $validate = new Compare('==', 'depend');

@@ -56,7 +56,7 @@ class HtmlableTest extends \ryunosuke\Test\AbstractUnitTestCase
             'style' => [
                 'color'            => 'red',
                 'background-color' => 'white',
-                'font-family:monospace;'
+                'font-family:monospace;',
             ],
         ], 'fuga')->is("style=\"color:red;background-color:white;font-family:monospace;\"");
     }
@@ -66,7 +66,7 @@ class HtmlableTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($this)->createStyleAttr([
             'color'            => 'red',
             'background-color' => 'white',
-            'font-family:monospace;'
+            'font-family:monospace;',
         ])->is("color:red;background-color:white;font-family:monospace;");
     }
 

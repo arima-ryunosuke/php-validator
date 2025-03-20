@@ -76,7 +76,7 @@ JS;
         return [
             'values' => array_map(function ($v) use ($params) {
                 return $params['strict'] ? $v[$params['name']] : strtolower($v[$params['name']]);
-            }, $fields["/{$params['root']}"])
+            }, $fields["/{$params['root']}"]),
         ];
     }
 

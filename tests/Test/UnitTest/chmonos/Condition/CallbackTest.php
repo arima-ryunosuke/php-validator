@@ -12,7 +12,7 @@ class CallbackTest extends \ryunosuke\Test\AbstractUnitTestCase
         }, ['another'], 'userdata');
 
         that($validate)->isValid('hoge', [
-            'another' => 'fuga'
+            'another' => 'fuga',
         ])->isFalse();
         that($validate)->getMessages()->is([
             "CallbackInvalid" => '$value is hoge, $another is fuga, $userdata is userdata',

@@ -2,7 +2,6 @@
 namespace ryunosuke\Test\UnitTest\chmonos;
 
 use ryunosuke\chmonos\Condition;
-use ryunosuke\chmonos\Condition\Decimal;
 use ryunosuke\chmonos\Context;
 use ryunosuke\chmonos\Input;
 use ryunosuke\Test\CustomInput;
@@ -17,8 +16,8 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'condition' => [
                     'StringLength' => array_values([
                         2,
-                        6
-                    ])
+                        6,
+                    ]),
                 ],
                 'default'   => 'P',
             ],
@@ -29,7 +28,7 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'child1' => [
                         'title'     => '子項目1',
                         'condition' => [
-                            'EmailAddress' => null
+                            'EmailAddress' => null,
                         ],
                         'default'   => 'C1',
                     ],
@@ -38,13 +37,13 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                         'condition' => [
                             'Decimal' => array_values([
                                 3,
-                                3
-                            ])
+                                3,
+                            ]),
                         ],
                         'default'   => 'C2',
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ];
 
         return $rules;
@@ -58,9 +57,9 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'children' => [
                     [
                         'child1' => 'test@example.com',
-                        'child2' => '123.456'
-                    ]
-                ]
+                        'child2' => '123.456',
+                    ],
+                ],
             ];
         }
         if ($context == 'invalid_parent') {
@@ -69,9 +68,9 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'children' => [
                     [
                         'child1' => 'test@example.com',
-                        'child2' => '123.456'
-                    ]
-                ]
+                        'child2' => '123.456',
+                    ],
+                ],
             ];
         }
         if ($context == 'invalid_child') {
@@ -80,13 +79,13 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'children' => [
                     [
                         'child1' => 'invalidaddress',
-                        'child2' => '123.456'
+                        'child2' => '123.456',
                     ],
                     [
                         'child1' => 'test@example.com',
-                        'child2' => '3.14159'
-                    ]
-                ]
+                        'child2' => '3.14159',
+                    ],
+                ],
             ];
         }
     }
@@ -152,7 +151,7 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
             'source' => [],
             'target' => [
                 'condition' => [
-                    'Requires' => 'source'
+                    'Requires' => 'source',
                 ],
             ],
             'flag'   => [
@@ -162,12 +161,12 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'inputs' => [
                     'elem1' => [
                         'condition' => [
-                            'Requires' => '/flag'
+                            'Requires' => '/flag',
                         ],
                     ],
                     'elem2' => [
                         'condition' => [
-                            'Requires' => 'elem1'
+                            'Requires' => 'elem1',
                         ],
                     ],
                     'elem3' => [
@@ -202,9 +201,9 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         $rules = [
             'dummy_file' => [
                 'condition' => [
-                    'FileSize' => 1024
+                    'FileSize' => 1024,
                 ],
-                'default'   => 'path/to/dummy'
+                'default'   => 'path/to/dummy',
             ],
             'phantom-1'  => [],
             'phantom-2'  => [],
@@ -215,7 +214,7 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'phantom-1',
                     'phantom-2',
                     'phantom-3',
-                ]
+                ],
             ],
             'phantomY'   => [
                 'phantom' => [
@@ -223,16 +222,16 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'phantom-1',
                     'phantom-2',
                     'phantom-9',
-                ]
+                ],
             ],
             'children'   => [
                 'inputs' => [
                     'child1' => [],
                     'child2' => [
                         'default' => 'cvalue2',
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ];
         $context = new Context($rules);
         $values = $context->normalize([
@@ -242,9 +241,9 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
             'children'  => [
                 [
                     'child1' => 'test@example.com',
-                ]
+                ],
             ],
-            'undef'     => "未定義"
+            'undef'     => "未定義",
         ]);
 
         // default
@@ -422,12 +421,12 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                         ],
                     ],
                 ],
-            ]
+            ],
         ]);
 
         $values = [
             'arrays' => [
-                ['hoge' => '', 'fuga' => '']
+                ['hoge' => '', 'fuga' => ''],
             ],
         ];
         $form->validate($values);
@@ -448,9 +447,9 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         $rules = [
             'dummy' => [
                 'condition' => [
-                    'FileSize' => 1024
-                ]
-            ]
+                    'FileSize' => 1024,
+                ],
+            ],
         ];
         $context = new Context($rules);
         that($context)->hasInputFile()->isTrue();
@@ -461,11 +460,11 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'inputs' => [
                     'child' => [
                         'condition' => [
-                            'FileSize' => 1024
-                        ]
-                    ]
-                ]
-            ]
+                            'FileSize' => 1024,
+                        ],
+                    ],
+                ],
+            ],
         ];
         $context = new Context($rules);
         that($context)->hasInputFile()->isTrue();
@@ -481,7 +480,7 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         $rules = [
             'dummy' => [
                 'delimiter' => ',',
-            ]
+            ],
         ];
         $context = new Context($rules);
         that($context)->hasDelimitableInput()->isTrue();
@@ -492,9 +491,9 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'inputs' => [
                     'child' => [
                         'delimiter' => ',',
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ];
         $context = new Context($rules);
         that($context)->hasDelimitableInput()->isTrue();

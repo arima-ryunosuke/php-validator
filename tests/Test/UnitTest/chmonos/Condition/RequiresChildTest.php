@@ -21,7 +21,7 @@ class RequiresChildTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'k1' => 'val5',
                     'k2' => 'val6',
                 ],
-            ]
+            ],
         ];
 
         $validate = new RequiresChild([

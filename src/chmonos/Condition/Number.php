@@ -62,10 +62,10 @@ class Number extends AbstractCondition implements Interfaces\MaxLength, Interfac
         if (strlen($match[1]) > $params['int'] && strlen($match[2]) > $params['dec'] + 1) {
             return $error($consts['INVALID_INTDEC'], []);
         }
-        else if (strlen($match[1]) > $params['int']) {
+        elseif (strlen($match[1]) > $params['int']) {
             return $error($consts['INVALID_INT'], []);
         }
-        else if (strlen($match[2]) > $params['dec'] + 1) {
+        elseif (strlen($match[2]) > $params['dec'] + 1) {
             return $error($consts['INVALID_DEC'], []);
         }
 

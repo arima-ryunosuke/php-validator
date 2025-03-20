@@ -153,6 +153,7 @@ abstract class AbstractCondition
                     $block = preg_replace('#(^\s*{)|}\s*$#u', '', $block);
                     $tokens = array_slice(token_get_all("<?php $block"), 1);
                     $tokens = array_map(fn($v) => is_array($v) ? $v : [ord($v), $v], $tokens);
+                    $tokens = array_map(fn($v) => $v[0] === T_ELSEIF ? ['', 'else if'] : $v, $tokens);
                     $tokens = array_map(fn($v) => $v[0] === T_YIELD ? ['', 'await'] : $v, $tokens);
                     $tokens = array_filter($tokens, fn($v) => !in_array($v[0], [T_FN, T_COMMENT], true));
                     $block = implode("", array_column($tokens, 1));

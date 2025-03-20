@@ -66,7 +66,7 @@ class Step extends AbstractCondition implements Interfaces\InferableType, Interf
             }
             $value = (3600 * $match[1]) + (60 * $match[2]) + intval($match[4] ?? 0);
         }
-        else if (isset($params['timeunit']['i']) && isset($params['timeunit']['s'])) {
+        elseif (isset($params['timeunit']['i']) && isset($params['timeunit']['s'])) {
             if (!preg_match('#(\\d{1,2}):?(\\d{1,2})$#u', $value, $match)) {
                 return $error($consts['INVALID'], []);
             }

@@ -95,7 +95,7 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'piyo1' => ['>=', 'Y'],
                     'piyo2' => ['<=', 'Z'],
                 ],
-            ]
+            ],
         ]);
     }
 
@@ -188,9 +188,9 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
                         'condition' => [
                             'Compare' => ['==', 'child1'],
                         ],
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ]);
         $context->initialize();
 

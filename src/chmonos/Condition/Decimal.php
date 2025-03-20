@@ -48,10 +48,10 @@ class Decimal extends AbstractCondition implements Interfaces\MaxLength, Interfa
         if (strlen($match[1]) > $params['int'] && strlen($match[2]) > $params['dec'] + 1) {
             $error($consts['INVALID_INTDEC'], []);
         }
-        else if (strlen($match[1]) > $params['int']) {
+        elseif (strlen($match[1]) > $params['int']) {
             $error($consts['INVALID_INT'], []);
         }
-        else if (strlen($match[2]) > $params['dec'] + 1) {
+        elseif (strlen($match[2]) > $params['dec'] + 1) {
             $error($consts['INVALID_DEC'], []);
         }
     }

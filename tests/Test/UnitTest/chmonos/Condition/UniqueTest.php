@@ -10,15 +10,15 @@ class UniqueTest extends \ryunosuke\Test\AbstractUnitTestCase
         $base_values = [
             '/values' => [
                 [
-                    'unique' => 'val1'
+                    'unique' => 'val1',
                 ],
                 [
-                    'unique' => 'val2'
+                    'unique' => 'val2',
                 ],
                 [
-                    'unique' => 'val'
-                ]
-            ]
+                    'unique' => 'val',
+                ],
+            ],
         ];
 
         $validate = new Unique(true);
@@ -31,7 +31,7 @@ class UniqueTest extends \ryunosuke\Test\AbstractUnitTestCase
         // 重複あり
         $values = $base_values;
         $values['/values'][] = [
-            'unique' => 'val'
+            'unique' => 'val',
         ];
         that($validate)->isValid('val', $values)->isFalse();
 
@@ -45,7 +45,7 @@ class UniqueTest extends \ryunosuke\Test\AbstractUnitTestCase
         // ケース無視重複あり
         $values = $base_values;
         $values['/values'][] = [
-            'unique' => 'VAL'
+            'unique' => 'VAL',
         ];
         that($validate)->isValid('val', $values)->isFalse();
     }
@@ -55,9 +55,9 @@ class UniqueTest extends \ryunosuke\Test\AbstractUnitTestCase
         $values = [
             '/values' => [
                 [
-                    'unique' => 'val'
-                ]
-            ]
+                    'unique' => 'val',
+                ],
+            ],
         ];
 
         // 重複なし

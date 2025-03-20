@@ -13,9 +13,9 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test___construct()
     {
         $form = new Form([
-            'hoge_input' => []
+            'hoge_input' => [],
         ], [
-            'inputClass' => CustomInput::class
+            'inputClass' => CustomInput::class,
         ]);
 
         that($form)->hoge_input->isInstanceOf(Input::class);
@@ -25,7 +25,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test___isset()
     {
         $form = new Form([
-            'hoge_input' => []
+            'hoge_input' => [],
         ]);
 
         that(isset($form->hoge_input))->isTrue();
@@ -36,7 +36,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
     function test___get()
     {
         $form = new Form([
-            'hoge_input' => []
+            'hoge_input' => [],
         ]);
 
         that($form)->hoge_input->isInstanceOf(Input::class);
@@ -48,13 +48,13 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $form = new Form([
             'req' => [
                 'condition' => [
-                    'Requires' => null
-                ]
+                    'Requires' => null,
+                ],
             ],
             'dt'  => [
                 'condition' => [
-                    'Date' => 'Y-m-d\TH:i'
-                ]
+                    'Date' => 'Y-m-d\TH:i',
+                ],
             ],
         ]);
 
@@ -86,7 +86,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'FileSize' => 9999,
                 ],
                 'default'   => 'nofile',
-            ]
+            ],
         ]);
 
         $_FILES = [];
@@ -127,9 +127,9 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $form = new Form([
             'file' => [
                 'condition' => [
-                    'FileSize' => 1234
-                ]
-            ]
+                    'FileSize' => 1234,
+                ],
+            ],
         ]);
 
         $form_tag = $form->form([]) . 'dummy' . $form->form();
@@ -144,7 +144,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $form = new Form([
             'text' => [
                 'delimiter' => ',',
-            ]
+            ],
         ]);
 
         $form_tag = $form->form([]) . 'dummy' . $form->form();
@@ -158,9 +158,9 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $form = new Form([
             'req' => [
                 'condition' => [
-                    'Requires' => null
-                ]
-            ]
+                    'Requires' => null,
+                ],
+            ],
         ]);
 
         $values = [
@@ -179,13 +179,13 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             'hoge' => [
                 'condition' => [
                     (new Condition\Requires())->setValidationLevel('warning'),
-                ]
+                ],
             ],
             'fuga' => [
                 'condition' => [
                     (new Condition\Requires())->setValidationLevel('error'),
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $values = [
@@ -210,7 +210,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'child'         => [],
                     '@child_ignore' => [],
                 ],
-            ]
+            ],
         ]);
 
         $values = [
@@ -249,8 +249,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                     return 'dummy';
                 },
                 'condition' => [
-                    'Requires' => null
-                ]
+                    'Requires' => null,
+                ],
             ],
             'children' => [
                 'normalize' => function ($value) {
@@ -259,7 +259,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                     return $value;
                 },
                 'condition' => [
-                    'ArrayLength' => [0, 2]
+                    'ArrayLength' => [0, 2],
                 ],
                 'inputs'    => [
                     'child1' => [
@@ -267,18 +267,18 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                             return substr($value ?? '', -3, 3);
                         },
                         'condition' => [
-                            'StringLength' => [0, 3]
-                        ]
+                            'StringLength' => [0, 3],
+                        ],
                     ],
                     'child2' => [
                         'normalize' => function ($value) {
                             return substr($value ?? '', -3, 3);
                         },
                         'condition' => [
-                            'StringLength' => [0, 3]
-                        ]
-                    ]
-                ]
+                            'StringLength' => [0, 3],
+                        ],
+                    ],
+                ],
             ],
         ]);
 
@@ -393,18 +393,18 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                         ],
                     ],
                 ],
-            ]
+            ],
         ]);
         $posts = [
             'parent_text' => 'parent_text',
             'children'    => [
                 [
-                    'child_text' => 'child_text0'
+                    'child_text' => 'child_text0',
                 ],
                 [
-                    'child_text' => 'child_text1'
+                    'child_text' => 'child_text1',
                 ],
-            ]
+            ],
         ];
         @$form->validate($posts);
 
@@ -441,40 +441,40 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $form = new Form([
             'parent'    => [
                 'condition' => [
-                    'Requires' => null
-                ]
+                    'Requires' => null,
+                ],
             ],
             'children1' => [
                 'condition' => [
-                    'Requires' => null
+                    'Requires' => null,
                 ],
                 'inputs'    => [
                     'child1' => [
                         'condition' => [
-                            'Requires' => null
-                        ]
+                            'Requires' => null,
+                        ],
                     ],
                     'child2' => [
                         'condition' => [
-                            'Requires' => null
-                        ]
-                    ]
-                ]
+                            'Requires' => null,
+                        ],
+                    ],
+                ],
             ],
             'children2' => [
                 'inputs' => [
                     'child1' => [
                         'condition' => [
-                            'Requires' => null
-                        ]
+                            'Requires' => null,
+                        ],
                     ],
                     'child2' => [
                         'condition' => [
-                            'Requires' => null
-                        ]
-                    ]
-                ]
-            ]
+                            'Requires' => null,
+                        ],
+                    ],
+                ],
+            ],
         ]);
 
         that($form)->filter([
@@ -484,8 +484,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                 [
                     'child1' => '',
                     'child2' => '',
-                ]
-            ]
+                ],
+            ],
         ])->is([
             "children2" => [],
         ]);
@@ -497,14 +497,14 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                 [
                     'child1' => 'val',
                     'child2' => '',
-                ]
+                ],
             ],
             'children2' => [
                 [
                     'child1' => 'val',
                     'child2' => '',
-                ]
-            ]
+                ],
+            ],
         ])->is([
             "parent"    => "val",
             "children1" => [
@@ -526,9 +526,9 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $form = new Form([
             'req' => [
                 'condition' => [
-                    'Requires' => null
-                ]
-            ]
+                    'Requires' => null,
+                ],
+            ],
         ]);
 
         try {
@@ -545,12 +545,12 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
         $form = new Form([
             'req' => [
                 'condition' => [
-                    'Requires' => null
-                ]
+                    'Requires' => null,
+                ],
             ],
             'dmy' => [
-                'default' => 'dmy'
-            ]
+                'default' => 'dmy',
+            ],
         ]);
 
         $values = $form->validateOrThrow([
@@ -570,20 +570,20 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
     {
         $form = new Form([
             'parent'   => [
-                'title' => 'parent-title'
+                'title' => 'parent-title',
             ],
             'children' => [
                 'default' => [],
                 'inputs'  => [
                     'child1' => [
-                        'default' => 'def1'
+                        'default' => 'def1',
                     ],
                     'child2' => [
                         'default'  => 'def2',
                         'multiple' => true,
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ], [
             'tokenName' => 'hoge',
             'nonce'     => 'fuga',
@@ -601,8 +601,8 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                 ],
                 [
                     'child1' => 'child1_fuga',
-                ]
-            ]
+                ],
+            ],
         ]);
 
         // 開始タグ
@@ -723,7 +723,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             ]);
             that($form)->input('parent', ['type' => 'textarea', 'value' => 'hoge', 'vuejs' => false])->htmlMatchesArray([
                 'textarea' => [
-                    "hoge"
+                    "hoge",
                 ],
             ]);
             that($form)->input('parent', ['type' => 'textarea', 'value' => 'hoge', 'vuejs' => true])->htmlMatchesArray([

@@ -85,11 +85,11 @@ class Telephone extends AbstractCondition implements Interfaces\MaxLength, Inter
                     $error($consts['INVALID_TELEPHONE'], []);
                     return false;
                 }
-                else if ($params['hyphen'] === true) {
+                elseif ($params['hyphen'] === true) {
                     $error($consts['INVALID_WITH_HYPHEN'], []);
                     return false;
                 }
-                else if ($params['hyphen'] === false) {
+                elseif ($params['hyphen'] === false) {
                     $error($consts['INVALID_NONE_HYPHEN'], []);
                     return false;
                 }
