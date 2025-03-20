@@ -218,6 +218,20 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_compare_contain(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('compare', 'hoge');
+        $driver->setValue('compare_contain', 'prefix-hoge-suffix');
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('compare_contain', 'fuga');
+        that($driver)->getErrors()->count(0);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_compare_direct(WebDriver $driver)
     {
         $driver->path('/example/index.php');

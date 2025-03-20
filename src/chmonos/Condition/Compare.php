@@ -10,7 +10,7 @@ use function ryunosuke\chmonos\date_modulate;
  *
  * - operator: string
  *   - 比較方法（'==' '>=' などの演算子）
- *   - ==, ===, !=, !==, <=, <, >=, > が指定可能
+ *   - ==, ===, !=, !==, <=, <, >=, >, contain, !contain が指定可能
  * - operand: mixed
  *   - 比較対象フィールド名
  *   - direct が true ならフィールドではなく直値を指定できる
@@ -29,7 +29,8 @@ class Compare extends AbstractCondition implements Interfaces\Propagation
     public const NOT_EQUAL    = 'compareNotEqual';
     public const LESS_THAN    = 'compareLessThan';
     public const GREATER_THAN = 'compareGreaterThan';
-    public const SIMILAR      = 'compareSimilar';
+    public const CONTAIN      = 'compareContain';
+    public const NOT_CONTAIN  = 'compareNotContain';
 
     protected static $messageTemplates = [
         self::INVALID      => 'Invalid value given',
@@ -37,6 +38,8 @@ class Compare extends AbstractCondition implements Interfaces\Propagation
         self::NOT_EQUAL    => '「${$resolveTitle(_operand)}」と異なる値を入力してください',
         self::LESS_THAN    => '「${$resolveTitle(_operand)}」より小さい値を入力してください',
         self::GREATER_THAN => '「${$resolveTitle(_operand)}」より大きい値を入力してください',
+        self::CONTAIN      => '「${$resolveTitle(_operand)}」を含めて入力してください',
+        self::NOT_CONTAIN  => '「${$resolveTitle(_operand)}」を含めないで入力してください',
     ];
 
     protected $_operator;
@@ -108,6 +111,12 @@ class Compare extends AbstractCondition implements Interfaces\Propagation
         }
         if ($params['operator'] === '>=' && $field1 < $field2) {
             return $error($consts['GREATER_THAN'], []);
+        }
+        if ($params['operator'] === 'contain' && strpos($field1, $field2) === false) {
+            return $error($consts['CONTAIN'], []);
+        }
+        if ($params['operator'] === '!contain' && strpos($field1, $field2) !== false) {
+            return $error($consts['NOT_CONTAIN'], []);
         }
     }
 

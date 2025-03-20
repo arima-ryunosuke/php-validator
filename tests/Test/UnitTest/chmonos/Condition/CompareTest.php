@@ -100,6 +100,23 @@ class CompareTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('2011/11/11 11:11:12', $values)->isTrue();
     }
 
+    function test_valid_contain()
+    {
+        $values = [
+            'depend' => 'mail@address',
+        ];
+
+        // contain
+        $validate = new Compare('contain', 'depend');
+        that($validate)->isValid('password', $values)->isFalse();
+        that($validate)->isValid('prefix-mail@address-suffix', $values)->isTrue();
+
+        // not contain
+        $validate = new Compare('!contain', 'depend');
+        that($validate)->isValid('password', $values)->isTrue();
+        that($validate)->isValid('prefix-mail@address-suffix', $values)->isFalse();
+    }
+
     function test_valid_offset()
     {
         $values = [
