@@ -28,6 +28,15 @@ class DataUriTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid("data:image/jpeg;base64," . "eA")->isTrue();
         that($validate)->isValid("data:image/hoge;base64," . "eA")->isTrue();
         that($validate)->isValid("data:image/gif;base64," . "eA")->isFalse();
+
+        $validate = new DataUri(type: ['画像' => ['image/*'], 'CSV' => 'text/csv']);
+        that($validate)->isValid("data:image/png;base64," . "eA")->isTrue();
+        that($validate)->isValid("data:image/jpeg;base64," . "eA")->isTrue();
+        that($validate)->isValid("data:image/hoge;base64," . "eA")->isTrue();
+        that($validate)->isValid("data:image/gif;base64," . "eA")->isTrue();
+        that($validate)->isValid("data:audio/wav;base64," . "eA")->isFalse();
+        that($validate)->isValid("data:text/csv;base64," . "eA")->isTrue();
+        that($validate)->isValid("data:text/plain;base64," . "eA")->isFalse();
     }
 
     function test_getValue()

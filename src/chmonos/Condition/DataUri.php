@@ -2,6 +2,7 @@
 namespace ryunosuke\chmonos\Condition;
 
 use ryunosuke\chmonos\Condition\Traits\File;
+use function ryunosuke\chmonos\array_flatten;
 use function ryunosuke\chmonos\dataurl_encode;
 
 /**
@@ -17,6 +18,13 @@ use function ryunosuke\chmonos\dataurl_encode;
  *   - 許容する拡張子（minetype 逆引き）
  * - minetype: array
  *   - mimetype と拡張子の対応表
+ *
+ * 上記は過去の仕様で、現在は名前付き引数で下記（上記も受け入れられる）。
+ *
+ * - size: int|string
+ *   - 上記と同じ
+ * - type: array
+ *   - [拡張子 => mimetype] の配列
  */
 class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
 {
@@ -40,15 +48,31 @@ class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
 
     protected $_allowTypes;
 
-    public function __construct(array $rule = ['size' => null, 'type' => [], 'mimetype' => []], $convertible = true)
+    //public function __construct(?string $size = null, array $type = [], bool $convertible = true)
+    public function __construct(array $rule = ['size' => null, 'type' => [], 'mimetype' => []], $convertible = true, ...$namedArguments)
     {
         $this->convertible = $convertible;
 
-        $this->_size = $rule['size'] ?? null;
+        if ($namedArguments) {
+            $namedArguments += [
+                'size' => null,
+                'type' => [],
+            ];
+            $namedArguments['type'] = array_map(fn($type) => (array) $type, $namedArguments['type']);
 
-        $this->_type = $rule['type'] ?? [];
+            $this->_size = $namedArguments['size'];
+            $this->_type = array_keys($namedArguments['type']);
 
-        $this->_allowTypes = $this->getMimeTypes($this->_type, $rule['mimetype'] ?? []);
+            $standard = $this->getMimeTypes($this->_type);
+            $userland = array_values(array_flatten($namedArguments['type']));
+            $this->_allowTypes = array_values(array_unique(array_merge($standard, $userland)));
+        }
+        // for compatible
+        else {
+            $this->_size = $rule['size'] ?? null;
+            $this->_type = $rule['type'] ?? [];
+            $this->_allowTypes = $this->getMimeTypes($this->_type, $rule['mimetype'] ?? []);
+        }
 
         parent::__construct();
     }
@@ -71,7 +95,7 @@ class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
             $error($consts['INVALID_SIZE'], []);
         }
 
-        if ($params['type'] && !in_array($matches[1], $params['allowTypes'], true)) {
+        if ($params['type'] && !count(array_filter($params['allowTypes'], fn($type) => fnmatch($type, $matches[1])))) {
             $error($consts['INVALID_TYPE'], []);
         }
     }
@@ -90,7 +114,7 @@ class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
     {
         $size = ini_parse_quantity($this->_size);
         $data = str_pad($value ?? '', $size, 'X', STR_PAD_RIGHT);
-        $type = $this->fixtureArray($this->_allowTypes);
+        $type = $this->fixtureArray(array_filter($this->_allowTypes, fn($type) => !str_contains($type, '*')));
         return dataurl_encode($data, ['mimetype' => $type]);
     }
 }
