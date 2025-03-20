@@ -651,6 +651,9 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                 ],
             ]);
 
+            // value が取得できる
+            that($form)->value('parent')->is("hoge");
+
             // label が描画できる
             that($form)->label('parent', ['vuejs' => true])->htmlMatchesArray([
                 'label' => [
@@ -789,6 +792,10 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                 ],
             ]);
 
+            // value が得られる
+            that($form)->value('child1')->is("child1_fuga");
+            that($form)->value('child2')->is("def2");
+
             // context は何もしないので空
             that($form)->context()->isEmpty();
         }
@@ -855,6 +862,12 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'class'                 => 'validatable',
                 ],
             ]);
+
+            // value が得られる
+            that($form)->value('child1')->is("def1");
+            that($form)->value('child2')->is("def2");
+            that($form)->value('child1', 1)->is("child1_fuga");
+            that($form)->value('child2', 0)->is("child2_hoge");
 
             $content = $form->template();
 

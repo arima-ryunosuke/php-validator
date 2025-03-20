@@ -328,6 +328,17 @@ class Form
         return $this->_ui($name, $attrs)->input($attrs);
     }
 
+    /**
+     * value の取得
+     */
+    public function value(string $name, ?string $index = null): mixed
+    {
+        $attrs = [];
+        $input = $this->_ui($name, $attrs);
+        $index ??= $attrs['index'] ?? null;
+        return $input->getValue($index);
+    }
+
     protected function _ui(string $name, array &$attrs): Input
     {
         $attrs = $this->convertHtmlAttrs($attrs);
