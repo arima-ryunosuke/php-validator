@@ -25,15 +25,17 @@ use function ryunosuke\chmonos\is_primitive;
  * ],
  * [
  *   // 「名前4」の value が「値1, 値2, ...」のすべてを含むとき必須になる
- *   '名前4' => ['in', [値1, 値2, ...]],
+ *   '名前4' => ['all', [値1, 値2, ...]],
  * ],
  * ```
  *
  * それぞれ複数指定可能。その「すべてを満たした時」必須であるとみなされる。
+ * `!` で否定になる（等価は `!=`, any,all は `!any`, `!all`）。
  *
- * 対象が単一要素であれば in と any に本質的な違いはない。
+ * 対象が単一要素であれば all と any に本質的な違いはない。
  * 対象の値が配列（複数チェックボックスとか）の場合に違いが生じる。
- * （any は指定値のいずれかがチェックされていれば、in は指定値のすべてがチェックされていれば、となる）。
+ * （any は指定値のいずれかがチェックされていれば、all は指定値のすべてがチェックされていれば、となる）。
+ * 歴史的な経緯で `all` は `in` でも指定可能（旧バージョンで in だったが意味合いが逆に感じたためリネームした）。
  *
  * 単純に要素名を指定すれば「その要素が入力されていれば必須」となる。
  */
@@ -60,8 +62,18 @@ class Requires extends AbstractCondition implements Interfaces\Propagation
                 $statement = [$statement => ['!=', '']];
             }
 
-            foreach ($statement as $rule) {
-                if (in_array($rule[0], ['in', 'notin', 'any', 'notany'])) {
+            foreach ($statement as $n => $rule) {
+                // for compatible
+                $rule[0] = match ($rule[0]) {
+                    'in'     => 'all',
+                    'notin'  => '!all',
+                    'notall' => '!all',
+                    'notany' => '!any',
+                    default  => $rule[0],
+                };
+                $statement[$n] = $rule;
+
+                if (in_array($rule[0], ['all', '!all', 'any', '!any'])) {
                     if (!is_array($rule[1])) {
                         throw new \InvalidArgumentException("$rule[0] methos's value must be array.");
                     }
@@ -160,13 +172,13 @@ class Requires extends AbstractCondition implements Interfaces\Propagation
                 if ($operator === 'any') {
                     return !!count($intersect);
                 }
-                if ($operator === 'notany') {
+                if ($operator === '!any') {
                     return !count($intersect);
                 }
-                if ($operator === 'in') {
+                if ($operator === 'all') {
                     return count($intersect) === count($operand);
                 }
-                if ($operator === 'notin') {
+                if ($operator === '!all') {
                     return count($intersect) !== count($operand);
                 }
             }, $statement, $getDepend, $context), true);

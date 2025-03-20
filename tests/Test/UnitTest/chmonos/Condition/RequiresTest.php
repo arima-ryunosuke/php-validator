@@ -108,23 +108,23 @@ class RequiresTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('', ['dependent' => 'z'])->isFalse();
         that($validate)->isValid('ok', ['dependent' => ''])->isTrue();
 
-        $validate = new Requires(['dependent' => ['notany', ['y', 'z']]]);
+        $validate = new Requires(['dependent' => ['!any', ['y', 'z']]]);
         that($validate)->isValid('', ['dependent' => 'x'])->isFalse();
         that($validate)->isValid('', ['dependent' => 'y'])->isTrue();
         that($validate)->isValid('', ['dependent' => 'z'])->isTrue();
         that($validate)->isValid('ok', ['dependent' => ''])->isTrue();
     }
 
-    function test_valid_in()
+    function test_valid_all()
     {
-        $validate = new Requires(['dependent' => ['in', ['y', 'z']]]);
+        $validate = new Requires(['dependent' => ['all', ['y', 'z']]]);
         that($validate)->isValid('', ['dependent' => ['x', 'y', 'z']])->isFalse();
         that($validate)->isValid('', ['dependent' => ['y', 'z']])->isFalse();
         that($validate)->isValid('', ['dependent' => ['y']])->isTrue();
         that($validate)->isValid('', ['dependent' => ['z']])->isTrue();
         that($validate)->isValid('ok', ['dependent' => []])->isTrue();
 
-        $validate = new Requires(['dependent' => ['notin', ['y', 'z']]]);
+        $validate = new Requires(['dependent' => ['!all', ['y', 'z']]]);
         that($validate)->isValid('', ['dependent' => ['x', 'y', 'z']])->isTrue();
         that($validate)->isValid('', ['dependent' => ['y', 'z']])->isTrue();
         that($validate)->isValid('', ['dependent' => ['y']])->isFalse();
