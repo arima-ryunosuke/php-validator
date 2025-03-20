@@ -51,6 +51,12 @@ class DataUriTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getValue("data:text/plain,$base64_hello_world")->is("data:text/plain,$base64_hello_world");
     }
 
+    function test_getAccepts()
+    {
+        $validate = new DataUri(type: ['画像' => ['image/*'], 'CSV' => 'text/csv']);
+        that($validate)->getAccepts()->is([".csv", "application/csv", "text/csv", "image/*"]);
+    }
+
     function test_getFixture()
     {
         $validate = new DataUri(['size' => 128, 'type' => ['png', 'jpg']]);

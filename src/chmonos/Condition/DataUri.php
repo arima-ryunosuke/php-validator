@@ -110,6 +110,17 @@ class DataUri extends AbstractCondition implements Interfaces\ConvertibleValue
         return $value;
     }
 
+    public function getAccepts()
+    {
+        $extensions = [];
+        foreach ($this->_allowTypes as $type) {
+            $exts = array_map(fn($ext) => ".$ext", self::$mimeTypes[$type] ?? []);
+            array_push($extensions, ...$exts);
+        }
+
+        return array_values(array_unique(array_merge($extensions, $this->_allowTypes)));
+    }
+
     public function getFixture($value, $fields)
     {
         $size = ini_parse_quantity($this->_size);
