@@ -212,7 +212,7 @@ class Form
         // 引数があるなら開きタグ
         if (func_num_args() > 0) {
             $this->currents = [];
-            $this->templateValues = [];
+            $this->templateValues = $this->getValues(false);
 
             $attrs = $this->convertHtmlAttrs($attrs + $this->options['attribute']);
 

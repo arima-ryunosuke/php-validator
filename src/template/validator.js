@@ -122,7 +122,7 @@ function Chmonos(form, options) {
 
     chmonos.functionCache ??= new Map();
     function templateFunction(vars) {
-        var entries = Object.entries(vars);
+        var entries = Object.entries(vars).filter(([k]) => k.match(/^[$_a-z0-9]+$/i));
         var args = entries.map(e => e[0]);
         var vals = entries.map(e => e[1]);
         var argstring = args.join(',');
@@ -139,6 +139,31 @@ function Chmonos(form, options) {
                 console.error(e);
             }
         };
+    }
+
+    function renderVnode(vnode, values) {
+        const F = templateFunction(values);
+        try {
+            if (vnode.nextElementSibling.matches('[data-vrender]')) {
+                vnode.nextElementSibling.remove();
+            }
+
+            vnode.insertAdjacentHTML('afterend', F(vnode.outerHTML, vnode.dataset.vnode));
+            const rendered = vnode.nextElementSibling;
+            delete rendered.dataset.vnode;
+            rendered.dataset.vrender = true;
+
+            rendered.dispatchEvent(new CustomEvent('rendered', {
+                bubbles: true,
+                detail: {
+                    vnode: vnode,
+                    values: values,
+                },
+            }));
+        }
+        catch (e) {
+            console.error(e);
+        }
     }
 
     function addError(input, result) {
@@ -436,7 +461,6 @@ function Chmonos(form, options) {
     };
 
     chmonos.valuesMap ??= new WeakMap();
-    chmonos.vnodesMap ??= new WeakMap();
     chmonos.customValidation = {
         before: [],
         after: [],
@@ -446,18 +470,43 @@ function Chmonos(form, options) {
     chmonos.initialize = function (values) {
         // js レンダリング
         Object.keys(values || {}).forEach(function (tname) {
-            var curValues = values[tname] || {};
-            var eventArgs = {
-                detail: {
-                    values: curValues,
-                },
-            };
             var template = form.querySelector('[data-vtemplate-name="' + tname + '"]');
-            template.dispatchEvent(new CustomEvent('spawnBegin', eventArgs));
-            Object.keys(curValues).forEach(function (index) {
-                chmonos.spawn(template, null, curValues[index], index);
-            });
-            template.dispatchEvent(new CustomEvent('spawnEnd', eventArgs));
+            if (template) {
+                var curValues = values[tname] || {};
+                var eventArgs = {
+                    detail: {
+                        values: curValues,
+                    },
+                };
+                template.dispatchEvent(new CustomEvent('spawnBegin', eventArgs));
+                Object.keys(curValues).forEach(function (index) {
+                    chmonos.spawn(template, null, curValues[index], index);
+                });
+                template.dispatchEvent(new CustomEvent('spawnEnd', eventArgs));
+            }
+        });
+        // form 全体（inputs 要素は spawn がやってくれているので除外）
+        form.querySelectorAll('[data-vnode]:not([data-vinputs-name] [data-vnode])').forEach(function (vnode) {
+            renderVnode(vnode, values);
+        });
+
+        // 超簡易リアクティブ（一括 trigger 等もあるだろうので setTimeout で逃がす）
+        const render_timers = new WeakMap();
+        form.addEventListener('input', function (e) {
+            if (e.target.matches('.validatable')) {
+                const parent = e.target.closest('[data-vinputs-name]') ?? form;
+                clearTimeout(render_timers.get(parent));
+                render_timers.set(parent, setTimeout(function () {
+                    const selector = parent === form ? '[data-vnode]:not([data-vinputs-name] [data-vnode])' : '[data-vnode]';
+                    const vnodes = parent.querySelectorAll(selector);
+                    if (vnodes.length) {
+                        const values = chmonos.getValues(parent, parent === form);
+                        vnodes.forEach(function (vnode) {
+                            renderVnode(vnode, values);
+                        });
+                    }
+                }, 10));
+            }
         });
 
         // サーバー側の結果を表示
@@ -669,12 +718,16 @@ function Chmonos(form, options) {
         return true;
     };
 
-    chmonos.getValues = function (fragment) {
+    chmonos.getValues = function (fragment, notrows) {
         fragment ??= form;
+        notrows ??= false;
         var values = {};
         fragment.querySelectorAll('.validatable:is(input, textarea, select):enabled').forEach(function (e) {
             // chmonos.value が行全体を返すので form の場合は不要
             if (fragment === form && e.dataset.vinputIndex) {
+                return;
+            }
+            if (notrows && e.matches('[type=dummy]')) {
                 return;
             }
             var name = e.dataset.vinputName;
@@ -855,6 +908,14 @@ function Chmonos(form, options) {
         node.dataset.vinputsName = template.dataset.vtemplateName;
         node.dataset.vinputIndex = index;
         chmonos.valuesMap.set(node, values ?? {});
+
+        if (values) {
+            values = Object.assign(chmonos.getValues(fragment), values);
+            node.querySelectorAll('[data-vnode]').forEach(function (vnode) {
+                renderVnode(vnode, values);
+            });
+        }
+
         return node;
     };
 
@@ -872,19 +933,6 @@ function Chmonos(form, options) {
         }
 
         var node = chmonos.birth(template, values, index);
-        if (values) {
-            const F = templateFunction(values);
-            node.querySelectorAll('[data-vnode]').forEach(function (e) {
-                try {
-                    e.insertAdjacentHTML('afterend', F(e.outerHTML, e.dataset.vnode));
-                    chmonos.vnodesMap.set(e.nextElementSibling, e);
-                    e.remove();
-                }
-                catch (e) {
-                    console.error(e);
-                }
-            });
-        }
 
         template.dispatchEvent(new CustomEvent('spawn', {
             detail: {
@@ -923,17 +971,8 @@ function Chmonos(form, options) {
     chmonos.rebirth = function (baseNode, values) {
         chmonos.setValues(baseNode, values);
 
-        const F = templateFunction(values);
-        baseNode.querySelectorAll('[data-vnode]').forEach(function (e) {
-            try {
-                const vnode = chmonos.vnodesMap.get(e);
-                e.insertAdjacentHTML('afterend', F(vnode.outerHTML, vnode.dataset.vnode));
-                chmonos.vnodesMap.set(e.nextElementSibling, vnode);
-                e.remove();
-            }
-            catch (e) {
-                console.error(e);
-            }
+        baseNode.querySelectorAll('[data-vnode]').forEach(function (vnode) {
+            renderVnode(vnode, values);
         });
     };
 
@@ -1297,18 +1336,7 @@ function Chmonos(form, options) {
             return filemanage;
         })(filemanage ?? 'object');
 
-        var E = function (string) {
-            return ('' + string).replace(/[&'`"<>]/g, function (match) {
-                return {
-                    '&': '&amp;',
-                    "'": '&#x27;',
-                    '`': '&#x60;',
-                    '"': '&quot;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                }[match]
-            });
-        };
+        var E = Chmonos.Utils.htmlEscape;
         var V = async function (inputs) {
             var result = [];
             for (var input of inputs) {
@@ -1390,3 +1418,36 @@ function Chmonos(form, options) {
         return await dldtdd(inputs, "");
     };
 }
+
+Chmonos.Utils = {
+    htmlEscape: function (string) {
+        return ('' + string).replace(/[&'`"<>]/g, function (match) {
+            return {
+                '&': '&amp;',
+                "'": '&#x27;',
+                '`': '&#x60;',
+                '"': '&quot;',
+                '<': '&lt;',
+                '>': '&gt;',
+            }[match];
+        });
+    },
+    htmlTemplateTag: function (strings, ...values) {
+        strings = [...strings];
+        return values.reduce(function (result, value, index) {
+            if (value === true) {
+                // 論理属性は 空 or 属性名 を指定するのが正しい仕様（大抵は受け入れられるがそのままにしておく理由もない）
+                value = '';
+            }
+            else if (value === false) {
+                const matches = strings[index].match(/\s+[-_0-9a-z:.]+\s*=\s*(["']?)$/i);
+                if (matches && (matches[1] === '' || strings[index + 1].substring(0, 1) === matches[1])) {
+                    strings[index + 0] = strings[index + 0].substring(0, matches.index);
+                    strings[index + 1] = strings[index + 1].substring(matches[1] ? 1 : 0);
+                    value = '';
+                }
+            }
+            return result + strings[index] + Chmonos.Utils.htmlEscape(value);
+        }, '') + strings.at(-1);
+    },
+};

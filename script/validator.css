@@ -6,3 +6,7 @@ input[type="dummy"] {
     height: 0px;
     visibility: hidden;
 }
+
+[data-vnode] {
+    display: none !important;
+}
