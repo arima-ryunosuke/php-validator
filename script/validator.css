@@ -1,0 +1,8 @@
+input[type="dummy"] {
+    position: absolute;
+    border: 0px;
+    padding: 0px;
+    width: 0px;
+    height: 0px;
+    visibility: hidden;
+}

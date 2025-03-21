@@ -893,6 +893,7 @@ class Input
         $attrs['name'] = $this->_concatString('__', [$attrs['name']]);
         $attrs['type'] = 'dummy';
         $attrs['value'] = 'dummy';
+        // for compatible: delete style in future scope
         $attrs['style'] = concat($attrs['style'] ?? '', ';') . $this->createStyleAttr([
                 'border'     => '0px',
                 'width'      => '1px',

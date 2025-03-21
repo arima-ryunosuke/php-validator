@@ -1226,7 +1226,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'type'                  => 'dummy',
                 'value'                 => 'dummy',
                 'class'                 => 'validatable',
-                'style'                 => 'border:0px;width:1px;height:1px;visibility:hidden',
             ],
         ]);
 
@@ -1244,7 +1243,6 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'type'                  => 'dummy',
                 'value'                 => 'dummy',
                 'class'                 => 'validatable',
-                'style'                 => 'border:0px;width:1px;height:1px;visibility:hidden',
             ],
         ]);
 
