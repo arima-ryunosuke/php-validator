@@ -92,6 +92,10 @@
     - 明示的な指定が必要（とはいえデフォルト '+-' なので実質的には影響なし）
   - AlphaDigit のアンダースコア特別扱いを廃止
 
+## 1.3.7
+
+[fixbug] data-vtemplate-name が script と被っており DOM が生成できない
+
 ## 1.3.6
 
 [fixbug] index が重複する不具合
