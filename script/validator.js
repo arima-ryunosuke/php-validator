@@ -6403,7 +6403,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         if (template.dataset) {
             var template_name = template.dataset.vtemplateName;
             if (template_name && index === undefined) {
-                index = Array.from(form.querySelectorAll(`${rootTag}[data-vtemplate-name]`)).reduce(function (result, current) {
+                index = Array.from(form.querySelectorAll('[data-vinputs-name]')).reduce(function (result, current) {
                     return Math.min(result, +current.dataset.vinputIndex);
                 }, 0) - 1;
             }
@@ -6439,7 +6439,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         });
 
         var node = fragment.querySelector(rootTag);
-        node.dataset.vtemplateName = template.dataset.vtemplateName;
+        node.dataset.vinputsName = template.dataset.vtemplateName;
         node.dataset.vinputIndex = index;
         chmonos.valuesMap.set(node, values ?? {});
         return node;
