@@ -24,6 +24,20 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.2
+
+- [refactor] code format
+- [feature] vnode の機能改善
+- [feature] value の取得機能
+- [feature] propagate で伝播条件を指定できる機能
+- [feature] DataUri に getAccepts を追加
+- [feature] DataUri の名前付き引数と type のワイルドカード
+- [feature] Compare に包含演算子を追加
+- [refactor] Requires の命名規則がメチャクチャだったので修正
+- [refactor] インラインスタイルを css に逃がす
+- Merge tag 'v1.3.7'
+- Merge tag 'v1.3.6'
+
 ## 2.2.1
 
 - [docker] コンテナ名が古かったので修正
