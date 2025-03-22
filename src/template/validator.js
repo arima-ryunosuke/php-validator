@@ -101,8 +101,17 @@ function Chmonos(form, options) {
             });
         }
         if (contains.propagate) {
-            rule?.propagate?.forEach(function (propagate) {
+            Object.entries(rule?.propagate ?? {}).forEach(function ([propagate, mode]) {
                 for (const e of chmonos.brother(input, propagate)) {
+                    if (['preceding', 'following'].includes(mode)) {
+                        const pos = input.compareDocumentPosition(e);
+                        if (mode === 'preceding' && !(pos & Node.DOCUMENT_POSITION_PRECEDING)) {
+                            continue;
+                        }
+                        if (mode === 'following' && !(pos & Node.DOCUMENT_POSITION_FOLLOWING)) {
+                            continue;
+                        }
+                    }
                     add(e);
                 }
             });

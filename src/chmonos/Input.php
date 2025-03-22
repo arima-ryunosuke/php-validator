@@ -590,7 +590,18 @@ class Input
         return [
             'condition' => array_map_filter($this->condition, function ($condition) { return $condition->getRule(); }),
             'event'     => (array) $this->event,
-            'propagate' => (array) $this->propagate,
+            'propagate' => (function ($propagate) {
+                // これは移行の過渡期ゆえの処理で将来的に仕様として（設定時点で）連想配列で統一する
+                $result = [];
+                foreach ($propagate as $k => $v) {
+                    if (is_int($k)) {
+                        $k = $v;
+                        $v = null;
+                    }
+                    $result[$k] ??= $v; // null より明示指定の方が強い
+                }
+                return $result;
+            })((array) $this->propagate),
             'phantom'   => (array) $this->phantom,
             'invisible' => (bool) $this->invisible,
             'delimiter' => (string) $this->delimiter,

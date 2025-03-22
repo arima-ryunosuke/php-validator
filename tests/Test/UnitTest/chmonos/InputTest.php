@@ -776,6 +776,28 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($rule)['condition']['num']['message'][Decimal::INVALID_INT]->is('bar');
     }
 
+    function test_getValidationParams_propagate()
+    {
+        $input = new Input([
+            'propagate' => [
+                'propagate1' => 'preceding',
+                'propagate1',
+                'propagate2',
+                'propagate2' => 'following',
+                'propagate3',
+            ],
+        ]);
+
+        $rule = $input->getValidationRule();
+
+        // 順序を問わず明示指定の方が強い
+        that($rule)['propagate']->is([
+            "propagate1" => "preceding",
+            "propagate2" => "following",
+            "propagate3" => null,
+        ]);
+    }
+
     function test_label()
     {
         $input = new Input([
