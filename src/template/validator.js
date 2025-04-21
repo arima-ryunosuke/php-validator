@@ -660,12 +660,7 @@ function Chmonos(form, options) {
                 // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
                 form.removeEventListener('submit', submit);
                 if (form.dispatchEvent(submittingEvent)) {
-                    if (e.submitter) {
-                        e.submitter.click();
-                    }
-                    else {
-                        form.submit();
-                    }
+                    form.requestSubmit(e.submitter ?? null);
                 }
                 form.dispatchEvent(submittedEvent);
                 form.addEventListener('submit', submit);
