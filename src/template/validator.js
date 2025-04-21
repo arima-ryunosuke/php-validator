@@ -654,6 +654,9 @@ function Chmonos(form, options) {
                 return;
             }
             setTimeout(function () {
+                if (e.defaultPrevented) {
+                    return;
+                }
                 // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
                 form.removeEventListener('submit', submit);
                 if (form.dispatchEvent(submittingEvent)) {
