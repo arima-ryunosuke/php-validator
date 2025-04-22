@@ -516,8 +516,10 @@ function Chmonos(form, options) {
         }
 
         // 必須マーク
-        form.querySelectorAll('.validatable:is(input, textarea, select):enabled').forEach(function (input) {
-            chmonos.required(input);
+        form.querySelectorAll('.validatable:is(input, textarea, select)').forEach(function (input) {
+            if (!input.disabled) {
+                chmonos.required(input);
+            }
         });
 
         // イベントをバインド
@@ -899,8 +901,10 @@ function Chmonos(form, options) {
         if (values) {
             chmonos.setValues(fragment, values);
         }
-        Array.from(fragment.querySelectorAll('.validatable:is(input, textarea, select):enabled')).forEach(function (e) {
-            chmonos.required(e, undefined, fragment);
+        Array.from(fragment.querySelectorAll('.validatable:is(input, textarea, select)')).forEach(function (e) {
+            if (!e.disabled) {
+                chmonos.required(e, undefined, fragment);
+            }
         });
 
         var node = fragment.querySelector(rootTag);
