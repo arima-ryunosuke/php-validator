@@ -48,7 +48,7 @@ Form にはいくつかのオプションがあります。
 $form = new Form([/* ルールについては後述 */], [
     'nonce'      => '',           // 生成される script タグの nonce 属性を指定します（CSP 用です。不要なら指定不要です）
     'inputClass' => Input::class, // UI 要素の検証やレンダリングに使用する Input クラス名を指定します。基本的には指定不要です
-    'vuejs'      => false,        // レンダリングが vuejs に適した形になります
+    'vuejs'      => 'unique-id',  // レンダリングが vuejs に適した形になります
 ]);
 
 // POST でバリデーション
@@ -547,7 +547,7 @@ $form->input('element_name', [/* input の属性 */]);
 $form->form();
 ```
 
-vuejs の機能を使うなら `/* form の属性*/` に `['vuejs' => true]` を与える必要があります。
+vuejs の機能を使うなら `/* form の属性*/` に `['vuejs' => 'unique-id']` を与える必要があります。
 これで v-model や :data-vinput-id などが出力され、 vuejs でもそれなりに動くようになります。
 
 属性は基本的に name=value の連想配列を与えるだけです。
@@ -784,7 +784,7 @@ name や index, イベントなどは birth で設定されるため、上記が
 context で index を指定していた箇所に js の変数名を渡します。
 
 ```php
-<?= $form->form(['vuejs' => true]) ?>
+<?= $form->form(['vuejs' => 'id']) ?>
     <div v-for="(row, index) in rows">
     <?= $form->vuefor('parent', 'row', 'index') ?>
     <?= $form->input('child1') ?>
@@ -803,7 +803,7 @@ v-model の修飾子を渡すには `v-model.modifier` 属性を指定します�
 ```php
 <ul id="application">
     <input v-on:click="append" type="button" value="追加">
-    <?= $form->form(['id' => 'vuejs_form', 'vuejs' => true]) ?>
+    <?= $form->form(['id' => 'vuejs_form', 'vuejs' => 'id']) ?>
         <div v-for="(child, index) in parent">
             <?= $form->vuefor('parent', 'child', 'index') ?>
             <?= $form->input('child1') ?>
@@ -814,27 +814,26 @@ v-model の修飾子を渡すには `v-model.modifier` 属性を指定します�
     <?= $form->form() ?>
 </ul>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const vuejs_chmonos = document.getElementById('vuejs_form').chmonos;
-        const app = new Vue({
-            el: '#application',
-            data: function () {
-                return vuejs_chmonos.data;
+    const vuejs_chmonos = JSON.parse(document.getElementById('id').textContent);
+    const app = new Vue({
+        el: '#application',
+        data: function () {
+            return vuejs_chmonos.data;
+        },
+        methods: {
+            append: function () {
+                this.rows.push(Object.assign({}, vuejs_chmonos.defaults.parent));
             },
-            methods: {
-                append: function () {
-                    this.rows.push(Object.assign({}, vuejs_chmonos.defaults.parent));
-                },
-                remove: function (index) {
-                    this.parent.splice(index, 1);
-                },
+            remove: function (index) {
+                this.parent.splice(index, 1);
             },
-            mounted: function () {
-                this.$nextTick(function () {
-                    vuejs_chmonos.initialize();
-                });
-            },
-        });
+        },
+        mounted: function () {
+            this.$nextTick(function () {
+                const chmonos = new Chmonos(document.getElementById('#vuejs_form'), vuejs_chmonos);
+                chmonos.initialize();
+            });
+        },
     });
 </script>
 ```

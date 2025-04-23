@@ -24,6 +24,13 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.3
+
+- [feature] vuejs で使うデータを外出し
+- [change] 必須マーク付与の disabled は自身だけを見る
+- [refactor] submit 分岐を requestSubmit で統一
+- [fixbug] preventDefault が効いていない
+
 ## 2.2.2
 
 - [refactor] code format
