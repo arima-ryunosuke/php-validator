@@ -231,28 +231,37 @@ class Form
 
             $this->id = $attrs['id'];
 
-            $jsoption = $this->encodeJson([
-                'allrules' => $this->getRules(),
-                'errors'   => $this->getMessages(),
-            ]);
-
-            $script = <<<JAVASCRIPT
-            const thisform = document.getElementById({$this->encodeJson($this->id)});
-            thisform.chmonos = new Chmonos(thisform, $jsoption);
-            JAVASCRIPT;
-
-            return "<form {$this->createHtmlAttr($attrs)}><script type=\"module\" {$this->createHtmlAttr($scriptAttrs)}>$script</script>";
+            return "<form {$this->createHtmlAttr($attrs)}>";
         }
         // 閉じタグ
         else {
-            $script = <<<JAVASCRIPT
-            const thisform = document.getElementById({$this->encodeJson($this->id)});
-            {$E($this->options['vuejs'] ? "thisform.chmonos.data = {$this->encodeJson($this->getValues(false))};" : "")}
-            {$E($this->options['vuejs'] ? "thisform.chmonos.defaults = {$this->encodeJson($this->getDefaults())};" : "")}
-            {$E($this->options['vuejs'] ? '' : "thisform.chmonos.initialize({$this->encodeJson($this->templateValues)});")}
-            JAVASCRIPT;
+            // for compatible: vuejs 内に処理のある script を書いても意味がないので [type=application/json] でデータだけ逃がす
+            if (is_string($this->options['vuejs'])) {
+                $jsoption = $this->encodeJson([
+                    'allrules' => $this->getRules(),
+                    'errors'   => $this->getMessages(),
+                    'data'     => $this->getValues(false),
+                    'defaults' => $this->getDefaults(),
+                ]);
 
-            return "<script type=\"module\" {$this->createHtmlAttr($scriptAttrs)}>$script</script></form>";
+                return "<script id=\"{$this->escapeHtml($this->options['vuejs'])}\" type=\"application/json\">{$jsoption}</script></form>";
+            }
+            else {
+                $jsoption = $this->encodeJson([
+                    'allrules' => $this->getRules(),
+                    'errors'   => $this->getMessages(),
+                ]);
+
+                $script = <<<JAVASCRIPT
+                const thisform = document.getElementById({$this->encodeJson($this->id)});
+                thisform.chmonos = new Chmonos(thisform, $jsoption);
+                {$E($this->options['vuejs'] ? "thisform.chmonos.data = {$this->encodeJson($this->getValues(false))};" : "")}
+                {$E($this->options['vuejs'] ? "thisform.chmonos.defaults = {$this->encodeJson($this->getDefaults())};" : "")}
+                {$E($this->options['vuejs'] ? '' : "thisform.chmonos.initialize({$this->encodeJson($this->templateValues)});")}
+                JAVASCRIPT;
+
+                return "<script type=\"module\" {$this->createHtmlAttr($scriptAttrs)}>$script\n</script></form>";
+            }
         }
     }
 

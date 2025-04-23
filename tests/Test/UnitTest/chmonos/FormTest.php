@@ -613,8 +613,6 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             that($content)->stringStartsWith('<form');
             // id が設定されている
             that($content)->stringContains('id="hoge"');
-            // nonce がある
-            that($content)->stringContains('nonce="fuga"');
             // autocomplete がある
             that($content)->stringContains('autocomplete="on"');
         }
@@ -940,6 +938,7 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
 
             // vuefor は何もしないので空
             that($form)->vuefor()->isEmpty();
+            unset($options);
         }
 
         // 終了タグ
@@ -952,6 +951,22 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
             that($content)->stringEndsWith('</form>');
             // 初期化がある
             that($content)->stringContainsAny(['chmonos.initialize', 'chmonos.data']);
+        }
+
+        // 終了タグ（vuejs）
+        {
+            /** @noinspection PhpUnusedLocalVariableInspection */
+            $options = $this->rewriteProperty($form, 'options', function ($options) {
+                $options['vuejs'] = 'hoge';
+                return $options;
+            });
+
+            $content = $form->close();
+
+            // <script> タグから始まる
+            that($content)->stringStartsWith('<script id="hoge" type="application/json">');
+            // </form> で終わる
+            that($content)->stringEndsWith('</form>');
         }
     }
 
