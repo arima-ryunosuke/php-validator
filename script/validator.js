@@ -6213,8 +6213,10 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         }
 
         // 必須マーク
-        form.querySelectorAll('.validatable:is(input, textarea, select):enabled').forEach(function (input) {
-            chmonos.required(input);
+        form.querySelectorAll('.validatable:is(input, textarea, select)').forEach(function (input) {
+            if (!input.disabled) {
+                chmonos.required(input);
+            }
         });
 
         // イベントをバインド
@@ -6351,15 +6353,13 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                 return;
             }
             setTimeout(function () {
+                if (e.defaultPrevented) {
+                    return;
+                }
                 // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
                 form.removeEventListener('submit', submit);
                 if (form.dispatchEvent(submittingEvent)) {
-                    if (e.submitter) {
-                        e.submitter.click();
-                    }
-                    else {
-                        form.submit();
-                    }
+                    form.requestSubmit(e.submitter ?? null);
                 }
                 form.dispatchEvent(submittedEvent);
                 form.addEventListener('submit', submit);
@@ -6598,8 +6598,10 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
         if (values) {
             chmonos.setValues(fragment, values);
         }
-        Array.from(fragment.querySelectorAll('.validatable:is(input, textarea, select):enabled')).forEach(function (e) {
-            chmonos.required(e, undefined, fragment);
+        Array.from(fragment.querySelectorAll('.validatable:is(input, textarea, select)')).forEach(function (e) {
+            if (!e.disabled) {
+                chmonos.required(e, undefined, fragment);
+            }
         });
 
         var node = fragment.querySelector(rootTag);
