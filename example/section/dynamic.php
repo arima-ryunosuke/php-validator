@@ -355,14 +355,14 @@ $dynamic_rule = [
 
 <section>
     <h3>vue.js</h3>
+    <div id="application">
     <?php
     $vuejs_form = new Form($dynamic_rule, [
-        'vuejs' => true,
+        'vuejs' => 'vuejs_chmonos',
     ]);
     resetForm($vuejs_form, 'vuejs_form');
     ?>
     <?= $vuejs_form->form(['id' => 'vuejs_form', 'method' => 'post', 'class' => 'html_form']) ?>
-    <div id="application">
         <input type="hidden" name="formid" value="vuejs_form">
         <?= $vuejs_form->label('parent_mail') ?>
         <?= $vuejs_form->input('parent_mail', [
@@ -410,11 +410,12 @@ $dynamic_rule = [
             js チェック有効
         </label>
         <div class="output-html"></div>
-    </div>
     <?= $vuejs_form->form() ?>
+    </div>
 
     <script type="module">
-        const vuejs_chmonos = document.getElementById('vuejs_form').chmonos;
+        const vuejs_chmonos = JSON.parse(document.getElementById('vuejs_chmonos').textContent);
+        document.getElementById('vuejs_chmonos').remove();
         const app = Vue.createApp({
             data: function () {
                 return vuejs_chmonos.data;
@@ -429,7 +430,8 @@ $dynamic_rule = [
             },
             mounted: function () {
                 this.$nextTick(function () {
-                    vuejs_chmonos.initialize();
+                    const chmonos = new Chmonos($$('#vuejs_form'), vuejs_chmonos);
+                    chmonos.initialize();
                 });
             },
         }).mount('#application');
