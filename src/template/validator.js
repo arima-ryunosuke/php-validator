@@ -660,8 +660,8 @@ function Chmonos(form, options) {
                 form.removeEventListener('submit', submit);
                 if (form.dispatchEvent(submittingEvent)) {
                     form.requestSubmit(e.submitter ?? null);
+                    form.dispatchEvent(submittedEvent);
                 }
-                form.dispatchEvent(submittedEvent);
                 form.addEventListener('submit', submit);
             }, 0);
         });
