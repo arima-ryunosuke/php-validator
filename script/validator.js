@@ -871,7 +871,7 @@ module.exports = function base64_decode(string, strict) {
     }
 
     try {
-        return atob(string);
+        return new TextDecoder().decode(Uint8Array.from(atob(string), (m) => m.codePointAt(0)));
     }
     catch (e) {
         return false;
@@ -6309,11 +6309,9 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
             }
         });
 
-        // サブミット時にバリデーション
-        form.addEventListener('submit', async function submit(e) {
-            e.preventDefault();
-
-            const valid = await chmonos.validate(e) ?? await (async function () {
+        // サブミット時にバリデーション（button-click の方に寄せたいが互換性のため data 属性でタイミングを分ける）
+        const isValid = async function (e) {
+            return await chmonos.validate(e) ?? await (async function () {
                 for (const f of chmonos.customValidation.warning) {
                     if ((await f.call(form)) === false) {
                         return false;
@@ -6321,7 +6319,31 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                 }
                 return true;
             })();
-            if (!valid) {
+        };
+        const navigate = function (e) {
+            var array = (e.submitter?.getAttribute('formenctype') ?? '').includes('array=delimitable');
+            if (!array && !e.submitter?.hasAttribute('formenctype')) {
+                array = (form.getAttribute('enctype') ?? '').includes('array=delimitable');
+            }
+            if (array && (e.submitter?.formMethod || form.method) === 'get') {
+                e.preventDefault();
+                var target = e.submitter?.formTarget || form.target;
+                if (target) {
+                    window.open(chmonos.url(e.submitter), target);
+                }
+                else {
+                    location.href = chmonos.url(e.submitter);
+                }
+                return true;
+            }
+        };
+        const submit = async function (e, listener) {
+            e.preventDefault();
+
+            if (!await isValid(e)) {
+                return false;
+            }
+            if (navigate(e)) {
                 return false;
             }
 
@@ -6338,33 +6360,51 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                     submitter: e.submitter ?? null,
                 },
             });
-            var array = (e.submitter?.getAttribute('formenctype') ?? '').includes('array=delimitable');
-            if (!array && !e.submitter?.hasAttribute('formenctype')) {
-                array = (form.getAttribute('enctype') ?? '').includes('array=delimitable');
-            }
-            if (array && (e.submitter?.formMethod || form.method) === 'get') {
-                var target = e.submitter?.formTarget || form.target;
-                if (target) {
-                    window.open(chmonos.url(e.submitter), target);
-                }
-                else {
-                    location.href = chmonos.url(e.submitter);
-                }
-                return;
-            }
             setTimeout(function () {
-                if (e.defaultPrevented) {
-                    return;
-                }
                 // @see https://developer.mozilla.org/ja/docs/Web/API/HTMLFormElement/submit
-                form.removeEventListener('submit', submit);
+                form.removeEventListener('submit', listener);
                 if (form.dispatchEvent(submittingEvent)) {
                     form.requestSubmit(e.submitter ?? null);
+                    form.dispatchEvent(submittedEvent);
                 }
-                form.dispatchEvent(submittedEvent);
-                form.addEventListener('submit', submit);
+                form.addEventListener('submit', listener);
             }, 0);
-        });
+        };
+        if (form.dataset.validationEvent === 'click') {
+            // window の capture フェーズで可能な限り最速にしてキャンセルされないようにする
+            window.addEventListener('click', function click(e) {
+                if (e.isTrusted && e.target.form === form && e.target.matches('button[type=submit], input[type=submit], input[type=image]')) {
+                    e.validationPromise = new Promise(async function (resolve, reject) {
+                        try {
+                            const valid = await isValid(e);
+                            // 一つでも非同期を含むと e.preventDefault は効かないので注意
+                            // その意味ではここで呼ぶ必然性はないが、非同期を含む方が稀で、呼ばないと呼び元で強制しなければならなくなる
+                            if (!valid) {
+                                e.preventDefault();
+                            }
+                            resolve(valid);
+                        }
+                        catch (e) {
+                            reject(e);
+                        }
+                    });
+                }
+            }, {capture: true});
+
+            // ↑で検証済みなので submit では検証不要（submitter が居る場合）
+            form.addEventListener('submit', async function submitHandler(e) {
+                if (e.submitter) {
+                    navigate(e);
+                    return;
+                }
+                return await submit(e, submitHandler);
+            });
+        }
+        else {
+            form.addEventListener('submit', async function submitHandler(e) {
+                return await submit(e, submitHandler);
+            });
+        }
     };
 
     chmonos.addCustomValidation = function (validation, timing) {
