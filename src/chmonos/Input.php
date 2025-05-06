@@ -38,6 +38,7 @@ class Input
         'checkmode'             => ['server' => true, 'client' => true],
         'wrapper'               => null,
         'grouper'               => null,
+        'option-label'          => [null], // change to [null, 'label'] in future scope
         'invisible'             => false,
         'ignore'                => false,
         'trimming'              => true,
@@ -1141,10 +1142,14 @@ class Input
         if (array_key_exists($key, $this->invalids)) {
             $option_attrs['class'] = concat($option_attrs['class'] ?? '', ' ') . 'validation_invalid';
         }
+        foreach (array_filter($this->rule['option-label'], 'is_string') as $attrname) {
+            $option_attrs[$attrname] = $text;
+        }
         $option_attrs['value'] = $key;
         $oattrs = $this->createHtmlAttr($option_attrs, $key, 'option');
 
-        return "<option $oattrs>{$this->escapeHtml($text)}</option>";
+        $textnode = in_array(null, $this->rule['option-label'], true) ? $text : '';
+        return "<option $oattrs>{$this->escapeHtml($textnode)}</option>";
     }
 
     protected function _pseudoHidden(string $name): string

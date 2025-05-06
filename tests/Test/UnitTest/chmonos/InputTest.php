@@ -1928,6 +1928,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                     2 => 'group.1',
                 ],
             ],
+            'option-label' => [null, 'label'],
         ]);
 
         that($input)->input([
@@ -1947,12 +1948,14 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'option' => [
                     'selected' => 'selected',
                     'value'    => '1',
+                    'label'    => 'option.1',
                 ],
 
                 'optgroup' => [
                     'label'  => 'group',
                     'option' => [
                         'value' => '2',
+                        'label' => 'group.1',
                     ],
                 ],
             ],
