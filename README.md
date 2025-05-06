@@ -93,6 +93,7 @@ $form = new Form([
         ], 
         'wrapper'               => null,       // input 要素をラップする span class を指定します。未指定だとラップしません
         'grouper'               => null,       // input 要素郡（同じ名前の radio/checkbox）をラップする span class を指定します。未指定だとラップしません
+        'option-label'          => [null],     // option のラベルを出す属性を指定します（null は textnode を表す）。実質的に null, 'label', 'title' の3択です（あるいは data-* 属性）
         'invisible'             => false,      // 不可視状態で検証を行うかを指定します
         'ignore'                => false,      // 検証や依存関係の値としては全て有効ですが最終的な結果から除くかを指定します（後述）
         'trimming'              => true,       // 値のトリミングを行うかを指定します
@@ -546,6 +547,10 @@ $form->input('element_name', [/* input の属性 */]);
 // form 閉じタグ（引数無しで閉じる）
 $form->form();
 ```
+
+このとき、 form の `data-validation-event` に `click` を与えるとバリデーションのタイミングが submit ボタンの click 時になります。
+未指定時は form の submit 時です。
+button click 時の方が何かと都合がいいため、`click` 指定を推奨します。
 
 vuejs の機能を使うなら `/* form の属性*/` に `['vuejs' => 'unique-id']` を与える必要があります。
 これで v-model や :data-vinput-id などが出力され、 vuejs でもそれなりに動くようになります。

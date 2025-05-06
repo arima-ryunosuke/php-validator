@@ -24,6 +24,14 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.4
+
+- [feature] option のテキスト を label と textnode に出す機能
+- [feature] バリデーションのタイミングを button.click に変更可能にした
+- [fixbug] submitting でキャンセルしたのに submitted が呼ばれる不具合
+- Revert "[fixbug] preventDefault が効いていない"
+- Merge tag 'v1.3.8'
+
 ## 2.2.3
 
 - [feature] vuejs で使うデータを外出し
