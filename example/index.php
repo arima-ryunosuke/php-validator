@@ -147,7 +147,7 @@ $appendmtime = function ($filename) {
 </nav>
 
 <section id="action-section">
-    <h2 id="action">GET フォーム</h2>
+    <h2 id="action">ACTION フォーム</h2>
     <?php include __DIR__ . '/section/action.php' ?>
 </section>
 

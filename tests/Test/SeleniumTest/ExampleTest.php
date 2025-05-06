@@ -10,17 +10,41 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
-    function test_short_array(WebDriver $driver)
+    function test_search_form(WebDriver $driver)
     {
-        $driver->path('/example/index.php');
+        $driver->path('/example/index.php', null);
 
-        $driver->click('#action_form_submit2');
+        $driver->setValue('text', 'X', '#search_form');
+        $driver->click('#search_form_submit2');
         $result = $driver->findElement(WebDriverBy::cssSelector('#action-section .var_pretty'))->getText();
         that($result)->contains('checkboxes: "2"');
         that($result)->contains('selects: "1,3"');
         that($result)->contains('texts: "a\nb\nc"');
         that($result)->contains('checkboxes: "1"');
         that($result)->contains('checkboxes: "2,3"');
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
+    function test_confirm_form(WebDriver $driver)
+    {
+        $driver->path('/example/index.php', null);
+
+        $driver->click('#confirm_form_submit2');
+        that($driver)->getErrors()->count(1);
+
+        $driver->setValue('text', 'X', '#confirm_form');
+
+        $driver->click('#confirm_form_submit2');
+        $driver->click('#confirm-dialog [value=""]');
+        $result = $driver->findElements(WebDriverBy::cssSelector('#action-section .var_pretty'));
+        that($result)->count(0);
+
+        $driver->click('#confirm_form_submit2');
+        $driver->click('#confirm-dialog [value="ok"]');
+        $result = $driver->findElements(WebDriverBy::cssSelector('#action-section .var_pretty'));
+        that($result)->count(1);
     }
 
     /**

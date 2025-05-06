@@ -12,13 +12,18 @@ use function ryunosuke\chmonos\uri_parse;
 
 class WebDriver extends RemoteWebDriver
 {
-    public function path($path)
+    public function path($path, ?array $query = [])
     {
         $parts = uri_parse($path);
 
         $current = uri_parse($this->getCurrentURL());
         $current['path'] = $parts['path'];
-        $current['query'] = array_merge($parts['query'], $current['query']);
+        if ($query === null) {
+            $current['query'] = [];
+        }
+        else {
+            $current['query'] = array_merge($query, $parts['query'], $current['query']);
+        }
         return $this->get(uri_build($current));
     }
 
