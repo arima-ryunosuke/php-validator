@@ -837,7 +837,7 @@ if (!function_exists('ryunosuke\\chmonos\\array_map_filter')) {
      * @param iterable $array 対象配列
      * @param callable $callback 評価クロージャ
      * @param bool $strict 厳密比較フラグ。 true だと null のみが偽とみなされる
-     * @return iterable $callback が真を返した新しい配列
+     * @return iterable|array $callback が真を返した新しい配列
      */
     function array_map_filter($array, $callback, $strict = false)
     {
@@ -926,7 +926,7 @@ if (!function_exists('ryunosuke\\chmonos\\array_maps')) {
      *
      * @param iterable $array 対象配列
      * @param callable ...$callbacks 評価クロージャ配列
-     * @return iterable 評価クロージャを通した新しい配列
+     * @return iterable|array 評価クロージャを通した新しい配列
      */
     function array_maps($array, ...$callbacks)
     {
@@ -1480,11 +1480,10 @@ if (!function_exists('ryunosuke\\chmonos\\kvsort')) {
      *
      * @package ryunosuke\Functions\Package\array
      *
-     * @template T of iterable|array
-     * @param T $array 対象配列
+     * @param iterable|array 対象配列
      * @param callable|int|null $comparator 比較関数。SORT_XXX も使える
      * @param callable|callable[] $schwartzians シュワルツ変換に使用する仮想列
-     * @return T ソートされた配列
+     * @return array ソートされた配列
      */
     function kvsort($array, $comparator = null, $schwartzians = [])
     {
@@ -1567,7 +1566,6 @@ if (!function_exists('ryunosuke\\chmonos\\last_keyvalue')) {
             $k = array_key_last($array);
             return [$k, $array[$k]];
         }
-        /** @noinspection PhpStatementHasEmptyBodyInspection */
         foreach ($array as $k => $v) {
             // dummy
         }
@@ -2611,10 +2609,8 @@ if (!function_exists('ryunosuke\\chmonos\\evaluate')) {
      * また、素の eval は ParseError が起こったときの表示がわかりにくすぎるので少し見やすくしてある。
      *
      * 関数化してる以上 eval におけるコンテキストの引き継ぎはできない。
-     * ただし、引数で変数配列を渡せるようにしてあるので get_defined_vars を併用すれば基本的には同じ（$this はどうしようもない）。
-     *
-     * 短いステートメントだと opcode が少ないのでファイルを経由せず直接 eval したほうが速いことに留意。
-     * 一応引数で指定できるようにはしてある。
+     *  ただし、引数で変数配列を渡せるようにしてあるので get_defined_vars を併用すれば基本的には同じ。
+     * コンテキストに $this がある場合は bind して疑似的に模倣する。
      *
      * Example:
      * ```php
@@ -2631,34 +2627,40 @@ if (!function_exists('ryunosuke\\chmonos\\evaluate')) {
      *
      * @param string $phpcode 実行する php コード
      * @param array $contextvars コンテキスト変数配列
-     * @param int $cachesize キャッシュするサイズ
      * @return mixed eval の return 値
      */
-    function evaluate($phpcode, $contextvars = [], $cachesize = 256)
+    function evaluate($phpcode, $contextvars = [])
     {
-        $cachefile = null;
-        if ($cachesize && strlen($phpcode) >= $cachesize) {
-            $cachefile = function_configure('storagedir') . '/' . rawurlencode(__FUNCTION__) . '-' . sha1($phpcode) . '.php';
-            if (!file_exists($cachefile)) {
-                file_put_contents($cachefile, "<?php $phpcode", LOCK_EX);
-            }
+        $cachefile = function_configure('storagedir') . '/' . rawurlencode(__FUNCTION__) . '-' . sha1($phpcode) . '.php';
+        if (!file_exists($cachefile)) {
+            file_put_contents($cachefile, "<?php $phpcode", LOCK_EX);
         }
 
         try {
-            if ($cachefile) {
-                /** @noinspection PhpMethodParametersCountMismatchInspection */
-                return (static function () {
-                    extract(func_get_arg(1));
-                    return require func_get_arg(0);
-                })($cachefile, $contextvars);
+            $evaler = function () {
+                // extract は数値キーをそのまま展開できない
+                // しかし "${0}" のような記法で数値変数を利用することはできる（可変変数限定だし php8.2 で非推奨になったが）
+                // 要するに数値キーのみをローカルコンテキストに展開しないと完全な eval の代替にならない
+                if (func_get_arg(1)) {
+                    foreach (func_get_arg(1) as $k => $v) {
+                        $$k = $v;
+                    }
+                    // 現スコープで宣言してしまっているので伏せなければならない
+                    unset($k, $v);
+                }
+                extract(func_get_arg(1));
+                return require func_get_arg(0);
+            };
+
+            // $this を模倣する
+            if (isset($contextvars['this'])) {
+                assert(is_object($contextvars['this']));
+                $evaler = $evaler->bindTo($contextvars['this'], get_class($contextvars['this']));
+                unset($contextvars['this']);
             }
-            else {
-                /** @noinspection PhpMethodParametersCountMismatchInspection */
-                return (static function () {
-                    extract(func_get_arg(1));
-                    return eval(func_get_arg(0));
-                })($phpcode, $contextvars);
-            }
+
+            /** @noinspection PhpMethodParametersCountMismatchInspection */
+            return $evaler($cachefile, $contextvars);
         }
         catch (\ParseError $ex) {
             $errline = $ex->getLine();
@@ -2669,9 +2671,7 @@ if (!function_exists('ryunosuke\\chmonos\\evaluate')) {
             $N = 5; // 前後の行数
             $message = $ex->getMessage();
             $message .= "\n" . implode("\n", array_slice($codes, max(0, $errline_1 - $N), $N * 2 + 1));
-            if ($cachefile) {
-                $message .= "\n in " . realpath($cachefile) . " on line " . $errline . "\n";
-            }
+            $message .= "\n in " . realpath($cachefile) . " on line " . $errline . "\n";
             throw new \ParseError($message, $ex->getCode(), $ex);
         }
     }
@@ -3729,6 +3729,7 @@ if (!function_exists('ryunosuke\\chmonos\\reflect_callable')) {
      * - getDeclaration: 宣言部のコードを返す
      * - getCode: 定義部のコードを返す
      * - isAnonymous: 無名関数なら true を返す（8.2 の isAnonymous 互換）
+     * - isArrow: アロー演算子で定義されたかを返す（クロージャのみ）
      * - isStatic: $this バインド可能かを返す（クロージャのみ）
      * - getUsedVariables: use している変数配列を返す（クロージャのみ）
      * - getClosure: 元となったオブジェクトを $object としたクロージャを返す（メソッドのみ）
@@ -3833,6 +3834,12 @@ if (!function_exists('ryunosuke\\chmonos\\reflect_callable')) {
                     }
 
                     return strpos($this->name, '{closure}') !== false;
+                }
+
+                public function isArrow(): bool
+                {
+                    // しっかりやるなら PHPToken を使った方がいいけど今の php 構文ならこれで大丈夫のはず
+                    return str_starts_with($this->getDeclaration(), 'fn') !== false;
                 }
 
                 public function isStatic(): bool

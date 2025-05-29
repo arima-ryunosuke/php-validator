@@ -1702,7 +1702,7 @@ if (!function_exists('ryunosuke\\chmonos\\array_filter_map')) {
      *
      * @param iterable $array 対象配列
      * @param callable $callback 評価クロージャ
-     * @return iterable $callback が !false を返し map された配列
+     * @return iterable|array $callback が !false を返し map された配列
      */
     function array_filter_map($array, $callback)
     {
@@ -1790,7 +1790,7 @@ if (!function_exists('ryunosuke\\chmonos\\array_filter_recursive')) {
      *
      * @package ryunosuke\Functions\Package\array
      *
-     * @template T as iterable&\ArrayAccess
+     * @template T of iterable&\ArrayAccess
      */
     function array_filter_recursive(
         /** @var T 対象配列 */ iterable $array,
@@ -2887,7 +2887,7 @@ if (!function_exists('ryunosuke\\chmonos\\array_map_filter')) {
      * @param iterable $array 対象配列
      * @param callable $callback 評価クロージャ
      * @param bool $strict 厳密比較フラグ。 true だと null のみが偽とみなされる
-     * @return iterable $callback が真を返した新しい配列
+     * @return iterable|array $callback が真を返した新しい配列
      */
     function array_map_filter($array, $callback, $strict = false)
     {
@@ -3069,7 +3069,7 @@ if (!function_exists('ryunosuke\\chmonos\\array_maps')) {
      *
      * @param iterable $array 対象配列
      * @param callable ...$callbacks 評価クロージャ配列
-     * @return iterable 評価クロージャを通した新しい配列
+     * @return iterable|array 評価クロージャを通した新しい配列
      */
     function array_maps($array, ...$callbacks)
     {
@@ -4194,6 +4194,75 @@ if (!function_exists('ryunosuke\\chmonos\\array_remove')) {
     }
 }
 
+assert(!function_exists('ryunosuke\\chmonos\\array_replace_callback') || (new \ReflectionFunction('ryunosuke\\chmonos\\array_replace_callback'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\array_replace_callback')) {
+    /**
+     * array_replace のコールバック版
+     *
+     * 基本的なルールは array_replace と全く同じ（連番の扱いや後方優先など）。
+     * 値が重複している場合に重複している配列でコールバックが呼ばれる。
+     *
+     * コールバックの引数は($重複値配列, $そのキー)であり、$重複値配列には重複しなかった配列の値は含まれない。
+     * ただし、キーは維持されるので歯抜けになっていたり、あるべきキーが無かったりを調べればどれとどれが重複ししていたの判定が可能。
+     * もっとも、普通の使用（2引数の配列）では両方に値が入ってくるという前提で問題ない。
+     *
+     * Example:
+     * ```php
+     * $a1 = [
+     *     'a' => 'a1',
+     *     'b' => 'b1',
+     *     'c' => 'c1',
+     *     'x' => 'x1',
+     * ];
+     * $a2 = [
+     *     'a' => 'a2',
+     *     'b' => 'b2',
+     *     'y' => 'y2',
+     * ];
+     * $a3 = [
+     *     'a' => 'a3',
+     *     'c' => 'c3',
+     *     'z' => 'z3',
+     * ];
+     * that(array_replace_callback(fn($args, $k) => "$k:" . json_encode($args), $a1, $a2, $a3))->isSame([
+     *     "a" => 'a:["a1","a2","a3"]',    // 全てに存在するので3つ全てが渡ってくる
+     *     "b" => 'b:["b1","b2"]',         // 1,2 に存在するので2つ渡ってくる
+     *     "c" => 'c:{"0":"c1","2":"c3"}', // 1,3 に存在するので2つ渡ってくる（2が歯抜けになる）
+     *     "x" => 'x1', // 重複していないのでコールバック自体が呼ばれない
+     *     "y" => 'y2', // 重複していないのでコールバック自体が呼ばれない
+     *     "z" => 'z3', // 重複していないのでコールバック自体が呼ばれない
+     * ]);
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\array
+     *
+     * @param callable $callback 重複コールバック
+     * @param array ...$arrays マージする配列
+     * @return array マージされた配列
+     */
+    function array_replace_callback(callable $callback, array ...$arrays)
+    {
+        $callback = func_user_func_array($callback);
+
+        // まず普通に呼んで・・・
+        $result = array_replace(...$arrays);
+
+        // 重複値をコールバックすれば順番も乱れずシンプルに上書きできる
+        foreach ($result as $k => $v) {
+            $duplicated = [];
+            foreach ($arrays as $n => $array) {
+                if (array_key_exists($k, $array)) {
+                    $duplicated[$n] = $array[$k];
+                }
+            }
+            if (count($duplicated) > 1) {
+                $result[$k] = $callback($duplicated, $k);
+            }
+        }
+        return $result;
+    }
+}
+
 assert(!function_exists('ryunosuke\\chmonos\\array_revise') || (new \ReflectionFunction('ryunosuke\\chmonos\\array_revise'))->isUserDefined());
 if (!function_exists('ryunosuke\\chmonos\\array_revise')) {
     /**
@@ -5294,9 +5363,9 @@ if (!function_exists('ryunosuke\\chmonos\\arrays')) {
      * 「シーケンシャルに」とは要するに数値連番が得られるように走査するということ。
      * 0ベースの連番を作ってインクリメントしながら foreach するのと全く変わらない。
      *
-     * キーは連番、値は [$key, $value] で返す。
+     * キーは連番、値は [$key, $value, $array, $first, $last] で返す。
      * つまり、 Example のように foreach の list 構文を使えば「連番、キー、値」でループを回すことが可能になる。
-     * 「foreach で回したいんだけど連番も欲しい」という状況はまれによくあるはず。
+     * 「foreach で回したいんだけど連番も欲しい」という状況や $first,$last が欲しい状況はまれによくあるはず。
      *
      * Example:
      * ```php
@@ -5306,18 +5375,59 @@ if (!function_exists('ryunosuke\\chmonos\\arrays')) {
      *     $nkv[] = "$n,$k,$v";
      * }
      * that($nkv)->isSame(['0,a,A', '1,b,B', '2,c,C']);
+     *
+     * // iterator でも first/last は使用できる
+     * $iterable = (function () {
+     *     yield 'a';
+     *     yield 'b';
+     *     yield 'c';
+     * })();
+     * $nkv = [];
+     * foreach (arrays($iterable) as $n => [$k, $v,, $first, $last]) {
+     *     $nkv[] = json_encode([$k, $v, $first, $last]);
+     * }
+     * that($nkv)->isSame(['[0,"a",true,false]', '[1,"b",false,false]', '[2,"c",false,true]']);
      * ```
      *
      * @package ryunosuke\Functions\Package\array
      *
      * @param iterable $array 対象配列
-     * @return \Generator [$seq => [$key, $value]] を返すジェネレータ
+     * @return \Generator [$seq => [$key, $value, $array, $first, $last]] を返すジェネレータ
      */
     function arrays($array)
     {
         $n = 0;
-        foreach ($array as $k => $v) {
-            yield $n++ => [$k, $v];
+
+        // iterator ではない object の iteration は良くも悪くも特殊なので array として扱う
+        if (is_object($array) && !$array instanceof \Iterator) {
+            $object = $array;
+            /** @noinspection PhpParamsInspection */
+            $array = get_object_vars($object);
+            $last = array_key_last($array);
+            foreach ($array as $k => $v) {
+                yield $n => [$k, $v, $object, $n === 0, $k === $last];
+                $n++;
+            }
+        }
+        elseif (is_array($array)) {
+            $last = array_key_last($array);
+            foreach ($array as $k => $v) {
+                yield $n => [$k, $v, $array, $n === 0, $k === $last];
+                $n++;
+            }
+        }
+        // もっとシンプルに書けるが、valid で何してるか分からないので呼び出しは最小限にする
+        else {
+            // $array->rewind();
+            $valid = $array->valid();
+            while ($valid) {
+                $k = $array->key();
+                $v = $array->current();
+                $array->next();
+                $valid = $array->valid();
+                yield $n => [$k, $v, $array, $n === 0, !$valid];
+                $n++;
+            }
         }
     }
 }
@@ -5719,11 +5829,10 @@ if (!function_exists('ryunosuke\\chmonos\\kvsort')) {
      *
      * @package ryunosuke\Functions\Package\array
      *
-     * @template T of iterable|array
-     * @param T $array 対象配列
+     * @param iterable|array 対象配列
      * @param callable|int|null $comparator 比較関数。SORT_XXX も使える
      * @param callable|callable[] $schwartzians シュワルツ変換に使用する仮想列
-     * @return T ソートされた配列
+     * @return array ソートされた配列
      */
     function kvsort($array, $comparator = null, $schwartzians = [])
     {
@@ -5836,7 +5945,6 @@ if (!function_exists('ryunosuke\\chmonos\\last_keyvalue')) {
             $k = array_key_last($array);
             return [$k, $array[$k]];
         }
-        /** @noinspection PhpStatementHasEmptyBodyInspection */
         foreach ($array as $k => $v) {
             // dummy
         }
@@ -6360,7 +6468,7 @@ if (!function_exists('ryunosuke\\chmonos\\class_extends')) {
 
         $newclassname = "X{$classalias}Class" . md5(uniqid('RF', true));
         $implements = $implements ? 'implements ' . implode(',', $implements) : '';
-        evaluate("class $newclassname extends $classname $implements\n{\nuse X{$classalias}Trait;\n$declares}", [], 10);
+        evaluate("class $newclassname extends $classname $implements\n{\nuse X{$classalias}Trait;\n$declares}");
         return new $newclassname($spawners[$classname]['original'], $object, $fields, $methods);
     }
 }
@@ -7640,6 +7748,7 @@ if (!function_exists('ryunosuke\\chmonos\\sql_format')) {
             'KEYS'                       => true,
             'KILL'                       => true,
             'LAST_INSERT_ID'             => true,
+            'LATERAL'                    => true,
             'LEADING'                    => true,
             'LEFT'                       => true,
             'LEVEL'                      => true,
@@ -7715,6 +7824,7 @@ if (!function_exists('ryunosuke\\chmonos\\sql_format')) {
             'READ_WRITE'                 => true,
             'REFERENCES'                 => true,
             'REGEXP'                     => true,
+            'RELEASE'                    => true,
             'RELOAD'                     => true,
             'RENAME'                     => true,
             'REPAIR'                     => true,
@@ -7734,6 +7844,7 @@ if (!function_exists('ryunosuke\\chmonos\\sql_format')) {
             'ROW'                        => true,
             'ROWS'                       => true,
             'ROW_FORMAT'                 => true,
+            'SAVEPOINT'                  => true,
             'SECOND'                     => true,
             'SECURITY'                   => true,
             'SELECT'                     => true,
@@ -8268,10 +8379,11 @@ if (!function_exists('ryunosuke\\chmonos\\sql_format')) {
                 switch ($uppertoken) {
                     default:
                         _DEFAULT:
+                        // （コメントを含めた）先頭行にスペースがついてしまう
                         // "tablename. columnname" になってしまう
                         // "@ var" になってしまう
                         // ": holder" になってしまう
-                        if (!in_array($prev[1], ['.', '@', ':', ';'])) {
+                        if (!in_array($prev[1], ['', '.', '@', ':', ';'], true)) {
                             $result[] = $MARK_SP;
                         }
 
@@ -8360,6 +8472,7 @@ if (!function_exists('ryunosuke\\chmonos\\sql_format')) {
                     case "BY":
                     case "ALL":
                     case "RECURSIVE":
+                    case "LATERAL":
                         $result[] = $MARK_SP . $virttoken . $MARK_SP . array_pop($result);
                         break;
                     case "SELECT":
@@ -8489,6 +8602,8 @@ if (!function_exists('ryunosuke\\chmonos\\sql_format')) {
                         break;
                     case "COMMIT":
                     case "ROLLBACK":
+                    case "SAVEPOINT":
+                    case "RELEASE":
                         // begin は begin～end の一部の可能性があるが commit,rollback は俺の知る限りそのような構文はない
                         $result[] = $virttoken;
                         break;
@@ -9092,9 +9207,7 @@ if (!function_exists('ryunosuke\\chmonos\\csv_import')) {
             $fp = $csvstring;
         }
         else {
-            $fp = fopen('php://temp', 'r+b');
-            fwrite($fp, $csvstring);
-            rewind($fp);
+            $fp = str_resource($csvstring);
         }
 
         $restore = set_error_exception_handler();
@@ -10868,13 +10981,12 @@ if (!function_exists('ryunosuke\\chmonos\\paml_import')) {
             }
 
             if ($options['expression']) {
-                $semicolon = ';';
                 if ($prefix === '`' && $suffix === '`') {
-                    $value = eval("return " . substr($value, 1, -1) . $semicolon);
+                    $value = evaluate("return " . substr($value, 1, -1) . ';');
                     return true;
                 }
                 try {
-                    $evalue = @eval("return $value$semicolon");
+                    $evalue = @evaluate("return $value;");
                     if ($value !== $evalue) {
                         $value = $evalue;
                         return true;
@@ -13634,7 +13746,6 @@ if (!function_exists('ryunosuke\\chmonos\\process_async')) {
                 }
 
                 try {
-                    /** @noinspection PhpStatementHasEmptyBodyInspection */
                     while ($this->update()) {
                         // noop
                     }
@@ -13832,7 +13943,7 @@ if (!function_exists('ryunosuke\\chmonos\\process_closure')) {
         foreach ($autoload as $file) {
             require_once $file;
         }
-        $stdin  = eval(stream_get_contents(STDIN));
+        $stdin  = ' . $namespace . 'evaluate(stream_get_contents(STDIN));
         $timer  = ' . $namespace . 'cpu_timer();
         $return = ' . $closure_code . '(...$stdin);
         file_put_contents($argv[1], ' . $namespace . 'var_export3([$return, $timer->result(), memory_get_peak_usage()], ["outmode" => "file"]));
@@ -16863,13 +16974,19 @@ if (!function_exists('ryunosuke\\chmonos\\chain')) {
      * - nullsafe 設定にすると「値が null の場合は呼び出し自体を行わない」という動作になり null をそのまま返す
      * - array_XXX, str_XXX は省略して XXX で呼び出せる
      *   - 省略した結果、他の関数と被る場合は可能な限り型で一致する呼び出しを行う
+     *   - e.g. chain('hoge')->pad(10) // これは str_pad
+     *   - e.g. chain([1, 2])->pad(10) // これは array_pad
      * - func(..., _, ...) で _ で「値があたる位置」を明示できる
-     *   - `str_replace('from', 'to', _)` のように呼び出せる
+     *   - e.g. chain('hoge')->str_replace('ho', 'fu', _) // fuge
      * - func[1] で「引数1（0 ベースなので要は2番目）に適用して func を呼び出す」ことができる
      *   - func[2], func[3] 等も呼び出し可能
-     * - func['E'] で eval される文字列のクロージャを呼べる
+     *   - e.g. chain('hoge')->str_replace[2]('ho', 'fu') // fuge
+     * - func['code'] で eval される文字列のクロージャを呼べる（旧仕様として func['E']('code') でも同じ）
      *   - 引数名は `$1`, `$2` のような文字列で指定できる
      *   - `$X` が無いときに限り 最左に `$1` が自動付与される
+     *   - () で呼び出せば追加の引数も指定可能
+     *   - e.g. chain([1, 2, 3])->filter['$1 > 1'] // [1 => 2, 2 => 3]
+     *   - e.g. chain([1, 2, 3])->filter['$1 > 1'](ARRAY_FILTER_USE_KEY) // [2 => 3]
      * - 引数が1つの呼び出しは () を省略できる
      *
      * この特殊ルールは普通に使う分にはそこまで気にしなくて良い。
@@ -16890,8 +17007,8 @@ if (!function_exists('ryunosuke\\chmonos\\chain')) {
      * that(array_sum(array_map(fn($v) => $v * 2, array_filter($n1_9, fn($v) => $v <= 5))))->isSame(30);
      * // chain でクロージャを渡したもの。処理の順番が思考どおりだが、 fn() が微妙にうざい（array_ は省略できるので filter, map, sum のような呼び出しができている）
      * that(chain($n1_9)->filter(fn($v) => $v <= 5)->maps(fn($v) => $v * 2)->sum()())->isSame(30);
-     * // func['E'] を介したもの。かなり直感的だが eval なので少し不安
-     * that(chain($n1_9)->filter['E']('<= 5')->maps['E']('* 2')->sum()())->isSame(30);
+     * // func['eval'] を介したもの。かなり直感的だが eval なので少し不安
+     * that(chain($n1_9)->filter['<= 5']->maps['* 2']->sum()())->isSame(30);
      *
      * # "hello   world" を「" " で分解」して「空文字を除去」してそれぞれに「ucfirst」して「"/" で結合」して「rot13」して「md5」して「大文字化」するシチュエーション
      * $string = 'hello   world';
@@ -16908,17 +17025,17 @@ if (!function_exists('ryunosuke\\chmonos\\chain')) {
      *     ['id' => 9, 'name' => 'hage', 'sex' => 'F', 'age' => 30, 'salary' => 320000],
      * ];
      * // e.g. 男性の平均給料
-     * that(chain($rows)->where['E']('sex', '=== "M"')->column('salary')->mean()())->isSame(375000);
+     * that(chain($rows)->where['$1["sex"] === "M"']->column('salary')->mean()())->isSame(375000);
      * // e.g. 女性の平均年齢
-     * that(chain($rows)->where['E']('sex', '=== "F"')->column('age')->mean()())->isSame(23.5);
+     * that(chain($rows)->where['$1["sex"] === "F"']->column('age')->mean()())->isSame(23.5);
      * // e.g. 30歳以上の平均給料
-     * that(chain($rows)->where['E']('age', '>= 30')->column('salary')->mean()())->isSame(400000);
+     * that(chain($rows)->where['$1["age"] >= 30']->column('salary')->mean()())->isSame(400000);
      * // e.g. 20～30歳の平均給料
-     * that(chain($rows)->where['E']('age', '>= 20')->where['E']('age', '<= 30')->column('salary')->mean()())->isSame(295000);
+     * that(chain($rows)->where['$1["age"] >= 20']->where['$1["age"] <= 30']->column('salary')->mean()())->isSame(295000);
      * // e.g. 男性の最小年齢
-     * that(chain($rows)->where['E']('sex', '=== "M"')->column('age')->min()())->isSame(21);
+     * that(chain($rows)->where['$1["sex"] === "M"']->column('age')->min()())->isSame(21);
      * // e.g. 女性の最大給料
-     * that(chain($rows)->where['E']('sex', '=== "F"')->column('salary')->max()())->isSame(320000);
+     * that(chain($rows)->where['$1["sex"] === "F"']->column('salary')->max()())->isSame(320000);
      * ```
      *
      * @package ryunosuke\Functions\Package\funchand
@@ -16928,13 +17045,14 @@ if (!function_exists('ryunosuke\\chmonos\\chain')) {
      */
     function chain($source = null)
     {
-        if (function_configure('chain.version') === 2) {
+        if (function_configure('chain.version') >= 2) {
             $chain_object = new class($source) implements \Countable, \ArrayAccess, \IteratorAggregate, \JsonSerializable {
                 public static  $__CLASS__;
                 private static $metadata = [];
 
                 private $data;
                 private $callback;
+                private $expression;
 
                 public function __construct($source)
                 {
@@ -16954,8 +17072,27 @@ if (!function_exists('ryunosuke\\chmonos\\chain')) {
                     return $this->$name[0](...$arguments);
                 }
 
-                public function __invoke()
+                public function __invoke(...$arguments)
                 {
+                    if ($this->expression) {
+                        $return_mode = !!$arguments;
+                        $metadata = self::_cache($this->callback);
+
+                        $callables = $metadata['callables'];
+                        assert(count($callables) === 1);
+                        $first_callable = first_keyvalue($callables);
+                        unset($arguments[$first_callable[0]]);
+                        $arguments[$first_callable[1]] = func_eval(preg_match('#\$\d+#u', $this->expression) ? $this->expression : '$1 ' . $this->expression, '_');
+                        $offset = 0;
+
+                        $this->data = $this->_apply($this->callback, $arguments, [$offset => $this->data]);
+                        $this->callback = null;
+                        $this->expression = null;
+
+                        if ($return_mode) {
+                            return $this;
+                        }
+                    }
                     return $this[0]()->data;
                 }
 
@@ -16979,8 +17116,17 @@ if (!function_exists('ryunosuke\\chmonos\\chain')) {
                     return $this();
                 }
 
-                public function offsetGet($offset): callable
+                public function offsetGet($offset): mixed
                 {
+                    // 直 eval モード
+                    if ($this->callback) {
+                        $metadata = self::_cache($this->callback);
+                        if (is_string($offset) && $offset !== 'E' && !isset($metadata['names'][$offset])) {
+                            $this->expression = $offset;
+                            return $this;
+                        }
+                    }
+
                     return function (...$arguments) use ($offset) {
                         if ($this->callback !== null) {
                             // E モード
@@ -17029,10 +17175,9 @@ if (!function_exists('ryunosuke\\chmonos\\chain')) {
                     throw new \BadFunctionCallException("function '$name' is not defined");
                 }
 
-                private static function _apply($callback, $arguments, $injections)
+                private static function _cache($callback)
                 {
-                    // 必要なメタデータを採取してキャッシュしておく
-                    $metadata = self::$metadata[$callback] ??= (function ($callback) {
+                    return self::$metadata[$callback] ??= (function ($callback) {
                         $reffunc = reflect_callable($callback);
                         $parameters = $reffunc->getParameters();
                         $metadata = [
@@ -17040,7 +17185,7 @@ if (!function_exists('ryunosuke\\chmonos\\chain')) {
                             'parameters' => function () use ($parameters) {
                                 foreach ($parameters as $parameter) {
                                     if ($parameter->isVariadic()) {
-                                        for ($i = 0; 999; $i++) {
+                                        for ($i = 0; $i < 999; $i++) {
                                             yield $parameter->getPosition() + $i => $parameter;
                                         }
                                         throw new \ArgumentCountError("parameter length is too long(>=$i)"); // @codeCoverageIgnore
@@ -17050,17 +17195,33 @@ if (!function_exists('ryunosuke\\chmonos\\chain')) {
                             },
                             'variadic'   => $reffunc->isVariadic(),
                             'nullable'   => [],
+                            'callables'  => (function () use ($parameters) {
+                                $result = [];
+                                foreach ($parameters as $parameter) {
+                                    $typestring = (string) $parameter->getType();
+                                    if (stripos($typestring, 'callable') !== false || stripos($typestring, '\\Closure') !== false || stripos($parameter->getName(), 'callback') !== false) {
+                                        $result[$parameter->getPosition()] = $parameter->getName();
+                                    }
+                                }
+                                return $result;
+                            })(),
                             'positions'  => [],
                             'names'      => [],
                         ];
                         foreach ($parameters as $parameter) {
                             $type = $parameter->getType();
                             $metadata['nullable'][$parameter->getPosition()] = $type ? $type->allowsNull() : null;
+                            $metadata['nullable'][$parameter->getName()] = $type ? $type->allowsNull() : null;
                             $metadata['positions'][$parameter->getPosition()] = $parameter->getName();
                             $metadata['names'][$parameter->getName()] = $parameter->getPosition();
                         }
                         return $metadata;
                     })($callback);
+                }
+
+                private static function _apply($callback, $arguments, $injections)
+                {
+                    $metadata = self::_cache($callback);
 
                     foreach ($injections as $position => $injection) {
                         // 可変じゃないのに位置引数 or 名前引数が存在しないチェック
@@ -17083,28 +17244,42 @@ if (!function_exists('ryunosuke\\chmonos\\chain')) {
                         $injections = [];
                     }
 
-                    $icount = count($injections);
-                    $realargs = [];
+                    $positions = $namedargs = $variadics = [];
                     foreach ($metadata['parameters']() as $pos => $parameter) {
-                        $pos -= $icount - count($injections);
-                        $nam = $parameter->getName();
-                        $variadic = $parameter->isVariadic();
-
                         if (!$injections && !$arguments) {
                             break;
                         }
-                        // inject argument
-                        elseif (array_key_exists($i = $pos, $injections) || array_key_exists($i = $nam, $injections)) {
-                            $realargs = array_merge($realargs, $variadic && is_array($injections[$i]) ? $injections[$i] : [$injections[$i]]);
-                            unset($injections[$i]);
+
+                        $nam = $parameter->getName();
+
+                        if ($parameter->isVariadic()) {
+                            if (array_key_exists($i = $pos, $injections) || array_key_exists($i = $nam, $injections)) {
+                                $variadics = array_merge($variadics, is_array($injections[$i]) ? $injections[$i] : [$injections[$i]]);
+                            }
+                            if (array_key_exists($i = $pos, $arguments) || array_key_exists($i = $nam, $arguments)) {
+                                $variadics = array_merge($variadics, is_array($arguments[$i]) ? $arguments[$i] : [$arguments[$i]]);
+                            }
                         }
-                        // named or positional argument
-                        elseif (array_key_exists($i = $pos, $arguments) || array_key_exists($i = $nam, $arguments)) {
-                            $realargs = array_merge($realargs, $variadic && is_array($arguments[$i]) ? $arguments[$i] : [$arguments[$i]]);
-                            unset($arguments[$i]);
+                        else {
+                            if (array_key_exists($i = $pos, $injections)) {
+                                $positions[] = $injections[$i];
+                            }
+                            if (array_key_exists($i = $pos, $arguments)) {
+                                $positions[] = $arguments[$i];
+                            }
+                            if (array_key_exists($i = $nam, $injections)) {
+                                $namedargs[$pos] = $injections[$i];
+                            }
+                            if (array_key_exists($i = $nam, $arguments)) {
+                                $namedargs[$pos] = $arguments[$i];
+                            }
                         }
+
+                        unset($injections[$pos], $arguments[$pos]);
+                        unset($injections[$nam], $arguments[$nam]);
                     }
-                    return $callback(...$realargs);
+
+                    return $callback(...array_fill_gap($namedargs, ...$positions), ...$variadics);
                 }
             };
             $chain_object::$__CLASS__ = __CLASS__;
@@ -17159,7 +17334,7 @@ if (!function_exists('ryunosuke\\chmonos\\func_eval')) {
                     $stmt .= $tmp[$i]->text;
                 }
             }
-            $cache[$cachekey] = eval("return function($args) { return $stmt; };");
+            $cache[$cachekey] = evaluate("return function($args) { return $stmt; };");
         }
         return $cache[$cachekey];
     }
@@ -19966,10 +20141,8 @@ if (!function_exists('ryunosuke\\chmonos\\evaluate')) {
      * また、素の eval は ParseError が起こったときの表示がわかりにくすぎるので少し見やすくしてある。
      *
      * 関数化してる以上 eval におけるコンテキストの引き継ぎはできない。
-     * ただし、引数で変数配列を渡せるようにしてあるので get_defined_vars を併用すれば基本的には同じ（$this はどうしようもない）。
-     *
-     * 短いステートメントだと opcode が少ないのでファイルを経由せず直接 eval したほうが速いことに留意。
-     * 一応引数で指定できるようにはしてある。
+     *  ただし、引数で変数配列を渡せるようにしてあるので get_defined_vars を併用すれば基本的には同じ。
+     * コンテキストに $this がある場合は bind して疑似的に模倣する。
      *
      * Example:
      * ```php
@@ -19986,34 +20159,40 @@ if (!function_exists('ryunosuke\\chmonos\\evaluate')) {
      *
      * @param string $phpcode 実行する php コード
      * @param array $contextvars コンテキスト変数配列
-     * @param int $cachesize キャッシュするサイズ
      * @return mixed eval の return 値
      */
-    function evaluate($phpcode, $contextvars = [], $cachesize = 256)
+    function evaluate($phpcode, $contextvars = [])
     {
-        $cachefile = null;
-        if ($cachesize && strlen($phpcode) >= $cachesize) {
-            $cachefile = function_configure('storagedir') . '/' . rawurlencode(__FUNCTION__) . '-' . sha1($phpcode) . '.php';
-            if (!file_exists($cachefile)) {
-                file_put_contents($cachefile, "<?php $phpcode", LOCK_EX);
-            }
+        $cachefile = function_configure('storagedir') . '/' . rawurlencode(__FUNCTION__) . '-' . sha1($phpcode) . '.php';
+        if (!file_exists($cachefile)) {
+            file_put_contents($cachefile, "<?php $phpcode", LOCK_EX);
         }
 
         try {
-            if ($cachefile) {
-                /** @noinspection PhpMethodParametersCountMismatchInspection */
-                return (static function () {
-                    extract(func_get_arg(1));
-                    return require func_get_arg(0);
-                })($cachefile, $contextvars);
+            $evaler = function () {
+                // extract は数値キーをそのまま展開できない
+                // しかし "${0}" のような記法で数値変数を利用することはできる（可変変数限定だし php8.2 で非推奨になったが）
+                // 要するに数値キーのみをローカルコンテキストに展開しないと完全な eval の代替にならない
+                if (func_get_arg(1)) {
+                    foreach (func_get_arg(1) as $k => $v) {
+                        $$k = $v;
+                    }
+                    // 現スコープで宣言してしまっているので伏せなければならない
+                    unset($k, $v);
+                }
+                extract(func_get_arg(1));
+                return require func_get_arg(0);
+            };
+
+            // $this を模倣する
+            if (isset($contextvars['this'])) {
+                assert(is_object($contextvars['this']));
+                $evaler = $evaler->bindTo($contextvars['this'], get_class($contextvars['this']));
+                unset($contextvars['this']);
             }
-            else {
-                /** @noinspection PhpMethodParametersCountMismatchInspection */
-                return (static function () {
-                    extract(func_get_arg(1));
-                    return eval(func_get_arg(0));
-                })($phpcode, $contextvars);
-            }
+
+            /** @noinspection PhpMethodParametersCountMismatchInspection */
+            return $evaler($cachefile, $contextvars);
         }
         catch (\ParseError $ex) {
             $errline = $ex->getLine();
@@ -20024,9 +20203,7 @@ if (!function_exists('ryunosuke\\chmonos\\evaluate')) {
             $N = 5; // 前後の行数
             $message = $ex->getMessage();
             $message .= "\n" . implode("\n", array_slice($codes, max(0, $errline_1 - $N), $N * 2 + 1));
-            if ($cachefile) {
-                $message .= "\n in " . realpath($cachefile) . " on line " . $errline . "\n";
-            }
+            $message .= "\n in " . realpath($cachefile) . " on line " . $errline . "\n";
             throw new \ParseError($message, $ex->getCode(), $ex);
         }
     }
@@ -21947,7 +22124,7 @@ if (!function_exists('ryunosuke\\chmonos\\fcgi_request')) {
     function fcgi_request(
         /** URL */ string $url,
         /** FCGI パラメータ */ array $params = [],
-        /** FCGI ボディ */ array|string $stdin = '',
+        /** FCGI ボディ */ iterable|string $stdin = '',
         /** その他のオプション */ array $options = [],
     ): /** FCGI レスポンス */ array
     {
@@ -21957,6 +22134,7 @@ if (!function_exists('ryunosuke\\chmonos\\fcgi_request')) {
             'socketTimeout'  => 60.0,
             'udsFile'        => '/run/php-fpm/www.sock',
             'fpmConf'        => '/etc/php-fpm.d/www.conf',
+            'debug'          => false, // デバッグ用に Client そのものを返す
         ];
 
         $parts = uri_parse($url, [
@@ -21996,20 +22174,31 @@ if (!function_exists('ryunosuke\\chmonos\\fcgi_request')) {
         }
 
         // リクエスト本文が配列ならよしなにする
-        if (is_array($stdin)) {
-            if (($params['CONTENT_TYPE'] ?? '') === 'multipart/form-data' || array_find_recursive($stdin, fn($v) => $v instanceof \SplFileInfo)) {
+        if (is_iterable($stdin)) {
+            if (is_array($stdin)) {
+                if (($params['CONTENT_TYPE'] ?? '') === 'multipart/form-data' || array_find_recursive($stdin, fn($v) => $v instanceof \SplFileInfo)) {
+                    $stdin = formdata_build($stdin, $boundary);
+                    $params['CONTENT_TYPE'] ??= "multipart/form-data; boundary=$boundary";
+                }
+                else {
+                    $stdin = http_build_query($stdin);
+                    $params['CONTENT_TYPE'] ??= "application/x-www-form-urlencoded";
+                }
+            }
+            else {
                 $stdin = formdata_build($stdin, $boundary);
                 $params['CONTENT_TYPE'] ??= "multipart/form-data; boundary=$boundary";
             }
-            else {
-                $stdin = http_build_query($stdin);
-                $params['CONTENT_TYPE'] ??= "application/x-www-form-urlencoded";
-            }
         }
         // $stdin が来てるならある程度決め打ちできる
-        if (strlen($stdin)) {
+        if ($stdin || strlen($stdin)) {
             $params['REQUEST_METHOD'] ??= 'POST';
-            $params['CONTENT_LENGTH'] ??= strlen($stdin);
+            if (is_string($stdin)) {
+                $params['CONTENT_LENGTH'] ??= strlen($stdin);
+            }
+            if ($stdin instanceof \Countable) {
+                $params['CONTENT_LENGTH'] ??= count($stdin);
+            }
         }
 
         // 完全なるデフォルト値で埋めて null フィルタ
@@ -22092,10 +22281,40 @@ if (!function_exists('ryunosuke\\chmonos\\fcgi_request')) {
                 }
             }
 
-            private function write(int $type, string $content, int $requestId = 1)
+            private function split(string|iterable $content, int $chunk): \Generator
+            {
+                if (is_string($content)) {
+                    if (!strlen($content)) {
+                        yield '';
+                        return;
+                    }
+                    // str_split だと配列化されて瞬間的にメモリ使用量が倍増するので素朴に yield する
+                    // yield from str_split($content, $chunk) ?: [""];
+                    for ($offset = 0; $offset < strlen($content); $offset += $chunk) {
+                        yield substr($content, $offset, $chunk);
+                    }
+                }
+                else {
+                    $empty = true;
+                    $buffer = '';
+                    foreach ($content as $part) {
+                        $empty = false;
+                        $buffer .= $part;
+                        if (strlen($buffer) >= $chunk) {
+                            yield substr($buffer, 0, $chunk);
+                            $buffer = substr($buffer, $chunk);
+                        }
+                    }
+                    if ($empty || strlen($buffer)) {
+                        yield $buffer;
+                    }
+                }
+            }
+
+            private function write(int $type, string|iterable $content, int $requestId = 1)
             {
                 // https://fastcgi-archives.github.io/FastCGI_Specification.html#S3.3
-                foreach (str_split($content, 0xFFFF) ?: [""] as $chunk) {
+                foreach ($this->split($content, 0xFFFF) as $chunk) {
                     $fcgi_header = pack(implode('', self::RECORD_FORMAT), self::FCGI_VERSION_1, $type, $requestId, strlen($chunk), ...[0, 0]) . $chunk;
                     fwrite($this->socket, $fcgi_header) === strlen($fcgi_header) or throw new \RuntimeException('failed to fwrite');
                 }
@@ -22135,10 +22354,10 @@ if (!function_exists('ryunosuke\\chmonos\\fcgi_request')) {
                 $this->write(self::FCGI_PARAMS, '');
             }
 
-            public function writeStdin(string $stdin)
+            public function writeStdin(string|iterable $stdin)
             {
                 // https://fastcgi-archives.github.io/FastCGI_Specification.html#S5.3
-                if (strlen($stdin)) {
+                if ($stdin || strlen($stdin)) {
                     $this->write(self::FCGI_STDIN, $stdin);
                 }
                 $this->write(self::FCGI_STDIN, '');
@@ -22173,6 +22392,14 @@ if (!function_exists('ryunosuke\\chmonos\\fcgi_request')) {
                 return $response;
             }
         };
+
+        if ($options['debug']) {
+            return [
+                'client' => $client,
+                'params' => $params,
+                'stdin'  => $stdin,
+            ];
+        }
 
         $restore = set_error_exception_handler();
         try {
@@ -22258,6 +22485,26 @@ if (!function_exists('ryunosuke\\chmonos\\getipaddress')) {
     }
 }
 
+assert(!function_exists('ryunosuke\\chmonos\\http_bechmark') || (new \ReflectionFunction('ryunosuke\\chmonos\\http_bechmark'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\http_bechmark')) {
+    /**
+     * @see http_benchmark()
+     * @deprecated スペルミス
+     * @codeCoverageIgnore
+     * @package ryunosuke\Functions\Package\network
+     */
+    function http_bechmark(
+        /** URLs */ array|string $urls,
+        /** 合計リクエスト */ int $requests = 10,
+        /** 同時接続数 */ int $concurrency = 3,
+        /** @param null|resource|bool 出力先（省略時は標準出力） */ $output = null,
+    ): /** 結果配列 */ array
+    {
+        trigger_error(__FUNCTION__ . ' is deprecated. use http_benchmark', E_USER_DEPRECATED);
+        return http_benchmark(...func_get_args());
+    }
+}
+
 assert(!function_exists('ryunosuke\\chmonos\\http_benchmark') || (new \ReflectionFunction('ryunosuke\\chmonos\\http_benchmark'))->isUserDefined());
 if (!function_exists('ryunosuke\\chmonos\\http_benchmark')) {
     /**
@@ -22294,7 +22541,7 @@ if (!function_exists('ryunosuke\\chmonos\\http_benchmark')) {
      *
      * @package ryunosuke\Functions\Package\network
      */
-    function http_bechmark(
+    function http_benchmark(
         /** URLs */ array|string $urls,
         /** 合計リクエスト */ int $requests = 10,
         /** 同時接続数 */ int $concurrency = 3,
@@ -23408,9 +23655,7 @@ if (!function_exists('ryunosuke\\chmonos\\ip_info')) {
                             trigger_error($message, E_USER_WARNING);
                         }
 
-                        $fp = tmpfile();
-                        fwrite($fp, $response);
-                        rewind($fp);
+                        $fp = str_resource($response);
 
                         $this->transaction(function () use ($fp, $registry) {
                             // 同時に走らないように rand でバラす
@@ -24643,9 +24888,11 @@ if (!function_exists('ryunosuke\\chmonos\\glob2regex')) {
     {
         $replacer = [
             // target glob character
-            '*'  => '.*',
-            '?'  => '.',
-            '[!' => '[^',
+            '*'  => '(.*)',
+            '?'  => '(.)',
+            '[!' => '([^',
+            '['  => '([',
+            ']'  => '])',
             // quote regex character
             '.'  => '\\.',
             //'\\' => '\\\\',
@@ -24671,8 +24918,8 @@ if (!function_exists('ryunosuke\\chmonos\\glob2regex')) {
         ];
 
         if ($flags & GLOB_RECURSIVE) {
-            $replacer['**'] = '.*';
-            $replacer['*'] = '[^/]*';
+            $replacer['**'] = '(.*)';
+            $replacer['*'] = '([^/]*)';
         }
 
         if (!($flags & GLOB_BRACE)) {
@@ -25838,6 +26085,7 @@ if (!function_exists('ryunosuke\\chmonos\\reflect_callable')) {
      * - getDeclaration: 宣言部のコードを返す
      * - getCode: 定義部のコードを返す
      * - isAnonymous: 無名関数なら true を返す（8.2 の isAnonymous 互換）
+     * - isArrow: アロー演算子で定義されたかを返す（クロージャのみ）
      * - isStatic: $this バインド可能かを返す（クロージャのみ）
      * - getUsedVariables: use している変数配列を返す（クロージャのみ）
      * - getClosure: 元となったオブジェクトを $object としたクロージャを返す（メソッドのみ）
@@ -25942,6 +26190,12 @@ if (!function_exists('ryunosuke\\chmonos\\reflect_callable')) {
                     }
 
                     return strpos($this->name, '{closure}') !== false;
+                }
+
+                public function isArrow(): bool
+                {
+                    // しっかりやるなら PHPToken を使った方がいいけど今の php 構文ならこれで大丈夫のはず
+                    return str_starts_with($this->getDeclaration(), 'fn') !== false;
                 }
 
                 public function isStatic(): bool
@@ -28585,16 +28839,7 @@ if (!function_exists('ryunosuke\\chmonos\\render_string')) {
         try {
             /** @noinspection PhpMethodParametersCountMismatchInspection */
             return (function () {
-                // extract は数値キーを展開してくれないので自前ループで展開
-                foreach (func_get_arg(1) as $k => $v) {
-                    $$k = $v;
-                }
-                // 現スコープで宣言してしまっているので伏せなければならない
-                unset($k, $v);
-                // かと言って変数配列に k, v キーがあると使えなくなるので更に extract で補完
-                extract(func_get_arg(1));
-                // そして eval. ↑は要するに数値キーのみを展開している
-                return eval(func_get_arg(0));
+                return evaluate(func_get_arg(0), func_get_arg(1));
             })($evalcode, $vars);
         }
         catch (\ParseError $ex) {
@@ -30644,6 +30889,48 @@ if (!function_exists('ryunosuke\\chmonos\\str_rchop')) {
     }
 }
 
+assert(!function_exists('ryunosuke\\chmonos\\str_resource') || (new \ReflectionFunction('ryunosuke\\chmonos\\str_resource'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\str_resource')) {
+    /**
+     * 文字列をリソース化する
+     *
+     * resource で統一的に扱いたいシチュエーションはまれによくある。
+     *
+     * Example:
+     * ```php
+     * // 文字列からリソースを作る
+     * $resource = str_resource('hoge');
+     * that(stream_get_contents($resource))->is('hoge');
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\strings
+     */
+    function str_resource(
+        /** 対象文字列 */ string $string,
+        /** 最大メモリ */ ?int $maxmemory = null,
+        /** 自動削除 */ bool $volatile = true,
+    ) {
+        // stream_get_meta_data でファイル情報が得られると便利なことが多いので 0 は maxmemory:0 ではなく tmpfile とする
+        // さらに自動削除も制御したいので $volatile で分岐する
+        $fp = match ($maxmemory) {
+            0       => $volatile ? tmpfile() : fopen(tmpname('tmp', sys_get_temp_dir()), 'rb+'),
+            null    => fopen("php://memory", 'rb+'),
+            default => fopen("php://temp/maxmemory:$maxmemory", 'rb+'),
+        };
+
+        if ($fp === false) {
+            throw new \UnexpectedValueException('fopen returned false'); // @codeCoverageIgnore
+        }
+
+        if (strlen($string)) {
+            fwrite($fp, $string);
+            rewind($fp);
+        }
+
+        return $fp;
+    }
+}
+
 assert(!function_exists('ryunosuke\\chmonos\\str_submap') || (new \ReflectionFunction('ryunosuke\\chmonos\\str_submap'))->isUserDefined());
 if (!function_exists('ryunosuke\\chmonos\\str_submap')) {
     /**
@@ -31308,6 +31595,37 @@ if (!function_exists('ryunosuke\\chmonos\\strtr_escaped')) {
     }
 }
 
+assert(!function_exists('ryunosuke\\chmonos\\blank_coalesce') || (new \ReflectionFunction('ryunosuke\\chmonos\\blank_coalesce'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\blank_coalesce')) {
+    /**
+     * blank_if の可変引数版
+     *
+     * blank ではない最初の引数を返す。
+     * blank_if は設計が古い & 可変対応すると名前が適切ではなくなってしまうので新設。
+     *
+     * Example:
+     * ```php
+     * // 処理自体は blank_if と同じ
+     * that(blank_coalesce(null, false, '', [], 'X'))->is('X');
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\syntax
+     *
+     * @template T of mixed
+     * @param T ...$args 値
+     * @return T blank ではない最初の引数
+     */
+    function blank_coalesce(...$args)
+    {
+        foreach ($args as $arg) {
+            if (blank_if($arg) !== null) {
+                return $arg;
+            }
+        }
+        return null;
+    }
+}
+
 assert(!function_exists('ryunosuke\\chmonos\\blank_if') || (new \ReflectionFunction('ryunosuke\\chmonos\\blank_if'))->isUserDefined());
 if (!function_exists('ryunosuke\\chmonos\\blank_if')) {
     /**
@@ -31468,7 +31786,7 @@ if (!function_exists('ryunosuke\\chmonos\\cast')) {
 
         // 判定・変換が複雑極まるため実際に投げてその値を返すのが最も間違いが少ない
         static $test_functions = [];
-        $test_functions[$type] ??= eval("return static fn({$type} \$value) => \$value;");
+        $test_functions[$type] ??= evaluate("return static fn({$type} \$value) => \$value;");
         try {
             return $test_functions[$type]($value);
         }
@@ -31506,7 +31824,7 @@ if (!function_exists('ryunosuke\\chmonos\\instance_of')) {
      *
      * @package ryunosuke\Functions\Package\syntax
      *
-     * @template T as object
+     * @template T of object
      * @param T $object 調べるオブジェクト
      * @param string|object $class クラス名
      * @return ?T $object が $class のインスタンスなら $object, そうでなければ null
@@ -31635,7 +31953,7 @@ if (!function_exists('ryunosuke\\chmonos\\try_close')) {
         // hash to array
         foreach ($resources as $n => $resource) {
             if (is_array($resource) && is_hasharray($resource)) {
-                array_splice($resources, $n, 1, iterator_to_array(arrays($resource)));
+                array_splice($resources, $n, 1, array_values(array_map(fn($k) => [$k, $resource[$k]], array_keys($resource))));
             }
         }
         // array to resource
@@ -32109,25 +32427,26 @@ if (!function_exists('ryunosuke\\chmonos\\formdata_build')) {
      * ```
      *
      * @package ryunosuke\Functions\Package\url
+     * @return string|(iterable&\Countable)
      */
     function formdata_build(
         /** フォームデータ配列 */
-        array $formdata,
+        iterable $formdata,
         /** バウンダリ文字列初期値兼レシーバ引数 */
         ?string &$boundary = null,
         /** 値のエンコーダだが実質的にファイルの検出に使う（デフォルトでは SplFileInfo がファイルと認識される） */
         ?\Closure $encoder = null,
-    ): /** フォームデータ文字列 */ string
+    ): /** フォームデータ文字列 */ string|iterable|\Countable
     {
         $encoder ??= function ($v) {
             if ($v instanceof \SplFileInfo) {
                 return [
                     'filename' => rawurlencode($v->getBasename()),
                     'mimetype' => mime_content_type($v->getRealPath()),
-                    'contents' => file_get_contents($v->getRealPath()),
+                    'contents' => fn() => yield from $v instanceof \SplFileObject ? $v : new \SplFileObject($v->getRealPath()),
                 ];
             }
-            return $v;
+            return fn() => yield $v;
         };
         $escaper = fn($v) => strtr($v, [
             '"'    => '%22',
@@ -32136,15 +32455,35 @@ if (!function_exists('ryunosuke\\chmonos\\formdata_build')) {
             "\n"   => "%0D%0A",
         ]);
 
+        // generator を利用しているのはファイルの読み込みのためであって引数自体にまずいのは来ないので配列に正規化してしまってよい
+        $formdata2 = is_array($formdata) ? $formdata : iterator_to_array($formdata);
+
         while (true) {
             try {
                 $boundary ??= '----' . random_string(64);
 
-                $result = "";
-                array_walk_recursive2($formdata, function ($v, $key, $array, $keys) use (&$result, $escaper, $boundary, $encoder) {
+                $main = function ($array, $keys, $meta, $callback) use (&$main, $boundary) {
+                    $result = false;
+                    foreach ($array as $k => $v) {
+                        if (is_array($v)) {
+                            $g = $main($v, array_merge($keys, [$k]), $meta, $callback);
+                        }
+                        else {
+                            $g = $callback($v, $k, $keys, $meta);
+                        }
+                        yield from $g;
+                        $result = $g->getReturn() || $result;
+                    }
+
+                    if ($keys === [] && $result) {
+                        yield "--$boundary--";
+                    }
+                    return $result;
+                };
+                $callback = function ($v, $key, $keys, $meta) use ($escaper, $boundary, $encoder) {
                     // http_build_query に倣って null はスルーする
                     if ($v === null) {
-                        return;
+                        return false;
                     }
 
                     // name を生成（エスケープはどうすればいいか分からなかったので chrome の挙動を真似た）
@@ -32167,21 +32506,52 @@ if (!function_exists('ryunosuke\\chmonos\\formdata_build')) {
                         ]);
                     }
 
-                    // バウンダリの衝突チェック
-                    if (str_contains($body, $boundary) !== false) {
-                        throw new \DomainException('boundary collision');
-                    }
-
                     // 構築（埋め込みや一時結合はできるだけ避けた方が良いと思う）
-                    $result .= "--$boundary\r\n";
-                    $result .= "$header\r\n\r\n";
-                    $result .= $body;
-                    $result .= "\r\n";
-                });
+                    yield "--$boundary\r\n";
+                    yield "$header\r\n\r\n";
+                    if ($meta) {
+                        if ($v instanceof \SplFileInfo) {
+                            yield $v->getSize();
+                        }
+                        else {
+                            yield strlen($v);
+                        }
+                    }
+                    else {
+                        foreach ($body() as $part) {
+                            // バウンダリの衝突チェック
+                            if (str_contains($part, $boundary) !== false) {
+                                throw new \DomainException('boundary collision');
+                            }
+                            yield $part;
+                        }
+                    }
+                    yield "\r\n";
+                    return true;
+                };
+                $generator = $main($formdata2, [], false, $callback);
 
-                if (strlen($result)) {
-                    $result .= "--$boundary--";
+                if (!is_array($formdata)) {
+                    $length = 0;
+                    foreach ($main($formdata2, [], true, $callback) as $string_or_size) {
+                        $length += is_int($string_or_size) ? $string_or_size : strlen($string_or_size);
+                    }
+                    return new class($generator, $length) implements \IteratorAggregate, \Countable {
+                        public function __construct(private iterable $generator, private int $length) { }
+
+                        public function getIterator(): \Generator
+                        {
+                            yield from $this->generator;
+                        }
+
+                        public function count(): int
+                        {
+                            return $this->length;
+                        }
+                    };
                 }
+
+                $result = implode('', iterator_to_array($generator, false));
                 return $result;
             }
             catch (\Throwable $t) {
@@ -32221,48 +32591,92 @@ if (!function_exists('ryunosuke\\chmonos\\formdata_parse')) {
      * @package ryunosuke\Functions\Package\url
      */
     function formdata_parse(
-        /** フォームデータ文字列 */
-        string $formdata,
+        /** @var string|resource フォームデータ文字列 */
+        $formdata,
         /** バウンダリ文字列。省略時は1行目から推測する */
         ?string $boundary = null,
         /** 値のデコーダだが実質的にファイルの検出に使う（デフォルトでは一時ファイルの SplFileInfo で返す） */
         ?\Closure $decoder = null,
-    ): /** フォームデータ配列 */ array
+    ): /** フォームデータ配列 */ array|\Generator
     {
         $decoder ??= function ($filename, $mimetype, $contents) {
             if ($filename === null) {
-                return $contents;
+                return stream_get_contents($contents);
             }
-            $fname = tmpname('FD');
-            file_put_contents($fname, $contents);
-            return new \SplFileInfo($fname);
+            $tmpname = stream_get_meta_data($contents)['uri'];
+            $headers = ['filename' => $filename, 'mimetype' => $mimetype];
+            return new class($tmpname, $headers) extends \SplFileObject {
+                public function __construct(string $filename, private array $headers)
+                {
+                    parent::__construct($filename);
+                }
+
+                public function getHeader(string $key): ?string
+                {
+                    return $this->headers[$key] ?? null;
+                }
+            };
         };
 
-        // バウンダリで分割
-        $boundary ??= substr(preg_split('#\R#u', $formdata, 2)[0], 2);
-        $boundary = preg_quote($boundary, '#');
-        $contents = preg_split("#\R?--$boundary(--)?\R?#u", $formdata, -1, PREG_SPLIT_NO_EMPTY);
+        $is_resource = is_resource($formdata);
+        if (!$is_resource) {
+            $formdata = str_resource($formdata);
+        }
+
+        $generator = (function () use ($formdata, $decoder) {
+            $line = fgets($formdata);
+            $boundary ??= trim(substr($line, 2));
+
+            $header = [];
+            $fields = [];
+            $buffer = str_resource('');
+            $breaker = null;
+            while (($line = fgets($formdata)) !== false) {
+                if ($header === [] && $line === $breaker) {
+                    rewind($buffer);
+                    $content = stream_get_contents($buffer);
+
+                    $header = array_change_key_case(str_array($content, ':', true), CASE_LOWER);
+                    $fields = array_map(fn($v) => trim($v, '"'), str_array(explode(';', $header['content-disposition']), '=', true));
+                    if (isset($fields['filename'])) {
+                        $buffer = str_resource('', 0, false);
+                    }
+                    else {
+                        $buffer = str_resource('');
+                    }
+                }
+                elseif (str_starts_with($line, "--$boundary")) {
+                    ftruncate($buffer, ftell($buffer) - strlen($breaker));
+                    rewind($buffer);
+
+                    // name が無いときの挙動は未定義（現状はスキップ実装）
+                    if (isset($fields['name'])) {
+                        yield $fields['name'] => $decoder($fields['filename'] ?? null, $header['content-type'] ?? null, $buffer);
+                    }
+                    $header = [];
+                    $fields = [];
+                    $buffer = str_resource('');
+                }
+                else {
+                    // 仕様上は CRLF だが守られていない実装はあるので蓄えておく
+                    $breaker = (string) (($p = strrchr($line, "\r\n")) === false ? strrchr($line, "\n") : $p);
+                    fwrite($buffer, $line);
+                }
+            }
+        })();
+
+        if ($is_resource) {
+            return $generator;
+        }
 
         $result = [];
-        foreach ($contents as $content) {
-            // ヘッダとボディに分割
-            [$header, $body] = preg_split("#\R{2}#u", $content, 2);
-
-            // ヘッダを連想配列に変換
-            $headers = array_change_key_case(str_array($header, ':', true), CASE_LOWER);
-            $fields = str_array(explode(';', $headers['content-disposition']), '=', true);
-
-            // name が無いときの挙動は未定義（現状はスキップ実装）
-            if (isset($fields['name'])) {
-                $body = $decoder($fields['filename'] ?? null, $headers['content-type'] ?? null, $body);
-
-                // @todo いい方法が思い浮かばないので富豪的にやっている
-                parse_str(trim($fields['name'], '"'), $query);               // ここで a[b][c][d] が a:[b:[c:[d:""]]] になる
-                array_walk_recursive($query, fn(&$value) => $value = $body); // ここで a:[b:[c:[d:""]]] が a:[b:[c:[d:$body]]] になる
-                $result = array_replace_recursive($result, $query);          // 一つの値しかないのでマージすればよい
-            }
+        foreach ($generator as $name => $content) {
+            // @todo いい方法が思い浮かばないので富豪的にやっている
+            $query = query_parse($name, '&');                               // ここで a[b][c][d] が a:[b:[c:[d:""]]] になる
+            array_walk_recursive($query, fn(&$value) => $value = $content); // ここで a:[b:[c:[d:""]]] が a:[b:[c:[d:$body]]] になる
+            $result = array_replace_recursive($result, $query);             // 一つの値しかないのでマージすればよい
         }
-        return ($result);
+        return $result;
     }
 }
 
@@ -32614,7 +33028,7 @@ if (!function_exists('ryunosuke\\chmonos\\uri_parse')) {
         $parts['fragment'] = $parts['fragment'] === null ? null : rawurldecode($parts['fragment']);
 
         if (is_string($parts['query'])) {
-            parse_str($parts['query'], $parts['query']);
+            $parts['query'] = query_parse($parts['query'], '&');
         }
 
         return $parts;
@@ -35635,6 +36049,8 @@ if (!function_exists('ryunosuke\\chmonos\\var_export3')) {
      * - 特定の内部クラス（PDO など）
      * - 大部分のリソース
      *
+     * ただし args キーに指定した値は出力されず、import 時にそれらを引数とするクロージャを返すようになるため、疑似的に出力することは可能。
+     *
      * オブジェクトは「リフレクションを用いてコンストラクタなしで生成してプロパティを代入する」という手法で復元する。
      * ただしコンストラクタが必須引数無しの場合はコールされる。
      * のでクラスによってはおかしな状態で復元されることがある（大体はリソース型のせいだが…）。
@@ -35652,6 +36068,28 @@ if (!function_exists('ryunosuke\\chmonos\\var_export3')) {
      * 軽くベンチを取ったところ、オブジェクトを含まない純粋な配列の場合、serialize の 200 倍くらいは速い（それでも var_export の方が速いが…）。
      * オブジェクトを含めば含むほど遅くなり、全要素がオブジェクトになると serialize と同程度になる。
      * 大体 var_export:var_export3:serialize が 1:5:1000 くらい。
+     *
+     * Example:
+     * ```php
+     * // 出力不可を含む配列
+     * $value = [
+     *     'stdout' => STDOUT,
+     *     'pdo'    => new \PDO('sqlite::memory:'),
+     * ];
+     * // args を指定すると実際はエクスポートされず、クロージャ表現を返すようになる（値だけ見るのでキーはなんでもよい）
+     * $exported = var_export3($value, ['outmode' => 'eval', 'args' => ['k1' => STDOUT, 'k2' => $value['pdo']]]);
+     * // import するとクロージャが得られる
+     * $closure = eval($exported);
+     * that($closure)->isInstanceOf(\Closure::class);
+     * // 引数付きで実行すれば値が得られる（この引数のキーは出力時のキーと合わせなければならない）
+     * $imported = $closure(['k1' => STDOUT, 'k2' => $value['pdo']]);
+     * that($imported['stdout'])->isSame($value['stdout']);
+     * that($imported['pdo'])->isSame($value['pdo']);
+     * // 要するに実行時に与えられるわけなので、やる気になれば全く関係ない値でも可能
+     * $imported = $closure(['k1' => 123, 'k2' => 456]);
+     * that($imported['stdout'])->isSame(123);
+     * that($imported['pdo'])->isSame(456);
+     * ```
      *
      * @package ryunosuke\Functions\Package\var
      *
@@ -35671,6 +36109,7 @@ if (!function_exists('ryunosuke\\chmonos\\var_export3')) {
         $options += [
             'format'  => 'pretty', // pretty or minify
             'outmode' => null,     // null: 本体のみ, 'eval': return ...;, 'file': <?php return ...;
+            'args'    => [],       // ここで指定した値は export に含まれず、import 時に引数で要求されるようになる
         ];
         $options['return'] ??= !!$options['outmode'];
 
@@ -35749,7 +36188,7 @@ if (!function_exists('ryunosuke\\chmonos\\var_export3')) {
 
         // 再帰用クロージャ
         $vars = [];
-        $export = function ($value, $nest = 0, $raw = false) use (&$export, &$vars, $var_manager) {
+        $export = function ($value, $nest = 0, $raw = false) use (&$export, &$vars, $var_manager, $options) {
             $spacer0 = str_repeat(" ", 4 * max(0, $nest + 0));
             $spacer1 = str_repeat(" ", 4 * max(0, $nest + 1));
             $raw_export = fn($v) => $v;
@@ -35761,6 +36200,10 @@ if (!function_exists('ryunosuke\\chmonos\\var_export3')) {
                     return "\$this->$vid";
                 }
                 $vars[$vid] = $value;
+            }
+
+            if (($arg = array_search($value, $options['args'], true)) !== false) {
+                return "\$this->$vid = \$this->args[{$var_export($arg)}]";
             }
 
             if (is_array($value)) {
@@ -36168,12 +36611,20 @@ if (!function_exists('ryunosuke\\chmonos\\var_export3')) {
         }
 
         $E = fn($v) => $v;
-        $result = <<<PHP
-            (function () {
+        $function = <<<PHP
+            function (\$args) {
+                \$this->args = \$args;
                 {$E(implode("\n    ", $others))}
                 return $exported;
-            })->call($factory)
+            }
             PHP;
+
+        if ($options['args']) {
+            $result = "fn(\$args) => ({$function})->call($factory, \$args)";
+        }
+        else {
+            $result = "({$function})->call($factory, [])";
+        }
 
         if ($options['format'] === 'minify') {
             $tmp = tempnam(sys_get_temp_dir(), 've3');
@@ -36625,12 +37076,12 @@ if (!function_exists('ryunosuke\\chmonos\\var_pretty')) {
                 if (is_object($value)) {
                     if ($this->options['debuginfo'] && method_exists($value, '__debugInfo')) {
                         $properties = [];
-                        foreach (array_reverse($value->__debugInfo(), true) as $k => $v) {
+                        foreach ($value->__debugInfo() as $k => $v) {
                             $p = strrpos($k, "\0");
                             if ($p !== false) {
                                 $k = substr($k, $p + 1);
                             }
-                            $properties[$k] = $v;
+                            $properties[$k] ??= $v;
                         }
                     }
                     else {
@@ -36776,7 +37227,7 @@ if (!function_exists('ryunosuke\\chmonos\\var_pretty')) {
                             }
                             $this->plain($spacer1);
                             if ($is_hasharray) {
-                                $this->index($k)->plain(': ');
+                                $this->index($k === '' ? '""' : $k)->plain(': ');
                             }
                             $this->export($v, $nest + 1, $parents, array_merge($keys, [$k]), true);
                             $this->plain(",\n");
@@ -36803,7 +37254,7 @@ if (!function_exists('ryunosuke\\chmonos\\var_pretty')) {
                                 $this->plain('...(too length)...')->plain(', ');
                             }
                             if ($is_hasharray && $n !== $k) {
-                                $this->index($k)->plain(':');
+                                $this->index($k === '' ? '""' : $k)->plain(':');
                             }
                             $this->export($v, $nest, $parents, array_merge($keys, [$k]), true);
                             if ($k !== $lastkey) {
@@ -36839,13 +37290,24 @@ if (!function_exists('ryunosuke\\chmonos\\var_pretty')) {
                 elseif ($value instanceof \Closure) {
                     $this->value($value);
 
+                    $ref = reflect_callable($value);
+
+                    if (!str_contains($ref->getFileName(), "eval()'d code") && $ref->isArrow()) {
+                        $this->plain("(");
+                        if ($ref->isStatic()) {
+                            $this->plain("static ");
+                        }
+                        $this->plain("{$ref->getDeclaration()} => {$ref->getCode()}");
+                        $this->plain(')');
+                        goto FINALLY_;
+                    }
+
                     if ($this->options['minify']) {
                         goto FINALLY_;
                     }
 
-                    $ref = reflect_callable($value);
                     $that = $ref->getClosureThis();
-                    $properties = $ref->getStaticVariables();
+                    $properties = $ref->getUsedVariables();
 
                     $this->plain("(");
                     if ($that) {
@@ -36877,7 +37339,12 @@ if (!function_exists('ryunosuke\\chmonos\\var_pretty')) {
 
                     $this->plain(" ");
                     if ($properties) {
-                        $this->export($properties, $nest, $parents, $keys, false);
+                        if (count($properties) === 1 && array_keys($properties) === [''] && is_string($properties[''])) {
+                            $this->plain($properties['']);
+                        }
+                        else {
+                            $this->export($properties, $nest, $parents, $keys, false);
+                        }
                     }
                     else {
                         $this->plain('{}');
