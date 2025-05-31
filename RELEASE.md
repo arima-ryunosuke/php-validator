@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.3.8
+
+- [fixbug] base64_decode が正しく動いていない
+
 ## 1.3.7
 
 [fixbug] data-vtemplate-name が script と被っており DOM が生成できない
