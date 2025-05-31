@@ -235,6 +235,11 @@ require_once __DIR__ . '/+include.php' ?>
                     expect(array_reduce([1, 2, 3], (c, v) => c + v, 'x')).toEqual('x123');
                 });
 
+                it('base64_decode', function () {
+                    expect(base64_decode(<?= json_encode(base64_encode('あ')) ?>)).toEqual('あ');
+                    expect(base64_decode(<?= json_encode(base64_encode('臼NG')) ?>)).toEqual('臼NG');
+                });
+
                 it('ini_parse_quantity', function () {
                     expect(ini_parse_quantity('')).toEqual(0);
                     expect(ini_parse_quantity(100)).toEqual(100);
@@ -248,6 +253,7 @@ require_once __DIR__ . '/+include.php' ?>
                     expect(strlen('abc')).toEqual(3);
                     expect(strlen('あいう')).toEqual(9);
                     expect(strlen('aあ👨👨‍👩‍👧‍👦')).toEqual(33);
+                    expect(strlen('臼NG')).toEqual(5);
                 });
 
                 it('mb_str_split', function () {

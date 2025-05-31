@@ -113,6 +113,10 @@
     - 明示的な指定が必要（とはいえデフォルト '+-' なので実質的には影響なし）
   - AlphaDigit のアンダースコア特別扱いを廃止
 
+## 1.3.8
+
+- [fixbug] base64_decode が正しく動いていない
+
 ## 1.3.7
 
 [fixbug] data-vtemplate-name が script と被っており DOM が生成できない
