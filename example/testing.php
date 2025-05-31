@@ -216,6 +216,11 @@ require_once __DIR__ . '/+include.php' ?>
                     expect(array_reduce([1, 2, 3], (c, v) => c + v, 'x')).toEqual('x123');
                 });
 
+                it('base64_decode', function () {
+                    expect(base64_decode(<?= json_encode(base64_encode('あ')) ?>)).toEqual('あ');
+                    expect(base64_decode(<?= json_encode(base64_encode('臼NG')) ?>)).toEqual('臼NG');
+                });
+
                 it('preg_match', function () {
                     var matches = [];
                     expect(preg_match('#^\\d\\d\\d$#', 123)).toEqual(1);
