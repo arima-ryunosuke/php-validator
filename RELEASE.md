@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.5
+
+- [feature] Ajax に INVALID を設けて bool 値に対応する
+- [feature] エラー値が bool の場合に特別扱いする
+
 ## 2.2.4
 
 - [feature] option のテキスト を label と textnode に出す機能
