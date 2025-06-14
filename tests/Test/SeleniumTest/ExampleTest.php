@@ -105,7 +105,12 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('ajax1', '1');
         $driver->setValue('ajax2', '2');
         $driver->setValue('ajax_sum', '5');
-        that($driver)->getErrors(1)->count(1);
+        $driver->setValue('ajax_bool', '5');
+        that($driver)->getErrors(1)->count(2);
+
+        $driver->setValue('ajax_sum', '3');
+        $driver->setValue('ajax_bool', '3');
+        that($driver)->getErrors(1)->count(0);
     }
 
     /**

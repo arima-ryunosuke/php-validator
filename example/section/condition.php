@@ -1,6 +1,7 @@
 <?php
 
 use ryunosuke\chmonos\Condition\AbstractCondition;
+use ryunosuke\chmonos\Condition\Ajax;
 use ryunosuke\chmonos\Condition\Range;
 use ryunosuke\chmonos\Condition\Requires;
 
@@ -24,6 +25,11 @@ $condition_form = new \ryunosuke\chmonos\Form([
             $ajax
         ],
         'dependent' => ['ajax1', 'ajax2'],
+    ],
+    'ajax_bool'             => [
+        'condition' => [
+            (new Ajax('ajax-bool.php', ['ajax1', 'ajax2']))->setMessage('値が一致しません'),
+        ],
     ],
     'array_length_checkbox' => [
         'title'     => '3件以下チェックボックス',
@@ -616,7 +622,10 @@ resetForm($condition_form, 'condition_form');
     <tr>
         <th>サーバーサイドで足し算する</th>
         <td><?= $condition_form->input('ajax1') ?> + <?= $condition_form->input('ajax2') ?></td>
-        <td><?= $condition_form->input('ajax_sum') ?></td>
+        <td>
+            <?= $condition_form->input('ajax_sum') ?>
+            <?= $condition_form->input('ajax_bool') ?>
+        </td>
     </tr>
     <tr>
         <th>3件以下でなければならない：checkbox | select | text | file</th>
