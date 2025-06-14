@@ -17,14 +17,14 @@ use function ryunosuke\chmonos\get_uploaded_files;
  * - method: callable
  *   - 実際の処理。 js ではなく php レイヤの検証のとき実行される
  *   - 引数として配列を受け取り、戻り値としてエラーメッセージを返さなければならない。エラーがない場合は null を返す
- *   - オプショナルであり完全外部 API に投げる場合などは null で構わない
+ *   - オプショナルであり完全外部 API に投げる場合などは null で構わない（=クライアントサイドのみの検証に利用できる）
  */
 class Ajax extends AbstractCondition
 {
     public const INVALID = 'AjaxInvalid';
 
     protected static $messageTemplates = [
-        // ajax の返り値でエラーメッセージが確定されるのでなし
+        self::INVALID => 'invalid',
     ];
 
     protected $_request;
