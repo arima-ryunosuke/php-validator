@@ -329,7 +329,7 @@ function Chmonos(form, options) {
                         }
                     }
 
-                    if (err === undefined) {
+                    if (err === true || err === undefined) {
                         if (input.validationErrors && input.validationErrors[cname]) {
                             errorTypes[level][cname] = input.validationErrors[cname];
                         }
@@ -349,6 +349,10 @@ function Chmonos(form, options) {
                         });
                     }
                     else {
+                        if (err === false) {
+                            err = chmonos.constants[cname]['INVALID'];
+                        }
+
                         var ret;
                         if (cond['message'][err] !== undefined) {
                             ret = cond['message'][err];
