@@ -250,6 +250,14 @@ class Input
         $this->rule[$name] = $value;
     }
 
+    public function __debugInfo(): array
+    {
+        $debug_info = (array) $this;
+        unset($debug_info["\0*\0parent"]);
+        unset($debug_info["\0*\0parentContext"]);
+        return $debug_info;
+    }
+
     public function resolveTitle(string $member): ?string
     {
         return $this->parentContext->$member?->title;

@@ -10,6 +10,15 @@ use ryunosuke\chmonos\Context;
 
 class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
+    function test___debug_info()
+    {
+        $line = __LINE__ + 1;
+        $condition = new Callback(fn() => null);
+        $dump = print_r($condition, true);
+
+        that($dump)->contains("AbstractConditionTest.php:$line~$line");
+    }
+
     function test_setNamespace()
     {
         $file = __DIR__ . '/_files/Empty/Date.php';

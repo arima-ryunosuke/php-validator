@@ -120,6 +120,14 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($input)->try('__set', 'hogera', null)->wasThrown(new \InvalidArgumentException('undefined property'));
     }
 
+    function test___debug_info()
+    {
+        $input = new Input([]);
+        $dump = print_r($input, true);
+
+        that($dump)->notContains('[parent');
+    }
+
     function test_resolve()
     {
         $context = new Context([

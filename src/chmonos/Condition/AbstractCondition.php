@@ -356,6 +356,25 @@ JS;
         ];
     }
 
+    public function __debugInfo(): array
+    {
+        $debug_info = (array) $this;
+        array_walk_recursive($debug_info, function (&$value) {
+            // 子クラスで何を宣言しているかは分からないが Closure だけは意図せず膨大になりうるのでメタ情報のみに抑える
+            if ($value instanceof \Closure) {
+                $ref = new \ReflectionFunction($value);
+                $value = sprintf("%s#%s@%s:%d~%d",
+                    get_class($value),
+                    spl_object_id($value),
+                    $ref->getFileName(),
+                    $ref->getStartLine(),
+                    $ref->getEndLine(),
+                );
+            }
+        });
+        return $debug_info;
+    }
+
     /**
      * 値を検証する
      *
