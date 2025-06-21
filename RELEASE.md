@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.6
+
+- [feature] dump した時の情報量が大きすぎるのを削減
+
 ## 2.2.5
 
 - [feature] Ajax に INVALID を設けて bool 値に対応する
