@@ -4972,7 +4972,7 @@ return module.exports;
 
     /// 検証ルールのインポート
     /**/
-this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $message;
+this.condition = {"Ajax":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $message;
             (function() {
                 $params.request.caches = $params.request.caches ?? {};
                 if ($value && $params.request.url) {
@@ -4981,7 +4981,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
                         var formdata = undefined;
                         var body = $params.request.method === 'GET' ? url.searchParams : formdata = new FormData();
 
-                        body.append(input.name, $value);
+                        body.append($input.name, $value);
                         var keys = Object.keys($fields);
                         for (var i = 0; i < keys.length; i++) {
                             body.append(keys[i], $fields[keys[i]]);
@@ -5057,28 +5057,28 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
                         });
                     }
 
-                    if (e.type === 'submit') {
+                    if ($e.type === 'submit') {
                         $error(request());
                     }
                     else {
-                        if (!input.validationAjaxDebounce) {
+                        if (!$input.validationAjaxDebounce) {
                             $error(request());
-                            input.validationAjaxDebounce = setTimeout(function() {
-                                input.validationAjaxDebounce = null;
+                            $input.validationAjaxDebounce = setTimeout(function() {
+                                $input.validationAjaxDebounce = null;
                             }, 1500);
                         }
                         else {
-                            clearTimeout(input.validationAjaxDebounce);
+                            clearTimeout($input.validationAjaxDebounce);
                             $error(new Promise(function (resolve) {
-                                input.validationAjaxDebounce = setTimeout(function() {
+                                $input.validationAjaxDebounce = setTimeout(function() {
                                     request().then(resolve);
-                                    input.validationAjaxDebounce = null;
+                                    $input.validationAjaxDebounce = null;
                                 }, 1000);
                             }));
                         }
                     }
                 }
-            })();},"AlphaDigit":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
+            })();},"AlphaDigit":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {// 
 
         if (!preg_match($params['regex'], $value)) {
             $error($consts['INVALID_ALPHADIGIT'], []);
@@ -5093,11 +5093,11 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }
         if ($params['case'] === true && strtolower($value) !== $value) {
             $error($consts['INVALID_UPPERCASE'], []);
-        }},"ArrayExclusion":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
+        }},"ArrayExclusion":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {// 
 
         if (count(array_intersect_key(array_flip($value), $params['set'])) > 1) {
             $error($consts['INVALID_INCLUSION'], []);
-        }},"ArrayLength":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $length;
+        }},"ArrayLength":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $length;
 // 
 
         $length = count($value);
@@ -5110,22 +5110,31 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }
         else if (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
             $error($consts['TOO_LONG'], []);
-        }},"Aruiha":async function(input, $value, $fields, $params, $consts, $error, $context, e) {(function() {
+        }},"Aruiha":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {(function() {
                 var keys = Object.keys($params['condition']);
                 for (var i = 0; i < keys.length; i++) {
                     var condition = $params['condition'][keys[i]];
                     var ok = true;
-                    chmonos.condition[condition.class](input, $value, $fields, condition.param, $consts, function() { ok = false }, $context, e);
+                    chmonos.condition[condition.class]($input, $value, $fields, condition.param, $consts, function() { ok = false }, $context, $e);
                     if (ok) {
                         return;
                     }
                 }
                 $error($consts['INVALID_ARUIHA'], []);
-            })();},"Callback":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $callee;
+            })();},"Callback":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $callee;
 // 
 
+        if (is_string($params['closure'])) {
+            
+            $input ??= null;
+            $e ??= null;
+
+            $callee = $context['lang'] === 'php' ? $params['closure'] : $params['function'];
+            return $error($callee($input, $value, $fields, $params, $consts, $error, $context, $e));
+        }
+
         $callee = $context['lang'] === 'php' ? $params['closure'] : $params['function'];
-        $callee($value, $error, $fields, $params['userdata'], $context);},"Compare":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $field1, $field2;
+        $callee($value, $error, $fields, $params['userdata'], $context);},"Compare":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $field1, $field2;
 // 
 
         $field1 = $value;
@@ -5174,7 +5183,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }
         if ($params['operator'] === '!contain' && strpos($field1, $field2) !== false) {
             return $error($consts['NOT_CONTAIN'], []);
-        }},"DataUri":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $matches, $decoded, $type;
+        }},"DataUri":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $matches, $decoded, $type;
 // 
 
         $matches = [];
@@ -5195,7 +5204,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
         if ($params['type'] && !count(array_filter($params['allowTypes'], ($type) => fnmatch($type, $matches[1])))) {
             $error($consts['INVALID_TYPE'], []);
-        }},"Date":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $value00, $time;
+        }},"Date":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $value00, $time;
 // 
 
         
@@ -5218,7 +5227,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }
         else if (date($params['format'], $time) !== $value) {
             $error($consts['FALSEFORMAT'], []);
-        }},"Decimal":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $match;
+        }},"Decimal":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $match;
 // 
 
         $match = [];
@@ -5236,7 +5245,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }
         else if (strlen($match[2]) > $params['dec'] + 1) {
             $error($consts['INVALID_DEC'], []);
-        }},"Digits":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
+        }},"Digits":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {// 
 
         $value = ltrim($value, $params['sign']);
 
@@ -5251,13 +5260,13 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         if (!$params['mustDigit'] && $params['digit'] !== null && $params['digit'] < strlen($value)) {
             $error($consts['INVALID_DIGIT'], []);
             return;
-        }},"Distinct":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
+        }},"Distinct":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {// 
 
         $value = preg_split($params['delimiter'], $value, -1, PREG_SPLIT_NO_EMPTY);
 
         if (count($value) !== count(array_unique($value))) {
             $error($consts['NO_DISTINCT'], []);
-        }},"EmailAddress":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $key;
+        }},"EmailAddress":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $key;
 // 
 
         if ($params['delimiter'] === null) {
@@ -5272,7 +5281,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
                 $error($consts['INVALID_FORMAT'], []);
                 return false;
             }
-        }, $params, $error, $consts);},"FileName":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $pathinfo;
+        }, $params, $error, $consts);},"FileName":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $pathinfo;
 // 
 
         if (!preg_match($params['regex'], $value)) {
@@ -5292,7 +5301,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         if (count($params['reserved']) && in_array(strtoupper($pathinfo['filename']), $params['reserved'])) {
             $error($consts['INVALID_FILENAME_RESERVED'], []);
             return;
-        }},"FileSize":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $size;
+        }},"FileSize":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $size;
 // 
 
         $size = filesize($value);
@@ -5303,7 +5312,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
         if ($size > ini_parse_quantity($params['maxsize'])) {
             $error($consts['INVALID_OVER'], []);
-        }},"FileType":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $mimetype;
+        }},"FileType":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $mimetype;
 // 
 
         $mimetype = mime_content_type($value);
@@ -5314,7 +5323,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
         if (!in_array($mimetype, $params['mimetype'])) {
             $error($consts['INVALID_TYPE'], []);
-        }},"Hostname":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $checkport, $port, $require_port, $key, $matches;
+        }},"Hostname":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $checkport, $port, $require_port, $key, $matches;
 // 
 
         $checkport = function ($port, $require_port, $error, $consts) {
@@ -5362,7 +5371,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
             $error($consts['INVALID'], []);
             return false;
-        }, $params, $checkport, $error, $consts);},"ImageSize":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $size;
+        }, $params, $checkport, $error, $consts);},"ImageSize":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $size;
 // 
 
         $size = await getimagesize($value);
@@ -5378,7 +5387,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
         if (!is_null($params['height']) && $params['height'] < $size[1]) {
             $error($consts['INVALID_HEIGHT'], []);
-        }},"InArray":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
+        }},"InArray":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {// 
 
         if ($params['strict'] === null) {
             if (!isset($params['haystack'][$value])) {
@@ -5389,14 +5398,14 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
             if (!in_array($value, $params['haystack'], $params['strict'])) {
                 $error($consts['NOT_IN_ARRAY'], []);
             }
-        }},"Json":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $decode;
+        }},"Json":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $decode;
 // 
 
         $decode = json_decode($value, true);
         if ($decode === null && strtolower(trim($value)) !== 'null') {
             $error($consts['INVALID'], []);
             return;
-        }},"NotInArray":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
+        }},"NotInArray":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {// 
 
         if ($params['strict'] === null) {
             if (isset($params['haystack'][$value])) {
@@ -5407,7 +5416,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
             if (in_array($value, $params['haystack'], $params['strict'])) {
                 $error($consts['VALUE_IN_ARRAY'], [['current', $value]]);
             }
-        }},"Number":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $match;
+        }},"Number":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $match;
 // 
 
         $match = [];
@@ -5429,7 +5438,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
         if (!(+$params['min'] <= +$value && +$value <= +$params['max'])) {
             return $error($consts['INVALID_MINMAX'], []);
-        }},"Password":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $fulfill, $key, $regex, $counts;
+        }},"Password":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $fulfill, $key, $regex, $counts;
 // 
 
         $fulfill = $context['foreach']($params['regexes'], function ($key, $regex, $value, $error, $consts) {
@@ -5446,7 +5455,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         $counts = array_count_values(str_split($value, 1));
         if (count($counts) < count($params['regexes']) * $params['repeat']) {
             $error($consts['INVALID_PASSWORD_WEAK'], []);
-        }},"Range":async function(input, $value, $fields, $params, $consts, $error, $context, e) {// 
+        }},"Range":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {// 
 
         if ((!is_null($params['min']) && !is_null($params['max'])) && !($params['min'] <= $value && $value <= $params['max'])) {
             $error($consts['INVALID_MINMAX'], []);
@@ -5456,7 +5465,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }
         else if ((is_null($params['min']) && !is_null($params['max'])) && ($value > $params['max'])) {
             $error($consts['INVALID_MAX'], []);
-        }},"Regex":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $status;
+        }},"Regex":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $status;
 // 
 
         if (!is_string($value) && !is_int($value) && !is_float($value)) {
@@ -5472,7 +5481,27 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }
         else if ($params['negation'] && $status) {
             $error($consts['NEGATION'], []);
-        }},"Requires":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $nofify, $getDepend, $name, $carry, $statement, $field, $operator, $operand, $dvalue, $intersect;
+        }},"RegexAll":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $count, $lines, $key;
+// 
+
+        if (!is_string($value) && !is_int($value) && !is_float($value)) {
+            return $error($consts['INVALID'], []);
+        }
+
+        $count = $context['cast']('object', 0);
+        $lines = preg_split($params['delimiter'], $value);
+        $context['foreach']($lines, function ($key, $value, $params, $error, $consts, $count) {
+            if (!preg_match($params['pattern'], $value)) {
+                if ($params['errorLimit'] !== null && $params['errorLimit'] < ++$count['scalar']) {
+                    $error($consts['ERROR_LIMIT'], []);
+                    return false;
+                }
+                $error($consts['NOT_MATCH'], [
+                    ['line', +$key + 1],
+                    ['text', $value],
+                ]);
+            }
+        }, $params, $error, $consts, $count);},"Requires":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $nofify, $getDepend, $name, $carry, $statement, $field, $operator, $operand, $dvalue, $intersect;
 // 
 
         $nofify = function ($value, $error, $consts) {
@@ -5548,7 +5577,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
             }, $statement, $getDepend, $context), true);
         }, $getDepend, $context), false)) {
             $nofify($value, $error, $consts);
-        }},"RequiresChild":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $flipped, $cols, $v, $col, $cb, $carry, $c, $name, $values, $inputs, $operator, $operands, $intersect;
+        }},"RequiresChild":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $flipped, $cols, $v, $col, $cb, $carry, $c, $name, $values, $inputs, $operator, $operands, $intersect;
 // 
 
         $flipped = array_combine(array_values($params['children']), array_values($params['children']));
@@ -5569,11 +5598,13 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
             if ($operator === 'any' && !count($intersect)) {
                 $error($consts['NOT_CONTAIN'], []);
+                return false;
             }
             if ($operator === 'all' && count($intersect) !== count($operands)) {
                 $error($consts['NOT_CONTAIN'], []);
+                return false;
             }
-        }, $params['inputs'], $consts, $error, $context);},"Step":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $match;
+        }, $params['inputs'], $consts, $error, $context);},"Step":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $match;
 // 
 
         $match = [];
@@ -5601,7 +5632,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
             else {
                 $error($consts['INVALID_STEP'], []);
             }
-        }},"StringLength":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $length;
+        }},"StringLength":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $length;
 // 
 
         $length = mb_strlen($value);
@@ -5619,7 +5650,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }
         else if (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
             $error($consts['TOO_LONG'], []);
-        }},"StringWidth":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $length, $c;
+        }},"StringWidth":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $length, $c;
 // 
 
         $length = array_sum(array_map(function ($c) {
@@ -5642,7 +5673,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
         }
         else if (is_null($params['min']) && !is_null($params['max']) && $length > $params['max']) {
             $error($consts['TOO_LONG'], []);
-        }},"Telephone":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $key;
+        }},"Telephone":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $key;
 // 
 
         if ($params['delimiter'] === null) {
@@ -5674,7 +5705,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
                     return false;
                 }
             }
-        }, $params, $error, $consts);},"Unique":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $acv;
+        }, $params, $error, $consts);},"Unique":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $acv;
             (function() {
                 $context['values'] = {};
                 var regexp = new RegExp($params.root + '/(-?\\d+)/' + $params.name);
@@ -5695,7 +5726,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
             return false;
         }
     
-            })();},"UniqueChild":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $rows, $row, $children, $cb, $v;
+            })();},"UniqueChild":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $rows, $row, $children, $cb, $v;
 // 
 
         $rows = array_map($context['function'](function ($row, $children, $context) {
@@ -5711,7 +5742,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
         if (count($rows) !== count(array_unique($rows))) {
             $error($consts['NO_UNIQUE'], []);
-        }},"Uri":async function(input, $value, $fields, $params, $consts, $error, $context, e) {var $key, $parsed;
+        }},"Uri":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $key, $parsed;
 // 
 
         if ($params['delimiter'] === null) {
@@ -5741,12 +5772,12 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
 
     /// エラー定数のインポート
     /**/
-this.constants = {"Ajax":{"INVALID":"AjaxInvalid"},"AlphaDigit":{"INVALID_ALPHADIGIT":"AlphaNumericInvalid","INVALID_FIRST_NUMBER":"AlphaNumericFirstNumber","INVALID_UPPERCASE":"AlphaNumericUpperCase","INVALID_LOWERCASE":"AlphaNumericLowerCase","INVALID":"InvalidAbstract"},"ArrayExclusion":{"INVALID_INCLUSION":"ArrayExclusionInclusion","INVALID":"InvalidAbstract"},"ArrayLength":{"INVALID":"ArrayLengthInvalidLength","TOO_SHORT":"ArrayLengthInvalidMin","TOO_LONG":"ArrayLengthInvalidMax","SHORTLONG":"ArrayLengthInvalidMinMax"},"Aruiha":{"INVALID_ARUIHA":"AruihaInvalid","INVALID":"InvalidAbstract"},"Callback":{"INVALID":"CallbackInvalid"},"Compare":{"INVALID":"compareInvalid","EQUAL":"compareEqual","NOT_EQUAL":"compareNotEqual","LESS_THAN":"compareLessThan","GREATER_THAN":"compareGreaterThan","CONTAIN":"compareContain","NOT_CONTAIN":"compareNotContain"},"DataUri":{"INVALID":"dataUriInvalid","INVALID_SIZE":"dataUriInvalidSize","INVALID_TYPE":"dataUriInvalidType"},"Date":{"INVALID":"dateInvalid","INVALID_DATE":"dateInvalidDate","FALSEFORMAT":"dateFalseFormat"},"Decimal":{"INVALID":"DecimalInvalid","INVALID_INT":"DecimalInvalidInt","INVALID_DEC":"DecimalInvalidDec","INVALID_INTDEC":"DecimalInvalidIntDec"},"Digits":{"INVALID":"notDigits","NOT_DIGITS":"digitsInvalid","INVALID_DIGIT":"digitsInvalidDigit"},"Distinct":{"INVALID":"DistinctInvalid","NO_DISTINCT":"DistinctNoDistinct"},"EmailAddress":{"INVALID":"emailAddressInvalid","INVALID_FORMAT":"emailAddressInvalidFormat"},"FileName":{"INVALID":"InvalidFileName","INVALID_FILENAME_STR":"InvalidFileNameStr","INVALID_FILENAME_EXT":"InvalidFileNameExt","INVALID_FILENAME_RESERVED":"InvalidFileNameReserved"},"FileSize":{"INVALID":"FileSizeInvalid","INVALID_OVER":"FileSizeInvalidOver"},"FileType":{"INVALID":"FileTypeInvalid","INVALID_TYPE":"FileTypeInvalidType"},"Hostname":{"INVALID":"InvalidHostname","INVALID_PORT":"InvalidHostnamePort"},"ImageSize":{"INVALID":"ImageFileInvalid","INVALID_WIDTH":"ImageFileInvalidWidth","INVALID_HEIGHT":"ImageFileInvalidHeight"},"InArray":{"INVALID":"InvalidInArray","NOT_IN_ARRAY":"notInArray"},"Json":{"INVALID":"JsonInvalid","INVALID_INVALID_SCHEMA":"JsonInvalidSchema"},"NotInArray":{"INVALID":"InvalidNotInArray","VALUE_IN_ARRAY":"valueInArray"},"Number":{"INVALID":"NumberInvalid","INVALID_INT":"NumberInvalidInt","INVALID_DEC":"NumberInvalidDec","INVALID_INTDEC":"NumberInvalidIntDec","INVALID_MIN":"NumberMin","INVALID_MAX":"NumberMax","INVALID_MINMAX":"NumberMinMax"},"Password":{"INVALID":"InvalidPassword","INVALID_PASSWORD_LESS":"InvalidPasswordLess","INVALID_PASSWORD_WEAK":"InvalidPasswordWeak"},"Range":{"INVALID":"RangeInvalid","INVALID_MIN":"RangeInvalidMin","INVALID_MAX":"RangeInvalidMax","INVALID_MINMAX":"RangeInvalidMinMax"},"Regex":{"INVALID":"regexInvalid","ERROROUS":"regexErrorous","NOT_MATCH":"regexNotMatch","NEGATION":"regexNegation"},"Requires":{"INVALID":"RequireInvalid","INVALID_TEXT":"RequireInvalidText","INVALID_MULTIPLE":"RequireInvalidSelectSingle"},"RequiresChild":{"INVALID":"RequiresChildInvalid","NOT_CONTAIN":"RequiresChildNotContain"},"Step":{"INVALID":"StepInvalid","INVALID_STEP":"StepInvalidInt","INVALID_TIME":"StepInvalidTime"},"StringLength":{"INVALID":"StringLengthInvalidLength","TOO_SHORT":"StringLengthInvalidMin","TOO_LONG":"StringLengthInvalidMax","SHORTLONG":"StringLengthInvalidMinMax","DIFFERENT":"StringLengthInvalidDifferenr"},"StringWidth":{"INVALID":"StringWidthInvalidLength","TOO_SHORT":"StringWidthInvalidMin","TOO_LONG":"StringWidthInvalidMax","SHORTLONG":"StringWidthInvalidMinMax","DIFFERENT":"StringWidthInvalidDifferenr"},"Telephone":{"INVALID":"InvalidTelephone","INVALID_TELEPHONE":"InvalidTelephoneNumber","INVALID_WITH_HYPHEN":"InvalidTelephoneWithHyphen","INVALID_NONE_HYPHEN":"InvalidTelephoneNoneHyphen"},"Unique":{"INVALID":"UniqueInvalid","NO_UNIQUE":"UniqueNoUnique"},"UniqueChild":{"INVALID":"UniqueChildInvalid","NO_UNIQUE":"UniqueChildNoUnique"},"Uri":{"INVALID":"UriInvalid","INVALID_SCHEME":"UriInvalidScheme","INVALID_HOST":"UriInvalidHost","INVALID_PORT":"UriInvalidPort"}};/*
+this.constants = {"Ajax":{"INVALID":"AjaxInvalid"},"AlphaDigit":{"INVALID_ALPHADIGIT":"AlphaNumericInvalid","INVALID_FIRST_NUMBER":"AlphaNumericFirstNumber","INVALID_UPPERCASE":"AlphaNumericUpperCase","INVALID_LOWERCASE":"AlphaNumericLowerCase","INVALID":"InvalidAbstract"},"ArrayExclusion":{"INVALID_INCLUSION":"ArrayExclusionInclusion","INVALID":"InvalidAbstract"},"ArrayLength":{"INVALID":"ArrayLengthInvalidLength","TOO_SHORT":"ArrayLengthInvalidMin","TOO_LONG":"ArrayLengthInvalidMax","SHORTLONG":"ArrayLengthInvalidMinMax"},"Aruiha":{"INVALID_ARUIHA":"AruihaInvalid","INVALID":"InvalidAbstract"},"Callback":{"INVALID":"CallbackInvalid"},"Compare":{"INVALID":"compareInvalid","EQUAL":"compareEqual","NOT_EQUAL":"compareNotEqual","LESS_THAN":"compareLessThan","GREATER_THAN":"compareGreaterThan","CONTAIN":"compareContain","NOT_CONTAIN":"compareNotContain"},"DataUri":{"INVALID":"dataUriInvalid","INVALID_SIZE":"dataUriInvalidSize","INVALID_TYPE":"dataUriInvalidType"},"Date":{"INVALID":"dateInvalid","INVALID_DATE":"dateInvalidDate","FALSEFORMAT":"dateFalseFormat"},"Decimal":{"INVALID":"DecimalInvalid","INVALID_INT":"DecimalInvalidInt","INVALID_DEC":"DecimalInvalidDec","INVALID_INTDEC":"DecimalInvalidIntDec"},"Digits":{"INVALID":"notDigits","NOT_DIGITS":"digitsInvalid","INVALID_DIGIT":"digitsInvalidDigit"},"Distinct":{"INVALID":"DistinctInvalid","NO_DISTINCT":"DistinctNoDistinct"},"EmailAddress":{"INVALID":"emailAddressInvalid","INVALID_FORMAT":"emailAddressInvalidFormat"},"FileName":{"INVALID":"InvalidFileName","INVALID_FILENAME_STR":"InvalidFileNameStr","INVALID_FILENAME_EXT":"InvalidFileNameExt","INVALID_FILENAME_RESERVED":"InvalidFileNameReserved"},"FileSize":{"INVALID":"FileSizeInvalid","INVALID_OVER":"FileSizeInvalidOver"},"FileType":{"INVALID":"FileTypeInvalid","INVALID_TYPE":"FileTypeInvalidType"},"Hostname":{"INVALID":"InvalidHostname","INVALID_PORT":"InvalidHostnamePort"},"ImageSize":{"INVALID":"ImageFileInvalid","INVALID_WIDTH":"ImageFileInvalidWidth","INVALID_HEIGHT":"ImageFileInvalidHeight"},"InArray":{"INVALID":"InvalidInArray","NOT_IN_ARRAY":"notInArray"},"Json":{"INVALID":"JsonInvalid","INVALID_INVALID_SCHEMA":"JsonInvalidSchema"},"NotInArray":{"INVALID":"InvalidNotInArray","VALUE_IN_ARRAY":"valueInArray"},"Number":{"INVALID":"NumberInvalid","INVALID_INT":"NumberInvalidInt","INVALID_DEC":"NumberInvalidDec","INVALID_INTDEC":"NumberInvalidIntDec","INVALID_MIN":"NumberMin","INVALID_MAX":"NumberMax","INVALID_MINMAX":"NumberMinMax"},"Password":{"INVALID":"InvalidPassword","INVALID_PASSWORD_LESS":"InvalidPasswordLess","INVALID_PASSWORD_WEAK":"InvalidPasswordWeak"},"Range":{"INVALID":"RangeInvalid","INVALID_MIN":"RangeInvalidMin","INVALID_MAX":"RangeInvalidMax","INVALID_MINMAX":"RangeInvalidMinMax"},"Regex":{"INVALID":"regexInvalid","ERROROUS":"regexErrorous","NOT_MATCH":"regexNotMatch","NEGATION":"regexNegation"},"RegexAll":{"INVALID":"regexAllInvalid","ERROROUS":"regexAllErrorous","NOT_MATCH":"regexAllNotMatch","ERROR_LIMIT":"regexAllErrorLimit"},"Requires":{"INVALID":"RequireInvalid","INVALID_TEXT":"RequireInvalidText","INVALID_MULTIPLE":"RequireInvalidSelectSingle"},"RequiresChild":{"INVALID":"RequiresChildInvalid","NOT_CONTAIN":"RequiresChildNotContain"},"Step":{"INVALID":"StepInvalid","INVALID_STEP":"StepInvalidInt","INVALID_TIME":"StepInvalidTime"},"StringLength":{"INVALID":"StringLengthInvalidLength","TOO_SHORT":"StringLengthInvalidMin","TOO_LONG":"StringLengthInvalidMax","SHORTLONG":"StringLengthInvalidMinMax","DIFFERENT":"StringLengthInvalidDifferenr"},"StringWidth":{"INVALID":"StringWidthInvalidLength","TOO_SHORT":"StringWidthInvalidMin","TOO_LONG":"StringWidthInvalidMax","SHORTLONG":"StringWidthInvalidMinMax","DIFFERENT":"StringWidthInvalidDifferenr"},"Telephone":{"INVALID":"InvalidTelephone","INVALID_TELEPHONE":"InvalidTelephoneNumber","INVALID_WITH_HYPHEN":"InvalidTelephoneWithHyphen","INVALID_NONE_HYPHEN":"InvalidTelephoneNoneHyphen"},"Unique":{"INVALID":"UniqueInvalid","NO_UNIQUE":"UniqueNoUnique"},"UniqueChild":{"INVALID":"UniqueChildInvalid","NO_UNIQUE":"UniqueChildNoUnique"},"Uri":{"INVALID":"UriInvalid","INVALID_SCHEME":"UriInvalidScheme","INVALID_HOST":"UriInvalidHost","INVALID_PORT":"UriInvalidPort"}};/*
 */
 
     /// エラー文言のインポート
     /**/
-this.messages = {"Ajax":{"AjaxInvalid":"invalid"},"AlphaDigit":{"AlphaNumericInvalid":"使用できない文字が含まれています","AlphaNumericFirstNumber":"先頭に数値は使えません","AlphaNumericUpperCase":"大文字は使えません","AlphaNumericLowerCase":"小文字は使えません"},"ArrayExclusion":{"ArrayExclusionInclusion":"${implode(\",\", _set)}は同時選択できません"},"ArrayLength":{"ArrayLengthInvalidLength":"Invalid value given","ArrayLengthInvalidMin":"${_min}件以上は入力してください","ArrayLengthInvalidMax":"${_max}件以下で入力して下さい","ArrayLengthInvalidMinMax":"${_min}件～${_max}件を入力して下さい"},"Aruiha":{"AruihaInvalid":"必ず呼び出し元で再宣言する"},"Callback":{"CallbackInvalid":"クロージャの戻り値で上書きされる"},"Compare":{"compareInvalid":"Invalid value given","compareEqual":"「${$resolveTitle(_operand)}」と同じ値を入力してください","compareNotEqual":"「${$resolveTitle(_operand)}」と異なる値を入力してください","compareLessThan":"「${$resolveTitle(_operand)}」より小さい値を入力してください","compareGreaterThan":"「${$resolveTitle(_operand)}」より大きい値を入力してください","compareContain":"「${$resolveTitle(_operand)}」を含めて入力してください","compareNotContain":"「${$resolveTitle(_operand)}」を含めないで入力してください"},"DataUri":{"dataUriInvalid":"Invalid value given","dataUriInvalidSize":"${_size}B以下で入力してください","dataUriInvalidType":"${implode(\",\", _type)}形式で入力してください"},"Date":{"dateInvalid":"Invalid value given","dateInvalidDate":"有効な日付を入力してください","dateFalseFormat":"${_format}形式で入力してください"},"Decimal":{"DecimalInvalid":"小数値を入力してください","DecimalInvalidInt":"整数部分を${_int}桁以下で入力してください","DecimalInvalidDec":"小数部分を${_dec}桁以下で入力してください","DecimalInvalidIntDec":"整数部分を${_int}桁、小数部分を${_dec}桁以下で入力してください"},"Digits":{"notDigits":"Invalid value given","digitsInvalid":"整数を入力してください","digitsInvalidDigit":"${_digit}桁で入力してください"},"Distinct":{"DistinctInvalid":"Invalid value given","DistinctNoDistinct":"重複した値が含まれています"},"EmailAddress":{"emailAddressInvalid":"Invalid value given","emailAddressInvalidFormat":"メールアドレスを正しく入力してください"},"FileName":{"InvalidFileName":"Invalid value given","InvalidFileNameStr":"有効なファイル名を入力してください","InvalidFileNameExt":"${implode(\",\", _extensions)}のファイル名を入力してください","InvalidFileNameReserved":"使用できないファイル名です"},"FileSize":{"FileSizeInvalid":"入力ファイルが不正です","FileSizeInvalidOver":"${_maxsize}B以下のファイルを選択してください"},"FileType":{"FileTypeInvalid":"入力ファイルが不正です","FileTypeInvalidType":"${implode(\",\", array_keys(_allowTypes))}形式のファイルを選択して下さい"},"Hostname":{"InvalidHostname":"ホスト名を正しく入力してください","InvalidHostnamePort":"ポート番号を正しく入力してください"},"ImageSize":{"ImageFileInvalid":"画像ファイルを入力してください","ImageFileInvalidWidth":"横サイズは${_width}ピクセル以下で選択してください","ImageFileInvalidHeight":"縦サイズは${_height}ピクセル以下で選択してください"},"InArray":{"InvalidInArray":"Invalid value given","notInArray":"選択値が不正です"},"Json":{"JsonInvalid":"JSON文字列が不正です","JsonInvalidSchema":"キーが不正です"},"NotInArray":{"InvalidNotInArray":"Invalid value given","valueInArray":"${$resolveLabel(current)}は不正です"},"Number":{"NumberInvalid":"数値を入力してください","NumberInvalidInt":"整数部分を${_int}桁以下で入力してください","NumberInvalidDec":"小数部分を${_dec}桁以下で入力してください","NumberInvalidIntDec":"整数部分を${_int}桁、小数部分を${_dec}桁以下で入力してください","NumberMin":"${_min}以上で入力して下さい","NumberMax":"${_max}以下で入力して下さい","NumberMinMax":"${_min}以上${_max}以下で入力して下さい"},"Password":{"InvalidPassword":"Invalid value given","InvalidPasswordLess":"${implode(\",\", array_keys(_charlists))}を含めてください","InvalidPasswordWeak":"${implode(\",\", array_keys(_charlists))}のいずれかを${_repeat}文字以上含めてください"},"Range":{"RangeInvalid":"Invalid value given","RangeInvalidMin":"${_min}以上で入力して下さい","RangeInvalidMax":"${_max}以下で入力して下さい","RangeInvalidMinMax":"${_min}以上${_max}以下で入力して下さい"},"Regex":{"regexInvalid":"Invalid value given","regexErrorous":"There was${_pattern}","regexNotMatch":"パターンに一致しません","regexNegation":"使用できない文字が含まれています"},"Requires":{"RequireInvalid":"Invalid value given","RequireInvalidText":"入力必須です","RequireInvalidSelectSingle":"選択してください"},"RequiresChild":{"RequiresChildInvalid":"Invalid value given","RequiresChildNotContain":"必須項目を含んでいません"},"Step":{"StepInvalid":"Invalid value given","StepInvalidInt":"${_step}の倍数で入力してください","StepInvalidTime":"${_timemessage}単位で入力してください"},"StringLength":{"StringLengthInvalidLength":"Invalid value given","StringLengthInvalidMin":"${_min}文字以上で入力して下さい","StringLengthInvalidMax":"${_max}文字以下で入力して下さい","StringLengthInvalidMinMax":"${_min}文字～${_max}文字で入力して下さい","StringLengthInvalidDifferenr":"${_min}文字で入力して下さい"},"StringWidth":{"StringWidthInvalidLength":"Invalid value given","StringWidthInvalidMin":"${_min}文字以上で入力して下さい","StringWidthInvalidMax":"${_max}文字以下で入力して下さい","StringWidthInvalidMinMax":"${_min}文字～${_max}文字で入力して下さい","StringWidthInvalidDifferenr":"${_min}文字で入力して下さい"},"Telephone":{"InvalidTelephone":"電話番号を正しく入力してください","InvalidTelephoneNumber":"電話番号を入力してください","InvalidTelephoneWithHyphen":"ハイフン付きで電話番号を入力してください","InvalidTelephoneNoneHyphen":"ハイフン無しで電話番号を入力してください"},"Unique":{"UniqueInvalid":"Invalid value given","UniqueNoUnique":"${value}が重複しています"},"UniqueChild":{"UniqueChildInvalid":"Invalid value given","UniqueChildNoUnique":"値が重複しています"},"Uri":{"UriInvalid":"URLをスキームから正しく入力してください","UriInvalidScheme":"スキームが不正です(${implode(\",\", _schemes)}のみ)","UriInvalidHost":"ホスト名が不正です","UriInvalidPort":"ポート番号が不正です"}};/*
+this.messages = {"Ajax":{"AjaxInvalid":"invalid"},"AlphaDigit":{"AlphaNumericInvalid":"使用できない文字が含まれています","AlphaNumericFirstNumber":"先頭に数値は使えません","AlphaNumericUpperCase":"大文字は使えません","AlphaNumericLowerCase":"小文字は使えません"},"ArrayExclusion":{"ArrayExclusionInclusion":"${implode(\",\", _set)}は同時選択できません"},"ArrayLength":{"ArrayLengthInvalidLength":"Invalid value given","ArrayLengthInvalidMin":"${_min}件以上は入力してください","ArrayLengthInvalidMax":"${_max}件以下で入力して下さい","ArrayLengthInvalidMinMax":"${_min}件～${_max}件を入力して下さい"},"Aruiha":{"AruihaInvalid":"必ず呼び出し元で再宣言する"},"Callback":{"CallbackInvalid":"クロージャの戻り値で上書きされる"},"Compare":{"compareInvalid":"Invalid value given","compareEqual":"「${$resolveTitle(_operand)}」と同じ値を入力してください","compareNotEqual":"「${$resolveTitle(_operand)}」と異なる値を入力してください","compareLessThan":"「${$resolveTitle(_operand)}」より小さい値を入力してください","compareGreaterThan":"「${$resolveTitle(_operand)}」より大きい値を入力してください","compareContain":"「${$resolveTitle(_operand)}」を含めて入力してください","compareNotContain":"「${$resolveTitle(_operand)}」を含めないで入力してください"},"DataUri":{"dataUriInvalid":"Invalid value given","dataUriInvalidSize":"${_size}B以下で入力してください","dataUriInvalidType":"${implode(\",\", _type)}形式で入力してください"},"Date":{"dateInvalid":"Invalid value given","dateInvalidDate":"有効な日付を入力してください","dateFalseFormat":"${_format}形式で入力してください"},"Decimal":{"DecimalInvalid":"小数値を入力してください","DecimalInvalidInt":"整数部分を${_int}桁以下で入力してください","DecimalInvalidDec":"小数部分を${_dec}桁以下で入力してください","DecimalInvalidIntDec":"整数部分を${_int}桁、小数部分を${_dec}桁以下で入力してください"},"Digits":{"notDigits":"Invalid value given","digitsInvalid":"整数を入力してください","digitsInvalidDigit":"${_digit}桁で入力してください"},"Distinct":{"DistinctInvalid":"Invalid value given","DistinctNoDistinct":"重複した値が含まれています"},"EmailAddress":{"emailAddressInvalid":"Invalid value given","emailAddressInvalidFormat":"メールアドレスを正しく入力してください"},"FileName":{"InvalidFileName":"Invalid value given","InvalidFileNameStr":"有効なファイル名を入力してください","InvalidFileNameExt":"${implode(\",\", _extensions)}のファイル名を入力してください","InvalidFileNameReserved":"使用できないファイル名です"},"FileSize":{"FileSizeInvalid":"入力ファイルが不正です","FileSizeInvalidOver":"${_maxsize}B以下のファイルを選択してください"},"FileType":{"FileTypeInvalid":"入力ファイルが不正です","FileTypeInvalidType":"${implode(\",\", array_keys(_allowTypes))}形式のファイルを選択して下さい"},"Hostname":{"InvalidHostname":"ホスト名を正しく入力してください","InvalidHostnamePort":"ポート番号を正しく入力してください"},"ImageSize":{"ImageFileInvalid":"画像ファイルを入力してください","ImageFileInvalidWidth":"横サイズは${_width}ピクセル以下で選択してください","ImageFileInvalidHeight":"縦サイズは${_height}ピクセル以下で選択してください"},"InArray":{"InvalidInArray":"Invalid value given","notInArray":"選択値が不正です"},"Json":{"JsonInvalid":"JSON文字列が不正です","JsonInvalidSchema":"キーが不正です"},"NotInArray":{"InvalidNotInArray":"Invalid value given","valueInArray":"${$resolveLabel(current)}は不正です"},"Number":{"NumberInvalid":"数値を入力してください","NumberInvalidInt":"整数部分を${_int}桁以下で入力してください","NumberInvalidDec":"小数部分を${_dec}桁以下で入力してください","NumberInvalidIntDec":"整数部分を${_int}桁、小数部分を${_dec}桁以下で入力してください","NumberMin":"${_min}以上で入力して下さい","NumberMax":"${_max}以下で入力して下さい","NumberMinMax":"${_min}以上${_max}以下で入力して下さい"},"Password":{"InvalidPassword":"Invalid value given","InvalidPasswordLess":"${implode(\",\", array_keys(_charlists))}を含めてください","InvalidPasswordWeak":"${implode(\",\", array_keys(_charlists))}のいずれかを${_repeat}文字以上含めてください"},"Range":{"RangeInvalid":"Invalid value given","RangeInvalidMin":"${_min}以上で入力して下さい","RangeInvalidMax":"${_max}以下で入力して下さい","RangeInvalidMinMax":"${_min}以上${_max}以下で入力して下さい"},"Regex":{"regexInvalid":"Invalid value given","regexErrorous":"There was${_pattern}","regexNotMatch":"パターンに一致しません","regexNegation":"使用できない文字が含まれています"},"RegexAll":{"regexAllInvalid":"Invalid value given","regexAllErrorous":"There was${_pattern}","regexAllNotMatch":"${line}行目(${text})がパターンに一致しません","regexAllErrorLimit":"エラーが多すぎるためすべては表示しません"},"Requires":{"RequireInvalid":"Invalid value given","RequireInvalidText":"入力必須です","RequireInvalidSelectSingle":"選択してください"},"RequiresChild":{"RequiresChildInvalid":"Invalid value given","RequiresChildNotContain":"必須項目を含んでいません"},"Step":{"StepInvalid":"Invalid value given","StepInvalidInt":"${_step}の倍数で入力してください","StepInvalidTime":"${_timemessage}単位で入力してください"},"StringLength":{"StringLengthInvalidLength":"Invalid value given","StringLengthInvalidMin":"${_min}文字以上で入力して下さい","StringLengthInvalidMax":"${_max}文字以下で入力して下さい","StringLengthInvalidMinMax":"${_min}文字～${_max}文字で入力して下さい","StringLengthInvalidDifferenr":"${_min}文字で入力して下さい"},"StringWidth":{"StringWidthInvalidLength":"Invalid value given","StringWidthInvalidMin":"${_min}文字以上で入力して下さい","StringWidthInvalidMax":"${_max}文字以下で入力して下さい","StringWidthInvalidMinMax":"${_min}文字～${_max}文字で入力して下さい","StringWidthInvalidDifferenr":"${_min}文字で入力して下さい"},"Telephone":{"InvalidTelephone":"電話番号を正しく入力してください","InvalidTelephoneNumber":"電話番号を入力してください","InvalidTelephoneWithHyphen":"ハイフン付きで電話番号を入力してください","InvalidTelephoneNoneHyphen":"ハイフン無しで電話番号を入力してください"},"Unique":{"UniqueInvalid":"Invalid value given","UniqueNoUnique":"${value}が重複しています"},"UniqueChild":{"UniqueChildInvalid":"Invalid value given","UniqueChildNoUnique":"値が重複しています"},"Uri":{"UriInvalid":"URLをスキームから正しく入力してください","UriInvalidScheme":"スキームが不正です(${implode(\",\", _schemes)}のみ)","UriInvalidHost":"ホスト名が不正です","UriInvalidPort":"ポート番号が不正です"}};/*
 */
 
     /// 初期化（コンストラクション）
@@ -6080,7 +6111,12 @@ this.messages = {"Ajax":{"AjaxInvalid":"invalid"},"AlphaDigit":{"AlphaNumericInv
                             },
                             'value': value,
                         }, chmonos.phpjs, Object.fromEntries(vars ?? []), Object.fromEntries(Object.entries(cond['param']).map(kv => ['_' + kv[0], kv[1]])));
-                        errorTypes[level][cname][err] = templateFunction(values)(ret);
+
+                        let message = templateFunction(values)(ret);
+                        if (errorTypes[level][cname][err] != null) {
+                            message = errorTypes[level][cname][err] + '\n' + message;
+                        }
+                        errorTypes[level][cname][err] = message;
                     }
                 };
                 // 値が空の場合は Requires しか検証しない（空かどうかの制御を他の condition に任せたくない）
@@ -6145,7 +6181,7 @@ this.messages = {"Ajax":{"AjaxInvalid":"invalid"},"AlphaDigit":{"AlphaNumericInv
             return true;
         },
         "cast": function (type, value) {
-            // 現状は array のみ実装
+            // 現状は array/object のみ実装
             if (type === 'array') {
                 if (value === null) {
                     return [];
@@ -6154,6 +6190,15 @@ this.messages = {"Ajax":{"AjaxInvalid":"invalid"},"AlphaDigit":{"AlphaNumericInv
                     return value;
                 }
                 return [value];
+            }
+            if (type === 'object') {
+                if (value === null) {
+                    return {};
+                }
+                if (value instanceof Array || isPlainObject(value)) {
+                    return value;
+                }
+                return {scalar: value};
             }
             throw "invalid cast type";
         },
