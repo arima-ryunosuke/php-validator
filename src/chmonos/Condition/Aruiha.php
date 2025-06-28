@@ -78,15 +78,22 @@ JS;
 
     public function isValid($value, $fields = [], ?Input $input = null)
     {
-        $this->messages = [];
         foreach ($this->conditions as $condition) {
+            $this->messages = [];
             if ($condition->isValid($value, $fields, $input)) {
-                $this->messages = [];
                 return true;
             }
             $this->addMessage(self::INVALID_ARUIHA, null, []);
         }
         return !count($this->messages);
+    }
+
+    public function clearMessage($messageKey = null)
+    {
+        foreach ($this->conditions as $condition) {
+            $condition->clearMessage($messageKey);
+        }
+        return parent::clearMessage($messageKey);
     }
 
     public function getMaxLength()

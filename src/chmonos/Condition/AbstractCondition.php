@@ -627,7 +627,27 @@ JS;
         $message = $message ?? $this->changedMessageTemplates[$messageKey] ?? static::$messageTemplates[$messageKey];
 
         $message = render_template($message, $context + array_strpad($this->getValidationParam(), '_'));
+        if (isset($this->messages[$messageKey])) {
+            $message = $this->messages[$messageKey] . "\n" . $message;
+        }
         $this->messages[$messageKey] = $message;
+        return $this;
+    }
+
+    /**
+     * エラーメッセージをクリアする
+     *
+     * @param ?string $messageKey
+     * @return static
+     */
+    public function clearMessage($messageKey = null)
+    {
+        if ($messageKey === null) {
+            $this->messages = [];
+        }
+        else {
+            unset($this->messages[$messageKey]);
+        }
         return $this;
     }
 

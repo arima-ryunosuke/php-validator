@@ -23,15 +23,15 @@ class AruihaTest extends \ryunosuke\Test\AbstractUnitTestCase
             new Compare('>=', 'dependG'),
         ]);
 
-        that($validate)->isValid(-2, $values)->isTrue();
+        that($validate)->clearMessage()->isValid(-2, $values)->isTrue();
         that($validate)->getMessages()->is([]);
-        that($validate)->isValid(-1, $values)->isTrue();
+        that($validate)->clearMessage()->isValid(-1, $values)->isTrue();
         that($validate)->getMessages()->is([]);
-        that($validate)->isValid(0, $values)->isFalse();
+        that($validate)->clearMessage()->isValid(0, $values)->isFalse();
         that($validate)->getMessages()->is(["AruihaInvalid" => "必ず呼び出し元で再宣言する"]);
-        that($validate)->isValid(1, $values)->isTrue();
+        that($validate)->clearMessage()->isValid(1, $values)->isTrue();
         that($validate)->getMessages()->is([]);
-        that($validate)->isValid(2, $values)->isTrue();
+        that($validate)->clearMessage()->isValid(2, $values)->isTrue();
         that($validate)->getMessages()->is([]);
 
         that($validate)->getFields()->is(["dependL", "dependG"]);
@@ -44,23 +44,23 @@ class AruihaTest extends \ryunosuke\Test\AbstractUnitTestCase
             'Range' => [1, 3],
         ]);
 
-        that($validate)->isValid(-4)->isFalse();
+        that($validate)->clearMessage()->isValid(-4)->isFalse();
         that($validate)->getMessages()->is(["AruihaInvalid" => "必ず呼び出し元で再宣言する"]);
-        that($validate)->isValid(-3)->isTrue();
+        that($validate)->clearMessage()->isValid(-3)->isTrue();
         that($validate)->getMessages()->is([]);
-        that($validate)->isValid(-2)->isTrue();
+        that($validate)->clearMessage()->isValid(-2)->isTrue();
         that($validate)->getMessages()->is([]);
-        that($validate)->isValid(-1)->isTrue();
+        that($validate)->clearMessage()->isValid(-1)->isTrue();
         that($validate)->getMessages()->is([]);
-        that($validate)->isValid(0)->isFalse();
+        that($validate)->clearMessage()->isValid(0)->isFalse();
         that($validate)->getMessages()->is(["AruihaInvalid" => "必ず呼び出し元で再宣言する"]);
-        that($validate)->isValid(1)->isTrue();
+        that($validate)->clearMessage()->isValid(1)->isTrue();
         that($validate)->getMessages()->is([]);
-        that($validate)->isValid(2)->isTrue();
+        that($validate)->clearMessage()->isValid(2)->isTrue();
         that($validate)->getMessages()->is([]);
-        that($validate)->isValid(3)->isTrue();
+        that($validate)->clearMessage()->isValid(3)->isTrue();
         that($validate)->getMessages()->is([]);
-        that($validate)->isValid(4)->isFalse();
+        that($validate)->clearMessage()->isValid(4)->isFalse();
         that($validate)->getMessages()->is(["AruihaInvalid" => "必ず呼び出し元で再宣言する"]);
     }
 

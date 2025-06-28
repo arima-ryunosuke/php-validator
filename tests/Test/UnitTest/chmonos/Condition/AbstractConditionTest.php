@@ -297,13 +297,15 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
         $condition = new Callback(function () { }, [], 'userdata');
         $condition->setMessageTemplate('this is ${_userdata} message', Callback::INVALID);
 
+        $condition->clearMessage();
         $condition->addMessage(Callback::INVALID, 'hogera');
         that($condition)->getMessages()->is([Callback::INVALID => 'hogera']);
 
+        $condition->clearMessage(Callback::INVALID);
         $condition->addMessage(Callback::INVALID, '${_notfound}');
         that($condition)->getMessages()->is([Callback::INVALID => '_notfound']);
 
         $condition->addMessage(Callback::INVALID);
-        that($condition)->getMessages()->is([Callback::INVALID => 'this is userdata message']);
+        that($condition)->getMessages()->is([Callback::INVALID => "_notfound\nthis is userdata message"]);
     }
 }

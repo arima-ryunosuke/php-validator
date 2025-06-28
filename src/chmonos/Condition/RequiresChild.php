@@ -57,9 +57,11 @@ class RequiresChild extends AbstractParentCondition
 
             if ($operator === 'any' && !count($intersect)) {
                 $error($consts['NOT_CONTAIN'], []);
+                return false;
             }
             if ($operator === 'all' && count($intersect) !== count($operands)) {
                 $error($consts['NOT_CONTAIN'], []);
+                return false;
             }
         }, $params['inputs'], $consts, $error, $context);
     }

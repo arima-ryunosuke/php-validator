@@ -383,7 +383,12 @@ function Chmonos(form, options) {
                             },
                             'value': value,
                         }, chmonos.phpjs, Object.fromEntries(vars ?? []), Object.fromEntries(Object.entries(cond['param']).map(kv => ['_' + kv[0], kv[1]])));
-                        errorTypes[level][cname][err] = templateFunction(values)(ret);
+
+                        let message = templateFunction(values)(ret);
+                        if (errorTypes[level][cname][err] != null) {
+                            message = errorTypes[level][cname][err] + '\n' + message;
+                        }
+                        errorTypes[level][cname][err] = message;
                     }
                 };
                 // 値が空の場合は Requires しか検証しない（空かどうかの制御を他の condition に任せたくない）
