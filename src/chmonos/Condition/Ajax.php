@@ -79,7 +79,7 @@ class Ajax extends AbstractCondition
                         var formdata = undefined;
                         var body = $params.request.method === 'GET' ? url.searchParams : formdata = new FormData();
 
-                        body.append(input.name, $value);
+                        body.append($input.name, $value);
                         var keys = Object.keys($fields);
                         for (var i = 0; i < keys.length; i++) {
                             body.append(keys[i], $fields[keys[i]]);
@@ -155,22 +155,22 @@ class Ajax extends AbstractCondition
                         });
                     }
 
-                    if (e.type === 'submit') {
+                    if ($e.type === 'submit') {
                         $error(request());
                     }
                     else {
-                        if (!input.validationAjaxDebounce) {
+                        if (!$input.validationAjaxDebounce) {
                             $error(request());
-                            input.validationAjaxDebounce = setTimeout(function() {
-                                input.validationAjaxDebounce = null;
+                            $input.validationAjaxDebounce = setTimeout(function() {
+                                $input.validationAjaxDebounce = null;
                             }, 1500);
                         }
                         else {
-                            clearTimeout(input.validationAjaxDebounce);
+                            clearTimeout($input.validationAjaxDebounce);
                             $error(new Promise(function (resolve) {
-                                input.validationAjaxDebounce = setTimeout(function() {
+                                $input.validationAjaxDebounce = setTimeout(function() {
                                     request().then(resolve);
-                                    input.validationAjaxDebounce = null;
+                                    $input.validationAjaxDebounce = null;
                                 }, 1000);
                             }));
                         }

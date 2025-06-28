@@ -147,7 +147,7 @@ abstract class AbstractCondition
                         continue;
                     }
 
-                    $args = ['$value', '$fields', '$params', '$consts', '$error', '$context'];
+                    $args = ['$input', '$value', '$fields', '$params', '$consts', '$error', '$context', '$e'];
 
                     $block = callable_code($rlass->getMethod('validate'))[1];
                     $block = preg_replace('#(^\s*{)|}\s*$#u', '', $block);
@@ -164,7 +164,7 @@ abstract class AbstractCondition
                     if ($vars) {
                         $code = 'var ' . implode(', ', $vars) . ";\n" . $code;
                     }
-                    $code = 'async function(input, ' . implode(', ', $args) . ', e) {' . trim($code) . '}';
+                    $code = 'async function(' . implode(', ', $args) . ') {' . trim($code) . '}';
 
                     $contents[$name] = $code;
                     $condition[$name] = self::literalJson($code);

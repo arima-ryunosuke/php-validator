@@ -57,7 +57,7 @@ class Aruiha extends AbstractCondition implements Interfaces\MaxLength
                 for (var i = 0; i < keys.length; i++) {
                     var condition = $params['condition'][keys[i]];
                     var ok = true;
-                    chmonos.condition[condition.class](input, $value, $fields, condition.param, $consts, function() { ok = false }, $context, e);
+                    chmonos.condition[condition.class]($input, $value, $fields, condition.param, $consts, function() { ok = false }, $context, $e);
                     if (ok) {
                         return;
                     }
