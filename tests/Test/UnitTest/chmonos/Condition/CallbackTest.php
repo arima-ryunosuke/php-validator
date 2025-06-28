@@ -19,6 +19,30 @@ class CallbackTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
     }
 
+    function test_callback()
+    {
+        function callback($input, $value, $fields, $params, $consts, $error, $context, $e)
+        {
+            if ($value !== 'valid') {
+                return "another:{$fields['another']},userdata:{$params['userdata']}";
+            }
+        }
+
+        $validate = new Callback(__NAMESPACE__ . "\\callback", ['another'], 'userdata');
+
+        that($validate)->isValid('invalid', [
+            'another' => 'fuga',
+        ])->isFalse();
+        that($validate)->getMessages()->is([
+            "CallbackInvalid" => 'another:fuga,userdata:userdata',
+        ]);
+
+        that($validate)->isValid('valid', [
+            'another' => 'fuga',
+        ])->isTrue();
+        that($validate)->getMessages()->is([]);
+    }
+
     function test_getField()
     {
         $validate = new Callback(function () { }, ['another']);
