@@ -609,6 +609,34 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_regexall(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('regexall', <<<TEXT
+        .txt #comment
+        .csv comment
+        
+        png
+        jpeg
+        gif
+        TEXT,);
+        that($driver)->getErrors()->count(1);
+        that($driver)->getMessage()->contains('エラーが多すぎるためすべては表示しません');
+        $driver->setValue('regexall', <<<TEXT
+        .txt #comment
+        .csv comment
+        
+        .png
+        .jpeg
+        .gif
+        TEXT,);
+        that($driver)->getErrors()->count(0);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_require_checkbox(WebDriver $driver)
     {
         $driver->path('/example/index.php');
@@ -972,6 +1000,20 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
 
         $driver->setValue('flag_trimming_false', '');
         that($driver)->getErrors()->count(2);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
+    function test_client_only(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('client_only', 'hoge');
+        that($driver)->getErrors()->count(0);
+
+        $driver->setValue('client_only', 'invalid');
+        that($driver)->getErrors()->count(1);
     }
 
     /**

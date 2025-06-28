@@ -1,5 +1,6 @@
 <?php
 
+use ryunosuke\chmonos\Condition\Callback;
 use ryunosuke\chmonos\Condition\Regex;use ryunosuke\chmonos\Form;
 use ryunosuke\chmonos\HtmlString;
 
@@ -96,6 +97,11 @@ $other_form = new Form([
             'Requires' => null
         ]
     ],
+    'client_only'         => [
+        'condition' => [
+            new Callback('Chmonos.hoge')
+        ]
+    ],
     'server_only'         => [
         'condition' => []
     ],
@@ -174,6 +180,12 @@ if (resetForm($other_form, 'other_form')) {
         </td>
     </tr>
     <tr>
+        <th>クライアント側でしかできないチェック（WebAPI を呼ぶとか）</th>
+        <td>
+            <?= $other_form->input('client_only') ?>
+        </td>
+    </tr>
+    <tr>
         <th>サーバ側でしかできないチェック（重複チェックとか）</th>
         <td>
             <?= $other_form->input('server_only') ?>
@@ -196,6 +208,13 @@ if (resetForm($other_form, 'other_form')) {
 <?= $other_form->form() ?>
 
 <script type="module">
+    Chmonos.hoge = function (input, value) {
+        console.log(arguments);
+        if (value !== 'hoge') {
+            return '"hoge" しか許されません';
+        }
+    };
+
     var $validated = $$('[data-vinput-id=validated]');
     $validated.on('input', function (e) {
         console.log(e)

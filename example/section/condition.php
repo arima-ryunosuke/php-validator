@@ -394,6 +394,13 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'Regex' => ['/^[a-z]*$/', true]
         ]
     ],
+    'regexall'              => [
+        'title'     => '正規表現（全行）',
+        'condition' => [
+            'RegexAll' => ['/^(\\.[a-z0-9]+(\\s+.+)?)?$/i', "#\n#", 2],
+        ],
+        'default' => ".txt   テキスト\n.csv   CSV\r\n.json  JSON\r"
+    ],
     'mixed'                 => [
         'title'     => '複合条件',
         'condition' => [
@@ -784,6 +791,11 @@ resetForm($condition_form, 'condition_form');
         <th>正規表現：肯定(a-z]*) | 否定(a-z]*)</th>
         <td><?= $condition_form->input('regex') ?></td>
         <td><?= $condition_form->input('notregex') ?></td>
+    </tr>
+    <tr>
+        <th>正規表現：全行（.ext   コメント）</th>
+        <td><?= $condition_form->input('regexall') ?></td>
+        <td></td>
     </tr>
     <tr>
         <th>複合条件（ファイル名・ホスト名）</th>

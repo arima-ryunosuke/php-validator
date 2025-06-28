@@ -42,6 +42,10 @@ $appendmtime = function ($filename) {
             text-align: right;
         }
 
+        textarea {
+            field-sizing: content;
+        }
+
         .wrapper {
             white-space: nowrap;
         }

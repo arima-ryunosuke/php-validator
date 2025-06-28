@@ -201,6 +201,13 @@ require_once __DIR__ . '/+include.php' ?>
                 expect(chmonos.context.cast('array', {a: 'A'})).toEqual({a: 'A'});
                 expect(chmonos.context.cast('array', null)).toEqual([]);
                 expect(chmonos.context.cast('array', [])).toEqual([]);
+
+                expect(chmonos.context.cast('object', [])).toEqual([]);
+                expect(chmonos.context.cast('object', ['a'])).toEqual(['a']);
+                expect(chmonos.context.cast('object', {})).toEqual({});
+                expect(chmonos.context.cast('object', {a: 'A'})).toEqual({a: 'A'});
+                expect(chmonos.context.cast('object', 123)).toEqual({scalar: 123});
+                expect(chmonos.context.cast('object', null)).toEqual({});
             });
 
             it('str_concat', function () {
