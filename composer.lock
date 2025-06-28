@@ -297,16 +297,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v5.4.0",
+            "version": "v5.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "447a020a1f875a434d62f2a401f53b82a396e494"
+                "reference": "ae59794362fe85e051a58ad36b289443f57be7a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/447a020a1f875a434d62f2a401f53b82a396e494",
-                "reference": "447a020a1f875a434d62f2a401f53b82a396e494",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/ae59794362fe85e051a58ad36b289443f57be7a9",
+                "reference": "ae59794362fe85e051a58ad36b289443f57be7a9",
                 "shasum": ""
             },
             "require": {
@@ -349,9 +349,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v5.4.0"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v5.5.0"
             },
-            "time": "2024-12-30T11:07:19+00:00"
+            "time": "2025-05-31T08:24:38+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -969,16 +969,16 @@
         },
         {
             "name": "ryunosuke/functions",
-            "version": "v2.0.25",
+            "version": "v2.0.26",
             "source": {
                 "type": "git",
                 "url": "https://github.com/arima-ryunosuke/php-functions.git",
-                "reference": "d3213a4e676c0d31eaacb5dfaf3fae33c194171b"
+                "reference": "1db48d941afa8a87be5adb8be26a4d6e7621e8e3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arima-ryunosuke/php-functions/zipball/d3213a4e676c0d31eaacb5dfaf3fae33c194171b",
-                "reference": "d3213a4e676c0d31eaacb5dfaf3fae33c194171b",
+                "url": "https://api.github.com/repos/arima-ryunosuke/php-functions/zipball/1db48d941afa8a87be5adb8be26a4d6e7621e8e3",
+                "reference": "1db48d941afa8a87be5adb8be26a4d6e7621e8e3",
                 "shasum": ""
             },
             "require": {
@@ -1014,9 +1014,9 @@
             "description": "Utility functions for PHP",
             "support": {
                 "issues": "https://github.com/arima-ryunosuke/php-functions/issues",
-                "source": "https://github.com/arima-ryunosuke/php-functions/tree/v2.0.25"
+                "source": "https://github.com/arima-ryunosuke/php-functions/tree/v2.0.26"
             },
-            "time": "2025-05-29T04:31:41+00:00"
+            "time": "2025-06-22T07:34:59+00:00"
         },
         {
             "name": "ryunosuke/phpunit-extension",
@@ -2223,13 +2223,13 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
         "php": ">=8.0"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "platform-overrides": {
         "php": "8.0"
     },

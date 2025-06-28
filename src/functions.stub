@@ -3634,6 +3634,15 @@ if (!function_exists('ryunosuke\\chmonos\\callable_code')) {
     function callable_code($callable, bool $return_token = false)
     {
         $ref = $callable instanceof \ReflectionFunctionAbstract ? $callable : reflect_callable($callable);
+        if ($ref->getFileName() === false) {
+            $reference = $ref->returnsReference() ? '&' : '';
+            $return = reflect_type_resolve($ref->getReturnType()) ?? 'void';
+            $params = function_parameter($ref);
+            $keys = implode(', ', array_map(fn($v) => ltrim($v, '&'), array_keys($params)));
+            $vals = implode(', ', $params);
+            return ["fn$reference($vals): $return", "\\$ref->name($keys)"];
+        }
+
         $contents = file($ref->getFileName());
         $start = $ref->getStartLine();
         $end = $ref->getEndLine();
@@ -3642,7 +3651,10 @@ if (!function_exists('ryunosuke\\chmonos\\callable_code')) {
         $tokens = php_tokens("<?php $codeblock");
 
         $begin = $tokens[0]->next([T_FUNCTION, T_FN]);
-        $close = $begin->next(['{', T_DOUBLE_ARROW]);
+        $close = $begin->next(['{', T_DOUBLE_ARROW, '[']);
+        if ($close->is('[')) {
+            $close = $close->end()->next(['{', T_DOUBLE_ARROW]);
+        }
 
         if ($begin->is(T_FN)) {
             $meta = array_slice($tokens, $begin->index, $close->prev()->index - $begin->index + 1);
@@ -3678,6 +3690,81 @@ if (!function_exists('ryunosuke\\chmonos\\callable_code')) {
         }
 
         return [trim(implode('', array_column($meta, 'text'))), trim(implode('', array_column($body, 'text')))];
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\function_parameter') || (new \ReflectionFunction('ryunosuke\\chmonos\\function_parameter'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\function_parameter')) {
+    /**
+     * 関数/メソッドの引数定義を取得する
+     *
+     * ほぼ内部向けで外から呼ぶことはあまり想定していない。
+     *
+     * @package ryunosuke\Functions\Package\reflection
+     *
+     * @param \ReflectionFunctionAbstract|callable $eitherReffuncOrCallable 関数/メソッドリフレクション or callable
+     * @return array [引数名 => 引数宣言] の配列
+     */
+    function function_parameter($eitherReffuncOrCallable)
+    {
+        $reffunc = $eitherReffuncOrCallable instanceof \ReflectionFunctionAbstract
+            ? $eitherReffuncOrCallable
+            : reflect_callable($eitherReffuncOrCallable);
+
+        $result = [];
+        foreach ($reffunc->getParameters() as $parameter) {
+            $declare = '';
+
+            if ($parameter->hasType()) {
+                $declare .= reflect_type_resolve($parameter->getType()) . ' ';
+            }
+
+            if ($parameter->isPassedByReference()) {
+                $declare .= '&';
+            }
+
+            if ($parameter->isVariadic()) {
+                $declare .= '...';
+            }
+
+            $declare .= '$' . $parameter->getName();
+
+            if ($parameter->isOptional()) {
+                $defval = null;
+
+                if ($parameter->isDefaultValueAvailable()) {
+                    // 修飾なしでデフォルト定数が使われているとその名前空間で解決してしまうので場合分けが必要
+                    if ($parameter->isDefaultValueConstant() && strpos($parameter->getDefaultValueConstantName(), '\\') === false) {
+                        // 存在チェック＋$dummy でグローバル定数を回避しているが、いっそのこと一律 \\ を付与してしまっても良いような気がする
+                        if (const_exists(...(explode('::', $parameter->getDefaultValueConstantName()) + [1 => '$dummy']))) {
+                            $defval = '\\' . $parameter->getDefaultValueConstantName();
+                        }
+                        else {
+                            $defval = $parameter->getDefaultValueConstantName();
+                        }
+                    }
+                    else {
+                        $default = $parameter->getDefaultValue();
+                        $defval = var_export2($default, true);
+                    }
+                }
+                // isOptional だが isDefaultValueAvailable でないし isVariadic でもない（稀にある（stream_filter_append で確認））
+                elseif (!$parameter->isVariadic()) {
+                    // Type に応じたデフォルト値が得られればベストだがそこまでする必要もない
+                    // 少なくとも 8.0 時点では = null してしまえば型エラーも起きない（8.4 で非推奨になってるけど）
+                    $defval = "null";
+                }
+
+                if (isset($defval)) {
+                    $declare .= ' = ' . $defval;
+                }
+            }
+
+            $name = ($parameter->isPassedByReference() ? '&' : '') . '$' . $parameter->getName();
+            $result[$name] = $declare;
+        }
+
+        return $result;
     }
 }
 
@@ -4708,6 +4795,13 @@ if (!function_exists('ryunosuke\\chmonos\\function_configure')) {
         $config['chain.nullsafe'] ??= false;
         $config['process.autoload'] ??= [];
         $config['datetime.class'] ??= \DateTimeImmutable::class;
+        $config['unique_id.config'] ??= [
+            'timestamp_base'      => 1704034800, // 2024-01-01 00:00:00
+            'timestamp_precision' => 1,
+            'timestamp_bit'       => 41,
+            'sequence_bit'        => 7,
+            'ipaddress_bit'       => 16,
+        ];
 
         // setting
         if (is_array($option)) {
