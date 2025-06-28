@@ -453,7 +453,7 @@ function Chmonos(form, options) {
             return true;
         },
         "cast": function (type, value) {
-            // 現状は array のみ実装
+            // 現状は array/object のみ実装
             if (type === 'array') {
                 if (value === null) {
                     return [];
@@ -462,6 +462,15 @@ function Chmonos(form, options) {
                     return value;
                 }
                 return [value];
+            }
+            if (type === 'object') {
+                if (value === null) {
+                    return {};
+                }
+                if (value instanceof Array || isPlainObject(value)) {
+                    return value;
+                }
+                return {scalar: value};
             }
             throw "invalid cast type";
         },

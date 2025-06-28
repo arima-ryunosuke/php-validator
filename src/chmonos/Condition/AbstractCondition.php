@@ -348,6 +348,10 @@ JS;
                 if ($type === 'array') {
                     return (array) $value;
                 }
+                if ($type === 'object') {
+                    // [] アクセスする（js では -> アクセスできないため）ために ArrayObject である必要がある
+                    return new \ArrayObject((object) $value);
+                }
                 throw new \InvalidArgumentException('invalid cast type');
             },
             'str_concat' => static function () {
