@@ -24,6 +24,14 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.7
+
+- [feature] Callback の生関数対応
+- [refactor] php/js の変数の正規化
+- [feature] RegexAll を追加
+- [feature] context に object キャストを追加
+- [feature] 同じタイプのメッセージを蓄積する機能
+
 ## 2.2.6
 
 - [feature] dump した時の情報量が大きすぎるのを削減
