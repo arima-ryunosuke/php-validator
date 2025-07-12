@@ -5315,6 +5315,10 @@ this.condition = {"Ajax":async function($input, $value, $fields, $params, $const
         }},"FileType":async function($input, $value, $fields, $params, $consts, $error, $context, $e) {var $mimetype;
 // 
 
+        if ($context['lang'] === 'php') {
+            $value = strval($value);
+        }
+
         $mimetype = mime_content_type($value);
 
         if (!$mimetype && !in_array('*', $params['mimetype'])) {
