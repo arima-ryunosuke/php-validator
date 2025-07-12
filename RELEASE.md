@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.8
+
+- [fixbug] mime_content_type がエラーになる
+- [feature] ファイルをオブジェクトとして得られる fileClass オプションを追加
+
 ## 2.2.7
 
 - [feature] Callback の生関数対応
