@@ -39,6 +39,7 @@ class Form
         $options += [
             'nonce'      => '',
             'inputClass' => Input::class,
+            'fileClass'  => null, // for compatible change to UploadedFile::class in future scope
             'vuejs'      => false,
             'attribute'  => [],
         ];
@@ -87,7 +88,7 @@ class Form
 
         if (!$obtain_file) {
             array_walk_recursive($values, function (&$value) {
-                if (is_string($value) && $this->_is_uploaded_file($value)) {
+                if ((is_string($value) || $value instanceof UploadedFile) && $this->_is_uploaded_file($value)) {
                     $value = null;
                 }
             });
@@ -104,6 +105,10 @@ class Form
                 case UPLOAD_ERR_OK:
                     if (!$this->_is_uploaded_file($file['tmp_name'])) {
                         throw new \UnexpectedValueException("file is not uploaded ({$file['name']})", UPLOAD_ERR_EXTENSION);
+                    }
+                    if ($this->options['fileClass']) {
+                        $fileClass = $this->options['fileClass'];
+                        return new $fileClass($file);
                     }
                     return $file['tmp_name'];
                 case UPLOAD_ERR_NO_FILE:

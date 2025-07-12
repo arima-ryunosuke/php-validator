@@ -6,6 +6,7 @@ use ryunosuke\chmonos\Context;
 use ryunosuke\chmonos\Exception\ValidationException;
 use ryunosuke\chmonos\Form;
 use ryunosuke\chmonos\Input;
+use ryunosuke\chmonos\UploadedFile;
 use ryunosuke\Test\CustomInput;
 
 class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
@@ -120,6 +121,91 @@ class FormTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $_FILES = ['file' => ['error' => UPLOAD_ERR_OK, 'tmp_name' => 'not_uploaded_file'] + $default];
         that($form)->setValues([])->wasThrown(new \UnexpectedValueException('file is not uploaded'));
+    }
+
+    function test_setValues_fileObject()
+    {
+        $form = new Form([
+            'file'  => [
+                'condition' => [
+                    'FileSize' => 9999,
+                ],
+                'default'   => 'nofile',
+            ],
+            'files' => [
+                'inputs' => [
+                    'name' => [],
+                    'file' => [
+                        'condition' => [
+                            'FileSize' => 9999,
+                        ],
+                    ],
+                ],
+            ],
+        ], [
+            'fileClass' => UploadedFile::class,
+        ]);
+
+        $_FILES = [];
+        $values = $form->setValues(['file' => 'specified']);
+        that($values)->is($form->getValues());
+        that($values)['file']->is("nofile");
+
+        $_FILES = [
+            'file'  => [
+                'full_path' => 'relative/local.txt',
+                'name'      => 'local.txt',
+                'type'      => 'text/plain',
+                'tmp_name'  => __FILE__,
+                'error'     => UPLOAD_ERR_OK,
+                'size'      => 123,
+            ],
+            'files' => [
+                'full_path' => [
+                    ['file' => 'relative/local1.txt'],
+                    ['file' => 'relative/local2.txt'],
+                ],
+                'name'      => [
+                    ['file' => 'local1.txt'],
+                    ['file' => 'local2.txt'],
+                ],
+                'type'      => [
+                    ['file' => 'text/plain1'],
+                    ['file' => 'text/plain2'],
+                ],
+                'tmp_name'  => [
+                    ['file' => __FILE__],
+                    ['file' => __FILE__],
+                ],
+                'error'     => [
+                    ['file' => UPLOAD_ERR_OK],
+                    ['file' => UPLOAD_ERR_OK],
+                ],
+                'size'      => [
+                    ['file' => 1231],
+                    ['file' => 1232],
+                ],
+            ],
+        ];
+        $values = $form->setValues([
+            'files' => [
+                ['name' => 'hoge'],
+                ['name' => 'fuga'],
+            ],]);
+        that($form->getValues(false))->is([
+            'file'  => null,
+            'files' => [
+                ['name' => 'hoge', 'file' => null],
+                ['name' => 'fuga', 'file' => null],
+            ],
+        ]);
+        that($form->getValues(true))->is($values);
+        that($values)['file']->isInstanceOf(UploadedFile::class);
+        that($values)['file']->getFullPath()->is('relative/local.txt');
+        that($values)['files'][0]['file']->isInstanceOf(UploadedFile::class);
+        that($values)['files'][0]['file']->getFullPath()->is('relative/local1.txt');
+        that($values)['files'][1]['file']->isInstanceOf(UploadedFile::class);
+        that($values)['files'][1]['file']->getFullPath()->is('relative/local2.txt');
     }
 
     function test_withFile()
