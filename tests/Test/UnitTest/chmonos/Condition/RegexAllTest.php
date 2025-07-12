@@ -85,6 +85,15 @@ class RegexAllTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getType()->is("textarea");
     }
 
+    function test_getDelimiter()
+    {
+        $validate = new RegexAll('#^$#');
+        that($validate)->getDelimiter()->is("#\n#");
+
+        $validate = new RegexAll('#^$#', "#\s*,#");
+        that($validate)->getDelimiter()->is("#\s*,#");
+    }
+
     function test_getFixture()
     {
         $validate = new RegexAll('/(?:\D+|<\d+>)*[!?]/');
