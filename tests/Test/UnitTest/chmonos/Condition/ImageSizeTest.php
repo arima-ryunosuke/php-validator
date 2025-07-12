@@ -2,6 +2,7 @@
 namespace ryunosuke\Test\UnitTest\chmonos\Condition;
 
 use ryunosuke\chmonos\Condition\ImageSize;
+use ryunosuke\chmonos\UploadedFile;
 
 class ImageSizeTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
@@ -29,6 +30,27 @@ class ImageSizeTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         that($validate)->isValid($dir . 'csv.txt')->isFalse();
         @that($validate)->isValid($dir . 'notfound')->isFalse();
+    }
+
+    function test_uploaded_file()
+    {
+        $dir = __DIR__ . '/_files/';
+
+        $validate = new ImageSize(200, 200);
+        that($validate)->isValid(new UploadedFile([
+            'full_path' => '',
+            'name'      => '',
+            'type'      => '',
+            'tmp_name'  => "$dir/jpg.jpg",
+            'size'      => 0,
+        ]))->isTrue();
+        that($validate)->isValid(new UploadedFile([
+            'full_path' => '',
+            'name'      => '',
+            'type'      => '',
+            'tmp_name'  => "$dir/gif.gif",
+            'size'      => 0,
+        ]))->isFalse();
     }
 
     function test_getType()

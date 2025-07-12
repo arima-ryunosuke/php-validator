@@ -51,6 +51,10 @@ class FileType extends AbstractCondition implements Interfaces\InferableType
 
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
+        if ($context['lang'] === 'php') {
+            $value = strval($value);
+        }
+
         $mimetype = mime_content_type($value);
 
         if (!$mimetype && !in_array('*', $params['mimetype'])) {

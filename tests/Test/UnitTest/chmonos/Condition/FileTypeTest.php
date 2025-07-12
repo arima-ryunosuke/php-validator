@@ -2,6 +2,7 @@
 namespace ryunosuke\Test\UnitTest\chmonos\Condition;
 
 use ryunosuke\chmonos\Condition\FileType;
+use ryunosuke\chmonos\UploadedFile;
 
 class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
 {
@@ -55,6 +56,30 @@ class FileTypeTest extends \ryunosuke\Test\AbstractUnitTestCase
         // 存在しないファイル
         $validate = new FileType([]);
         @that($validate)->isValid($dir . 'notfound')->isFalse();
+    }
+
+    function test_uploaded_file()
+    {
+        $dir = __DIR__ . '/_files/';
+
+        $types = [
+            'CSV' => ['csv', 'txt'],
+        ];
+        $validate = new FileType($types);
+        that($validate)->isValid(new UploadedFile([
+            'full_path' => '',
+            'name'      => '',
+            'type'      => '',
+            'tmp_name'  => "$dir/csv.csv",
+            'size'      => 0,
+        ]))->isTrue();
+        that($validate)->isValid(new UploadedFile([
+            'full_path' => '',
+            'name'      => '',
+            'type'      => '',
+            'tmp_name'  => "$dir/jpg.jpg",
+            'size'      => 0,
+        ]))->isFalse();
     }
 
     function test_getAccepts()
