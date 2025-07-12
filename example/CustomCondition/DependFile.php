@@ -36,6 +36,10 @@ class DependFile extends AbstractCondition implements Interfaces\InferableType, 
 
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
+        if ($context['lang'] === 'php') {
+            $value = strval($value);
+        }
+
         $mime = mime_content_type($value);
         if ($mime !== $fields[$params['field']]) {
             return $error($consts['INVALID'], []);

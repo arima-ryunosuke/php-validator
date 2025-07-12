@@ -1,6 +1,7 @@
 <?php
 
 use ryunosuke\chmonos\Condition;
+use ryunosuke\chmonos\UploadedFile;
 
 $basic_form = new \ryunosuke\chmonos\Form([
     'text'                  => [
@@ -148,6 +149,7 @@ $basic_form = new \ryunosuke\chmonos\Form([
     ],
 ], [
     'tokenName' => 'csrf_token',
+    'fileClass' => UploadedFile::class,
 ]);
 resetForm($basic_form, 'basic_form');
 ?>
