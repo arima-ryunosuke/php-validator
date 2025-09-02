@@ -4132,6 +4132,155 @@ if (!function_exists('ryunosuke\\chmonos\\concat')) {
     }
 }
 
+assert(!function_exists('ryunosuke\\chmonos\\mb_monospace') || (new \ReflectionFunction('ryunosuke\\chmonos\\mb_monospace'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\mb_monospace')) {
+    /**
+     * ASCII 文字を1, それ以外を2で計算した文字幅を返す
+     *
+     * mb_strwidth は記号も1で返すので若干使いづらい（仕様的にしょうがない）。
+     * 日本語圏内であれば記号や絵文字も2バイト換算の方が便利なことが多いのでそのようにしたもの。
+     *
+     * オプションでコードポイント配列を渡すとそれに従って幅を加算する。
+     * コードポイントの指定は Example を参照。
+     *
+     * Example:
+     * ```php
+     * that(mb_monospace("※★▼…"))->is(8);     // 記号類も2バイト換算で8
+     * that(mb_monospace("123456７8８"))->is(11); // 比較用（フォントに依存するが）
+     * that(mb_monospace("Σ(ﾟДﾟ)え!！"))->is(15); // 半角全角の判定ではなく ASCII 判定なので 15
+     * that(mb_monospace("Σ(ﾟДﾟ)え!！", [         // コードポイントを指定すれば合わせることが可能
+     *     "Σ"    => 1, // 単体指定（シグマ）
+     *     "Ѐ-ӿ"  => 1, // 範囲指定（キリル文字）
+     *     0xFF9F => 1, // 直指定（半角半濁点）
+     * ]))->is(11);
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\strings
+     *
+     * @param string $string 対象文字列
+     * @param array $codepoints コードポイント配列
+     * @return int 等幅の文字幅
+     */
+    function mb_monospace(?string $string, $codepoints = [])
+    {
+        $widthmap = [];
+        foreach ($codepoints as $codepoint => $width) {
+            // 数値あるいは数値に準ずる値（intval がややこしくなるのでコードポイント 0 は考慮しない）
+            if (is_int($codepoint) || intval($codepoint, 0) !== 0) {
+                $widthmap[mb_chr(intval($codepoint, 0))] = $width;
+            }
+            // 文字列あるいは - による範囲指定
+            else {
+                // mb_ereg_search_regs が使いにくすぎるので callback で代用している
+                $pairs = [];
+                $codepoint = mb_ereg_replace_callback('([^-])\-([^-])', function ($m) use (&$pairs) {
+                    $pairs[] = [mb_ord($m[1]), mb_ord($m[2])];
+                    return '';
+                }, $codepoint);
+                foreach ($pairs as [$s, $e]) {
+                    for ($i = $s; $i <= $e; $i++) {
+                        $widthmap[mb_chr($i)] = $width;
+                    }
+                }
+                foreach (mb_str_split($codepoint) as $char) {
+                    $widthmap[$char] = $width;
+                }
+            }
+        }
+
+        $width = 0;
+        foreach (mb_str_split($string) as $char) {
+            if (isset($widthmap[$char])) {
+                $width += $widthmap[$char];
+            }
+            elseif (strlen($char) === 1) {
+                $width += 1;
+            }
+            else {
+                $width += 2;
+            }
+        }
+        return $width;
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\mb_pad_width') || (new \ReflectionFunction('ryunosuke\\chmonos\\mb_pad_width'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\mb_pad_width')) {
+    /**
+     * マルチバイト版 str_pad
+     *
+     * 単純な mb_strlen での実装ではなく mb_monospace による実装となっている。
+     * 「文字数を指定して pad したい」という状況は utf8 で2バイト超えという状況がふさわしくないことが非常に多い。
+     * 多くは単純に「全角は2文字、半角は1文字」というユースケースが多い（埋める文字がスペースなら特に）。
+     *
+     * また、$pad_string が切り捨てられることもない。
+     * 標準の str_pad はできるだけ詰めようとして中途半端な $pad_string になることがあるが、その動作は模倣していない。
+     * 端的に「$width を超えないようにできる限り敷き詰めて返す」という動作になる。
+     *
+     * Example:
+     * ```php
+     * // マルチバイトは2文字幅として換算される
+     * that(mb_pad_width('aaaa', 12, '-'))->isSame('aaaa--------');
+     * that(mb_pad_width('ああ', 12, '-'))->isSame('ああ--------');
+     * // $pad_string は切り捨てられない
+     * that(mb_pad_width('aaaa', 12, 'xyz'))->isSame('aaaaxyzxyz'); // 10文字で返す（あと1回 xyz すると 13 文字になり width を超えてしまう（かといって xy だけを足したりもしない））
+     * that(mb_pad_width('ああ', 12, 'xyz'))->isSame('ああxyzxyz'); // マルチバイトでも同じ
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\strings
+     *
+     * @param string $string 対象文字列
+     * @param int $width 埋める幅
+     * @param string $pad_string 埋める文字列
+     * @param int $pad_type 埋める位置
+     * @return string 指定文字で埋められた文字列
+     */
+    function mb_pad_width(?string $string, $width, $pad_string = " ", $pad_type = STR_PAD_RIGHT)
+    {
+        assert(in_array($pad_type, [STR_PAD_LEFT, STR_PAD_RIGHT, STR_PAD_BOTH]));
+
+        $str_length = mb_monospace($string);
+        $pad_length = mb_monospace($pad_string);
+        $target_length = intval($width - $str_length);
+
+        if ($pad_length === 0 || $target_length <= 0) {
+            return $string;
+        }
+
+        $pad_count = $target_length / $pad_length;
+
+        switch ($pad_type) {
+            default:
+                throw new \InvalidArgumentException("pad_type is invalid($pad_type)"); // @codeCoverageIgnore
+            case STR_PAD_BOTH:
+                $left = str_repeat($pad_string, floor($pad_count / 2));
+                $right = str_repeat($pad_string, floor(($target_length - mb_monospace($left)) / $pad_length));
+                return $left . $string . $right;
+            case STR_PAD_RIGHT:
+                return $string . str_repeat($pad_string, floor($pad_count));
+            case STR_PAD_LEFT:
+                return str_repeat($pad_string, floor($pad_count)) . $string;
+        }
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\mb_str_pad') || (new \ReflectionFunction('ryunosuke\\chmonos\\mb_str_pad'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\mb_str_pad')) {
+    /**
+     * マルチバイト版 str_pad
+     *
+     * @see mb_pad_width()
+     * @deprecated 標準関数と重複
+     * @codeCoverageIgnore
+     * @package ryunosuke\Functions\Package\strings
+     */
+    function mb_str_pad(?string $string, $width, $pad_string = " ", $pad_type = STR_PAD_RIGHT)
+    {
+        trigger_error(__FUNCTION__ . ' is deprecated. use mb_pad_width', E_USER_DEPRECATED);
+        return mb_pad_width($string, $width, $pad_string, $pad_type);
+    }
+}
+
 assert(!function_exists('ryunosuke\\chmonos\\mb_trim') || (new \ReflectionFunction('ryunosuke\\chmonos\\mb_trim'))->isUserDefined());
 if (!function_exists('ryunosuke\\chmonos\\mb_trim')) {
     /**
