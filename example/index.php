@@ -43,6 +43,8 @@ $appendmtime = function ($filename) {
         }
 
         textarea {
+            min-width: 100px;
+            min-height: 100px;
             field-sizing: content;
         }
 

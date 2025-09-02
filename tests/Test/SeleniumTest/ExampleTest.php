@@ -772,6 +772,39 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_stringrowcol(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('stringrowcol', <<<TEXT
+        1
+        TEXT,);
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('stringrowcol', <<<TEXT
+        1
+        2
+        3
+        4
+        5
+        TEXT,);
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('stringrowcol', <<<TEXT
+        1234567890A
+        2
+        3
+        TEXT,);
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('stringrowcol', <<<TEXT
+        1234567890
+        1234567890
+        1234567890
+        TEXT,);
+        that($driver)->getErrors()->count(0);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_telephone(WebDriver $driver)
     {
         $driver->path('/example/index.php');

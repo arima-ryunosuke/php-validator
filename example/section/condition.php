@@ -582,6 +582,13 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'StringWidth' => [2, 6]
         ]
     ],
+    'stringrowcol'           => [
+        'title'     => '複数行',
+        'condition' => [
+            'MultiLine' => [2, 4, null, 10]
+        ],
+        'trimming'  => 'right',
+    ],
     'telephone'             => [
         'title'     => '電話番号（ハイフン不問）',
         'condition' => [
@@ -858,6 +865,11 @@ resetForm($condition_form, 'condition_form');
     <tr>
         <th>文字幅</th>
         <td><?= $condition_form->input('stringwidth') ?></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>複数行（2～4行10桁まで）</th>
+        <td><?= $condition_form->input('stringrowcol', ['cols' => 12, 'rows' => 10]) ?></td>
         <td></td>
     </tr>
     <tr>
