@@ -32,6 +32,7 @@ class WebDriver extends RemoteWebDriver
         foreach ($this->findElements(WebDriverBy::cssSelector($select)) as $e) {
             $e->click();
         }
+        usleep(10_000);
     }
 
     public function setValue($name, $value, $parent = '')

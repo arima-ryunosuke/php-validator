@@ -383,11 +383,11 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         that($driver)->getErrors()->count(0);
 
         $driver->setValue('email_multiple', 'test@hostname,aaa');
-        that($driver)->getErrors()->count(1);
+        that($driver)->getErrors()->break()->count(1);
         $driver->setValue('email_multiple', 'test@hostname,test@hostname');
-        that($driver)->getErrors()->count(1);
+        that($driver)->getErrors()->break()->count(1);
         $driver->setValue('email_multiple', 'test1@hostname,test2@hostname');
-        that($driver)->getErrors()->count(0);
+        that($driver)->getErrors()->break()->count(0);
     }
 
     /**
