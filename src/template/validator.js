@@ -1247,7 +1247,16 @@ function Chmonos(form, options) {
         const getValue = function (e) {
             var value = e.value;
             if (options.allrules[elemName]['trimming']) {
-                value = value.trim();
+                value = (function (trimming) {
+                    switch (true) {
+                        case trimming === 'left':
+                            return value.trimStart();
+                        case trimming === 'right':
+                            return value.trimEnd();
+                        default:
+                            return value.trim();
+                    }
+                })(options.allrules[elemName]['trimming']);
             }
             // number/date 用の特別処理
             if (value.length === 0 && e.validity.badInput && Number.isNaN(e.valueAsNumber)) {

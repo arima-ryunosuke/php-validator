@@ -41,7 +41,7 @@ class Input
         'option-label'          => [null], // change to [null, 'label'] in future scope
         'invisible'             => false,
         'ignore'                => false,
-        'trimming'              => true,
+        'trimming'              => true, // or 'left', 'right'
         'needless'              => [],
         'autocond'              => true,
         'multiple'              => null,
@@ -82,6 +82,9 @@ class Input
     public function __construct(array $rule, ?Input $parent = null)
     {
         $rule += static::$defaultRule;
+
+        assert(in_array($rule['trimming'], [false, true, 'left', 'right'], true));
+
         $rule['condition'] = arrayize($rule['condition']);
         $rule['propagate'] = arrayize($rule['propagate']);
         $rule['dependent'] = arrayize($rule['dependent']);
@@ -341,7 +344,11 @@ class Input
 
         // trim するなら trim （ただし必要があるのは string のみ）
         if ($this->trimming && is_string($value)) {
-            $value = \mb_trim($value);
+            $value = match ($this->trimming) {
+                'left'  => \mb_ltrim($value),
+                'right' => \mb_rtrim($value),
+                default => \mb_trim($value), // 実質的に true のみ
+            };
         }
 
         if ($this->normalize) {
@@ -614,7 +621,7 @@ class Input
             'phantom'   => (array) $this->phantom,
             'invisible' => (bool) $this->invisible,
             'delimiter' => (string) $this->delimiter,
-            'trimming'  => (bool) $this->trimming,
+            'trimming'  => $this->trimming,
             'needless'  => (array) $this->needless,
         ];
     }
