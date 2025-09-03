@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.9
+
+- [feature] MultiLine Condition 追加
+- [feature] trim の left,right 対応
+- [tests] SeleniumTest が意味の分からないコケ方をしていたので暫定対処
+
 ## 2.2.8
 
 - [fixbug] mime_content_type がエラーになる
