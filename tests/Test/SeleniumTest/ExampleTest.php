@@ -533,7 +533,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     {
         $driver->path('/example/index.php');
 
-        $driver->setValue('password', 'a1$S');
+        $driver->setValue('password', 'aa');
         that($driver)->getErrors()->count(1);
         $driver->setValue('password', 'aZsX09#!');
         that($driver)->getErrors()->count(0);

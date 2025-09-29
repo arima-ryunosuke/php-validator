@@ -352,7 +352,7 @@ $condition_form = new \ryunosuke\chmonos\Form([
     'password'              => [
         'title'     => 'パスワード',
         'condition' => [
-            'Password' => null
+            'Password' => ['alpha_numeric_symbol', 1, 2],
         ]
     ],
     'filename'              => [
@@ -770,7 +770,7 @@ resetForm($condition_form, 'condition_form');
         <td></td>
     </tr>
     <tr>
-        <th>Password(a～z,A～Z,0～9,$%+)</th>
+        <th>Password(a～z,A～Z,0～9,$%+の内2種類)</th>
         <td><?= $condition_form->input('password') ?></td>
         <td></td>
     </tr>
