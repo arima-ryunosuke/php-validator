@@ -29,14 +29,16 @@ use function ryunosuke\chmonos\str_divide;
  */
 class Password extends AbstractCondition implements Interfaces\InferableType
 {
-    public const INVALID               = 'InvalidPassword';
-    public const INVALID_PASSWORD_LESS = 'InvalidPasswordLess';
-    public const INVALID_PASSWORD_WEAK = 'InvalidPasswordWeak';
+    public const INVALID                     = 'InvalidPassword';
+    public const INVALID_PASSWORD_LESS       = 'InvalidPasswordLess';
+    public const INVALID_PASSWORD_LESS_COUNT = 'InvalidPasswordLessCount';
+    public const INVALID_PASSWORD_WEAK       = 'InvalidPasswordWeak';
 
     protected static $messageTemplates = [
-        self::INVALID               => 'Invalid value given',
-        self::INVALID_PASSWORD_LESS => '${implode(",", array_keys(_charlists))}を含めてください',
-        self::INVALID_PASSWORD_WEAK => '${implode(",", array_keys(_charlists))}のいずれかを${_repeat}文字以上含めてください',
+        self::INVALID                     => 'Invalid value given',
+        self::INVALID_PASSWORD_LESS       => '${implode(",", array_keys(_charlists))}を含めてください',
+        self::INVALID_PASSWORD_LESS_COUNT => '${implode(",", array_keys(_charlists))}のいずれかを${_typecount}種類以上含めてください',
+        self::INVALID_PASSWORD_WEAK       => '${implode(",", array_keys(_charlists))}のいずれかを${_repeat}文字以上含めてください',
     ];
 
     private static $preset = [
@@ -53,8 +55,9 @@ class Password extends AbstractCondition implements Interfaces\InferableType
     protected $_charlists;
     protected $_regexes;
     protected $_repeat;
+    protected $_typecount;
 
-    public function __construct($charlists = 'alpha_numeric_symbol', $repeat = 2)
+    public function __construct($charlists = 'alpha_numeric_symbol', $repeat = 2, $typecount = null)
     {
         // 文字列だったら preset に一致するものを使う
         if (is_string($charlists)) {
@@ -70,25 +73,32 @@ class Password extends AbstractCondition implements Interfaces\InferableType
         $this->_charlists = $charlists;
         $this->_regexes = array_map(function ($v) { return '/[' . preg_quote($v, '/') . ']/'; }, $charlists);
         $this->_repeat = $repeat;
+        $this->_typecount = $typecount ?? count($this->_charlists);
 
         parent::__construct();
     }
 
     public static function validate($value, $fields, $params, $consts, $error, $context)
     {
-        $fulfill = $context['foreach']($params['regexes'], function ($key, $regex, $value, $error, $consts) {
-            if (!preg_match($regex, $value)) {
-                $error($consts['INVALID_PASSWORD_LESS'], []);
-                return false;
+        $matched = $context['cast']('object', 0);
+        $context['foreach']($params['regexes'], function ($key, $regex, $value, $error, $consts, $matched) {
+            if (preg_match($regex, $value)) {
+                $matched['scalar']++;
             }
-        }, $value, $error, $consts);
+        }, $value, $error, $consts, $matched);
 
-        if (!$fulfill) {
-            return;
+        if ($matched['scalar'] < $params['typecount']) {
+            if ($params['typecount'] === count($params['charlists'])) {
+                $error($consts['INVALID_PASSWORD_LESS'], []);
+            }
+            else {
+                $error($consts['INVALID_PASSWORD_LESS_COUNT'], []);
+            }
+            return false;
         }
 
         $counts = array_count_values(str_split($value, 1));
-        if (count($counts) < count($params['regexes']) * $params['repeat']) {
+        if (count($counts) < $params['typecount'] * $params['repeat']) {
             $error($consts['INVALID_PASSWORD_WEAK'], []);
         }
     }

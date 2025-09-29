@@ -43,6 +43,21 @@ class PasswordTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->isValid('aZ0+aZ0+')->isFalse();
         that($validate)->isValid('aZ0+bY9!')->isTrue();
         that($validate)->isValid('abcdefghij0Z+')->isTrue();
+
+        $validate = new Password('lower_upper_numeric', 1, 2);
+        that($validate)->isValid('a')->isFalse();
+        that($validate)->isValid('ab')->isFalse();
+        that($validate)->isValid('a1')->isTrue();
+        that($validate)->isValid('A1')->isTrue();
+        that($validate)->isValid('aA')->isTrue();
+
+        $validate = new Password(repeat: 1, typecount: 3);
+        that($validate)->isValid('a')->isFalse();
+        that($validate)->isValid('aB')->isFalse();
+        that($validate)->isValid('aBC')->isFalse();
+        that($validate)->isValid('aB0')->isTrue();
+        that($validate)->isValid('aB+')->isTrue();
+        that($validate)->isValid('B0+')->isTrue();
     }
 
     function test_getType()
