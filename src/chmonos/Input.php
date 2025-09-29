@@ -22,6 +22,7 @@ class Input
 
     protected static array $defaultRule = [
         'title'                 => '',
+        'label'                 => '',
         'normalize'             => null,
         'condition'             => [],
         'options'               => [],
@@ -751,7 +752,7 @@ class Input
         }
 
         array_unset($attrs, 'child');
-        $label = array_unset($attrs, 'label', $this->title);
+        $label = array_unset($attrs, 'label', strlen($this->label) ? $this->label : $this->title);
         $attrs['for'] = $attrs['for'] ?? $this->_concatString("{$this->id}{$name}");
         $attrs['class'] = concat($attrs['class'] ?? '', ' ') . 'validatable_label';
         $attr = $this->createHtmlAttr($attrs, null, 'label');

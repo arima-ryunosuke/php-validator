@@ -811,6 +811,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         $input = new Input([
             'name'    => 'input',
             'title'   => 'hogera',
+            'label'   => 'hogeraX',
             'options' => [
                 1 => 'OK',
             ],
@@ -823,6 +824,12 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'data-vlabel-index' => '',
                 'for'               => 'input',
                 'class'             => 'validatable_label',
+                'hogeraX',
+            ],
+        ]);
+        that($input)->label(['label' => 'hogeraY'])->htmlMatchesArray([
+            'label' => [
+                'hogeraY',
             ],
         ]);
 
