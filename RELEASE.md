@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.10
+
+- [feature] ラベル文字列をルールで指定する機能
+- [feature] Password の文字種カウント
+- [fixbug] Password の fixture が稀にコケる
+
 ## 2.2.9
 
 - [feature] MultiLine Condition 追加
