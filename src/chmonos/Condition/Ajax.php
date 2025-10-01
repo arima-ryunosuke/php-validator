@@ -155,7 +155,7 @@ class Ajax extends AbstractCondition
                         });
                     }
 
-                    if (e.type === 'submit') {
+                    if (e.type === 'click' || e.type === 'submit') {
                         $error(request());
                     }
                     else {
