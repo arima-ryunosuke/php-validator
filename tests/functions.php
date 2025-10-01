@@ -1254,6 +1254,44 @@ if (!function_exists('ryunosuke\\chmonos\\array_dive')) {
     }
 }
 
+assert(!function_exists('ryunosuke\\chmonos\\array_divide') || (new \ReflectionFunction('ryunosuke\\chmonos\\array_divide'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\array_divide')) {
+    /**
+     * array_chunk の配列長指定版
+     *
+     * Example:
+     * ```php
+     * // ['A', 'B', 'C', 'D', 'E', 'F', 'G'] を3つに分割（余りを左に分配）
+     * that(array_divide(['A', 'B', 'C', 'D', 'E', 'F', 'G'], 3))->isSame([
+     *     ["A", "B", "C"],
+     *     ["D", "E"],
+     *     ["F", "G"],
+     * ]);
+     * // ['A', 'B', 'C', 'D', 'E', 'F', 'G'] を3つに分割（余りを右に分配）
+     * that(array_divide(['A', 'B', 'C', 'D', 'E', 'F', 'G'], -3))->isSame([
+     *     ["A", "B"],
+     *     ["C", "D"],
+     *     ["E", "F", "G"],
+     * ]);
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\array
+     */
+    function array_divide(iterable $array, int $divisor, bool $preserve_keys = false): array
+    {
+        $array = is_array($array) ? $array : iterator_to_array($array);
+
+        $last = 0;
+        $result = [];
+        foreach (int_divide(count($array), $divisor) as $int) {
+            $result[] = array_slice($array, $last, $int, $preserve_keys);
+            $last += $int;
+        }
+
+        return $result;
+    }
+}
+
 assert(!function_exists('ryunosuke\\chmonos\\array_each') || (new \ReflectionFunction('ryunosuke\\chmonos\\array_each'))->isUserDefined());
 if (!function_exists('ryunosuke\\chmonos\\array_each')) {
     /**
@@ -3607,29 +3645,22 @@ if (!function_exists('ryunosuke\\chmonos\\array_pos')) {
      *
      * @package ryunosuke\Functions\Package\array
      *
-     * @param array $array 対象配列
+     * @param iterable&\Countable $array 対象配列
      * @param int $position 取得する位置
      * @param bool $return_key true にすると値ではなくキーを返す
      * @return mixed 指定位置の値
      */
-    function array_pos($array, $position, $return_key = false)
+    function array_pos($array, int $position, $return_key = false)
     {
-        $position = (int) $position;
-        $keys = array_keys($array);
+        $target = $position >= 0 ? $position : count($array) + $position;
 
-        if ($position < 0) {
-            $position = abs($position + 1);
-            $keys = array_reverse($keys);
-        }
-
-        $count = count($keys);
-        for ($i = 0; $i < $count; $i++) {
-            if ($i === $position) {
-                $key = $keys[$i];
+        $i = 0;
+        foreach ($array as $k => $v) {
+            if ($i++ === $target) {
                 if ($return_key) {
-                    return $key;
+                    return $k;
                 }
-                return $array[$key];
+                return $v;
             }
         }
 
@@ -8974,6 +9005,7 @@ if (!function_exists('ryunosuke\\chmonos\\csv_export')) {
             'escape'    => '\\',
             'encoding'  => ini_get('default_charset'),
             'scrub'     => 'TRANSLIT',
+            'null'      => "",
             'initial'   => '', // "\xEF\xBB\xBF"
             'headers'   => null,
             'structure' => false,
@@ -8992,13 +9024,14 @@ if (!function_exists('ryunosuke\\chmonos\\csv_export')) {
 
         $restore = set_error_exception_handler();
         try {
-            $size = (function ($fp, $csvarrays, $delimiter, $enclosure, $escape, $encoding, $scrub, $initial, $headers, $structure, $callback) {
+            $size = (function ($fp, $csvarrays, $delimiter, $enclosure, $escape, $encoding, $scrub, $null, $initial, $headers, $structure, $callback) {
                 $default_charset = ini_get('default_charset');
                 if ($default_charset !== $encoding) {
                     // import とは違い、吐き出すときは明確なエラーだろうので TRANSLIT も IGNORE もしない
                     stream_filter_append($fp, "convert.iconv.$default_charset/$encoding" . (strlen($scrub) ? "//$scrub" : ""), STREAM_FILTER_WRITE);
                 }
 
+                $eol = "\n"; // いつの間にか $eol 引数が生えていたがこの関数自体の対応はしていないので暫定で決め打ちにしてある
                 $size = 0;
 
                 if (!is_array($csvarrays)) {
@@ -9083,10 +9116,24 @@ if (!function_exists('ryunosuke\\chmonos\\csv_export')) {
                         }
                     }
                     $row = array_intersect_key(array_replace($default, $array), $default);
-                    $size += fputcsv($fp, $row, $delimiter, $enclosure, $escape);
+                    if (strlen($null)) {
+                        $line = [];
+                        foreach ($row as $v) {
+                            if ($v === null) {
+                                $line[] = $null;
+                            }
+                            else {
+                                $line[] = str_putcsv([$v], $delimiter, $enclosure, $escape);
+                            }
+                        }
+                        $size += fwrite($fp, implode($delimiter, $line) . $eol);
+                    }
+                    else {
+                        $size += fputcsv($fp, $row, $delimiter, $enclosure, $escape);
+                    }
                 }
                 return $size;
-            })($fp, $csvarrays, $options['delimiter'], $options['enclosure'], $options['escape'], $options['encoding'], $options['scrub'], $options['initial'], $options['headers'], $options['structure'], $options['callback']);
+            })($fp, $csvarrays, $options['delimiter'], $options['enclosure'], $options['escape'], $options['encoding'], $options['scrub'], $options['null'], $options['initial'], $options['headers'], $options['structure'], $options['callback']);
             if ($output) {
                 return $size;
             }
@@ -9188,6 +9235,8 @@ if (!function_exists('ryunosuke\\chmonos\\csv_import')) {
             'escape'    => '\\',
             'encoding'  => ini_get('default_charset'),
             'scrub'     => 'IGNORE',
+            'null'      => "",
+            'trim'      => "", // 字の文を trim する文字。true の場合は素の trim（"" されていれば trim されない）
             'initial'   => [],
             'headers'   => [],
             'headermap' => null,
@@ -9213,7 +9262,7 @@ if (!function_exists('ryunosuke\\chmonos\\csv_import')) {
         $restore = set_error_exception_handler();
         try {
             $n = -1;
-            return (function ($fp, $delimiter, $enclosure, $escape, $encoding, $scrub, $initial, $headers, $headermap, $structure, $grouping, $callback, $limit) use (&$n) {
+            return (function ($fp, $delimiter, $enclosure, $escape, $encoding, $scrub, $null, $trim, $initial, $headers, $headermap, $structure, $grouping, $callback, $limit) use (&$n) {
                 $default_charset = ini_get('default_charset');
                 if ($default_charset !== $encoding) {
                     stream_filter_append($fp, "convert.iconv.$encoding/$default_charset" . (strlen($scrub) ? "//$scrub" : ""), STREAM_FILTER_READ);
@@ -9234,13 +9283,36 @@ if (!function_exists('ryunosuke\\chmonos\\csv_import')) {
                 }
 
                 $result = [];
-                while ($row = fgetcsv($fp, 0, $delimiter, $enclosure, $escape)) {
+                while (true) {
+                    $tell = ftell($fp);
+                    $row = fgetcsv($fp, 0, $delimiter, $enclosure, $escape);
+                    if ($row === false) {
+                        break;
+                    }
                     if ($row === [null]) {
                         continue;
+                    }
+                    if (strlen($trim)) {
+                        // 改行を考慮すると fgets で読み込むわけにはいかないが、CSV としての1行も考えると fread も使えない
+                        // 多少無駄だが fgetcsv で読み込んだバイト数で再度 fread して「CSV としての1行」を生のまま得る
+                        $tell2 = ftell($fp);
+                        fseek($fp, $tell);
+                        $line = fread($fp, $tell2 - $tell);
+
+                        // CSV のややこしい仕様に囚われたくないので分割だけ自前でやり、実際のパースは1要素のCSVとして str_getcsv に日和る
+                        $row = [];
+                        foreach (quoteexplode($delimiter, $line, null, $enclosure, $escape) as $field) {
+                            $field = $trim === true ? trim($field) : trim($field, $trim);
+                            $row[] = str_getcsv($field, $delimiter, $enclosure, $escape)[0];
+                        }
                     }
                     if (!$headers) {
                         $headers = $row;
                         continue;
+                    }
+
+                    if (strlen($null)) {
+                        $row = array_map(fn($v) => $v === $null ? null : $v, $row);
                     }
 
                     $n++;
@@ -9300,7 +9372,7 @@ if (!function_exists('ryunosuke\\chmonos\\csv_import')) {
                 }
 
                 return $result;
-            })($fp, $options['delimiter'], $options['enclosure'], $options['escape'], $options['encoding'], $options['scrub'], $options['initial'], $options['headers'], $options['headermap'], $options['structure'], $options['grouping'], $options['callback'], $options['limit']);
+            })($fp, $options['delimiter'], $options['enclosure'], $options['escape'], $options['encoding'], $options['scrub'], $options['null'], $options['trim'], $options['initial'], $options['headers'], $options['headermap'], $options['structure'], $options['grouping'], $options['callback'], $options['limit']);
         }
         catch (\Throwable $t) {
             // 何行目？ が欲しくなることが非常に多いので例外メッセージを書き換える
@@ -10727,7 +10799,7 @@ if (!function_exists('ryunosuke\\chmonos\\markdown_table')) {
         })();
         $option['stringify'] ??= fn($v) => var_pretty($v, ['return' => true, 'context' => $option['context'], 'table' => false]);
 
-        $stringify = fn($v) => strtr(((is_stringable($v) && !is_null($v) ? $v : $option['stringify']($v)) ?? ''), ["\t" => '    ']);
+        $stringify = fn($v) => strtr(((is_stringable($v) && !is_null($v) && !is_bool($v) ? $v : $option['stringify']($v)) ?? ''), ["\t" => '    ']);
         $is_numeric = function ($v) {
             $v = trim($v);
             if (strlen($v) === 0) {
@@ -14008,20 +14080,23 @@ if (!function_exists('ryunosuke\\chmonos\\process_parallel')) {
      * // 1000ms かかる処理を3本実行するが、トータル時間は 3000ms ではなくそれ以下になる（多少のオーバーヘッドはある）
      * that(microtime(true) - $t)->break()->lessThan(2.0);
      * // 実行結果は下記のような配列で返ってくる（その際キーは維持される）
-     * that($result)->isSame([
+     * that($result)->subsetEquals([
      *     'a' => [
+     *         // 'pid' => 12345,
      *         'status' => 0,
      *         'stdout' => "this is stdout",
      *         'stderr' => "this is stderr",
      *         'return' => 3,
      *     ],
      *     'b' => [
+     *         // 'pid' => 12345,
      *         'status' => 0,
      *         'stdout' => "this is stdout",
      *         'stderr' => "this is stderr",
      *         'return' => 5,
      *     ],
      *     [
+     *         // 'pid' => 12345,
      *         'status' => 0,
      *         'stdout' => "this is stdout",
      *         'stderr' => "this is stderr",
@@ -14047,20 +14122,23 @@ if (!function_exists('ryunosuke\\chmonos\\process_parallel')) {
      * // 300,500,1000ms かかる処理を3本実行するが、トータル時間は 1800ms ではなくそれ以下になる（多少のオーバーヘッドはある）
      * that(microtime(true) - $t)->break()->lessThan(1.5);
      * // 実行結果は下記のような配列で返ってくる（その際キーは維持される）
-     * that($result)->isSame([
+     * that($result)->subsetEquals([
      *     'a' => [
+     *       // 'pid' => 12345,
      *         'status' => 0,
      *         'stdout' => "",
      *         'stderr' => "",
      *         'return' => 3,
      *     ],
      *     'b' => [
+     *         // 'pid' => 12345,
      *         'status' => 0,
      *         'stdout' => "",
      *         'stderr' => "",
      *         'return' => 6,
      *     ],
      *     [
+     *         // 'pid' => 12345,
      *         'status' => 127,  // 終了コードが入ってくる
      *         'stdout' => "",
      *         'stderr' => "",
@@ -14103,8 +14181,10 @@ if (!function_exists('ryunosuke\\chmonos\\process_parallel')) {
         $results = [];
         foreach ($processes as $key => $process) {
             $return = $process();
+            $status = $process->status();
             $results[$key] = [
-                'status' => $process->status()['exitcode'],
+                'pid'    => $status['pid'],
+                'status' => $status['exitcode'],
                 'stdout' => $process->stdout,
                 'stderr' => $process->stderr,
                 'return' => $return,
@@ -14524,27 +14604,15 @@ if (!function_exists('ryunosuke\\chmonos\\file_equals')) {
         //return sha1_file($file1) === sha1_file($file2);
 
         // 少しづつ読んで比較する
-        try {
-            $fp1 = fopen($file1, 'r');
-            $fp2 = fopen($file2, 'r');
-
-            while (!(feof($fp1) || feof($fp2))) {
-                $line1 = fread($fp1, $chunk_size);
-                $line2 = fread($fp2, $chunk_size);
-                if ($line1 !== $line2) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        finally {
-            if (isset($fp1)) {
-                fclose($fp1);
-            }
-            if (isset($fp2)) {
-                fclose($fp2);
+        $iterator = new \MultipleIterator(\MultipleIterator::MIT_NEED_ANY);
+        $iterator->attachIterator(file_generator($file1, $chunk_size));
+        $iterator->attachIterator(file_generator($file2, $chunk_size));
+        foreach ($iterator as $buffers) {
+            if ($buffers[0] !== $buffers[1]) {
+                return false;
             }
         }
+        return true;
     }
 }
 
@@ -14586,6 +14654,77 @@ if (!function_exists('ryunosuke\\chmonos\\file_extension')) {
         }
 
         return $pathinfo['dirname'] . DIRECTORY_SEPARATOR . $basename;
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\file_generator') || (new \ReflectionFunction('ryunosuke\\chmonos\\file_generator'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\file_generator')) {
+    /**
+     * ファイルを少しずつ読む Generator を返す
+     *
+     * $stopper で読み込み単位を指定できる
+     * - null: fgets で1行読み込み
+     * - int: fread でサイズ指定
+     * - string: stream_get_line で特定文字列指定
+     *
+     * $stopper が文字列の場合、$with_stopper でその文字列自体を含むかを指定できる。
+     * というよりも stream_get_line だとデフォルトで含まないので、含むようにするフラグに近い。
+     * 処理を合わせるためデフォルトは true になっている。
+     *
+     * Generator は返り値として「返した文字列長の合計」を返す。
+     * 区切り文字を捨てる場合、単純なファイルサイズとは一致しないので注意。
+     *
+     * Example:
+     * ```php
+     * // 適当にファイルを用意
+     * $testpath = sys_get_temp_dir() . '/file_generator.txt';
+     * file_put_contents($testpath, "hoge\n---\nhogefuga\n---\nhogefugapiyo\n");
+     * // 改行で generator
+     * that(file_generator($testpath))->is(["hoge\n", "---\n", "hogefuga\n", "---\n", "hogefugapiyo\n"]);
+     * // 3文字で generator
+     * that(file_generator($testpath, 3))->is(["hog", "e\n-", "--\n", "hog", "efu", "ga\n", "---", "\nho", "gef", "uga", "piy", "o\n"]);
+     * // 区切り文字で generator
+     * that(file_generator($testpath, "---\n"))->is(["hoge\n---\n", "hogefuga\n---\n", "hogefugapiyo\n"]);
+     * // 区切り文字で generator（そのものを含まない）
+     * that(file_generator($testpath, "---\n", false))->is(["hoge\n", "hogefuga\n", "hogefugapiyo\n"]);
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\filesystem
+     */
+    function file_generator(
+        /** @var string|resource ファイル名|リソース */ $filename,
+        /** チャンク/区切り文字 */ null|int|string $stopper = null,
+        /** 区切り文字を含めるか */ bool $with_stopper = true,
+    ): \Generator {
+        $fp = is_resource($filename) ? $filename : fopen($filename, 'rb');
+
+        try {
+            $result = 0;
+            while (!feof($fp)) {
+                $buffer = match (true) {
+                    is_null($stopper)   => fgets($fp),
+                    is_int($stopper)    => fread($fp, $stopper),
+                    is_string($stopper) => stream_get_line($fp, PHP_INT_MAX, $stopper),
+                };
+                if ($buffer === false) {
+                    break;
+                }
+
+                if (is_string($stopper) && $with_stopper) {
+                    // 読み込み途中なら $stopper で終了したと言える（stream_get_line はそのものを含まないので付け足す）
+                    if (!feof($fp)) {
+                        $buffer .= $stopper;
+                    }
+                }
+
+                $result += strlen($buffer);
+                yield $buffer;
+            }
+            return $result;
+        }
+        finally {
+            fclose($fp);
+        }
     }
 }
 
@@ -15095,7 +15234,7 @@ if (!function_exists('ryunosuke\\chmonos\\file_pos')) {
      * that(file_pos($testpath, 'fuga'))->is(5);
      * // 2つ目の fuga の位置を返す
      * that(file_pos($testpath, 'fuga', 6))->is(15);
-     * // 見つからない場合は false を返す
+     * // 見つからない場合は null を返す
      * that(file_pos($testpath, 'hogera'))->is(null);
      * ```
      *
@@ -15134,31 +15273,27 @@ if (!function_exists('ryunosuke\\chmonos\\file_pos')) {
         assert($chunksize >= $maxlength);
 
         $fp = fopen($filename, 'rb');
-        try {
-            fseek($fp, $start);
-            while (!feof($fp)) {
-                if ($start > $end) {
-                    break;
-                }
-                $last = $part ?? '';
-                $part = fread($fp, $chunksize);
-                if (($p = strpos_array($part, $needle))) {
-                    $min = min($p);
-                    $result = $start + $min;
-                    return $result + strlen($needle[array_flip($p)[$min]]) > $end ? false : $result;
-                }
-                if (($p = strpos_array($last . $part, $needle))) {
-                    $min = min($p);
-                    $result = $start + $min - strlen($last);
-                    return $result + strlen($needle[array_flip($p)[$min]]) > $end ? false : $result;
-                }
-                $start += strlen($part);
+        fseek($fp, $start);
+
+        $last = '';
+        foreach (file_generator($fp, $chunksize) as $part) {
+            if ($start > $end) {
+                break;
             }
-            return null;
+            if (($p = strpos_array($part, $needle))) {
+                $min = min($p);
+                $result = $start + $min;
+                return $result + strlen($needle[array_flip($p)[$min]]) > $end ? false : $result;
+            }
+            if (($p = strpos_array($last . $part, $needle))) {
+                $min = min($p);
+                $result = $start + $min - strlen($last);
+                return $result + strlen($needle[array_flip($p)[$min]]) > $end ? false : $result;
+            }
+            $start += strlen($part);
+            $last = $part;
         }
-        finally {
-            fclose($fp);
-        }
+        return null;
     }
 }
 
@@ -15562,28 +15697,24 @@ if (!function_exists('ryunosuke\\chmonos\\file_slice')) {
             $end_line = -$length + 1;
         }
 
-        $fp = fopen($filename, 'r', $FILE_USE_INCLUDE_PATH, $context);
-        try {
-            $result = [];
-            for ($i = 1; ($line = fgets($fp)) !== false; $i++) {
-                if (isset($end_line) && $i >= $end_line) {
-                    break;
-                }
-                if ($i >= $start_line) {
-                    if ($FILE_IGNORE_NEW_LINES) {
-                        $line = rtrim($line);
-                    }
-                    if ($FILE_SKIP_EMPTY_LINES && trim($line) === '') {
-                        continue;
-                    }
-                    $result[$i] = $line;
-                }
+        $fp = fopen($filename, 'rb', $FILE_USE_INCLUDE_PATH, $context);
+        $result = [];
+        foreach (file_generator($fp) as $i => $line) {
+            $i++;
+            if (isset($end_line) && $i >= $end_line) {
+                break;
             }
-            return $result;
+            if ($i >= $start_line) {
+                if ($FILE_IGNORE_NEW_LINES) {
+                    $line = rtrim($line);
+                }
+                if ($FILE_SKIP_EMPTY_LINES && trim($line) === '') {
+                    continue;
+                }
+                $result[$i] = $line;
+            }
         }
-        finally {
-            fclose($fp);
-        }
+        return $result;
     }
 }
 
@@ -17499,6 +17630,80 @@ if (!function_exists('ryunosuke\\chmonos\\func_operator')) {
         }
 
         return $opefunc;
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\func_throttle') || (new \ReflectionFunction('ryunosuke\\chmonos\\func_throttle'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\func_throttle')) {
+    /**
+     * callable の実行間隔を間引いた callable を返す
+     *
+     * 進捗状況や SSE などで間引きたいケースはある。
+     * ループ内で呼んでもいいし、tick に仕込んでもよい。
+     * とにかく高頻度で呼ばれ得る状況においてコール回数を減らしたい場合に使う。
+     *
+     * $leading_arguments を指定するとその引数で初回にコールされる。
+     * $trailing_arguments を指定するとその引数で最後にコールされる。
+     * ただし $trailing_arguments はデストラクタで実装されており、実行タイミングは不確定なので注意（そもそもあまり使われる想定がない）。
+     *
+     * 返り値は実行可能オブジェクトであり、本来の返り値を返す。ただし間引かれた場合は null を返す。
+     * よって正常系で null を返す callable では返り値は使えない。
+     * なお「callable である」という前提以外は置かないこと。
+     *
+     * Example:
+     * ```php
+     * $called = 0;
+     * $callback = func_throttle(function () use (&$called) { $called++; }, 0.1);
+     * // こんなとんでもないループでも数回程度しか呼ばれない
+     * for ($i=0; $i<3_000_000; $i++) {
+     *     $callback($i);
+     * }
+     * that($called)->isBetween(1, 9);
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\funchand
+     */
+    function func_throttle(
+        /** 実行される callable */ callable $callback,
+        /** 間引く間隔 */ float $interval,
+        /** 初回実行時の引数 */ ?array $leading_arguments = null,
+        /** 最後実行時の引数 */ ?array $trailing_arguments = null,
+    ): /** 間隔が間引かれた callable */ callable
+    {
+        return new class(\Closure::fromCallable($callback), $interval, $leading_arguments, $trailing_arguments) {
+            private float $time;
+
+            public function __construct(
+                private \Closure $callback,
+                private float $interval,
+                private ?array $leading_arguments,
+                private ?array $trailing_arguments,
+            ) {
+                if ($this->leading_arguments !== null) {
+                    ($this->callback)(...$this->leading_arguments);
+                }
+
+                $this->time = microtime(true);
+            }
+
+            public function __destruct()
+            {
+                if ($this->trailing_arguments !== null) {
+                    ($this->callback)(...$this->trailing_arguments);
+                }
+            }
+
+            public function __invoke(...$arguments): mixed
+            {
+                $now = microtime(true);
+                $elapsed = $now - $this->time;
+                if ($elapsed >= $this->interval) {
+                    $this->time = $now;
+                    return ($this->callback)(...$arguments);
+                }
+                return null;
+            }
+        };
     }
 }
 
@@ -19702,6 +19907,53 @@ if (!function_exists('ryunosuke\\chmonos\\decimal')) {
     }
 }
 
+assert(!function_exists('ryunosuke\\chmonos\\int_divide') || (new \ReflectionFunction('ryunosuke\\chmonos\\int_divide'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\int_divide')) {
+    /**
+     * 整数を除算した配列を返す
+     *
+     * 割り切れるときは array_pad([], $divisor, $int/$divisor) と同じ。
+     * 割り切れないときは余剰を各要素に分配する。
+     * $length が正の場合は左から埋められる。負の場合は右から埋められる。
+     *
+     * Example:
+     * ```php
+     * // 13を3つに分割（余りを左に分配）
+     * that(int_divide(13, 3))->isSame([5, 4, 4]);
+     * // 13を3つに分割（余りを右に分配）
+     * that(int_divide(13, -3))->isSame([4, 4, 5]);
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\math
+     */
+    function int_divide(int $int, int $divisor): array
+    {
+        $minus = $divisor < 0;
+        $divisor = abs($divisor);
+
+        $div = intdiv($int, $divisor);
+        $mod = abs((int) ($int % $divisor));
+
+        $result = array_pad([], $divisor, $div);
+
+        for ($i = 0; $i < $mod; $i++) {
+            $n = $i;
+            if ($minus) {
+                $n = $divisor - $i - 1;
+            }
+
+            if ($int > 0) {
+                $result[$n]++;
+            }
+            else {
+                $result[$n]--;
+            }
+        }
+
+        return $result;
+    }
+}
+
 assert(!function_exists('ryunosuke\\chmonos\\maximum') || (new \ReflectionFunction('ryunosuke\\chmonos\\maximum'))->isUserDefined());
 if (!function_exists('ryunosuke\\chmonos\\maximum')) {
     /**
@@ -20206,6 +20458,57 @@ if (!function_exists('ryunosuke\\chmonos\\evaluate')) {
             $message .= "\n in " . realpath($cachefile) . " on line " . $errline . "\n";
             throw new \ParseError($message, $ex->getCode(), $ex);
         }
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\msleep') || (new \ReflectionFunction('ryunosuke\\chmonos\\msleep'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\msleep')) {
+    /**
+     * float でのミリ秒も指定できる sleep
+     *
+     * ついでに、いくつかある php の sleep 系関数の動作を統一してある。
+     * - sleep: 秒単位で精度が低いが、残り秒数を返してくれる
+     * - usleep: 精度は高いが、返り値がない
+     * - time_nanosleep: 精度が高く（高すぎる）残り秒数も返せるが、シグナルを無視できない
+     * - time_sleep_until: 精度も高くシグナルを無視できるが、逆に言えばシグナルで打ち切れない
+     *
+     * float でのミリ秒で実用上は十分だろうし、上記のような細かな動作差異など覚えていられないので、シグナル無視を引数化し常に「残りミリ秒数」を返すようにした。
+     *
+     * $seconds は DateTime を受け入れ、DateTime の場合は指定日時まで待機という動作になる。
+     * この時、過去日時を指定してもエラーにはならず 0 を返す（用途から考えてスケジューリングの都合で過去になることは多々ある）。
+     * また、$cancel_signal 未指定の場合 false に設定される（time_sleep_until の思想を模した）。
+     * 一方、float 指定の場合は 0 未満だとエラーになる（実装は assert）。
+     *
+     * ちなみに pcntl_signal で php レベルでシグナルをハンドリングしていない場合は $cancel_signal の指定は無意味。
+     * 実際のところ「ミリ秒対応の sleep」という雑な認識で問題ない。
+     *
+     * @package ryunosuke\Functions\Package\misc
+     */
+    function msleep(
+        /** 待機するミリ秒|待機するまでの日時 */ float|\DateTimeInterface $seconds,
+        /** シグナルでキャンセルされるか */ ?bool $cancel_signal = null,
+    ): /** 残りミリ秒数 */ float
+    {
+        $now = microtime(true);
+
+        if ($seconds instanceof \DateTimeInterface) {
+            $cancel_signal ??= false;
+            $seconds = (float) ($seconds->format('U.u') - $now);
+        }
+        else {
+            $cancel_signal ??= true;
+            assert($seconds >= 0);
+        }
+
+        if ($seconds > 0) {
+            if ($cancel_signal) {
+                usleep((int) ($seconds * 1000000));
+            }
+            else {
+                time_sleep_until($now + $seconds);
+            }
+        }
+        return max(0.0, $seconds - (microtime(true) - $now));
     }
 }
 
@@ -21535,16 +21838,16 @@ if (!function_exists('ryunosuke\\chmonos\\php_tokens')) {
     }
 }
 
-assert(!function_exists('ryunosuke\\chmonos\\unique_id') || (new \ReflectionFunction('ryunosuke\\chmonos\\unique_id'))->isUserDefined());
-if (!function_exists('ryunosuke\\chmonos\\unique_id')) {
+assert(!function_exists('ryunosuke\\chmonos\\sleetflake') || (new \ReflectionFunction('ryunosuke\\chmonos\\sleetflake'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\sleetflake')) {
     /**
-     * 一意な文字列を返す
+     * 一意な id を生成するオブジェクトを返す
      *
      * 最大でも8バイト（64ビット）に収まるようにしてある。
      *
-     * - 41bit: 1ミリ秒単位
-     * - 7bit: シーケンス
-     * - 16bit: IPv4ホストアドレス
+     * - 41bit: 1ミリ秒単位（固定）
+     * - 7bit: シーケンス（引数指定可能）
+     * - 16bit: IPv4ホストアドレス（引数指定可能）
      *
      * いわゆる snowflake 系で sonyflake が近い。
      *
@@ -21585,143 +21888,175 @@ if (!function_exists('ryunosuke\\chmonos\\unique_id')) {
      *
      * @package ryunosuke\Functions\Package\misc
      *
-     * @param array $id_info 元になった生成データのレシーバ引数
-     * @param array $debug デバッグ用引数（配列で内部の動的な値を指定できる）
-     * @return string 一意なバイナリ文字列
+     * @return \Sleetflake|object
      */
-    function unique_id(&$id_info = [], $debug = [])
-    {
-        $id_info = [];
+    function sleetflake(
+        int $sequence_bit = 7,
+        int $ipaddress_bit = 16,
+        ?int $base_timestamp = null,
+        ?float $timestamp = null,
+        ?string $lockfile = null,
+    ) {
+        return new class($sequence_bit, $ipaddress_bit, $base_timestamp, $timestamp, $lockfile) {
+            private int    $sequence_bit;
+            private int    $ipaddress_bit;
+            private int    $machine_id;
+            private int    $base_timestamp;
+            private ?float $timestamp;
+            private        $lock_handle;
 
-        static $config = null;
-        $config ??= function_configure('unique_id.config');
+            private array $debugInfo;
 
-        $TIMESTAMP_BASE = $config['timestamp_base'];
-        $TIMESTAMP_PRECISION = $config['timestamp_precision'];
-        $TIMESTAMP_BIT = $config['timestamp_bit'];
-        $SEQUENCE_BIT = $config['sequence_bit'];
-        $IPADDRESS_BIT = $config['ipaddress_bit'];
-        assert(PHP_INT_SIZE === 8);
-        assert(($TIMESTAMP_BIT + $SEQUENCE_BIT + $IPADDRESS_BIT) === 64);
+            public function __construct(
+                int $sequence_bit,
+                int $ipaddress_bit,
+                ?int $base_timestamp,
+                ?float $timestamp,
+                ?string $lockfile,
+            ) {
+                $this->sequence_bit = $sequence_bit;
+                $this->ipaddress_bit = $ipaddress_bit;
+                $this->base_timestamp = $base_timestamp ?? strtotime('2025/06/01');
+                $this->timestamp = $timestamp;
+                $this->lock_handle = fopen($lockfile ?? (function_configure('cachedir') . "/sleetflake-sequence"), 'c+');
 
-        static $ipaddress = null;
-        $ipaddress ??= (function () use ($IPADDRESS_BIT) {
-            $addrs = [];
-            foreach (net_get_interfaces() as $interface) {
-                foreach ($interface['unicast'] as $addr) {
-                    // IPv4 で・・・
-                    if ($addr['family'] === AF_INET) {
-                        // subnet/16 以上のもの
-                        $subnet = strrpos(decbin((ip2long($addr['netmask']))), '1') + 1;
-                        if ($subnet >= $IPADDRESS_BIT) {
-                            $addrs[] = [$addr['address'], $subnet];
+                assert(($this->sequence_bit + $this->ipaddress_bit) <= 23);
+            }
+
+            public function __destruct()
+            {
+                fclose($this->lock_handle);
+            }
+
+            public function __debugInfo(): array
+            {
+                return $this->debugInfo;
+            }
+
+            public function binaryToInt(string $binary): int
+            {
+                return unpack('J', $binary)[1];
+            }
+
+            public function int(): int
+            {
+                $this->machine_id ??= $this->getMachineId();
+
+                // この順番は決して変えてはならない（getSequence で待機する可能性があるので microtime はその後でなければならない）
+                $machineid = $this->machine_id & ((1 << $this->ipaddress_bit) - 1);
+                $sequence = $this->getSequence();
+                $timestamp = (int) ((($this->timestamp ?? microtime(true)) - $this->base_timestamp) * 1000);
+
+                $ipaddress_right_bits = 0;
+                $sequence_right_bits = $ipaddress_right_bits + $this->ipaddress_bit;
+                $timestamp_right_bits = $sequence_right_bits + $this->sequence_bit;
+
+                $id = ($timestamp << $timestamp_right_bits) | ($sequence << $sequence_right_bits) | ($machineid << $ipaddress_right_bits);
+
+                $this->debugInfo = [
+                    'id'        => $id,
+                    'timestamp' => $timestamp,
+                    'sequence'  => $sequence,
+                    'machineid' => $machineid,
+                ];
+
+                return $id;
+            }
+
+            public function binary(): string
+            {
+                return pack('J', $this->int());
+            }
+
+            public function base62(): string
+            {
+                return base62_encode($this->binary());
+            }
+
+            public function base64(): string
+            {
+                return base64_encode($this->binary());
+            }
+
+            public function base64url(): string
+            {
+                return base64url_encode($this->binary());
+            }
+
+            private function getMachineId(): int
+            {
+                $addrs = [];
+                foreach (net_get_interfaces() as $interface) {
+                    foreach ($interface['unicast'] as $addr) {
+                        // IPv4 で・・・
+                        if ($addr['family'] === AF_INET) {
+                            // subnet/16 以上のもの
+                            $subnet = strrpos(decbin((ip2long($addr['netmask']))), '1') + 1;
+                            if ($subnet >= $this->ipaddress_bit) {
+                                $addrs[] = [$addr['address'], $subnet];
+                            }
+                        }
+                        // @todo subnet が /104 なら IPv6 でもいける？
+                    }
+                }
+                if ($addrs) {
+                    usort($addrs, fn($a, $b) => -($a[1] <=> $b[1]));
+                    return ip2long(reset($addrs)[0]);
+                }
+                throw new \UnexpectedValueException("ip address is not found"); // @codeCoverageIgnore
+            }
+
+            private function getSequence(): int
+            {
+                set_error_handler(function ($severity, $message, $file, $line) { throw new \ErrorException($message, 0, $severity, $file, $line); });
+                flock($this->lock_handle, LOCK_EX);
+
+                try {
+                    rewind($this->lock_handle);
+                    $sequence = 1 + (int) stream_get_contents($this->lock_handle);
+                    if (($sequence >= (1 << $this->sequence_bit))) {
+                        $sequence = 0;
+                        usleep(1000);
+                        if (isset($this->timestamp)) {
+                            $this->timestamp += 0.001;
                         }
                     }
-                    // @todo subnet が /104 なら IPv6 でもいける？
-                }
-            }
-            if ($addrs) {
-                usort($addrs, fn($a, $b) => -($a[1] <=> $b[1]));
-                return reset($addrs)[0];
-            }
-            throw new \UnexpectedValueException("ip address is not found"); // @codeCoverageIgnore
-        })();
-        $ipaddress = $debug['ipaddress'] ?? $ipaddress;
 
-        // プロセスを跨いだ連番生成器（何かに使えそうなのでクラスにまとめて少し冗長になっている）
-        static $sequencer = null;
-        $sequencer ??= new class (sys_get_temp_dir() . "/id-sequence") {
-            private     $handle;
-            private int $lockcount = 0;
-
-            public function __construct(string $lockfile)
-            {
-                $this->handle = fopen($lockfile, 'c+');
-            }
-
-            public function lock(): int
-            {
-                if (flock($this->handle, LOCK_EX)) {
-                    $this->lockcount++;
-                }
-                return $this->lockcount;
-            }
-
-            public function unlock(): int
-            {
-                if (flock($this->handle, LOCK_UN)) {
-                    $this->lockcount--;
-                }
-                return $this->lockcount;
-            }
-
-            public function reset(int $sequence): void
-            {
-                assert($this->lockcount > 0, 'must be lock');
-
-                set_error_handler(function ($severity, $message, $file, $line) { throw new \ErrorException($message, 0, $severity, $file, $line); });
-                try {
-                    rewind($this->handle);
-                    ftruncate($this->handle, 0);
-                    fwrite($this->handle, $sequence);
-                }
-                finally {
-                    restore_error_handler();
-                }
-            }
-
-            public function add(int $increment = 1): int
-            {
-                assert($this->lockcount > 0, 'must be lock');
-
-                set_error_handler(function ($severity, $message, $file, $line) { throw new \ErrorException($message, 0, $severity, $file, $line); });
-                try {
-                    rewind($this->handle);
-                    $sequence = (int) stream_get_contents($this->handle);
-
-                    $next = $sequence + $increment;
-                    $this->reset(is_float($next) ? 0 : $next);
+                    rewind($this->lock_handle);
+                    ftruncate($this->lock_handle, 0);
+                    fwrite($this->lock_handle, $sequence);
 
                     return $sequence;
                 }
                 finally {
                     restore_error_handler();
+                    flock($this->lock_handle, LOCK_UN);
                 }
             }
         };
+    }
+}
 
-        $sequencer->lock();
-        try {
-            $timestamp = $debug['timestamp'] ?? microtime(true);
-            if (isset($debug['sequence'])) {
-                $sequencer->reset($debug['sequence']);
-            }
-
-            $sequence = $sequencer->add() % (1 << $SEQUENCE_BIT);
-            if ($sequence === 0) {
-                usleep(1000 * $TIMESTAMP_PRECISION);
-                $timestamp = microtime(true);
-            }
-        }
-        finally {
-            $sequencer->unlock();
-        }
-
-        $id_info = [
-            'timestamp' => (int) (($timestamp - $TIMESTAMP_BASE) * 1000 / $TIMESTAMP_PRECISION),
-            'sequence'  => $sequence,
-            'ipsegment' => ip2long($ipaddress) & ((1 << $IPADDRESS_BIT) - 1),
-        ];
-
-        assert(($id_info['timestamp'] & ((1 << $TIMESTAMP_BIT) - 1)) === $id_info['timestamp']);
-        assert(($id_info['sequence'] & ((1 << $SEQUENCE_BIT) - 1)) === $id_info['sequence']);
-        assert(($id_info['ipsegment'] & ((1 << $IPADDRESS_BIT) - 1)) === $id_info['ipsegment']);
-
-        $ipaddress_right_bits = 0;
-        $sequence_right_bits = $ipaddress_right_bits + $IPADDRESS_BIT;
-        $timestamp_right_bits = $sequence_right_bits + $SEQUENCE_BIT;
-
-        return pack('J', ($id_info['timestamp'] << $timestamp_right_bits) | ($id_info['sequence'] << $sequence_right_bits) | ($id_info['ipsegment'] << $ipaddress_right_bits));
+assert(!function_exists('ryunosuke\\chmonos\\unique_id') || (new \ReflectionFunction('ryunosuke\\chmonos\\unique_id'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\unique_id')) {
+    /**
+     * sleetflake::binary へのエイリアス
+     *
+     * @see sleetflake()
+     * @package ryunosuke\Functions\Package\misc
+     */
+    function unique_id(): string
+    {
+        static $sleetflake = null;
+        $sleetflake ??= (function () {
+            $config = function_configure('unique_id.config');
+            return sleetflake(
+                base_timestamp: $config['timestamp_base'],
+                sequence_bit: $config['sequence_bit'],
+                ipaddress_bit: $config['ipaddress_bit'],
+            );
+        })();
+        return $sleetflake->binary();
     }
 }
 
@@ -26971,6 +27306,161 @@ if (!function_exists('ryunosuke\\chmonos\\include_stream')) {
     }
 }
 
+assert(!function_exists('ryunosuke\\chmonos\\iterator_stream') || (new \ReflectionFunction('ryunosuke\\chmonos\\iterator_stream'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\iterator_stream')) {
+    /**
+     * iterator を resource に変換する
+     *
+     * iterator(generator) は「ちょっとずつ返す」という性質を持つので resource 的に扱えた方が便利なことがある。
+     * 例えば極々稀に iterator を resource として扱いたい場合が存在する。
+     * - 外部ライブラリのメソッドが resource しか受け付けない
+     * - 手元に SplFileObject しかない（SplFileObject から resource を得る手段は存在しない）
+     * そんな時この関数を使えば resource 化することができる。
+     *
+     * 得られた resource は大抵の fxxxx 関数を呼ぶことができる。
+     * が、呼んだところで効果があるのは非常に限定的で、意味があるのは ftell くらいしかない。
+     * あくまで「resource として扱いたい場合にエラーが出て欲しくない」程度の意味でしかない。
+     *
+     * 実質的には tmpfile に全部書いてそのファイルリソースを返すのと同じ。
+     * ただし、tmpfile が（tmpfs などで）メモリ上にあるかもしれないし全部書いて全部読むのは余計なオーバーヘッドがかかるし途中で打ち切ることもできない。
+     * とは言え size が取れたり seek 出来たりと機能面ではそちらの方が優れているので参考実装として引数分岐で残してある。
+     *
+     * Example:
+     * ```php
+     * // Generator を resource 化する
+     * $stream = iterator_stream((function() {
+     *     yield "a\n";
+     *     yield "ab\n";
+     *     yield "abc\n";
+     * })());
+     * // resource として扱える
+     * that(fgets($stream))->is("a\n");
+     * that(fgets($stream))->is("ab\n");
+     * that(fgets($stream))->is("abc\n");
+     * that(fgets($stream))->is(false);
+     *
+     * // SplFileObject を resource 化する
+     * $testpath = sys_get_temp_dir() . '/iterator_stream.txt';
+     * file_put_contents($testpath, "a\nab\nabc\n");
+     * $file = new \SplFileObject($testpath);
+     * $stream = iterator_stream($file);
+     * // resource として扱える（$file->current,next でも fgets($stream) でも同様の作用・副作用が得られる）
+     * // SplFileObject には resource 取得メソッドが無いので resource を要求されると代替手段が無いに等しい
+     * that($file->current())->is("a\n");
+     * $file->next();
+     * that(fgets($stream))->is("ab\n");
+     * that(fgets($stream))->is("abc\n");
+     * that(fgets($stream))->is(false);
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\stream
+     *
+     * @return resource iterator の resource
+     */
+    function iterator_stream(\Iterator $iterator, ?string $tmpdir = null)
+    {
+        if ($tmpdir !== null) {
+            $tmp = fopen(tempnam($tmpdir, 'istream'), 'w+b');
+            foreach ($iterator as $it) {
+                fwrite($tmp, $it);
+            }
+            rewind($tmp);
+            return $tmp;
+        }
+
+        static $STREAM_NAME, $stream_class = null;
+        if ($STREAM_NAME === null) {
+            $STREAM_NAME = 'iterator-stream';
+            if (in_array($STREAM_NAME, stream_get_wrappers())) {
+                throw new \DomainException("$STREAM_NAME is registered already."); // @codeCoverageIgnore
+            }
+
+            stream_wrapper_register($STREAM_NAME, $stream_class = get_class(new class() {
+                public static $objects = [];
+
+                private int       $id;
+                private \Iterator $iterator;
+                private int       $position;
+                private string    $buffer;
+
+                public $context;
+
+                /** @noinspection PhpUnusedParameterInspection */
+                public function stream_open(string $path, string $mode, int $options, &$opened_path): bool
+                {
+                    assert(strpos($mode, 'r') !== false);
+
+                    $parsed = parse_url($path);
+
+                    $this->id = $parsed['host'];
+                    $this->iterator = self::$objects[$parsed['host']];
+                    $this->position = 0;
+                    $this->buffer = '';
+
+                    return true;
+                }
+
+                public function stream_close()
+                {
+                    unset(self::$objects[$this->id]);
+                }
+
+                public function stream_read(int $count): string
+                {
+                    $buffer = $this->buffer;
+                    while (strlen($buffer) < $count && $this->iterator->valid()) {
+                        $buffer .= $this->iterator->current();
+                        $this->iterator->next();
+                    }
+
+                    $result = substr($buffer, 0, $count);
+                    $this->buffer = substr($buffer, $count);
+
+                    $this->position += strlen($result);
+                    return $result;
+                }
+
+                public function stream_eof(): bool
+                {
+                    return !($this->iterator->valid() || strlen($this->buffer));
+                }
+
+                public function stream_tell(): int
+                {
+                    return $this->position;
+                }
+
+                public function stream_seek(int $offset, int $whence = SEEK_SET): bool
+                {
+                    if ($offset === 0 && $whence === SEEK_SET) {
+                        $this->position = 0;
+                        $this->buffer = '';
+                        $this->iterator->rewind();
+                        return true;
+                    }
+                    return false;
+                }
+
+                public function stream_stat()
+                {
+                    return [];
+                }
+
+                /** @noinspection PhpUnusedParameterInspection */
+                public function stream_set_option(int $option, int $arg1, ?int $arg2) { return false; }
+
+                /** @noinspection PhpUnusedParameterInspection */
+                public function stream_lock($operation) { return false; }
+            }));
+        }
+
+        $id = spl_object_id($iterator);
+        $stream_class::$objects[$id] = $iterator;
+
+        return fopen("$STREAM_NAME://$id", 'rb');
+    }
+}
+
 assert(!function_exists('ryunosuke\\chmonos\\memory_stream') || (new \ReflectionFunction('ryunosuke\\chmonos\\memory_stream'))->isUserDefined());
 if (!function_exists('ryunosuke\\chmonos\\memory_stream')) {
     /**
@@ -27494,6 +27984,101 @@ if (!function_exists('ryunosuke\\chmonos\\profiler')) {
         };
 
         return $profiler;
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\stream_describe') || (new \ReflectionFunction('ryunosuke\\chmonos\\stream_describe'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\stream_describe')) {
+    /**
+     * ストリームの雑多な情報を返す
+     *
+     * - descriptor: ファイルデスクリプタ番号
+     * - inode: ファイル inode
+     * - realpath: 現在のファイル名（ファイスシステム上に残っておらず、デスクリプタだけが存在する場合は null）
+     * - filename: 開いた時のファイル名
+     *
+     * procfs を用いていて Windows はテスト用に模倣しているだけなので使用してはならない。
+     *
+     * @package ryunosuke\Functions\Package\stream
+     */
+    function stream_describe($stream = null): ?array
+    {
+        // fd の蒐集（同じファイルを複数のリソースで開いていることもあるので inode 単位で集約する）
+        $descriptors = [];
+        if (DIRECTORY_SEPARATOR === '\\') {
+            exec('handle -v -p ' . getmypid(), $output);
+            foreach (array_slice($output, 6) as $descriptor) {
+                [, , , $fd, $type, , $realpath] = str_getcsv($descriptor);
+                if ($type === 'File') {
+                    clearstatcache(true, $realpath);
+                    if (file_exists($realpath)) {
+                        $inode = hexdec(trim(explode(' ', shell_exec('fsutil file queryfileid ' . escapeshellarg($realpath)))[3]));
+                        $descriptors[$inode][] = [
+                            'realpath'   => $realpath,
+                            'descriptor' => hexdec($fd),
+                        ];
+                    }
+                }
+            }
+        }
+        else {
+            // @codeCoverageIgnoreStart
+            foreach (glob("/proc/self/fd/*") as $descriptor) {
+                clearstatcache(true, $descriptor);
+                $fd = (int) basename($descriptor);
+                // always failing
+                // $stat = stat("php://fd/$fd");
+
+                // fd は残っているがファイルが消されていると realpath は失敗する
+                // もはやファイル名が存在しないので fileinode は使えない（幸いにも fd から resource を開く機能があるので代替する）
+                $realpath = realpath($descriptor);
+                if ($realpath === false) {
+                    $fp = @fopen("php://fd/$fd", "r");
+                    if ($fp === false) {
+                        continue;
+                    }
+                    $fstat = fstat($fp);
+                    $inode = $fstat['ino'];
+                    $realpath = null;
+                    fclose($fp);
+                }
+                else {
+                    $inode = fileinode($realpath);
+                }
+
+                $descriptors[$inode][] = [
+                    'realpath'   => $realpath,
+                    'descriptor' => $fd,
+                ];
+            }
+            // @codeCoverageIgnoreEnd
+        }
+
+        $results = [];
+        foreach (get_resources('stream') as $resource) {
+            $metadata = stream_get_meta_data($resource);
+            if (isset($metadata['uri'])) {
+                $fstat = fstat($resource);
+                if ($fstat != false) {
+                    if (isset($descriptors[$fstat['ino']])) {
+                        // resource と fd は id は一致しないが時系列での増減は同じなので順番に取り出せば一致する
+                        $descriptor = array_shift($descriptors[$fstat['ino']]);
+                        $results[(int) $resource] = [
+                            'type'       => $metadata['wrapper_type'],
+                            'descriptor' => $descriptor['descriptor'],
+                            'inode'      => $fstat['ino'],
+                            'realpath'   => $descriptor['realpath'],
+                            'filename'   => $metadata['uri'],
+                        ];
+                        if ($stream === $resource) {
+                            return $results[(int) $resource];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $results;
     }
 }
 
@@ -30118,6 +30703,34 @@ if (!function_exists('ryunosuke\\chmonos\\str_diff')) {
         };
 
         return $differ($xstring, $ystring);
+    }
+}
+
+assert(!function_exists('ryunosuke\\chmonos\\str_divide') || (new \ReflectionFunction('ryunosuke\\chmonos\\str_divide'))->isUserDefined());
+if (!function_exists('ryunosuke\\chmonos\\str_divide')) {
+    /**
+     * str_split の配列長指定版
+     *
+     * Example:
+     * ```php
+     * // "abcdefg" を3つに分割（余りを左に分配）
+     * that(str_divide("abcdefg", 3))->isSame(["abc", "de", "fg"]);
+     * // "abcdefg" を3つに分割（余りを右に分配）
+     * that(str_divide("abcdefg", -3))->isSame(["ab", "cd", "efg"]);
+     * ```
+     *
+     * @package ryunosuke\Functions\Package\strings
+     */
+    function str_divide(string $string, int $divisor): array
+    {
+        $last = 0;
+        $result = [];
+        foreach (int_divide(strlen($string), $divisor) as $int) {
+            $result[] = substr($string, $last, $int);
+            $last += $int;
+        }
+
+        return $result;
     }
 }
 
