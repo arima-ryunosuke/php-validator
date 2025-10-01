@@ -4988,7 +4988,7 @@ this.condition = {"Ajax":async function(input, $value, $fields, $params, $consts
                         });
                     }
 
-                    if (e.type === 'submit') {
+                    if (e.type === 'click' || e.type === 'submit') {
                         $error(request());
                     }
                     else {
