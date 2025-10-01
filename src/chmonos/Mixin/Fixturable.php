@@ -1,6 +1,8 @@
 <?php
 namespace ryunosuke\chmonos\Mixin;
 
+use function ryunosuke\chmonos\str_divide;
+
 trait Fixturable
 {
     public static function fixtureBool(): bool
@@ -34,12 +36,17 @@ trait Fixturable
         return sprintf("%.{$dec}F", self::fixtureFloat(-$digit, $digit));
     }
 
-    public static function fixtureString(int $length, string $chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"): string
+    public static function fixtureString(int $length, string $chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", bool $consume = false): string
     {
         assert(strlen($chars) < 1024 * 1024 * 10);
+
+        $charlist = $consume ? str_divide($chars, $length) : [$chars];
+
         $result = '';
         while (strlen($result) < $length) {
-            $result .= self::__next(__FUNCTION__, $chars);
+            foreach ($charlist as $chars) {
+                $result .= self::__next(__FUNCTION__, $chars);
+            }
         }
         return $result;
     }

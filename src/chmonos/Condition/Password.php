@@ -1,6 +1,8 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
+use function ryunosuke\chmonos\str_divide;
+
 /**
  * パスワードバリデータ
  *
@@ -100,7 +102,7 @@ class Password extends AbstractCondition implements Interfaces\InferableType
     {
         $result = '';
         foreach ($this->_charlists as $chars) {
-            $result .= $this->fixtureString($this->_repeat, $chars);
+            $result .= $this->fixtureString($this->_repeat, $chars, true);
         }
         return str_shuffle($result);
     }
