@@ -643,6 +643,11 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
                     new Condition\ArrayExclusion(['a' => null, 'b' => null]),
                 ],
             ],
+            'array-inclusion'  => [
+                'condition' => [
+                    new Condition\ArrayInclusion(['a' => 'A', 'b' => 'B']),
+                ],
+            ],
             'array-length'     => [
                 'condition' => [
                     new Condition\ArrayLength(2, 5),
@@ -802,11 +807,13 @@ class ContextTest extends \ryunosuke\Test\AbstractUnitTestCase
         $context = new Context($rule);
         $fixtures = $context->getFixture([
             'array-exclustion' => ['a', 'b', 'c'],
+            'array-inclusion'  => ['x'],
             'array-length'     => ['x'],
             'not-in-array'     => 'a',
         ]);
         that($fixtures['fixture'])->isBetween(127, 255);
         that($fixtures['array-exclustion'])->is(['c']);
+        that($fixtures['array-inclusion'])->is(["x", "a", "b"]);
         that($fixtures['array-length'])->is(['x', 'x']);
         that($fixtures['not-in-array'])->is(null);
         $context->validate($fixtures);
