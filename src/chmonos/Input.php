@@ -28,8 +28,10 @@ class Input
         'options'               => [],
         'presents'              => [],
         'present-option-prefix' => "\x16",
-        'invalids'              => [],
-        'invalid-option-prefix' => "\x18",
+        'missings'              => [],
+        'missing-option-prefix' => "\x18",
+        'invalids'              => [], // delete in future scope
+        'invalid-option-prefix' => "\x18", // delete in future scope
         'datalist'              => [],
         'event'                 => ['change'],
         'propagate'             => [],
@@ -84,6 +86,10 @@ class Input
 
     public function __construct(array $rule, ?Input $parent = null)
     {
+        // for compatible
+        $rule['missings'] ??= $rule['invalids'] ?? static::$defaultRule['invalids'];
+        $rule['missing-option-prefix'] ??= $rule['invalid-option-prefix'] ?? static::$defaultRule['invalid-option-prefix'];
+
         $rule += static::$defaultRule;
 
         assert(in_array($rule['trimming'], [false, true, 'left', 'right'], true));
@@ -170,13 +176,13 @@ class Input
             });
         }
 
-        // invalids の自動設定
-        if (strlen($rule["invalid-option-prefix"])) {
+        // missings の自動設定
+        if (strlen($rule["missing-option-prefix"])) {
             array_walk_recursive($rule['options'], function ($v, $k) use (&$rule) {
                 if (is_string($v)) {
-                    [, $value] = explode($rule["invalid-option-prefix"], $v, 2) + [1 => null];
+                    [, $value] = explode($rule["missing-option-prefix"], $v, 2) + [1 => null];
                     if ($value !== null) {
-                        $rule['invalids'][$k] = $value;
+                        $rule['missings'][$k] = $value;
                     }
                 }
             });
@@ -568,17 +574,17 @@ class Input
 
         $notoptions = [];
         array_walk_recursive($this->rule['options'], function (&$v, $k) use (&$notoptions) {
-            if (array_key_exists($k, $this->invalids)) {
+            if (array_key_exists($k, $this->missings)) {
                 if ($v instanceof \stdClass) {
-                    $v->label = $this->invalids[$k] ?? $v->label;
-                    $v->invalid = false;
+                    $v->label = $this->missings[$k] ?? $v->label;
+                    $v->missing = false;
                 }
                 else {
-                    $v = $this->invalids[$k] ?? $v;
+                    $v = $this->missings[$k] ?? $v;
                 }
                 $notoptions[] = $k;
             }
-            elseif ($v instanceof \stdClass && ($v->invalid ?? false)) {
+            elseif ($v instanceof \stdClass && ($v->missing ?? $v->invalid ?? false)) {
                 $notoptions[] = $k;
             }
         });
@@ -1152,8 +1158,8 @@ class Input
             if (array_key_exists($key, $this->presents)) {
                 $params['class'] = concat($params['class'] ?? '', ' ') . 'validation_present';
             }
-            if (array_key_exists($key, $this->invalids)) {
-                $params['class'] = concat($params['class'] ?? '', ' ') . 'validation_invalid';
+            if (array_key_exists($key, $this->missings)) {
+                $params['class'] = concat($params['class'] ?? '', ' ') . 'validation_invalid'; // for compatible
             }
 
             // for id のペア
@@ -1197,6 +1203,7 @@ class Input
 
             unset($text->label);
             unset($text->present);
+            unset($text->missing);
             unset($text->invalid);
 
             $option_attrs += (array) $text;
@@ -1209,8 +1216,8 @@ class Input
         if (array_key_exists($key, $this->presents)) {
             $option_attrs['class'] = concat($option_attrs['class'] ?? '', ' ') . 'validation_present';
         }
-        if (array_key_exists($key, $this->invalids)) {
-            $option_attrs['class'] = concat($option_attrs['class'] ?? '', ' ') . 'validation_invalid';
+        if (array_key_exists($key, $this->missings)) {
+            $option_attrs['class'] = concat($option_attrs['class'] ?? '', ' ') . 'validation_invalid'; // for compatible
         }
         foreach (array_filter($this->rule['option-label'], 'is_string') as $attrname) {
             $option_attrs[$attrname] = $text;

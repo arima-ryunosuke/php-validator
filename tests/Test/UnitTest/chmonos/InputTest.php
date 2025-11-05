@@ -346,7 +346,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'EmailAddress' => null,
             ],
             'present-option-prefix' => "yyy-",
-            'invalid-option-prefix' => "xxx-",
+            'missing-option-prefix' => "xxx-",
             'options'               => [
                 1          => 'on',
                 'optgroup' => [
@@ -1829,19 +1829,19 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'options'  => [
                 1 => (object) [
                     'label'   => 'object.1',
-                    'invalid' => false,
+                    'missing' => false,
                 ],
                 2 => (object) [
                     'label'   => 'object.2',
-                    'invalid' => true,
+                    'missing' => true,
                 ],
                 3 => (object) [
                     'label'   => 'object.3',
                     'present' => true,
                 ],
             ],
-            'invalids' => [
-                3 => 'invalid-option(invalid)',
+            'missings' => [
+                3 => 'missing-option(missing)',
             ],
         ]);
 
@@ -1896,7 +1896,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
             'label[3]' => [
                 'for' => 'name-3',
-                'invalid-option(invalid)',
+                'missing-option(missing)',
             ],
         ]);
 
@@ -2016,11 +2016,11 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'options'  => [
                 1       => (object) [
                     'label'   => 'object.1',
-                    'invalid' => false,
+                    'missing' => false,
                 ],
                 2       => (object) [
                     'label'   => 'object.2',
-                    'invalid' => true,
+                    'missing' => true,
                 ],
                 3       => (object) [
                     'label'   => 'object.3',
@@ -2029,12 +2029,12 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'group' => [
                     4 => (object) [
                         'label'   => 'object.4',
-                        'invalid' => false,
+                        'missing' => false,
                     ],
                 ],
             ],
-            'invalids' => [
-                3 => 'invalid-option(invalid)',
+            'missings' => [
+                3 => 'missing-option(missing)',
             ],
         ]);
 
@@ -2065,7 +2065,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'option[3]' => [
                     "class" => ["validation_present", "validation_invalid"],
                     'value' => '3',
-                    'invalid-option(invalid)',
+                    'missing-option(missing)',
                 ],
 
                 'optgroup' => [
