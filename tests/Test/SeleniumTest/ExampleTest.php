@@ -499,6 +499,28 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_array_inclusion(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('array-inclusion[]', ['a', 'b']);
+        that($driver)->getErrors()->count(4);
+        $driver->setValue('array-inclusion[]', ['a', 'b', 'x']);
+        that($driver)->getErrors()->count(4);
+        $driver->setValue('array-inclusion[]', ['a', 'b', 'x', 'y']);
+        that($driver)->getErrors()->count(0);
+
+        $driver->setValue('array-inclusion2[]', ['a', 'b']);
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('array-inclusion2[]', ['a', 'b', 'x']);
+        that($driver)->getErrors()->count(1);
+        $driver->setValue('array-inclusion2[]', ['a', 'b', 'x', 'y']);
+        that($driver)->getErrors()->count(0);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_inarray_invalid2(WebDriver $driver)
     {
         $driver->path('/example/index.php');

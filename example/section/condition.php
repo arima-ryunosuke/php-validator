@@ -343,6 +343,30 @@ $condition_form = new \ryunosuke\chmonos\Form([
             'y' => "warning(無効状態)",
         ],
     ],
+    'array-inclusion'       => [
+        'options'    => [
+            'a' => 'hoge',
+            'x' => "must1",
+            'b' => 'fuga',
+            'y' => 'must2',
+        ],
+        'condition' => [
+            'ArrayInclusion' => [[
+                'x' => 'MUST1',
+                'y' => 'MUST2',
+            ]]
+        ],
+        'multiple'  => true,
+    ],
+    'array-inclusion2'       => [
+        'options'    => [
+            'a' => 'hoge',
+            'x' => "\x16must1",
+            'b' => 'fuga',
+            'y' => "\x16must2",
+        ],
+        'multiple'  => true,
+    ],
     'json'                  => [
         'title'     => 'JSON文字列',
         'condition' => [
@@ -762,6 +786,12 @@ resetForm($condition_form, 'condition_form');
         <th>Array：InArrayInvalid("x", "z", current "y")</th>
         <td><?= $condition_form->input('inarray_invalid', ['value' => 'y']) ?></td>
         <td><?= $condition_form->input('inarray_invalid2', ['type' => 'checkbox', 'value' => 'y']) ?></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>Array：ArrayInclusion(must1, must2)</th>
+        <td><?= $condition_form->input('array-inclusion', ['type' => 'checkbox']) ?></td>
+        <td><?= $condition_form->input('array-inclusion2', ['type' => 'select']) ?></td>
         <td></td>
     </tr>
     <tr>
