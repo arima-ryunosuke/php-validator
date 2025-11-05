@@ -26,6 +26,8 @@ class Input
         'normalize'             => null,
         'condition'             => [],
         'options'               => [],
+        'presents'              => [],
+        'present-option-prefix' => "\x16",
         'invalids'              => [],
         'invalid-option-prefix' => "\x18",
         'datalist'              => [],
@@ -153,6 +155,19 @@ class Input
         // multiple の自動設定
         if ($rule['multiple'] === null) {
             $rule['multiple'] = $rule['inputs'] || is_array($rule['default']) || strlen($rule['delimiter']);
+        }
+
+        // presents の自動設定
+        if (strlen($rule["present-option-prefix"])) {
+            array_walk_recursive($rule['options'], function (&$v, $k) use (&$rule) {
+                if (is_string($v)) {
+                    [, $value] = explode($rule["present-option-prefix"], $v, 2) + [1 => null];
+                    if ($value !== null) {
+                        $rule['presents'][$k] = $value;
+                        $v = $value;
+                    }
+                }
+            });
         }
 
         // invalids の自動設定
@@ -471,6 +486,38 @@ class Input
         $stringlength = new Condition\StringLength(null, $max);
         $this->rule['condition'][class_shorten($stringlength)] = $stringlength;
         return $stringlength;
+    }
+
+    protected function _setAutoArrayInclusion(): ?Condition\ArrayInclusion
+    {
+        foreach ($this->condition as $condition) {
+            if ($condition instanceof Condition\ArrayInclusion) {
+                return null;
+            }
+        }
+
+        if (!$this->options) {
+            return null;
+        }
+
+        $presents = [];
+        array_walk_recursive($this->rule['options'], function ($v, $k) use (&$presents) {
+            if (array_key_exists($k, $this->presents)) {
+                $presents[$k] = $this->presents[$k];
+            }
+            elseif ($v instanceof \stdClass && ($v->present ?? false)) {
+                $this->rule['presents'][$k] = $v->lavel ?? '';
+                $presents[$k] = $this->presents[$k];
+            }
+        });
+
+        if (!$presents) {
+            return null;
+        }
+
+        $condition = new Condition\ArrayInclusion($presents);
+        $this->rule['condition'][class_shorten($condition)] = $condition;
+        return $condition;
     }
 
     protected function _setAutoInArray(): ?Condition\InArray
@@ -1102,6 +1149,9 @@ class Input
             if (isset($flipped_value[$key])) {
                 $params['checked'] = "checked";
             }
+            if (array_key_exists($key, $this->presents)) {
+                $params['class'] = concat($params['class'] ?? '', ' ') . 'validation_present';
+            }
             if (array_key_exists($key, $this->invalids)) {
                 $params['class'] = concat($params['class'] ?? '', ' ') . 'validation_invalid';
             }
@@ -1146,6 +1196,7 @@ class Input
             $label = $text->label;
 
             unset($text->label);
+            unset($text->present);
             unset($text->invalid);
 
             $option_attrs += (array) $text;
@@ -1154,6 +1205,9 @@ class Input
 
         if (isset($value[$key])) {
             $option_attrs['selected'] = 'selected';
+        }
+        if (array_key_exists($key, $this->presents)) {
+            $option_attrs['class'] = concat($option_attrs['class'] ?? '', ' ') . 'validation_present';
         }
         if (array_key_exists($key, $this->invalids)) {
             $option_attrs['class'] = concat($option_attrs['class'] ?? '', ' ') . 'validation_invalid';

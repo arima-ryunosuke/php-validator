@@ -345,26 +345,31 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'condition'             => [
                 'EmailAddress' => null,
             ],
+            'present-option-prefix' => "yyy-",
             'invalid-option-prefix' => "xxx-",
             'options'               => [
                 1          => 'on',
                 'optgroup' => [
                     0 => "xxx-off",
+                    2 => "yyy-present",
                 ],
             ],
             'autocond'              => [
-                'InArray'      => true,
+                'InArray'        => true,
+                'ArrayInclusion' => true,
                 // 'NotInArray'   => true,// 未指定は true 扱い
-                'StringLength' => false,
+                'StringLength'   => false,
             ],
         ]);
         that($input)->condition->hasKey('InArray');
+        that($input)->condition->hasKey('ArrayInclusion');
         that($input)->condition->hasKey('NotInArray');
         that($input)->condition->notHasKey('StringLength');
         that($input)->options->is([
             1          => 'on',
             'optgroup' => [
                 0 => "off",
+                2 => "present",
             ],
         ]);
 
@@ -1817,7 +1822,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
     }
 
-    function test_inputRadio_invalid()
+    function test_inputRadio_attr()
     {
         $input = new Input([
             'name'     => 'name',
@@ -1831,7 +1836,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'invalid' => true,
                 ],
                 3 => (object) [
-                    'label' => 'object.3',
+                    'label'   => 'object.3',
+                    'present' => true,
                 ],
             ],
             'invalids' => [
@@ -1884,7 +1890,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 'data-vinput-index'     => '',
                 'data-vinput-name'      => 'name',
                 'name'                  => 'name',
-                'class'                 => ['validatable', 'validation_invalid'],
+                'class'                 => ['validatable', 'validation_present', 'validation_invalid'],
                 'value'                 => '3',
                 'id'                    => 'name-3',
             ],
@@ -1894,6 +1900,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ]);
 
+        that($input)->condition['ArrayInclusion']->getValidationParam()['haystack']->is([
+            3 => "",
+        ]);
         that($input)->condition['NotInArray']->getValidationParam()['haystack']->is([
             2 => 0,
             3 => 1,
@@ -2000,7 +2009,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
     }
 
-    function test_inputSelect_invalid()
+    function test_inputSelect_attr()
     {
         $input = new Input([
             'name'     => 'name',
@@ -2014,7 +2023,8 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                     'invalid' => true,
                 ],
                 3       => (object) [
-                    'label' => 'object.3',
+                    'label'   => 'object.3',
+                    'present' => true,
                 ],
                 'group' => [
                     4 => (object) [
@@ -2053,6 +2063,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
                 ],
 
                 'option[3]' => [
+                    "class" => ["validation_present", "validation_invalid"],
                     'value' => '3',
                     'invalid-option(invalid)',
                 ],
@@ -2067,6 +2078,9 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ]);
 
+        that($input)->condition['ArrayInclusion']->getValidationParam()['haystack']->is([
+            3 => "",
+        ]);
         that($input)->condition['NotInArray']->getValidationParam()['haystack']->is([
             2 => 0,
             3 => 1,
