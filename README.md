@@ -80,8 +80,10 @@ $form = new Form([
         'normalize'             => [],         // 入力値のプレフィルタです（後述）
         'condition'             => [],         // 入力条件を配列で指定します（後述）
         'options'               => [],         // checkbox や radio などの選択肢を配列で指定します。キーが値、値が表示文字列です
-        'invalids'              => [],         // 無効 options を指定します（後述）
-        'invalid-option-prefix' => "\x18",     // 無効 options を表すプレフィックスを指定します（後述）
+        'presents'              => [],         // 必須 options を指定します（後述）
+        'present-option-prefix' => "\x16",     // 必須 options を表すプレフィックスを指定します（後述）
+        'missings'              => [],         // 無効 options を指定します（後述）
+        'missing-option-prefix' => "\x18",     // 無効 options を表すプレフィックスを指定します（後述）
         'datalist'              => [],         // datalist を生成します。現状では「自動 Condition が行われない options」という仕様です
         'event'                 => ['change'], // js チェックが走るイベント名を指定します（後述）
         'propagate'             => [],         // js チェックのイベントの伝播先を指定します（後述）
@@ -227,14 +229,17 @@ checkbox, radio, select などの選択肢を指定します。
 1階層のネストは optgroup として扱われます。
 
 `options` が指定されると autocond 機能により InArray 条件が自動で付与されます。
-`invalids` が指定されると autocond 機能により NotInArray 条件が自動で付与されます。その際、ラベル文字列はこちらの指定で上書きされます。
+`presents` が指定されると autocond 機能により ArrayInclusion 条件が自動で付与されます。
+`missings` が指定されると autocond 機能により NotInArray 条件が自動で付与されます。その際、ラベル文字列はこちらの指定で上書きされます。
 
-`invalid-option-prefix` を指定するとそのプレフィックスが付いた要素は invalids に入っているように振る舞います。
+`present-option-prefix` を指定するとそのプレフィックスが付いた要素は presents に入っているように振る舞います。
+要素のプレフィックスは除去されます。
+`missing-option-prefix` を指定するとそのプレフィックスが付いた要素は missings に入っているように振る舞います。
 要素のプレフィックスは除去されます。
 
 キーは値になります（1階層のネストは optgroup のタイトル）。
 値はラベルになりますが、ラベルは stdClass が許容されます。
-stdClass の場合、 `label`, `invalid` というプロパティが特別扱いされ、`label` がラベルに、`invalid` が上記で言う `invalid-option-prefix` が指定された値にあたります。
+stdClass の場合、 `label`, `present`, `missing` というプロパティが特別扱いされ、`label` がラベルに、`present/missing` が上記で言う `present/missing-option-prefix` が指定された値にあたります。
 その他の属性は html の属性値になります。
 つまり、下記のコードは（ほぼ）等価です。
 
@@ -245,37 +250,46 @@ $rule = [
         20 => 'メール',
         30 => "FAX",
     ],
-    'invalids'   => [
-        30 => "FAX（無効状態）", // これは invalids 機能により NotInArray 条件で不正な値とみなされる
+    'presents'   => [
+        20 => "メール", // これは presents 機能により ArrayInclusion 条件で必須の要素とみなされる
+    ],
+    'missings'   => [
+        30 => "FAX（無効状態）", // これは missings 機能により NotInArray 条件で不正な値とみなされる
     ],
 ];
 $rule = [
     'options'    => [
         10 => '電話',
-        20 => 'メール',
-        30 => "\x18FAX", // これは invalid-option-prefix 機能により NotInArray 条件で不正な値とみなされる
+        20 => "\x16メール", // これは present-option-prefix 機能により ArrayInclusion 条件で必須の要素とみなされる
+        30 => "\x18FAX",    // これは missing-option-prefix 機能により NotInArray 条件で不正な値とみなされる
     ],
 ];
 $rule = [
     'options'    => [
         10 => (object) ['label' => '電話', 'data-attr' => '10'],
-        20 => (object) ['label' => 'メール', 'data-attr' => '20'],
-        30 => (object) ['label' => 'FAX', 'data-attr' => '30', 'invalid' => true], // これは autocond 機能により NotInArray 条件で不正な値とみなされる
+        20 => (object) ['label' => 'メール', 'data-attr' => '20', 'present' => true], // これは autocond 機能により ArrayInclusion 条件で必須の要素とみなされる
+        30 => (object) ['label' => 'FAX', 'data-attr' => '30', 'missing' => true],    // これは autocond 機能により NotInArray 条件で不正な値とみなされる
     ],
 ];
 ```
 
 違いは option に `data-attr` という属性値が生やせることです。
 
-なんでこんな仕様が必要かと言うと、「現在選択肢が何らかの理由により無くなった」という仕様に耐えるためです。
+なんでこんな仕様が必要かと言うと、missing は「現在選択肢が何らかの理由により無くなった」という仕様に耐えるためです。
 例えばマスタから消えた、DB から論理削除された、等です（上記で言うと 30:FAX という選択肢が消えた状態）。
 
 html の select は候補が不正な場合（value が 30:FAX なのに 30:FAX という option がない状態）に「一番上を自動選択する」という仕様があるので、何も考えずに実装すると画面を開いてただ保存しただけで値が 10:電話 に勝手に変わってしまう、という事象が発生します。
 radio/checkbox はそういうことは起こりませんが、多くの場合は必須エラーとなりますし、現在の選択肢が何だったのか？ という情報が失われ、利便性が落ちます。
-そのような時、invalids で無効候補を与えたり、prefix を付与することで現在の選択肢を保ちつつ NoInArray でエラーにすることができます。
+そのような時、missings で無効候補を与えたり、prefix を付与することで現在の選択肢を保ちつつ NoInArray でエラーにすることができます。
 
-選択肢が共通でマスタ的な場合は `invalid-option-prefix` がいいでしょう。定義場所で "\x18" を付与するだけで全体として無効化できます。
-DB 等から動的に構築する場合は `invalids` がいいでしょう。options を取得するついでに invalids も取得すれば無効化できます。
+選択肢が共通でマスタ的な場合は `missing-option-prefix` がいいでしょう。定義場所で "\x18" を付与するだけで全体として無効化できます。
+DB 等から動的に構築する場合は `missings` がいいでしょう。options を取得するついでに missings も取得すれば無効化できます。
+
+一方、present は「何らかの理由で削除不可」という仕様に耐えるためです。
+例えばマスタ的なもので「子テーブルで使われているため削除不可」等です（上記で言うと 20:メール という選択肢が使用状態）。
+
+通常であれば外部キーなどのチェックで事足りますが、こういった項目は往々にして checkbox[] や select[multiple] で構成されるため、画面内でのエラー可否が非常に煩雑になります。
+そのような時、presents を与えたり、外部キーを見て prefix を付与することで削除禁止にすることができます。
 
 ##### event
 

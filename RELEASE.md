@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.12
+
+- [change] invalid を missing に変更する布石
+- [feature] invalid と対になる present を追加
+- [feature] ArrayInclusion を追加
+
 ## 2.2.11
 
 - Merge tag 'v1.3.10'
