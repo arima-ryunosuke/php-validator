@@ -732,7 +732,7 @@ class Input
         $value = $values[$this->name];
 
         // 配列の許可/未許可。通常フローではほぼありえないので例外で良い(=親切じゃなくて良い)
-        if (!$this->getType() === 'arrays' && (!$this->multiple && is_array($value)) || ($this->multiple && !is_array($value))) {
+        if ($this->getType() === 'arrays' && (!$this->multiple && is_array($value)) || ($this->multiple && !is_array($value))) {
             throw new ValidationException(null, sprintf("'%s' invalid type (%s).", $this->name, gettype($value)));
         }
 

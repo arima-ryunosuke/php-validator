@@ -1,8 +1,6 @@
 <?php
 namespace ryunosuke\chmonos\Condition;
 
-use function ryunosuke\chmonos\str_divide;
-
 /**
  * パスワードバリデータ
  *

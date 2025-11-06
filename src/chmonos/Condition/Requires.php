@@ -167,7 +167,7 @@ class Requires extends AbstractCondition implements Interfaces\Propagation
                 // for array
                 $intersect = array_intersect_key(
                     array_flip($context['cast']('array', $dvalue)),
-                    array_flip($operand)
+                    array_flip($operand),
                 );
                 if ($operator === 'any') {
                     return !!count($intersect);

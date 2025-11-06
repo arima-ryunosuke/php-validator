@@ -384,7 +384,7 @@ JS;
      *
      * @param mixed $value 検証する値自身
      * @param array $fields 依存フィールド配列
-     * @param Input $input 保持 Input
+     * @param ?Input $input 保持 Input
      * @return bool
      */
     public function isValid($value, $fields = [], ?Input $input = null)

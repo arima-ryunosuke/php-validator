@@ -114,6 +114,6 @@ class Number extends AbstractCondition implements Interfaces\MaxLength, Interfac
 
     public function getFixture($value, $fields)
     {
-        return (string) sprintf("%.{$this->_dec}F", $this->fixtureFloat($this->_min, $this->_max));
+        return sprintf("%.{$this->_dec}F", $this->fixtureFloat($this->_min, $this->_max));
     }
 }

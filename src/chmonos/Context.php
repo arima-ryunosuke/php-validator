@@ -325,7 +325,7 @@ class Context implements \IteratorAggregate
     /**
      * ネスト要素も含めて全ての Input を返す
      *
-     * @return \Generator|Input[] 全ての Input
+     * @return \Generator<Input> 全ての Input
      */
     public function getAllInput(): \Generator
     {
