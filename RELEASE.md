@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.3.10
+
+- [fixbug] needless を無意味に付け替えると瞬間的に disabled 状態が生まれることがありよくない
+
 ## 1.3.9
 
 - [fixbug] click で submit をエミュレートする機能があるので Ajax 側でも対応
