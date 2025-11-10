@@ -854,7 +854,7 @@ resetForm($condition_form, 'condition_form');
             <?= $condition_form->label('require_in') ?>
             <?= $condition_form->input('require_in') ?>
             <?= $condition_form->label('require_needless') ?>
-            <?= $condition_form->input('require_needless') ?>
+            <?= $condition_form->input('require_needless', ['type'=>'date']) ?>
         </td>
     </tr>
     <tr>

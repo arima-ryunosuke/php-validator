@@ -1134,14 +1134,20 @@ function Chmonos(form, options) {
             var label = holder.querySelector('[data-vlabel-id="' + input.dataset.vinputId + '"]') || document.createElement('span');
             input.setAttribute('data-vlevel', condition[rkey]['level']);
             label.setAttribute('data-vlevel', condition[rkey]['level']);
-            input.classList.remove('required');
-            label.classList.remove('required');
-            Object.entries(needless).forEach(([attrname, attrvalue]) => input.setAttribute(attrname, attrvalue));
+            let required = false;
             chmonos.condition['Requires'](input, '', fields, condition[rkey]['param'], chmonos.constants['Requires'], function () {
+                required = true;
+            }, chmonos.context);
+            if (required) {
                 input.classList.add('required');
                 label.classList.add('required');
                 Object.keys(needless).forEach(attrname => input.removeAttribute(attrname));
-            }, chmonos.context);
+            }
+            else {
+                input.classList.remove('required');
+                label.classList.remove('required');
+                Object.entries(needless).forEach(([attrname, attrvalue]) => input.setAttribute(attrname, attrvalue));
+            }
         }
     };
 
