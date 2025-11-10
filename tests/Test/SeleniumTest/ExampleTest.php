@@ -642,8 +642,12 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         $driver->setValue('require_array[]', ['4']);
         that($driver)->getErrors()->count(1);
 
+        $require_needless = $driver->findElement(WebDriverBy::name('require_needless'));
+        $require_needless->sendKeys(['12', '24', '2014']);
+        that($require_needless)->getAttribute('value')->is('2014-12-24');
+
         $driver->setValue('require_array[]', []);
-        that($driver)->findElement(WebDriverBy::name('require_needless'))->getAttribute('disabled')->contains('true');
+        that($require_needless)->getAttribute('disabled')->contains('true');
     }
 
     /**
