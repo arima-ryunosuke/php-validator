@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.11
+
+- Merge tag 'v1.3.10'
+
 ## 2.2.10
 
 - [feature] ラベル文字列をルールで指定する機能
