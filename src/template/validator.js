@@ -164,25 +164,13 @@ function Chmonos(form, options) {
             propagate: true,
         });
         inputs.forEach(function (input) {
-            var isWarning = Object.keys(input.validationWarnings ?? {}).length;
-            var isError = Object.keys(input.validationErrors ?? {}).length;
-            if (isWarning) {
-                input.classList.add('validation_warning');
-            }
-            if (isError) {
-                input.classList.add('validation_error');
-            }
-            if (isWarning || isError) {
-                input.classList.remove('validation_ok');
-            }
-            else {
-                input.classList.remove('validation_warning');
-                input.classList.remove('validation_error');
-                input.classList.remove('validation_ok');
-                if (okclass && chmonos.value(input)?.length > 0) {
-                    input.classList.add('validation_ok');
-                }
-            }
+            var isWarning = !!Object.keys(input.validationWarnings ?? {}).length;
+            var isError = !!Object.keys(input.validationErrors ?? {}).length;
+            var isOk = !isWarning && !isError;
+
+            input.classList.toggle('validation_warning', isWarning);
+            input.classList.toggle('validation_error', isError);
+            input.classList.toggle('validation_ok', isOk && okclass && chmonos.value(input)?.length > 0);
         });
         // {condition: {errortype: message}} => {errortype: message} in future scope
         [input.validationWarnings ?? {}, input.validationErrors ?? {}].forEach(function (types) {
