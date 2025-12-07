@@ -5785,25 +5785,13 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
             propagate: true,
         });
         inputs.forEach(function (input) {
-            var isWarning = Object.keys(input.validationWarnings ?? {}).length;
-            var isError = Object.keys(input.validationErrors ?? {}).length;
-            if (isWarning) {
-                input.classList.add('validation_warning');
-            }
-            if (isError) {
-                input.classList.add('validation_error');
-            }
-            if (isWarning || isError) {
-                input.classList.remove('validation_ok');
-            }
-            else {
-                input.classList.remove('validation_warning');
-                input.classList.remove('validation_error');
-                input.classList.remove('validation_ok');
-                if (okclass && chmonos.value(input)?.length > 0) {
-                    input.classList.add('validation_ok');
-                }
-            }
+            var isWarning = !!Object.keys(input.validationWarnings ?? {}).length;
+            var isError = !!Object.keys(input.validationErrors ?? {}).length;
+            var isOk = !isWarning && !isError;
+
+            input.classList.toggle('validation_warning', isWarning);
+            input.classList.toggle('validation_error', isError);
+            input.classList.toggle('validation_ok', isOk && okclass && chmonos.value(input)?.length > 0);
         });
         // {condition: {errortype: message}} => {errortype: message} in future scope
         [input.validationWarnings ?? {}, input.validationErrors ?? {}].forEach(function (types) {
@@ -5894,16 +5882,10 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                 return;
             }
 
-            var condition = rule['condition'];
-            var value = chmonos.value(input);
-            var errorTypes = {warning: {}, error: {}};
             var asyncs = [];
-            var keys = Object.keys(condition);
-            for (var k = 0; k < keys.length; k++) {
-                let cond = condition[keys[k]];
-                let cname = cond.cname;
-                let level = cond.level;
-                var error = function (err) {
+            var errorTypes = {warning: {}, error: {}};
+            const getHandler = function (cname, level, cond = {}) {
+                return function (err) {
                     if (evt.chmonosSubtypes) {
                         if (evt.chmonosSubtypes.includes('noerror')) {
                             return;
@@ -5934,11 +5916,11 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                     }
                     else {
                         var ret;
-                        if (cond['message'][err] !== undefined) {
-                            ret = cond['message'][err];
+                        if (cond?.message?.[err] !== undefined) {
+                            ret = cond?.message?.[err];
                         }
-                        else if (chmonos.messages[cname][err] !== undefined) {
-                            ret = chmonos.messages[cname][err];
+                        else if (chmonos.messages[cname]?.[err] !== undefined) {
+                            ret = chmonos.messages[cname]?.[err];
                         }
                         else {
                             ret = err;
@@ -5947,13 +5929,24 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                             errorTypes[level][cname] = {};
                         }
                         errorTypes[level][cname][err] = ret.replace(/%(.+?)%/g, function (p0, p1) {
-                            if (cond['param'][p1] !== undefined) {
-                                return cond['param'][p1];
+                            if (cond?.param?.[p1] !== undefined) {
+                                return cond?.param?.[p1];
                             }
                             return p0;
                         });
                     }
                 };
+            };
+
+            var condition = rule['condition'];
+            var value = chmonos.value(input);
+            var keys = Object.keys(condition);
+            for (var k = 0; k < keys.length; k++) {
+                let cond = condition[keys[k]];
+                let cname = cond.cname;
+                let level = cond.level;
+                var error = getHandler(cname, level, cond);
+
                 // 値が空の場合は Requires しか検証しない（空かどうかの制御を他の condition に任せたくない）
                 // value は必ず length を持つように制御してるので「空・未入力」の判定は length === 0 で OK
                 if (value.length > 0 || cname === 'Requires') {
@@ -5969,6 +5962,30 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                     });
                 }
             }
+
+            input.dispatchEvent(new class ValidationEvent extends CustomEvent {
+                report(result, type) {
+                    asyncs.push(Promise.resolve(result).then(function (resolve) {
+                        const error = getHandler('@custom', type);
+                        for (const message of [].concat(resolve)) {
+                            error(message);
+                        }
+                    }));
+                }
+
+                error(result) {
+                    return this.report(result, 'error');
+                }
+
+                warning(result) {
+                    return this.report(result, 'warning');
+                }
+            }('chmonos:validate', {
+                bubbles: true,
+                detail: {
+                    originalEvent: evt,
+                },
+            }));
 
             // ラジオボタンやチェックボックスなどはこれ以上無駄なので検証 ID を放り込んでおく
             if (input.type === 'radio' || input.type === 'checkbox') {
