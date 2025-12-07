@@ -261,16 +261,10 @@ function Chmonos(form, options) {
                 return;
             }
 
-            var condition = rule['condition'];
-            var value = chmonos.value(input);
-            var errorTypes = {warning: {}, error: {}};
             var asyncs = [];
-            var keys = Object.keys(condition);
-            for (var k = 0; k < keys.length; k++) {
-                let cond = condition[keys[k]];
-                let cname = cond.cname;
-                let level = cond.level;
-                var error = function (err) {
+            var errorTypes = {warning: {}, error: {}};
+            const getHandler = function (cname, level, cond = {}) {
+                return function (err) {
                     if (evt.chmonosSubtypes) {
                         if (evt.chmonosSubtypes.includes('noerror')) {
                             return;
@@ -301,11 +295,11 @@ function Chmonos(form, options) {
                     }
                     else {
                         var ret;
-                        if (cond['message'][err] !== undefined) {
-                            ret = cond['message'][err];
+                        if (cond?.message?.[err] !== undefined) {
+                            ret = cond?.message?.[err];
                         }
-                        else if (chmonos.messages[cname][err] !== undefined) {
-                            ret = chmonos.messages[cname][err];
+                        else if (chmonos.messages[cname]?.[err] !== undefined) {
+                            ret = chmonos.messages[cname]?.[err];
                         }
                         else {
                             ret = err;
@@ -314,13 +308,24 @@ function Chmonos(form, options) {
                             errorTypes[level][cname] = {};
                         }
                         errorTypes[level][cname][err] = ret.replace(/%(.+?)%/g, function (p0, p1) {
-                            if (cond['param'][p1] !== undefined) {
-                                return cond['param'][p1];
+                            if (cond?.param?.[p1] !== undefined) {
+                                return cond?.param?.[p1];
                             }
                             return p0;
                         });
                     }
                 };
+            };
+
+            var condition = rule['condition'];
+            var value = chmonos.value(input);
+            var keys = Object.keys(condition);
+            for (var k = 0; k < keys.length; k++) {
+                let cond = condition[keys[k]];
+                let cname = cond.cname;
+                let level = cond.level;
+                var error = getHandler(cname, level, cond);
+
                 // 値が空の場合は Requires しか検証しない（空かどうかの制御を他の condition に任せたくない）
                 // value は必ず length を持つように制御してるので「空・未入力」の判定は length === 0 で OK
                 if (value.length > 0 || cname === 'Requires') {
@@ -336,6 +341,30 @@ function Chmonos(form, options) {
                     });
                 }
             }
+
+            input.dispatchEvent(new class ValidationEvent extends CustomEvent {
+                report(result, type) {
+                    asyncs.push(Promise.resolve(result).then(function (resolve) {
+                        const error = getHandler('@custom', type);
+                        for (const message of [].concat(resolve)) {
+                            error(message);
+                        }
+                    }));
+                }
+
+                error(result) {
+                    return this.report(result, 'error');
+                }
+
+                warning(result) {
+                    return this.report(result, 'warning');
+                }
+            }('chmonos:validate', {
+                bubbles: true,
+                detail: {
+                    originalEvent: evt,
+                },
+            }));
 
             // ラジオボタンやチェックボックスなどはこれ以上無駄なので検証 ID を放り込んでおく
             if (input.type === 'radio' || input.type === 'checkbox') {
