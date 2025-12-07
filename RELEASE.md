@@ -24,6 +24,11 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.3.11
+
+- [feature] input レベルの完全なるバリデーション
+- [fixbug] warning があると error が消えない不具合
+
 ## 1.3.10
 
 - [fixbug] needless を無意味に付け替えると瞬間的に disabled 状態が生まれることがありよくない
