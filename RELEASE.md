@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 2.2.13
+
+- Merge tag 'v1.3.11'
+
 ## 2.2.12
 
 - [change] invalid を missing に変更する布石
