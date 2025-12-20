@@ -91,6 +91,9 @@ $other_form = new Form([
             ]),
         ]
     ],
+    'custom_validation'           => [
+        'title'     => 'カスタムバリデーション',
+    ],
     'validated'           => [
         'title'     => 'カスタムイベント',
         'condition' => [
@@ -174,6 +177,12 @@ if (resetForm($other_form, 'other_form')) {
         </td>
     </tr>
     <tr>
+        <th>カスタムバリデーション（input レベルの完全なる js カスタム）</th>
+        <td>
+            <?= $other_form->input('custom_validation') ?>
+        </td>
+    </tr>
+    <tr>
         <th>バリデーションのカスタムイベント</th>
         <td>
             <?= $other_form->input('validated') ?>
@@ -239,6 +248,18 @@ if (resetForm($other_form, 'other_form')) {
             return false;
         }
     }, 'after');
+    $$('#other_form').on('chmonos:validate', function (e) {
+        if (e.target.matches('[data-vinput-id="custom_validation"]')) {
+            // 直値の warning
+            if (e.target.value !== 'X') {
+                e.warning('"X" という文字列を推奨です');
+            }
+            // Promise ベースの error
+            if (e.target.value.toUpperCase() !== e.target.value) {
+                e.error(['大文字でなければなりません']);
+            }
+        }
+    });
     $$('#other_form').on('submit', function () {
         alert('これはフォーム自体に bind されたイベントです');
     });

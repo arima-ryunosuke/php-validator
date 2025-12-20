@@ -1078,6 +1078,26 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     /**
      * @dataProvider provideDriver
      */
+    function test_customValidation_input(WebDriver $driver)
+    {
+        $driver->path('/example/index.php');
+
+        $driver->setValue('custom_validation', 'hoge');
+        that($driver)->getErrors()->count(1);
+        that($driver)->getWarnings()->count(1);
+
+        $driver->setValue('custom_validation', 'Y');
+        that($driver)->getErrors()->count(0);
+        that($driver)->getWarnings()->count(1);
+
+        $driver->setValue('custom_validation', 'X');
+        that($driver)->getErrors()->count(0);
+        that($driver)->getWarnings()->count(0);
+    }
+
+    /**
+     * @dataProvider provideDriver
+     */
     function test_jstest(WebDriver $driver)
     {
         $driver->path('/example/testing.php?random=false');
