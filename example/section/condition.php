@@ -522,6 +522,12 @@ $condition_form = new \ryunosuke\chmonos\Form([
         'condition' => [
             new Requires(['require_array' => ['==', 4],]),
         ],
+        'options' => [
+            1 => 'A',
+            2 => 'B',
+            3 => 'C',
+        ],
+        'default'   => '',
         'needless'  => 'disabled',
     ],
     'stringlength'          => [
@@ -786,7 +792,7 @@ resetForm($condition_form, 'condition_form');
             <?= $condition_form->label('require_in') ?>
             <?= $condition_form->input('require_in') ?>
             <?= $condition_form->label('require_needless') ?>
-            <?= $condition_form->input('require_needless', ['type'=>'date']) ?>
+            <?= $condition_form->input('require_needless', ['type'=>'radio']) ?>
         </td>
     </tr>
     <tr>
