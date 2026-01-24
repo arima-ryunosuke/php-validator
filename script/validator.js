@@ -6983,22 +6983,23 @@ this.messages = {"Ajax":{"AjaxInvalid":"invalid"},"AlphaDigit":{"AlphaNumericInv
         });
         if (rkey) {
             fields = fields || chmonos.fields(input);
-            var label = holder.querySelector('[data-vlabel-id="' + input.dataset.vinputId + '"]') || document.createElement('span');
-            input.setAttribute('data-vlevel', condition[rkey]['level']);
-            label.setAttribute('data-vlevel', condition[rkey]['level']);
+            const inputs = holder.querySelectorAll(`[data-vinput-id="${input.dataset.vinputId}"]`);
+            const labels = holder.querySelectorAll(`[data-vlabel-id="${input.dataset.vinputId}"]`);
+            inputs.forEach(v => v.setAttribute('data-vlevel', condition[rkey]['level']));
+            labels.forEach(v => v.setAttribute('data-vlevel', condition[rkey]['level']));
             let required = false;
             chmonos.condition['Requires'](input, '', fields, condition[rkey]['param'], chmonos.constants['Requires'], function () {
                 required = true;
             }, chmonos.context);
             if (required) {
-                input.classList.add('required');
-                label.classList.add('required');
-                Object.keys(needless).forEach(attrname => input.removeAttribute(attrname));
+                inputs.forEach(v => v.classList.add('required'));
+                labels.forEach(v => v.classList.add('required'));
+                Object.keys(needless).forEach(attrname => inputs.forEach(v => v.removeAttribute(attrname)));
             }
             else {
-                input.classList.remove('required');
-                label.classList.remove('required');
-                Object.entries(needless).forEach(([attrname, attrvalue]) => input.setAttribute(attrname, attrvalue));
+                inputs.forEach(v => v.classList.remove('required'));
+                labels.forEach(v => v.classList.remove('required'));
+                Object.entries(needless).forEach(([attrname, attrvalue]) => inputs.forEach(v => v.setAttribute(attrname, attrvalue)));
             }
         }
     };
