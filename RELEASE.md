@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.3.12
+
+- [fixbug] needless の対象が複数（radio 等）の場合に一つしか設定されない不具合
+
 ## 1.3.11
 
 - [feature] input レベルの完全なるバリデーション
