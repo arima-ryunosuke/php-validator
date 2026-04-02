@@ -319,6 +319,9 @@ function Chmonos(form, options) {
 
             var condition = rule['condition'];
             var value = chmonos.value(input);
+            if (value.length === 0 && input.validity.badInput && Number.isNaN(input.valueAsNumber)) {
+                value = 'bad';
+            }
             var keys = Object.keys(condition);
             for (var k = 0; k < keys.length; k++) {
                 let cond = condition[keys[k]];
@@ -1138,10 +1141,6 @@ function Chmonos(form, options) {
             var value = e.value;
             if (options.allrules[elemName]['trimming']) {
                 value = value.trim();
-            }
-            // number/date 用の特別処理
-            if (value.length === 0 && e.validity.badInput && Number.isNaN(e.valueAsNumber)) {
-                value = 'bad'; // 数としても日付として不正なら何でもいい（ただし maxlength に引っかかるので短めが良い）
             }
             return value;
         };
