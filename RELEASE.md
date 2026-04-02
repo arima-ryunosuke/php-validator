@@ -24,6 +24,12 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.3.13
+
+- [feature] phantom で複数の候補を指定してフォールバックする機能
+- [fixbug] value で値を得たいすべての文脈で bad が混入してくる不具合
+- [fixbug] Date で H:i が対応していない不具合
+
 ## 1.3.12
 
 - [fixbug] needless の対象が複数（radio 等）の場合に一つしか設定されない不具合
