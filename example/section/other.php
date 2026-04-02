@@ -16,33 +16,25 @@ $other_form = new Form([
     'id'                  => [
         'title' => 'id（id 属性を指定する）',
     ],
-    'year-month-day'      => [
+    'date-time'      => [
         'title'     => '結合値',
-        'phantom'   => ['%04d/%02d/%02d', 'year', 'month', 'day'],
-        'condition' => [
-            'Date' => 'Y/m/d'
-        ]
-    ],
-    'year'                => [
-        'condition' => [
-            'Digits' => null,
-            'Range'  => [1900, 2100]
+        'phantom'   => [
+            '%sT%s' => ['date', 'time'],
+            '%s'    => ['date'],
         ],
-        'default' => 2000,
-    ],
-    'month'               => [
         'condition' => [
-            'Digits' => null,
-            'Range'  => [1, 12]
+            'Compare'  => ['>', date('Y-m-d'), 'strtotime', null, true],
         ],
-        'default' => 2,
     ],
-    'day'                 => [
+    'date'                => [
         'condition' => [
-            'Digits' => null,
-            'Range'  => [1, 31]
+            'Date'  => ['Y-m-d']
         ],
-        'default' => 31,
+    ],
+    'time'               => [
+        'condition' => [
+            'Date' => ['H:i'],
+        ],
     ],
     'consent_check'       => [
         'options' => [
@@ -126,10 +118,9 @@ if (resetForm($other_form, 'other_form')) {
     <tr>
         <th>Phantom（結合値が検証に使用される）</th>
         <td>
-            <?= $other_form->input('year') ?>年
-            <?= $other_form->input('month') ?>月
-            <?= $other_form->input('day') ?>日
-            <?= $other_form->input('year-month-day') ?>
+            <?= $other_form->input('date') ?>
+            <?= $other_form->input('time') ?>
+            <?= $other_form->input('date-time') ?>
         </td>
     </tr>
     <tr>
