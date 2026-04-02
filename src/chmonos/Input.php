@@ -133,6 +133,13 @@ class Input
             }
         }
 
+        // phantom の正規化
+        if ($rule['phantom']) {
+            if (!is_hasharray($rule['phantom'])) {
+                $rule['phantom'] = [$rule['phantom'][0] => array_slice($rule['phantom'], 1)];
+            }
+        }
+
         // デフォルト値
         if (!array_key_exists('default', $rule)) {
             // inputs を持ってるなら間違いなく空配列
@@ -320,18 +327,25 @@ class Input
         };
 
         if ($phantom = $this->phantom) {
-            $flag = true;
-            $palues = [];
-            for ($i = 1; $i < count($phantom); $i++) {
-                $palue = array_get($values, $phantom[$i], '');
-                if (strlen($palue) === 0) {
-                    $flag = false;
+            $detect = function ($params) use ($values) {
+                $palues = [];
+                foreach ($params as $param) {
+                    $palue = array_get($values, $param, '');
+                    if (strlen($palue) === 0) {
+                        return null;
+                    }
+                    $palues[] = $palue;
+                }
+                return $palues;
+            };
+            $value = $this->default;
+            foreach ($phantom as $format => $params) {
+                $palues = $detect($params);
+                if ($palues !== null) {
+                    $value = vsprintf($format, $palues);
                     break;
                 }
-                $palues[] = $palue;
             }
-
-            $value = $flag ? vsprintf($phantom[0], $palues) : $this->default;
         }
         elseif ($exists($this->name, $values)) {
             $value = $values[$this->name];
@@ -742,8 +756,7 @@ class Input
 
                 // ファントム値から伝播元を取得
                 if ($this->phantom) {
-                    $phantom = array_slice($this->phantom, 1);
-                    $propagation = array_merge($propagation, $phantom);
+                    $propagation = array_merge($propagation, ...array_values($this->phantom));
                 }
             }
             else {

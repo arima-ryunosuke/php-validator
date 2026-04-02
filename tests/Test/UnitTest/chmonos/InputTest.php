@@ -194,13 +194,18 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         $input = new Input([
             'name'    => 'hoge',
-            'phantom' => ['%s-%s', 'fuga', 'piyo'],
+            'phantom' => [
+                '%s-%s' => ['fuga', 'piyo'],
+                '%s' => ['fuga'],
+            ],
         ]);
 
         // phantom 値が入る
         that($input)->normalize(['fuga' => 'FUGA', 'piyo' => 'PIYO'])->is('FUGA-PIYO');
-        // 一つでも空なら入らない
-        that($input)->normalize(['fuga' => 'FUGA'])->is('');
+        // 複数指定の場合順にフォールバックされる
+        that($input)->normalize(['fuga' => 'FUGA'])->is('FUGA');
+        // 全滅した場合は空になる
+        that($input)->normalize([])->is('');
     }
 
     function test_value_array()
