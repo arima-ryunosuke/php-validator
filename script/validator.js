@@ -6905,7 +6905,7 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                 }
                 else if (type === 'checkbox' || type === 'radio') {
                     if (input.checked) {
-                        result.push(...Array.from(input.labels).map(label => E(label.textContent)));
+                        result.push(...Array.from(input.labels ?? []).map(label => E(label.textContent)));
                     }
                 }
                 else if (type === 'select-one' || type === 'select-multiple') {
@@ -6958,12 +6958,12 @@ this.messages = {"Ajax":[],"AlphaDigit":{"AlphaNumericInvalid":"使用できな�
                 // ラベルを優先する（validationTitle は固定的だが label は html 上で指定されていることもありそっちの方が精度が高い）
                 // …がタイトルのないチェックボックスは単一で存在しがち（「同意する」とか）なので特別扱い
                 if (title.length === 0 && target.length === 1 && target[0].matches('[type=checkbox]')) {
-                    title = Array.from(target[0].labels, (label) => label.textContent).join('|');
+                    title = Array.from(target[0].labels ?? [], (label) => label.textContent).join('|');
                     values = [target[0].checked ? "✓" : ""];
                 }
                 else {
                     // checkbox,radio の label は「項目のラベル」ではないことが多い
-                    var label = [...new Set(target.filter(e => !e.matches('[type=checkbox],[type=radio]')).map(e => Array.from(e.labels).map(l => l.textContent).join('|')))].join('|');
+                    var label = [...new Set(target.filter(e => !e.matches('[type=checkbox],[type=radio]')).map(e => Array.from(e.labels ?? []).map(l => l.textContent).join('|')))].join('|');
                     title = label || title;
                 }
                 result.push(`<div class="chmonos-output-row" data-voutput-id="${E(ids)}"><dt>${E(title)}</dt><dd>${values.join(delimiter2)}</dd></div>`);
