@@ -953,6 +953,28 @@ validate には下記の引数が渡ってきます。
 とはいえ単純な condition であれば `$error(文字列)` しか使わないはずです。
 この辺は組み込みの `Ajax`, `ImageSize` が参考になるかもしれません。
 
+### 検証のフィルタ
+
+Condition にタグ付けを行うことで特定状況のみの検証の有効化/無効化が可能です。
+タグ付けは setTag/addTag を用いて行います。
+これらは $this を返すため、`(new Condition())->setTag('hoge', 'fuga')` といった記述が可能です。
+
+validate 系メソッドには $tag 引数があり、「含まれるなら true」「含まれないなら false」という配列を渡すとそれらすべてにマッチした Condition だけが実行されるようになります。
+
+```php
+// tagA を含み、tagB を含まない Condition のみが実行される
+$form->validate($_POST, [
+    'tagA' => true,
+    'tagB' => false,
+]);
+```
+
+クライアントサイドでは submit 起点となる button に data-vsubmit-tag で指定します。
+これは example を参照してください。
+
+タグは文字列に限定されません。意図的に汎用的に作られています（これは .NET Control の Tag プロパティにインスパイヤされています）。
+特定の object や enum 等を与えることもできます。ただし、tag は json 化されてブラウザに渡ることには留意してください。
+
 ### エラーの警告化
 
 Condition の `setValidationLevel` を "warning" で呼ぶと、その Condition は警告化され、サーバーチェックがスルーされるようになります。

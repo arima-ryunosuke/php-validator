@@ -24,6 +24,10 @@
 - rails みたいに name を entity[field] にしてみたいが・・・
 - var の撲滅（var/let/const が混在していて辛い）
 
+## 1.3.15
+
+- [feature] タグ概念の実装
+
 ## 1.3.14
 
 - [fixbug] input[type=hidden].labels は null を返す
