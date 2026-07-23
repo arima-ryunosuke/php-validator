@@ -206,6 +206,35 @@ class AbstractConditionTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($condition)->isArrayableValidation()->isFalse();
     }
 
+    function test_tags()
+    {
+        $condition = new Decimal(1, 10);
+        that($condition)->matchTag([])->is(true);
+        that($condition)->matchTag(['hoge' => true])->is(false);
+        that($condition)->matchTag(['hoge' => false])->is(true);
+
+        $condition->addTags('hoge');
+        $condition->addTags('fuga', 'piyo');
+        that($condition)->matchTag([])->is(true);
+        that($condition)->matchTag(['hoge' => true])->is(true);
+        that($condition)->matchTag(['hoge' => false])->is(false);
+        that($condition)->matchTag(['hoge' => true, 'fuga' => true])->is(true);
+        that($condition)->matchTag(['hoge' => true, 'fuga' => true, 'piyo' => false])->is(false);
+        that($condition)->matchTag(['hoge' => true, 'fuga' => true, 'piyo' => true])->is(true);
+        that($condition)->matchTag(['hoge' => true, 'fuga' => true, 'piyo' => true, 'foo' => true])->is(false);
+        that($condition)->matchTag(['hoge' => true, 'fuga' => true, 'piyo' => true, 'foo' => false])->is(true);
+
+        $condition->setTags('fuga');
+        that($condition)->matchTag(['hoge' => false])->is(true);
+        that($condition)->matchTag(['fuga' => true])->is(true);
+
+        $obj1 = new \stdClass();
+        $obj2 = new \stdClass();
+        $obj3 = $obj2;
+        $condition->setTags($obj1, $obj2, $obj3);
+        that($condition)->getTags()->is([$obj1, $obj2]);
+    }
+
     function test_getValidationParam()
     {
         $condition = new Decimal(1, 2);

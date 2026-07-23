@@ -213,6 +213,7 @@ function Chmonos(form, options) {
         const validation_id = new Date().getTime();
         const promises = [];
 
+        const tags = JSON.parse(evt.submitter?.dataset?.vsubmitTag ?? '{}');
         form.validationValues = undefined;
 
         inputs.forEach(function (input) {
@@ -332,6 +333,14 @@ function Chmonos(form, options) {
             var keys = Object.keys(condition);
             for (var k = 0; k < keys.length; k++) {
                 let cond = condition[keys[k]];
+                let matched = true;
+                for (const [tag, flag] of Object.entries(tags)) {
+                    matched = matched && ((flag && cond.tags.includes(tag)) || (!flag && !cond.tags.includes(tag)));
+                }
+                if (!matched) {
+                    continue;
+                }
+
                 let cname = cond.cname;
                 let level = cond.level;
                 var error = getHandler(cname, level, cond);

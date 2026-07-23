@@ -147,10 +147,11 @@ class Context implements \IteratorAggregate
      * バリデート
      *
      * @param array $values 検証する値が入った連想配列
+     * @param array $tags 検証を行うタグ
      * @param array|null $original 上位要素検証のため入力元配列を持ち回すが内部用なので呼び出し側は気にしなくていい
      * @return bool エラーがないならtrue
      */
-    public function validate(array $values, $original = null)
+    public function validate(array $values, array $tags = [], $original = null)
     {
         if ($original === null) {
             $original = array_map_key($values, function ($k) { return "/$k"; });
@@ -159,7 +160,7 @@ class Context implements \IteratorAggregate
         $isvalid = true;
 
         foreach ($this->inputs as $input) {
-            $isvalid = $input->validate($values, $original) && $isvalid;
+            $isvalid = $input->validate($values, $tags, $original) && $isvalid;
         }
 
         return $isvalid && count($this->messages) === 0;

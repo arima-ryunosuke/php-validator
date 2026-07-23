@@ -790,10 +790,11 @@ class Input
      * 登録されている Condition 全てを回して検証
      *
      * @param array $values 値
+     * @param array $tags 検証を行うタグ
      * @param array $original 入力元オリジナル配列
      * @return bool エラーがないならtrue
      */
-    public function validate($values, $original)
+    public function validate($values, array $tags, $original)
     {
         $value = $values[$this->name];
 
@@ -813,6 +814,10 @@ class Input
         $this->messages = [];
         $isvalid = true;
         foreach ($this->condition as $cname => $condition) {
+            // タグで検証実施可否を判定
+            if (!$condition->matchTag($tags)) {
+                continue;
+            }
             // null, 空文字, あるいは空配列の時に「空」と定義し、「空」の場合は Requires 以後の検証をしない
             if (!$condition instanceof Condition\Requires && ($value === null || $value === '' || $value === [])) {
                 break;
@@ -836,7 +841,7 @@ class Input
         // arrays タイプは子も検証する
         if ($this->getType() === 'arrays') {
             foreach ($value as $i => $v) {
-                $isvalid = $this->context->validate($v, $original) && $isvalid;
+                $isvalid = $this->context->validate($v, $tags, $original) && $isvalid;
                 $messages = $this->context->getMessages();
                 if (count($messages) > 0) {
                     $this->messages[$i] = $messages;

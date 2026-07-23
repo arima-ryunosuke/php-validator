@@ -206,12 +206,13 @@ class Form
      *
      * @see Context::validate
      * @param array $values 検証する値
+     * @param array $tags 検証を行うタグ
      * @return bool 検証結果
      */
-    public function validate(array &$values)
+    public function validate(array &$values, array $tags = [])
     {
         $values = $this->setValues($values);
-        $result = $this->context->validate($values);
+        $result = $this->context->validate($values, $tags);
         $values = $this->context->filter($values, false);
         return $result;
     }
@@ -223,11 +224,12 @@ class Form
      *
      * @see Form::validate
      * @param array $values 検証する値
+     * @param array $tags 検証を行うタグ
      * @return array 検証・フィルタされた値
      */
-    public function validateOrThrow(array $values)
+    public function validateOrThrow(array $values, array $tags = [])
     {
-        if ($this->validate($values) === false) {
+        if ($this->validate($values, $tags) === false) {
             throw new ValidationException($this, 'validation error.');
         }
 
