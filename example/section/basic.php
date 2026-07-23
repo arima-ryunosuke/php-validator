@@ -108,21 +108,21 @@ $basic_form = new \ryunosuke\chmonos\Form([
     'invisible'             => [
         'title'     => '不可視要素',
         'condition' => [
-            'Requires' => null,
+            (new Condition\Requires())->addTags('require'),
         ],
         'invisible' => true,
     ],
     'client'                => [
         'title'     => 'jsのみ',
         'condition' => [
-            'Requires' => null,
+            (new Condition\Requires())->addTags('require'),
         ],
         'checkmode' => ['client' => true, 'server' => false],
     ],
     'server'                => [
         'title'     => 'phpのみ',
         'condition' => [
-            'Requires' => null,
+            (new Condition\Requires())->addTags('require'),
         ],
         'checkmode' => ['client' => false, 'server' => true],
     ],
@@ -137,7 +137,7 @@ $basic_form = new \ryunosuke\chmonos\Form([
     'ignore'                => [
         'title'     => 'チェックを入れると必須',
         'condition' => [
-            'Requires' => 'ignore_require',
+            (new Condition\Requires('ignore_require'))->addTags('require'),
         ],
     ],
     'warning'                => [
@@ -323,6 +323,7 @@ resetForm($basic_form, 'basic_form');
 <input type="button" class="btn btn-info object-button" value="object">
 <input type="button" class="btn btn-info html-button" value="html">
 <input type="submit" id="basic_form_submit" class="btn btn-primary" value="post">
+<input type="submit" id="basic_form_submit2" class="btn btn-primary" name="norequire" value="post(必須チェック無し)" data-vsubmit-tag="<?= htmlspecialchars(json_encode(['require' => false]), ENT_QUOTES) ?>">
 <label class='btn btn-warning'>
     <input type='checkbox' class="js-enable-switcher" checked>
     js チェック有効

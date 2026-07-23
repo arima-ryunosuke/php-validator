@@ -45,7 +45,7 @@ function resetForm(Form $form, $id)
         if (($_POST['formid'] ?? '') === $id) {
             $posts = $_POST;
             $values = $posts;
-            if (!$form->validate($values)) {
+            if (!$form->validate($values, isset($posts['norequire']) ? ['require' => false] : [])) {
                 http_response_code(422);
             }
             echo var_pretty(['posts' => $posts, 'values' => $values], ['return' => true]);
