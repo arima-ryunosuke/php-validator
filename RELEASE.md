@@ -173,6 +173,10 @@
     - 明示的な指定が必要（とはいえデフォルト '+-' なので実質的には影響なし）
   - AlphaDigit のアンダースコア特別扱いを廃止
 
+## 1.3.14
+
+- [fixbug] input[type=hidden].labels は null を返す
+
 ## 1.3.13
 
 - [feature] phantom で複数の候補を指定してフォールバックする機能
