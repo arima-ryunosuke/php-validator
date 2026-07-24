@@ -323,7 +323,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'input' => 'x',
         ];
 
-        $input->validate($values, $values);
+        $input->validate($values, [], $values);
         $messages = $input->getMessages();
         that($messages)['StringLength']->contains('m_SHORTLONG');
         that($messages)['InArray']->contains('m_NOT_IN_ARRAY');
@@ -443,15 +443,15 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
 
         // 普通にやれば普通に true のはず
         $values = ['hoge' => [1, 5]];
-        that($input)->validate($values, $values)->isTrue();
+        that($input)->validate($values, [], $values)->isTrue();
 
         // 1つでもダメなのがあれば false のはず
         $values = ['hoge' => [1, 6]];
-        that($input)->validate($values, $values)->isFalse();
+        that($input)->validate($values, [], $values)->isFalse();
 
         // 配列じゃないと例外が飛ぶはず
         $values = ['hoge' => 3];
-        that($input)->validate($values, $values)->wasThrown(ValidationException::class);
+        that($input)->validate($values, [], $values)->wasThrown(ValidationException::class);
     }
 
     function test_detectType()
@@ -675,7 +675,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'input' => '',
         ];
 
-        that($input)->validate($values, $values)->isFalse();
+        that($input)->validate($values, [], $values)->isFalse();
         that($input)->getMessages()->count(1);
 
         //-----------------------------------------------
@@ -684,7 +684,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'input' => 'longlonglong',
         ];
 
-        that($input)->validate($values, $values)->isFalse();
+        that($input)->validate($values, [], $values)->isFalse();
         that($input)->getMessages()->count(1);
 
         //-----------------------------------------------
@@ -693,7 +693,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'input' => 'short',
         ];
 
-        that($input)->validate($values, $values)->isTrue();
+        that($input)->validate($values, [], $values)->isTrue();
         that($input)->getMessages()->count(0);
     }
 
@@ -723,7 +723,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             ],
         ];
 
-        that($input)->validate($values, $values)->isFalse();
+        that($input)->validate($values, [], $values)->isFalse();
         that($input)->getMessages()->is([
             [
                 "e1" => [
@@ -742,6 +742,97 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
         ]);
     }
 
+    function test_validate_with_tags()
+    {
+        $rule = [
+            'name'   => 'input',
+            'inputs' => [
+                'e1' => [
+                    'condition' => [
+                        (new Requires())->addTags('requires'),
+                    ]
+                ],
+                'e2' => [
+                    'condition' => [
+                        (new Requires())->addTags('no-requires'),
+                    ]
+                ],
+            ],
+        ];
+        $input = new Input($rule);
+
+        $values = [
+            'input' => [
+                ['e1' => '', 'e2' => 'present'],
+                ['e1' => 'present', 'e2' => ''],
+            ]
+        ];
+
+        that($input)->validate($values, [], $values)->isFalse();
+        that($input)->getMessages()->is([
+            [
+                "e1" => [
+                    [
+                        "RequireInvalidText" => "入力必須です",
+                    ],
+                ],
+            ],
+            [
+                "e2" => [
+                    [
+                        "RequireInvalidText" => "入力必須です",
+                    ],
+                ],
+            ],
+        ]);
+
+        that($input)->validate($values, ['requires' => true], $values)->isFalse();
+        that($input)->getMessages()->is([
+            0 => [
+                "e1" => [
+                    [
+                        "RequireInvalidText" => "入力必須です",
+                    ],
+                ],
+            ],
+        ]);
+
+        that($input)->validate($values, ['requires' => false], $values)->isFalse();
+        that($input)->getMessages()->is([
+            1 => [
+                "e2" => [
+                    [
+                        "RequireInvalidText" => "入力必須です",
+                    ],
+                ],
+            ],
+        ]);
+
+        that($input)->validate($values, ['no-requires' => false], $values)->isFalse();
+        that($input)->getMessages()->is([
+            0 => [
+                "e1" => [
+                    [
+                        "RequireInvalidText" => "入力必須です",
+                    ],
+                ],
+            ],
+        ]);
+
+        that($input)->validate($values, ['no-requires' => true], $values)->isFalse();
+        that($input)->getMessages()->is([
+            1 => [
+                "e2" => [
+                    [
+                        "RequireInvalidText" => "入力必須です",
+                    ],
+                ],
+            ],
+        ]);
+
+        that($input)->validate($values, ['requires' => false, 'no-requires' => false], $values)->isTrue();
+    }
+
     function test_clear()
     {
         $rule = [
@@ -756,7 +847,7 @@ class InputTest extends \ryunosuke\Test\AbstractUnitTestCase
             'input' => '',
         ];
 
-        that($input)->validate($values, $values)->isFalse();
+        that($input)->validate($values, [], $values)->isFalse();
         that($input)->getMessages()->count(1);
         $input->clear();
         that($input)->getMessages()->count(0);

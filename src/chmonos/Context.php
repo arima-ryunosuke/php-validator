@@ -118,7 +118,7 @@ class Context implements \IteratorAggregate
         return $values;
     }
 
-    public function validate(array $values, ?array $original = null)
+    public function validate(array $values, array $tags = [], ?array $original = null)
     {
         if ($original === null) {
             $original = array_map_key($values, function ($k) { return "/$k"; });
@@ -127,7 +127,7 @@ class Context implements \IteratorAggregate
         $isvalid = true;
 
         foreach ($this->inputs as $input) {
-            $isvalid = $input->validate($values, $original) && $isvalid;
+            $isvalid = $input->validate($values, $tags, $original) && $isvalid;
         }
 
         return $isvalid && count($this->messages) === 0;

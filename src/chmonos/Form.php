@@ -175,10 +175,10 @@ class Form
      *
      * @see Context::validate
      */
-    public function validate(array &$values): bool
+    public function validate(array &$values, array $tags = []): bool
     {
         $values = $this->setValues($values);
-        $result = $this->context->validate($values);
+        $result = $this->context->validate($values, $tags);
         $values = $this->context->filter($values, false);
         return $result;
     }
@@ -190,9 +190,9 @@ class Form
      *
      * @see Form::validate
      */
-    public function validateOrThrow(array $values): array
+    public function validateOrThrow(array $values, array $tags = []): array
     {
-        if ($this->validate($values) === false) {
+        if ($this->validate($values, $tags) === false) {
             throw new ValidationException($this, 'validation error.');
         }
 

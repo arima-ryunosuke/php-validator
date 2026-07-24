@@ -50,6 +50,9 @@ abstract class AbstractCondition
     /** @var string バリデーションレベル（warning, error） */
     protected $level = 'error';
 
+    /** @var mixed タグ配列 */
+    protected $tags = [];
+
     /**
      * 組み込み条件以外を使用したい時に使われる任意空間を登録
      *
@@ -482,6 +485,59 @@ JS;
     }
 
     /**
+     * タグを取得
+     */
+    public function getTags(): array
+    {
+        return $this->tags;
+    }
+
+    /**
+     * タグを設定（完全置換）
+     *
+     * @return static
+     */
+    public function setTags(...$tags): self
+    {
+        $this->tags = array_reduce($tags, function ($carry, $item) {
+            if (!in_array($item, $carry, true)) {
+                $carry[] = $item;
+            }
+            return $carry;
+        }, []);
+        return $this;
+    }
+
+    /**
+     * タグを追加（追加のみ）
+     *
+     * @return static
+     */
+    public function addTags(...$tags): self
+    {
+        return $this->setTags(...array_merge($this->tags, $tags));
+    }
+
+    /**
+     * タグによるフィルタ
+     *
+     * キーがタグで値がマッチフラグを与える。
+     * true: 存在するならマッチ
+     * false: 存在しないならマッチ
+     * という判定を行い、全てマッチした場合に true を返す。
+     *
+     * @return bool
+     */
+    public function matchTag(array $tags): bool
+    {
+        $matched = true;
+        foreach ($tags as $tag => $flag) {
+            $matched = $matched && (($flag && in_array($tag, $this->tags, true)) || (!$flag && !in_array($tag, $this->tags, true)));
+        }
+        return $matched;
+    }
+
+    /**
      * 検証レベルを設定
      *
      * 今のところ warning, error だけの対応。
@@ -542,6 +598,7 @@ JS;
             'message'   => $this->getMessageTemplates(),
             'fields'    => $this->getFields(),
             'level'     => $this->level,
+            'tags'      => $this->tags,
         ];
     }
 
