@@ -155,6 +155,8 @@ class DateTest extends \ryunosuke\Test\AbstractUnitTestCase
         that($validate)->getType()->is("month");
         $validate = new Date('Y');
         that($validate)->getType()->is('text');
+        $validate = new Date('H:i');
+        that($validate)->getType()->is("time");
         $validate = new Date('H:i:s');
         that($validate)->getType()->is("time");
     }

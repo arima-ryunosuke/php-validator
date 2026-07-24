@@ -5929,8 +5929,8 @@ this.messages = {"Ajax":{"AjaxInvalid":"invalid"},"AlphaDigit":{"AlphaNumericInv
             }
         }
         if (contains.phantom) {
-            rule?.phantom?.forEach(function (phantom) {
-                for (const e of chmonos.brother(input, phantom)) {
+            [...new Set(Object.values(rule?.phantom ?? {}).flat())].forEach(function (param) {
+                for (const e of chmonos.brother(input, param)) {
                     add(e);
                 }
             });
@@ -6105,21 +6105,28 @@ this.messages = {"Ajax":{"AjaxInvalid":"invalid"},"AlphaDigit":{"AlphaNumericInv
                 return;
             }
 
-            var phantom = rule['phantom'];
+            var phantom = Object.entries(rule['phantom']);
             if (phantom.length) {
-                var flag = true;
-                var brothers = [];
-                for (var i = 1; i < phantom.length; i++) {
-                    var inputs = chmonos.brother(input, phantom[i]);
-                    var target = chmonos.value(inputs[0]);
-                    if (target.length === 0) {
-                        flag = false;
+                const detect = function (params) {
+                    const targets = [];
+                    for (const param of params) {
+                        var inputs = chmonos.brother(input, param);
+                        var target = chmonos.value(inputs[0]);
+                        if (!target.length) {
+                            return null;
+                        }
+                        targets.push(target);
+                    }
+                    return targets;
+                };
+                input.value = '';
+                for (const [format, params] of phantom) {
+                    const targets = detect(params);
+                    if (targets !== null) {
+                        input.value = vsprintf(format, targets);
                         break;
                     }
-                    brothers.push(target);
                 }
-                // noinspection JSUnresolvedFunction
-                input.value = flag ? vsprintf(phantom[0], brothers) : '';
             }
 
             var fields = chmonos.fields(input);
@@ -6212,6 +6219,9 @@ this.messages = {"Ajax":{"AjaxInvalid":"invalid"},"AlphaDigit":{"AlphaNumericInv
 
             var condition = rule['condition'];
             var value = chmonos.value(input);
+            if (value.length === 0 && input.validity.badInput && Number.isNaN(input.valueAsNumber)) {
+                value = 'bad';
+            }
             var keys = Object.keys(condition);
             for (var k = 0; k < keys.length; k++) {
                 let cond = condition[keys[k]];
@@ -7116,10 +7126,6 @@ this.messages = {"Ajax":{"AjaxInvalid":"invalid"},"AlphaDigit":{"AlphaNumericInv
                             return value.trim();
                     }
                 })(options.allrules[elemName]['trimming']);
-            }
-            // number/date 用の特別処理
-            if (value.length === 0 && e.validity.badInput && Number.isNaN(e.valueAsNumber)) {
-                value = 'bad'; // 数としても日付として不正なら何でもいい（ただし maxlength に引っかかるので短めが良い）
             }
             return value;
         };

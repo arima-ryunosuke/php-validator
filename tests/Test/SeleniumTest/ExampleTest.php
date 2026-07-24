@@ -1032,14 +1032,17 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
     {
         $driver->path('/example/index.php');
 
-        $driver->setValue('year', '2000');
-        $driver->setValue('month', '5');
-        $driver->setValue('day', '24');
+        $driver->setValue('date', '10-30-2036');
+        $driver->setValue('time', '12:34');
         that($driver)->getErrors()->count(0);
-        that($driver)->findElement(WebDriverBy::name('year-month-day'))->getAttribute('class')->contains('validation_ok');
+        that($driver)->findElement(WebDriverBy::name('date-time'))->getAttribute('class')->contains('validation_ok');
 
-        $driver->setValue('month', '13');
-        that($driver)->getErrors()->count(4);
+        $driver->setValue('time', '');
+        that($driver)->getErrors()->count(0);
+        that($driver)->findElement(WebDriverBy::name('date-time'))->getAttribute('class')->contains('validation_ok');
+
+        $driver->setValue('date', '10-30-2012');
+        that($driver)->getErrors()->count(3);
     }
 
     /**

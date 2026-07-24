@@ -54,8 +54,11 @@ class Date extends AbstractCondition implements Interfaces\Range, Interfaces\Max
         elseif ($this->_member['Y'] && $this->_member['m']) {
             $this->_isRFC3339 = $YmdHis === '2006-01';
         }
-        elseif (!$this->_member['Y'] && !$this->_member['m'] && !$this->_member['d']) {
+        elseif (!$this->_member['Y'] && !$this->_member['m'] && !$this->_member['d'] && $this->_member['H'] && $this->_member['i'] && $this->_member['s']) {
             $this->_isRFC3339 = $YmdHis === '15:04:05';
+        }
+        elseif (!$this->_member['Y'] && !$this->_member['m'] && !$this->_member['d'] && $this->_member['H'] && $this->_member['i']) {
+            $this->_isRFC3339 = $YmdHis === '15:04';
         }
 
         parent::__construct();
