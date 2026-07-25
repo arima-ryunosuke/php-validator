@@ -86,8 +86,19 @@ class WebDriver extends RemoteWebDriver
                         $e->clear();
                     }
                 }
-                foreach ($values as $v) {
-                    $e->sendKeys($v);
+                foreach ($es as $e) {
+                    foreach ($values as $v) {
+                        // どうも sendKeys の送出が速すぎるようで、文字列系で一気に送信すると input イベントが乱れることがある
+                        if (!in_array($e->getAttribute('type'), ['file', 'date', 'time', 'datetime-local'])) {
+                            foreach (mb_str_split($v) as $c) {
+                                $e->sendKeys($c);
+                                usleep(1000);
+                            }
+                        }
+                        else {
+                            $e->sendKeys($v);
+                        }
+                    }
                 }
                 break;
         }

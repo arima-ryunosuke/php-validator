@@ -1042,6 +1042,7 @@ class ExampleTest extends \ryunosuke\Test\SeleniumTest\AbstractSeleniumTestCase
         that($driver)->findElement(WebDriverBy::name('date-time'))->getAttribute('class')->contains('validation_ok');
 
         $driver->setValue('date', '10-30-2012');
+        usleep(1000);
         that($driver)->getErrors()->count(3);
     }
 
